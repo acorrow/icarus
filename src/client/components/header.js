@@ -23,6 +23,11 @@ const NAV_BUTTONS = [
     path: '/eng'
   },
   {
+    name: 'INARA',
+    abbr: 'INARA',
+    path: '/inara'
+  },
+  {
     name: 'Log',
     abbr: 'Log',
     path: '/log'
