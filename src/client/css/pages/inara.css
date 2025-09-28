@@ -140,31 +140,6 @@
   fill: rgba(255, 124, 34, 0.08);
 }
 
-.inara-link-button {
-  appearance: none;
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  color: var(--color-secondary);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  cursor: pointer;
-  text-decoration: underline;
-  transition: color 0.2s ease;
-}
-
-.inara-link-button:hover,
-.inara-link-button:focus {
-  color: #ffb347;
-}
-
-.inara-link-button:focus-visible {
-  outline: 1px dashed var(--color-secondary);
-  outline-offset: 3px;
-}
-
 @media (max-width: 1200px) {
   .pristine-mining__results--inspector {
     margin-right: 0;

@@ -4,7 +4,6 @@ import Panel from '../components/panel'
 import Icons from '../lib/icons'
 import { useSocket, sendEvent } from '../lib/socket'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
-import notification from '../lib/notification'
 
 function formatSystemDistance (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
@@ -95,85 +94,6 @@ function formatCredits (value, fallback) {
     return value
   }
   return fallback || '--'
-}
-
-function fallbackCopyText (text) {
-  return new Promise((resolve, reject) => {
-    if (typeof document === 'undefined') {
-      reject(new Error('Clipboard unavailable'))
-      return
-    }
-
-    try {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.setAttribute('readonly', '')
-      textarea.style.position = 'absolute'
-      textarea.style.left = '-9999px'
-      textarea.style.top = '0'
-      document.body.appendChild(textarea)
-
-      const selection = document.getSelection()
-      const selectedRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null
-
-      textarea.focus()
-      textarea.select()
-
-      const successful = document.execCommand('copy')
-      document.body.removeChild(textarea)
-
-      if (selectedRange && selection) {
-        selection.removeAllRanges()
-        selection.addRange(selectedRange)
-      }
-
-      if (successful) {
-        resolve()
-      } else {
-        reject(new Error('Copy command failed'))
-      }
-    } catch (error) {
-      reject(error)
-    }
-  })
-}
-
-function copyTextToClipboard (text) {
-  if (typeof text !== 'string' || !text.trim()) {
-    return Promise.reject(new Error('Nothing to copy'))
-  }
-
-  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-    return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text))
-  }
-
-  return fallbackCopyText(text)
-}
-
-function copyInaraLink (url, description) {
-  if (!url) return
-
-  const label = description || url
-
-  copyTextToClipboard(url)
-    .then(() => {
-      notification(() => (
-        <p>
-          <span className='text-primary'>INARA link copied</span>
-          <br />
-          <span className='text-info'>{label}</span>
-        </p>
-      ))
-    })
-    .catch(() => {
-      notification(() => (
-        <p>
-          <span className='text-primary'>Unable to copy INARA link</span>
-          <br />
-          <span className='text-info'>{label}</span>
-        </p>
-      ))
-    })
 }
 
 function PristineMiningArtwork ({ systemObject }) {
@@ -969,10 +889,6 @@ function MissionsPanel () {
     }
   }, [trimmedSystem])
 
-  const handleInaraLinkCopy = useCallback((url, label) => {
-    copyInaraLink(url, label)
-  }, [])
-
   return (
     <div>
       <h2>Mining Missions</h2>
@@ -1057,20 +973,7 @@ function MissionsPanel () {
                       <td style={{ padding: '.65rem 1rem' }}>
                         {mission.faction
                           ? (
-                              mission.factionUrl
-                                ? (
-                                  <button
-                                    type='button'
-                                    className={`inara-link-button ${standingClass}`}
-                                    title={factionTitle}
-                                    onClick={() => handleInaraLinkCopy(mission.factionUrl, `Faction: ${mission.faction}`)}
-                                  >
-                                    {mission.faction}
-                                  </button>
-                                  )
-                                : (
-                                  <span className={standingClass} title={factionTitle}>{mission.faction}</span>
-                                  )
+                            <span className={standingClass} title={factionTitle}>{mission.faction}</span>
                             )
                           : '--'}
                       </td>
@@ -1083,23 +986,7 @@ function MissionsPanel () {
                             : (
                               <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
                               )}
-                          {mission.system
-                            ? (
-                                mission.systemUrl
-                                  ? (
-                                    <button
-                                      type='button'
-                                      className='inara-link-button'
-                                      onClick={() => handleInaraLinkCopy(mission.systemUrl, `System: ${mission.system}`)}
-                                    >
-                                      {mission.system}
-                                    </button>
-                                    )
-                                  : (
-                                      mission.system
-                                    )
-                              )
-                            : '--'}
+                          {mission.system || '--'}
                         </div>
                       </td>
                       <td className='hidden-small text-right' style={{ padding: '.65rem 1rem' }}>{distanceDisplay || '--'}</td>
@@ -2039,14 +1926,8 @@ function PristineMiningPanel () {
           placeholder='Enter system name...'
         />
         {sourceUrl && (
-          <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }}>
-            <button
-              type='button'
-              className='inara-link-button'
-              onClick={() => copyInaraLink(sourceUrl, `Pristine mining results${displaySystemName ? ` for ${displaySystemName}` : ''}`)}
-            >
-              Copy INARA results link
-            </button>
+          <div style={{ marginBottom: '.75rem', fontSize: '0.95rem', color: '#bbb' }}>
+            Data sourced from INARA community submissions
           </div>
         )}
       </div>
@@ -2155,22 +2036,10 @@ function PristineMiningPanel () {
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
                                     {location.systemUrl && (
-                                      <button
-                                        type='button'
-                                        className='inara-link-button'
-                                        onClick={() => copyInaraLink(location.systemUrl, `System: ${location.system || location.systemUrl}`)}
-                                      >
-                                        Copy INARA system link
-                                      </button>
+                                      <span>INARA system entry available</span>
                                     )}
                                     {location.bodyUrl && (
-                                      <button
-                                        type='button'
-                                        className='inara-link-button'
-                                        onClick={() => copyInaraLink(location.bodyUrl, `Body: ${location.body || location.bodyUrl}`)}
-                                      >
-                                        Copy INARA body link
-                                      </button>
+                                      <span>INARA body entry available</span>
                                     )}
                                   </div>
                                 )}
