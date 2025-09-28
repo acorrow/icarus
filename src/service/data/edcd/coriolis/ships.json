@@ -1,0 +1,3768 @@
+[
+  {
+    "id": "128049267",
+    "slug": "adder",
+    "name": "Adder",
+    "manufacturer": "Zorgon Peterson",
+    "class": 1,
+    "retailCost": 87810,
+    "hullCost": 40000,
+    "crew": 2,
+    "speed": 220,
+    "boost": 320,
+    "boostEnergy": 9,
+    "heatCapacity": 170,
+    "baseShieldStrength": 60,
+    "baseArmour": 90,
+    "hardness": 35,
+    "hullMass": 35,
+    "masslock": 7,
+    "pipSpeed": 0.13636363636364,
+    "pitch": 38,
+    "roll": 100,
+    "yaw": 14,
+    "reserveFuelCapacity": 0.36,
+    "edID": 128049267,
+    "eddbID": 1,
+    "slots": {
+      "standard": [
+        3,
+        3,
+        3,
+        1,
+        2,
+        3,
+        3
+      ],
+      "hardpoints": [
+        2,
+        1,
+        1,
+        0,
+        0
+      ],
+      "internal": [
+        3,
+        3,
+        2,
+        2,
+        1,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "3E",
+        "3E",
+        "3E",
+        "1E",
+        "2E",
+        "3E",
+        "3C"
+      ],
+      "hardpoints": [
+        0,
+        17,
+        17,
+        0,
+        0
+      ],
+      "internal": [
+        "01",
+        "44",
+        "00",
+        0,
+        "",
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128816588",
+    "slug": "alliance_challenger",
+    "name": "Alliance Challenger",
+    "manufacturer": "Lakon",
+    "class": 2,
+    "retailCost": 30472265,
+    "hullCost": 28041035,
+    "crew": 2,
+    "speed": 204,
+    "boost": 310,
+    "boostEnergy": 19,
+    "heatCapacity": 316,
+    "baseShieldStrength": 220,
+    "baseArmour": 300,
+    "hardness": 65,
+    "hullMass": 450,
+    "masslock": 13,
+    "pipSpeed": 0.088709677419355,
+    "pitch": 32,
+    "roll": 90,
+    "yaw": 16,
+    "reserveFuelCapacity": 0.77,
+    "edID": 128816588,
+    "eddbID": 34,
+    "slots": {
+      "standard": [
+        6,
+        6,
+        5,
+        5,
+        6,
+        4,
+        4
+      ],
+      "hardpoints": [
+        3,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        6,
+        3,
+        3,
+        2,
+        2,
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "6E",
+        "5E",
+        "5E",
+        "6E",
+        "4E",
+        "4C"
+      ],
+      "hardpoints": [
+        17,
+        0,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "04",
+        "4j",
+        "01",
+        "01",
+        "",
+        "",
+        "",
+        "",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128816574",
+    "slug": "alliance_chieftain",
+    "name": "Alliance Chieftain",
+    "manufacturer": "Lakon",
+    "class": 2,
+    "retailCost": 19382252,
+    "hullCost": 18182883,
+    "crew": 2,
+    "speed": 230,
+    "boost": 330,
+    "boostEnergy": 19,
+    "heatCapacity": 289,
+    "baseShieldStrength": 200,
+    "baseArmour": 280,
+    "hardness": 65,
+    "hullMass": 400,
+    "masslock": 13,
+    "pipSpeed": 0.08695652173913,
+    "pitch": 39,
+    "roll": 92,
+    "yaw": 16,
+    "reserveFuelCapacity": 0.77,
+    "edID": 128816574,
+    "eddbID": 33,
+    "slots": {
+      "standard": [
+        6,
+        6,
+        5,
+        5,
+        6,
+        4,
+        4
+      ],
+      "hardpoints": [
+        3,
+        3,
+        2,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        5,
+        4,
+        2,
+        2,
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "6E",
+        "5E",
+        "5E",
+        "6E",
+        "4E",
+        "4C"
+      ],
+      "hardpoints": [
+        17,
+        0,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "04",
+        "4e",
+        "02",
+        "",
+        "",
+        "",
+        "",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128816581",
+    "slug": "alliance_crusader",
+    "name": "Alliance Crusader",
+    "manufacturer": "Lakon",
+    "class": 2,
+    "retailCost": 19382252,
+    "hullCost": 22866341,
+    "crew": 3,
+    "speed": 180,
+    "boost": 300,
+    "boostEnergy": 19,
+    "heatCapacity": 316,
+    "baseShieldStrength": 200,
+    "baseArmour": 300,
+    "hardness": 65,
+    "hullMass": 500,
+    "masslock": 13,
+    "pipSpeed": 0.15833333333333,
+    "pitch": 32,
+    "roll": 80,
+    "yaw": 16,
+    "reserveFuelCapacity": 0.77,
+    "edID": 128816581,
+    "eddbID": 36,
+    "slots": {
+      "standard": [
+        6,
+        6,
+        5,
+        5,
+        6,
+        4,
+        4
+      ],
+      "hardpoints": [
+        3,
+        2,
+        2,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        5,
+        3,
+        3,
+        2,
+        2,
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "6E",
+        "5E",
+        "5E",
+        "6E",
+        "4E",
+        "4C"
+      ],
+      "hardpoints": [
+        17,
+        0,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "04",
+        "4e",
+        "02",
+        "",
+        "",
+        "",
+        "",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049363",
+    "slug": "anaconda",
+    "name": "Anaconda",
+    "manufacturer": "Faulcon DeLacy",
+    "class": 3,
+    "retailCost": 146969450,
+    "hullCost": 141889930,
+    "crew": 3,
+    "speed": 180,
+    "boost": 240,
+    "boostEnergy": 27,
+    "heatCapacity": 334,
+    "baseShieldStrength": 350,
+    "baseArmour": 525,
+    "hardness": 65,
+    "hullMass": 400,
+    "masslock": 23,
+    "pipSpeed": 0.13888888888889,
+    "pitch": 25,
+    "roll": 60,
+    "yaw": 10,
+    "reserveFuelCapacity": 1.07,
+    "edID": 128049363,
+    "eddbID": 2,
+    "slots": {
+      "standard": [
+        8,
+        7,
+        6,
+        5,
+        8,
+        8,
+        5
+      ],
+      "hardpoints": [
+        4,
+        3,
+        3,
+        3,
+        2,
+        2,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        7,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        {
+          "class": 5,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        4,
+        4,
+        4,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "8E",
+        "7E",
+        "6E",
+        "5E",
+        "8E",
+        "8E",
+        "5C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "05",
+        "04",
+        "4j",
+        0,
+        "03",
+        0,
+        0,
+        0,
+        0,
+        0,
+        "",
+        "00",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049303",
+    "slug": "asp",
+    "name": "Asp Explorer",
+    "manufacturer": "Lakon",
+    "class": 2,
+    "retailCost": 6661150,
+    "hullCost": 6135660,
+    "crew": 2,
+    "speed": 250,
+    "boost": 340,
+    "boostEnergy": 13,
+    "heatCapacity": 272,
+    "baseShieldStrength": 140,
+    "baseArmour": 210,
+    "hardness": 52,
+    "hullMass": 280,
+    "masslock": 11,
+    "pipSpeed": 0.13,
+    "pitch": 38,
+    "roll": 100,
+    "yaw": 10,
+    "reserveFuelCapacity": 0.63,
+    "edID": 128049303,
+    "eddbID": 3,
+    "slots": {
+      "standard": [
+        5,
+        5,
+        5,
+        4,
+        4,
+        5,
+        5
+      ],
+      "hardpoints": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        5,
+        3,
+        3,
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "5E",
+        "5E",
+        "5E",
+        "4E",
+        "4E",
+        "5E",
+        "5C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "04",
+        "4e",
+        "01",
+        0,
+        0,
+        "00",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128672276",
+    "slug": "asp_scout",
+    "name": "Asp Scout",
+    "manufacturer": "Lakon",
+    "class": 2,
+    "retailCost": 3961150,
+    "hullCost": 3818240,
+    "crew": 2,
+    "speed": 220,
+    "boost": 300,
+    "boostEnergy": 13,
+    "heatCapacity": 210,
+    "baseShieldStrength": 120,
+    "baseArmour": 180,
+    "hardness": 52,
+    "hullMass": 150,
+    "masslock": 8,
+    "pipSpeed": 0.125,
+    "pitch": 40,
+    "roll": 110,
+    "yaw": 15,
+    "reserveFuelCapacity": 0.47,
+    "edID": 128672276,
+    "eddbID": 24,
+    "slots": {
+      "standard": [
+        4,
+        4,
+        4,
+        3,
+        4,
+        4,
+        4
+      ],
+      "hardpoints": [
+        2,
+        2,
+        1,
+        1,
+        0,
+        0
+      ],
+      "internal": [
+        5,
+        4,
+        3,
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "4E",
+        "4E",
+        "3E",
+        "4E",
+        "4E",
+        "4C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        17,
+        17,
+        0,
+        0
+      ],
+      "internal": [
+        "02",
+        "02",
+        "44",
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049345",
+    "slug": "beluga",
+    "name": "Beluga Liner",
+    "manufacturer": "Saud Kruger",
+    "class": 3,
+    "retailCost": 84532770,
+    "hullCost": 79654610,
+    "crew": 3,
+    "speed": 200,
+    "boost": 280,
+    "boostEnergy": 19,
+    "heatCapacity": 283,
+    "baseShieldStrength": 280,
+    "baseArmour": 280,
+    "hardness": 60,
+    "hullMass": 950,
+    "masslock": 18,
+    "pipSpeed": 0.1125,
+    "pitch": 25,
+    "roll": 60,
+    "yaw": 17,
+    "reserveFuelCapacity": 0.81,
+    "edID": 128049345,
+    "eddbID": 30,
+    "slots": {
+      "standard": [
+        6,
+        7,
+        7,
+        8,
+        6,
+        5,
+        7
+      ],
+      "hardpoints": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        4,
+        3,
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "7E",
+        "7E",
+        "8E",
+        "6E",
+        "5E",
+        "7C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "4j",
+        "04",
+        "mi",
+        "mi",
+        "mg",
+        "mg",
+        "02",
+        "01",
+        0,
+        0,
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049279",
+    "slug": "cobra_mk_iii",
+    "name": "Cobra Mk III",
+    "manufacturer": "Faulcon DeLacy",
+    "class": 1,
+    "retailCost": 349720,
+    "hullCost": 205800,
+    "crew": 2,
+    "speed": 280,
+    "boost": 400,
+    "boostEnergy": 10,
+    "heatCapacity": 225,
+    "baseShieldStrength": 80,
+    "baseArmour": 120,
+    "hardness": 35,
+    "hullMass": 180,
+    "masslock": 8,
+    "pipSpeed": 0.125,
+    "pitch": 40,
+    "roll": 100,
+    "yaw": 10,
+    "reserveFuelCapacity": 0.49,
+    "edID": 128049279,
+    "eddbID": 4,
+    "slots": {
+      "standard": [
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        4
+      ],
+      "hardpoints": [
+        2,
+        2,
+        1,
+        1,
+        0,
+        0
+      ],
+      "internal": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "4E",
+        "4E",
+        "3E",
+        "3E",
+        "3E",
+        "4C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "02",
+        "02",
+        "49",
+        "00",
+        0,
+        "",
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128672262",
+    "slug": "cobra_mk_iv",
+    "name": "Cobra Mk IV",
+    "manufacturer": "Faulcon DeLacy",
+    "class": 1,
+    "retailCost": 747660,
+    "hullCost": 603740,
+    "crew": 2,
+    "speed": 200,
+    "boost": 300,
+    "boostEnergy": 10,
+    "heatCapacity": 228,
+    "baseShieldStrength": 120,
+    "baseArmour": 120,
+    "hardness": 35,
+    "hullMass": 210,
+    "masslock": 8,
+    "pipSpeed": 0.125,
+    "pitch": 30,
+    "roll": 90,
+    "yaw": 10,
+    "reserveFuelCapacity": 0.51,
+    "edID": 128672262,
+    "eddbID": 29,
+    "slots": {
+      "standard": [
+        4,
+        4,
+        4,
+        3,
+        3,
+        3,
+        4
+      ],
+      "hardpoints": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "internal": [
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        2,
+        2,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "4E",
+        "4E",
+        "3E",
+        "3E",
+        "3E",
+        "4C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "02",
+        "02",
+        "49",
+        0,
+        0,
+        0,
+        "00",
+        "",
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128671831",
+    "slug": "diamondback_explorer",
+    "name": "Diamondback Explorer",
+    "manufacturer": "Lakon",
+    "class": 1,
+    "retailCost": 1894760,
+    "hullCost": 1635700,
+    "crew": 1,
+    "speed": 260,
+    "boost": 340,
+    "boostEnergy": 13,
+    "heatCapacity": 351,
+    "baseShieldStrength": 150,
+    "baseArmour": 150,
+    "hardness": 42,
+    "hullMass": 260,
+    "masslock": 10,
+    "pipSpeed": 0.098214285714286,
+    "pitch": 35,
+    "roll": 90,
+    "yaw": 13,
+    "reserveFuelCapacity": 0.52,
+    "edID": 128671831,
+    "eddbID": 5,
+    "slots": {
+      "standard": [
+        4,
+        4,
+        5,
+        3,
+        4,
+        3,
+        5
+      ],
+      "hardpoints": [
+        3,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        4,
+        4,
+        3,
+        3,
+        2,
+        2,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "4E",
+        "5E",
+        "3E",
+        "4E",
+        "3E",
+        "5C"
+      ],
+      "hardpoints": [
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "49",
+        "02",
+        "01",
+        0,
+        "",
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128671217",
+    "slug": "diamondback",
+    "name": "Diamondback Scout",
+    "manufacturer": "Lakon",
+    "class": 1,
+    "retailCost": 564330,
+    "hullCost": 461340,
+    "crew": 1,
+    "speed": 280,
+    "boost": 380,
+    "boostEnergy": 10,
+    "heatCapacity": 346,
+    "baseShieldStrength": 120,
+    "baseArmour": 120,
+    "hardness": 40,
+    "hullMass": 170,
+    "masslock": 8,
+    "pipSpeed": 0.096153846153846,
+    "pitch": 42,
+    "roll": 100,
+    "yaw": 15,
+    "reserveFuelCapacity": 0.49,
+    "edID": 128671217,
+    "eddbID": 6,
+    "slots": {
+      "standard": [
+        4,
+        4,
+        4,
+        2,
+        3,
+        2,
+        4
+      ],
+      "hardpoints": [
+        2,
+        2,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        3,
+        3,
+        3,
+        2,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "4E",
+        "4E",
+        "2E",
+        "3E",
+        "2E",
+        "4C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "44",
+        0,
+        0,
+        "",
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049291",
+    "slug": "dolphin",
+    "name": "Dolphin",
+    "manufacturer": "Saud Kruger",
+    "class": 1,
+    "retailCost": 1337330,
+    "hullCost": 1115330,
+    "crew": 1,
+    "speed": 250,
+    "boost": 350,
+    "boostEnergy": 10,
+    "heatCapacity": 165,
+    "baseShieldStrength": 110,
+    "baseArmour": 110,
+    "hardness": 35,
+    "hullMass": 140,
+    "masslock": 9,
+    "pipSpeed": 0.13,
+    "pitch": 30,
+    "roll": 100,
+    "yaw": 20,
+    "reserveFuelCapacity": 0.5,
+    "edID": 128049291,
+    "eddbID": 31,
+    "slots": {
+      "standard": [
+        4,
+        5,
+        4,
+        4,
+        3,
+        3,
+        4
+      ],
+      "hardpoints": [
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        5,
+        4,
+        4,
+        3,
+        2,
+        2,
+        2,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "5E",
+        "4E",
+        "4E",
+        "3E",
+        "3E",
+        "4C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "md",
+        "02",
+        "49",
+        "01",
+        "00",
+        0,
+        "",
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049255",
+    "slug": "eagle",
+    "name": "Eagle",
+    "manufacturer": "Core Dynamics",
+    "class": 1,
+    "retailCost": 44800,
+    "hullCost": 10440,
+    "crew": 1,
+    "speed": 240,
+    "boost": 350,
+    "boostEnergy": 8,
+    "heatCapacity": 165,
+    "baseShieldStrength": 60,
+    "baseArmour": 40,
+    "hardness": 28,
+    "hullMass": 50,
+    "masslock": 6,
+    "pipSpeed": 0.0625,
+    "pitch": 50,
+    "roll": 120,
+    "yaw": 18,
+    "reserveFuelCapacity": 0.34,
+    "edID": 128049255,
+    "eddbID": 7,
+    "slots": {
+      "standard": [
+        2,
+        3,
+        3,
+        1,
+        2,
+        2,
+        2
+      ],
+      "hardpoints": [
+        1,
+        1,
+        1,
+        0
+      ],
+      "internal": [
+        3,
+        2,
+        {
+          "class": 2,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "2E",
+        "3E",
+        "3E",
+        "1E",
+        "2E",
+        "2E",
+        "2C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0
+      ],
+      "internal": [
+        "44",
+        "00",
+        0,
+        "",
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128672145",
+    "slug": "federal_assault_ship",
+    "name": "Federal Assault Ship",
+    "manufacturer": "Core Dynamics",
+    "class": 2,
+    "retailCost": 19814210,
+    "hullCost": 19072000,
+    "crew": 2,
+    "speed": 210,
+    "boost": 350,
+    "boostEnergy": 19,
+    "heatCapacity": 286,
+    "baseShieldStrength": 200,
+    "baseArmour": 300,
+    "hardness": 60,
+    "hullMass": 480,
+    "masslock": 14,
+    "pipSpeed": 0.071428571428571,
+    "pitch": 38,
+    "roll": 90,
+    "yaw": 19,
+    "reserveFuelCapacity": 0.72,
+    "edID": 128672145,
+    "eddbID": 8,
+    "slots": {
+      "standard": [
+        6,
+        6,
+        5,
+        5,
+        6,
+        4,
+        4
+      ],
+      "hardpoints": [
+        3,
+        3,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        5,
+        5,
+        4,
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "6E",
+        "5E",
+        "5E",
+        "6E",
+        "4E",
+        "4C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "4e",
+        "03",
+        "02",
+        0,
+        0,
+        "02",
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049369",
+    "slug": "federal_corvette",
+    "name": "Federal Corvette",
+    "manufacturer": "Core Dynamics",
+    "class": 3,
+    "retailCost": 187969450,
+    "hullCost": 182589570,
+    "crew": 3,
+    "speed": 200,
+    "boost": 260,
+    "boostEnergy": 27,
+    "heatCapacity": 333,
+    "baseShieldStrength": 555,
+    "baseArmour": 370,
+    "hardness": 70,
+    "hullMass": 900,
+    "masslock": 24,
+    "pipSpeed": 0.125,
+    "pitch": 28,
+    "roll": 75,
+    "yaw": 8,
+    "reserveFuelCapacity": 1.13,
+    "edID": 128049369,
+    "eddbID": 25,
+    "slots": {
+      "standard": [
+        8,
+        7,
+        6,
+        5,
+        8,
+        8,
+        5
+      ],
+      "hardpoints": [
+        4,
+        4,
+        3,
+        2,
+        2,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        7,
+        7,
+        7,
+        6,
+        6,
+        5,
+        5,
+        {
+          "class": 5,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 5,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        4,
+        4,
+        3,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "8E",
+        "7E",
+        "6E",
+        "5E",
+        "8E",
+        "8E",
+        "5C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "4o",
+        "05",
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        "02",
+        "01",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049321",
+    "slug": "federal_dropship",
+    "name": "Federal Dropship",
+    "manufacturer": "Core Dynamics",
+    "class": 2,
+    "retailCost": 14314210,
+    "hullCost": 13469990,
+    "crew": 2,
+    "speed": 180,
+    "boost": 300,
+    "boostEnergy": 19,
+    "heatCapacity": 331,
+    "baseShieldStrength": 200,
+    "baseArmour": 300,
+    "hardness": 60,
+    "hullMass": 580,
+    "masslock": 14,
+    "pipSpeed": 0.11111111111111,
+    "pitch": 30,
+    "roll": 80,
+    "yaw": 14,
+    "reserveFuelCapacity": 0.83,
+    "edID": 128049321,
+    "eddbID": 9,
+    "slots": {
+      "standard": [
+        6,
+        6,
+        5,
+        5,
+        6,
+        4,
+        4
+      ],
+      "hardpoints": [
+        3,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        5,
+        5,
+        4,
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        3,
+        3,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "6E",
+        "5E",
+        "5E",
+        "6E",
+        "4E",
+        "4C"
+      ],
+      "hardpoints": [
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "04",
+        "03",
+        "4e",
+        "02",
+        0,
+        0,
+        0,
+        0,
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128672152",
+    "slug": "federal_gunship",
+    "name": "Federal Gunship",
+    "manufacturer": "Core Dynamics",
+    "class": 2,
+    "retailCost": 35814210,
+    "hullCost": 34774790,
+    "crew": 2,
+    "speed": 170,
+    "boost": 280,
+    "boostEnergy": 23,
+    "heatCapacity": 325,
+    "baseShieldStrength": 250,
+    "baseArmour": 350,
+    "hardness": 60,
+    "hullMass": 580,
+    "masslock": 14,
+    "pipSpeed": 0.10294117647059,
+    "pitch": 25,
+    "roll": 80,
+    "yaw": 18,
+    "reserveFuelCapacity": 0.82,
+    "edID": 128672152,
+    "eddbID": 10,
+    "slots": {
+      "standard": [
+        6,
+        6,
+        5,
+        5,
+        7,
+        5,
+        4
+      ],
+      "hardpoints": [
+        3,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        6,
+        5,
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 4,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        2,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "6E",
+        "5E",
+        "5E",
+        "7E",
+        "5E",
+        "4C"
+      ],
+      "hardpoints": [
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        0,
+        "4j",
+        "03",
+        0,
+        0,
+        0,
+        0,
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049351",
+    "slug": "fer_de_lance",
+    "name": "Fer-de-Lance",
+    "manufacturer": "Zorgon Peterson",
+    "class": 2,
+    "retailCost": 51567040,
+    "hullCost": 51232230,
+    "crew": 2,
+    "speed": 260,
+    "boost": 350,
+    "boostEnergy": 19,
+    "heatCapacity": 224,
+    "baseShieldStrength": 300,
+    "baseArmour": 225,
+    "hardness": 70,
+    "hullMass": 250,
+    "masslock": 12,
+    "pipSpeed": 0.038461538461538,
+    "pitch": 38,
+    "roll": 90,
+    "yaw": 12,
+    "reserveFuelCapacity": 0.67,
+    "edID": 128049351,
+    "eddbID": 11,
+    "slots": {
+      "standard": [
+        6,
+        5,
+        4,
+        4,
+        6,
+        4,
+        3
+      ],
+      "hardpoints": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        5,
+        4,
+        4,
+        2,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "5E",
+        "5E",
+        "4E",
+        "4E",
+        "6E",
+        "4E",
+        "3C"
+      ],
+      "hardpoints": [
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "03",
+        "49",
+        "02",
+        0,
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049261",
+    "slug": "hauler",
+    "name": "Hauler",
+    "manufacturer": "Zorgon Peterson",
+    "class": 1,
+    "retailCost": 52720,
+    "hullCost": 29790,
+    "crew": 1,
+    "speed": 200,
+    "boost": 300,
+    "boostEnergy": 7,
+    "heatCapacity": 123,
+    "baseShieldStrength": 50,
+    "baseArmour": 100,
+    "hardness": 20,
+    "hullMass": 14,
+    "masslock": 6,
+    "pipSpeed": 0.1625,
+    "pitch": 36,
+    "roll": 100,
+    "yaw": 14,
+    "reserveFuelCapacity": 0.25,
+    "edID": 128049261,
+    "eddbID": 12,
+    "slots": {
+      "standard": [
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        2
+      ],
+      "hardpoints": [
+        1,
+        0,
+        0
+      ],
+      "internal": [
+        3,
+        3,
+        2,
+        1,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "2E",
+        "2E",
+        "2E",
+        "1E",
+        "1E",
+        "1E",
+        "2C"
+      ],
+      "hardpoints": [
+        17,
+        0,
+        0
+      ],
+      "internal": [
+        "01",
+        "01",
+        "3v",
+        "",
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049315",
+    "slug": "imperial_clipper",
+    "name": "Imperial Clipper",
+    "manufacturer": "Gutamaya",
+    "class": 3,
+    "retailCost": 22296860,
+    "hullCost": 21077780,
+    "crew": 2,
+    "speed": 300,
+    "boost": 380,
+    "boostEnergy": 19,
+    "heatCapacity": 304,
+    "baseShieldStrength": 180,
+    "baseArmour": 270,
+    "hardness": 60,
+    "hullMass": 400,
+    "masslock": 12,
+    "pipSpeed": 0.1,
+    "pitch": 40,
+    "roll": 80,
+    "yaw": 18,
+    "reserveFuelCapacity": 0.74,
+    "edID": 128049315,
+    "eddbID": 13,
+    "slots": {
+      "standard": [
+        6,
+        6,
+        5,
+        5,
+        6,
+        5,
+        4
+      ],
+      "hardpoints": [
+        3,
+        3,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        7,
+        6,
+        4,
+        4,
+        3,
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "6E",
+        "5E",
+        "5E",
+        "6E",
+        "5E",
+        "4C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "05",
+        "4j",
+        "02",
+        0,
+        0,
+        0,
+        "00",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128671223",
+    "slug": "imperial_courier",
+    "name": "Imperial Courier",
+    "manufacturer": "Gutamaya",
+    "class": 1,
+    "retailCost": 2542930,
+    "hullCost": 2481550,
+    "crew": 1,
+    "speed": 280,
+    "boost": 380,
+    "boostEnergy": 10,
+    "heatCapacity": 230,
+    "baseShieldStrength": 200,
+    "baseArmour": 80,
+    "hardness": 30,
+    "hullMass": 35,
+    "masslock": 7,
+    "pipSpeed": 0.053571428571429,
+    "pitch": 38,
+    "roll": 90,
+    "yaw": 16,
+    "reserveFuelCapacity": 0.41,
+    "edID": 128671223,
+    "eddbID": 14,
+    "slots": {
+      "standard": [
+        4,
+        3,
+        3,
+        1,
+        3,
+        2,
+        3
+      ],
+      "hardpoints": [
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        3,
+        3,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "3E",
+        "3E",
+        "1E",
+        "3E",
+        "2E",
+        "3C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "01",
+        "01",
+        "3v",
+        "00",
+        "00",
+        "",
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049375",
+    "slug": "imperial_cutter",
+    "name": "Imperial Cutter",
+    "manufacturer": "Gutamaya",
+    "class": 3,
+    "retailCost": 208969450,
+    "hullCost": 199926890,
+    "crew": 3,
+    "speed": 200,
+    "boost": 320,
+    "boostEnergy": 23,
+    "heatCapacity": 327,
+    "baseShieldStrength": 600,
+    "baseArmour": 400,
+    "hardness": 70,
+    "hullMass": 1100,
+    "masslock": 27,
+    "pipSpeed": 0.05,
+    "pitch": 18,
+    "roll": 45,
+    "yaw": 8,
+    "reserveFuelCapacity": 1.16,
+    "edID": 128049375,
+    "eddbID": 26,
+    "slots": {
+      "standard": [
+        8,
+        8,
+        7,
+        7,
+        7,
+        7,
+        6
+      ],
+      "hardpoints": [
+        4,
+        3,
+        3,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        8,
+        8,
+        6,
+        6,
+        6,
+        5,
+        5,
+        {
+          "class": 5,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 5,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        4,
+        3,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "8E",
+        "8E",
+        "7E",
+        "7E",
+        "7E",
+        "7E",
+        "6C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "4t",
+        "06",
+        "04",
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        "01",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128672138",
+    "slug": "imperial_eagle",
+    "name": "Imperial Eagle",
+    "manufacturer": "Gutamaya",
+    "class": 1,
+    "retailCost": 110830,
+    "hullCost": 72180,
+    "crew": 1,
+    "speed": 300,
+    "boost": 400,
+    "boostEnergy": 8,
+    "heatCapacity": 163,
+    "baseShieldStrength": 80,
+    "baseArmour": 60,
+    "hardness": 28,
+    "hullMass": 50,
+    "masslock": 6,
+    "pipSpeed": 0.075,
+    "pitch": 40,
+    "roll": 100,
+    "yaw": 15,
+    "reserveFuelCapacity": 0.37,
+    "edID": 128672138,
+    "eddbID": 15,
+    "slots": {
+      "standard": [
+        3,
+        3,
+        3,
+        1,
+        2,
+        2,
+        2
+      ],
+      "hardpoints": [
+        2,
+        1,
+        1,
+        0
+      ],
+      "internal": [
+        3,
+        2,
+        {
+          "class": 2,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "3E",
+        "3E",
+        "3E",
+        "1E",
+        "2E",
+        "2E",
+        "2C"
+      ],
+      "hardpoints": [
+        0,
+        17,
+        17,
+        0
+      ],
+      "internal": [
+        "44",
+        "00",
+        0,
+        "",
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128672269",
+    "slug": "keelback",
+    "name": "Keelback",
+    "manufacturer": "Lakon",
+    "class": 2,
+    "retailCost": 3126150,
+    "hullCost": 2943870,
+    "crew": 2,
+    "speed": 200,
+    "boost": 300,
+    "boostEnergy": 10,
+    "heatCapacity": 215,
+    "baseShieldStrength": 135,
+    "baseArmour": 270,
+    "hardness": 45,
+    "hullMass": 180,
+    "masslock": 8,
+    "pipSpeed": 0.1375,
+    "pitch": 27,
+    "roll": 100,
+    "yaw": 15,
+    "reserveFuelCapacity": 0.39,
+    "edID": 128672269,
+    "eddbID": 27,
+    "slots": {
+      "standard": [
+        4,
+        4,
+        4,
+        1,
+        3,
+        2,
+        4
+      ],
+      "hardpoints": [
+        2,
+        2,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        5,
+        5,
+        4,
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "4E",
+        "4E",
+        "1E",
+        "3E",
+        "2E",
+        "4C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "03",
+        "03",
+        "02",
+        "44",
+        "00",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128816567",
+    "slug": "krait_mkii",
+    "name": "Krait Mk II",
+    "manufacturer": "Faulcon DeLacy",
+    "class": 2,
+    "retailCost": 45814205,
+    "hullCost": 42409425,
+    "crew": 3,
+    "speed": 240,
+    "boost": 330,
+    "boostEnergy": 13,
+    "heatCapacity": 300,
+    "baseShieldStrength": 220,
+    "baseArmour": 220,
+    "hardness": 55,
+    "hullMass": 320,
+    "masslock": 16,
+    "pipSpeed": 0.09375,
+    "pitch": 26,
+    "roll": 90,
+    "yaw": 10,
+    "reserveFuelCapacity": 0.63,
+    "edID": 128816567,
+    "eddbID": 35,
+    "slots": {
+      "standard": [
+        7,
+        6,
+        5,
+        4,
+        7,
+        6,
+        5
+      ],
+      "hardpoints": [
+        3,
+        3,
+        3,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        6,
+        5,
+        5,
+        4,
+        3,
+        3,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "7E",
+        "6E",
+        "5E",
+        "4E",
+        "7E",
+        "6E",
+        "5C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "4j",
+        "04",
+        "04",
+        "03",
+        0,
+        "",
+        0,
+        "00",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128839281",
+    "slug": "krait_phantom",
+    "name": "Krait Phantom",
+    "manufacturer": "Faulcon DeLacy",
+    "class": 2,
+    "retailCost": 37472254,
+    "hullCost": 35589214,
+    "crew": 2,
+    "speed": 250,
+    "boost": 350,
+    "boostEnergy": 13,
+    "heatCapacity": 300,
+    "baseShieldStrength": 200,
+    "baseArmour": 180,
+    "hardness": 60,
+    "hullMass": 270,
+    "masslock": 14,
+    "pipSpeed": 0.09,
+    "pitch": 26,
+    "roll": 90,
+    "yaw": 10,
+    "reserveFuelCapacity": 0.63,
+    "edID": 128839281,
+    "eddbID": 37,
+    "slots": {
+      "standard": [
+        7,
+        6,
+        5,
+        4,
+        7,
+        6,
+        5
+      ],
+      "hardpoints": [
+        3,
+        3,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        5,
+        5,
+        5,
+        3,
+        3,
+        3,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "7E",
+        "6E",
+        "5E",
+        "4E",
+        "7E",
+        "6E",
+        "5C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        "17",
+        "17",
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "4j",
+        "04",
+        "04",
+        "04",
+        0,
+        "",
+        0,
+        "00",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128915979",
+    "slug": "mamba",
+    "name": "Mamba",
+    "manufacturer": "Zorgon Peterson",
+    "class": 2,
+    "retailCost": 55867041,
+    "hullCost": 55866341,
+    "crew": 2,
+    "speed": 310,
+    "boost": 380,
+    "boostEnergy": 17,
+    "heatCapacity": 165,
+    "baseShieldStrength": 270,
+    "baseArmour": 230,
+    "hardness": 70,
+    "hullMass": 250,
+    "masslock": 12,
+    "pipSpeed": 0.056451612903226,
+    "pitch": 27,
+    "roll": 80,
+    "yaw": 10,
+    "reserveFuelCapacity": 0.5,
+    "edID": 128915979,
+    "eddbID": 38,
+    "slots": {
+      "standard": [
+        6,
+        5,
+        4,
+        4,
+        6,
+        4,
+        3
+      ],
+      "hardpoints": [
+        4,
+        3,
+        3,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        5,
+        4,
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "5E",
+        "4E",
+        "4E",
+        "6E",
+        "4E",
+        "3C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        0,
+        "17",
+        "17",
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "03",
+        "49",
+        "01",
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049327",
+    "slug": "orca",
+    "name": "Orca",
+    "manufacturer": "Saud Kruger",
+    "class": 3,
+    "retailCost": 48539900,
+    "hullCost": 47790590,
+    "crew": 2,
+    "speed": 300,
+    "boost": 380,
+    "boostEnergy": 16,
+    "heatCapacity": 262,
+    "baseShieldStrength": 220,
+    "baseArmour": 220,
+    "hardness": 55,
+    "hullMass": 290,
+    "masslock": 16,
+    "pipSpeed": 0.083333333333333,
+    "pitch": 25,
+    "roll": 55,
+    "yaw": 18,
+    "reserveFuelCapacity": 0.79,
+    "edID": 128049327,
+    "eddbID": 16,
+    "slots": {
+      "standard": [
+        5,
+        6,
+        5,
+        6,
+        5,
+        4,
+        5
+      ],
+      "hardpoints": [
+        3,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        5,
+        5,
+        5,
+        4,
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "5E",
+        "6E",
+        "5E",
+        "6E",
+        "5E",
+        "4E",
+        "5C"
+      ],
+      "hardpoints": [
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "me",
+        "mc",
+        "03",
+        "4e",
+        "02",
+        0,
+        0,
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049339",
+    "slug": "python",
+    "name": "Python",
+    "manufacturer": "Faulcon DeLacy",
+    "class": 2,
+    "retailCost": 56978180,
+    "hullCost": 55171380,
+    "crew": 2,
+    "speed": 230,
+    "boost": 300,
+    "boostEnergy": 23,
+    "heatCapacity": 300,
+    "baseShieldStrength": 260,
+    "baseArmour": 260,
+    "hardness": 65,
+    "hullMass": 350,
+    "masslock": 17,
+    "pipSpeed": 0.097826086956522,
+    "pitch": 29,
+    "roll": 90,
+    "yaw": 10,
+    "reserveFuelCapacity": 0.83,
+    "edID": 128049339,
+    "eddbID": 17,
+    "slots": {
+      "standard": [
+        7,
+        6,
+        5,
+        4,
+        7,
+        6,
+        5
+      ],
+      "hardpoints": [
+        3,
+        3,
+        3,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        6,
+        6,
+        5,
+        5,
+        4,
+        3,
+        3,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "7E",
+        "6E",
+        "5E",
+        "4E",
+        "7E",
+        "6E",
+        "5C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "04",
+        "04",
+        "4j",
+        "03",
+        0,
+        0,
+        0,
+        "00",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049249",
+    "slug": "sidewinder",
+    "name": "Sidewinder",
+    "manufacturer": "Faulcon DeLacy",
+    "class": 1,
+    "retailCost": 32000,
+    "hullCost": 4070,
+    "crew": 1,
+    "speed": 220,
+    "boost": 320,
+    "boostEnergy": 7,
+    "heatCapacity": 140,
+    "baseShieldStrength": 40,
+    "baseArmour": 60,
+    "hardness": 20,
+    "hullMass": 25,
+    "masslock": 6,
+    "pipSpeed": 0.13636363636364,
+    "pitch": 42,
+    "roll": 110,
+    "yaw": 16,
+    "reserveFuelCapacity": 0.3,
+    "edID": 128049249,
+    "eddbID": 18,
+    "slots": {
+      "standard": [
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1
+      ],
+      "hardpoints": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "internal": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "2E",
+        "2E",
+        "2E",
+        "1E",
+        "1E",
+        "1E",
+        "1C"
+      ],
+      "hardpoints": [
+        18,
+        18,
+        0,
+        0
+      ],
+      "internal": [
+        "3v",
+        "01",
+        "",
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128785619",
+    "slug": "type_10_defender",
+    "name": "Type-10 Defender",
+    "manufacturer": "Lakon",
+    "class": 3,
+    "retailCost": 124755342,
+    "hullCost": 121454652,
+    "crew": 3,
+    "speed": 179,
+    "boost": 219,
+    "boostEnergy": 19,
+    "heatCapacity": 335,
+    "baseShieldStrength": 320,
+    "baseArmour": 580,
+    "hardness": 75,
+    "hullMass": 1200,
+    "masslock": 26,
+    "pipSpeed": 0.041666666666667,
+    "pitch": 20,
+    "roll": 20,
+    "yaw": 8,
+    "reserveFuelCapacity": 0.77,
+    "edID": 128785619,
+    "eddbID": 32,
+    "slots": {
+      "standard": [
+        8,
+        7,
+        7,
+        5,
+        7,
+        4,
+        6
+      ],
+      "hardpoints": [
+        3,
+        3,
+        3,
+        3,
+        2,
+        2,
+        2,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        8,
+        7,
+        6,
+        5,
+        4,
+        4,
+        3,
+        3,
+        2,
+        {
+          "class": 5,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        {
+          "class": 5,
+          "name": "Military",
+          "eligible": {
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "7E",
+        "6E",
+        "5E",
+        "7E",
+        "4E",
+        "6C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        0,
+        0,
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "06",
+        "05",
+        "4j",
+        "03",
+        "02",
+        0,
+        "01",
+        0,
+        "",
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049285",
+    "slug": "type_6_transporter",
+    "name": "Type-6 Transporter",
+    "manufacturer": "Lakon",
+    "class": 2,
+    "retailCost": 1045950,
+    "hullCost": 865790,
+    "crew": 1,
+    "speed": 220,
+    "boost": 350,
+    "boostEnergy": 10,
+    "heatCapacity": 179,
+    "baseShieldStrength": 90,
+    "baseArmour": 180,
+    "hardness": 35,
+    "hullMass": 155,
+    "masslock": 8,
+    "pipSpeed": 0.14772727272727,
+    "pitch": 30,
+    "roll": 100,
+    "yaw": 17,
+    "reserveFuelCapacity": 0.39,
+    "edID": 128049285,
+    "eddbID": 19,
+    "slots": {
+      "standard": [
+        3,
+        4,
+        4,
+        2,
+        3,
+        2,
+        4
+      ],
+      "hardpoints": [
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        5,
+        5,
+        4,
+        4,
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "3E",
+        "4E",
+        "4E",
+        "2E",
+        "3E",
+        "2E",
+        "4C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "03",
+        "03",
+        "02",
+        "02",
+        "44",
+        "00",
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049297",
+    "slug": "type_7_transport",
+    "name": "Type-7 Transporter",
+    "manufacturer": "Lakon",
+    "class": 3,
+    "retailCost": 17472260,
+    "hullCost": 16780510,
+    "crew": 1,
+    "speed": 180,
+    "boost": 300,
+    "boostEnergy": 10,
+    "heatCapacity": 226,
+    "baseShieldStrength": 155,
+    "baseArmour": 340,
+    "hardness": 54,
+    "hullMass": 350,
+    "masslock": 10,
+    "pipSpeed": 0.16666666666667,
+    "pitch": 22,
+    "roll": 60,
+    "yaw": 22,
+    "reserveFuelCapacity": 0.52,
+    "edID": 128049297,
+    "eddbID": 20,
+    "slots": {
+      "standard": [
+        5,
+        5,
+        5,
+        4,
+        4,
+        3,
+        5
+      ],
+      "hardpoints": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        3,
+        3,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "5E",
+        "5E",
+        "4E",
+        "3E",
+        "3E",
+        "5C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "04",
+        "04",
+        "04",
+        "03",
+        "03",
+        "49",
+        0,
+        0,
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049333",
+    "slug": "type_9_heavy",
+    "name": "Type-9 Heavy",
+    "manufacturer": "Lakon",
+    "class": 3,
+    "retailCost": 76555840,
+    "hullCost": 72076730,
+    "crew": 3,
+    "speed": 130,
+    "boost": 200,
+    "boostEnergy": 19,
+    "heatCapacity": 289,
+    "baseShieldStrength": 240,
+    "baseArmour": 480,
+    "hardness": 65,
+    "hullMass": 850,
+    "masslock": 16,
+    "pipSpeed": 0.17307692307692,
+    "pitch": 20,
+    "roll": 20,
+    "yaw": 8,
+    "reserveFuelCapacity": 0.77,
+    "edID": 128049333,
+    "eddbID": 21,
+    "slots": {
+      "standard": [
+        6,
+        7,
+        6,
+        5,
+        6,
+        4,
+        6
+      ],
+      "hardpoints": [
+        2,
+        2,
+        2,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        8,
+        8,
+        7,
+        6,
+        5,
+        4,
+        4,
+        3,
+        3,
+        2,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "6E",
+        "7E",
+        "6E",
+        "5E",
+        "6E",
+        "4E",
+        "6C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "06",
+        "06",
+        "05",
+        "4j",
+        "03",
+        "02",
+        0,
+        "01",
+        0,
+        "",
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049273",
+    "slug": "viper",
+    "name": "Viper",
+    "manufacturer": "Faulcon DeLacy",
+    "class": 1,
+    "retailCost": 142930,
+    "hullCost": 95900,
+    "crew": 1,
+    "speed": 320,
+    "boost": 400,
+    "boostEnergy": 10,
+    "heatCapacity": 195,
+    "baseShieldStrength": 105,
+    "baseArmour": 70,
+    "hardness": 35,
+    "hullMass": 50,
+    "masslock": 7,
+    "pipSpeed": 0.09375,
+    "pitch": 35,
+    "roll": 90,
+    "yaw": 15,
+    "reserveFuelCapacity": 0.41,
+    "edID": 128049273,
+    "eddbID": 22,
+    "slots": {
+      "standard": [
+        3,
+        3,
+        3,
+        2,
+        3,
+        3,
+        2
+      ],
+      "hardpoints": [
+        2,
+        2,
+        1,
+        1,
+        0,
+        0
+      ],
+      "internal": [
+        3,
+        3,
+        {
+          "class": 3,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        2,
+        1,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "3E",
+        "3E",
+        "3E",
+        "2E",
+        "3E",
+        "3E",
+        "2C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "01",
+        "44",
+        0,
+        0,
+        "",
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128672255",
+    "slug": "viper_mk_iv",
+    "name": "Viper Mk IV",
+    "manufacturer": "Faulcon DeLacy",
+    "class": 1,
+    "retailCost": 437930,
+    "hullCost": 310220,
+    "crew": 1,
+    "speed": 270,
+    "boost": 340,
+    "boostEnergy": 10,
+    "heatCapacity": 209,
+    "baseShieldStrength": 150,
+    "baseArmour": 150,
+    "hardness": 35,
+    "hullMass": 190,
+    "masslock": 7,
+    "pipSpeed": 0.087962962962963,
+    "pitch": 30,
+    "roll": 90,
+    "yaw": 12,
+    "reserveFuelCapacity": 0.46,
+    "edID": 128672255,
+    "eddbID": 28,
+    "slots": {
+      "standard": [
+        4,
+        4,
+        4,
+        2,
+        3,
+        3,
+        4
+      ],
+      "hardpoints": [
+        2,
+        2,
+        1,
+        1,
+        0,
+        0
+      ],
+      "internal": [
+        4,
+        4,
+        3,
+        {
+          "class": 3,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        2,
+        2,
+        1,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "4E",
+        "4E",
+        "2E",
+        "3E",
+        "3E",
+        "4C"
+      ],
+      "hardpoints": [
+        0,
+        0,
+        17,
+        17,
+        0,
+        0
+      ],
+      "internal": [
+        "02",
+        "02",
+        "44",
+        0,
+        "00",
+        0,
+        "",
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "id": "128049309",
+    "slug": "vulture",
+    "name": "Vulture",
+    "manufacturer": "Core Dynamics",
+    "class": 1,
+    "retailCost": 4925620,
+    "hullCost": 4689640,
+    "crew": 2,
+    "speed": 210,
+    "boost": 340,
+    "boostEnergy": 16,
+    "heatCapacity": 237,
+    "baseShieldStrength": 240,
+    "baseArmour": 160,
+    "hardness": 55,
+    "hullMass": 230,
+    "masslock": 10,
+    "pipSpeed": 0.023809523809524,
+    "pitch": 42,
+    "roll": 110,
+    "yaw": 17,
+    "reserveFuelCapacity": 0.57,
+    "edID": 128049309,
+    "eddbID": 23,
+    "slots": {
+      "standard": [
+        4,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3
+      ],
+      "hardpoints": [
+        3,
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        5,
+        {
+          "class": 5,
+          "name": "Military",
+          "eligible": {
+            "mahr": 1,
+            "hr": 1,
+            "scb": 1,
+            "mrp": 1,
+            "gsrp": 1,
+            "gmrp": 1,
+            "ghrp": 1
+          }
+        },
+        4,
+        2,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "defaults": {
+      "standard": [
+        "4E",
+        "5E",
+        "4E",
+        "3E",
+        "5E",
+        "4E",
+        "3C"
+      ],
+      "hardpoints": [
+        17,
+        17,
+        0,
+        0,
+        0,
+        0
+      ],
+      "internal": [
+        "4e",
+        0,
+        "02",
+        0,
+        0,
+        "",
+        0,
+        0
+      ]
+    }
+  }
+]
