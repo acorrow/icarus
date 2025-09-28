@@ -2,22 +2,23 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
+import { useSocket, sendEvent } from '../lib/socket'
 
-function formatSystemDistance(value, fallback) {
+function formatSystemDistance (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
     return `${value.toFixed(2)} Ly`
   }
   return fallback || ''
 }
 
-function formatStationDistance(value, fallback) {
+function formatStationDistance (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
     return `${Math.round(value).toLocaleString()} Ls`
   }
   return fallback || ''
 }
 
-function formatRelativeTime(value) {
+function formatRelativeTime (value) {
   if (!value) return ''
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) {
@@ -34,6 +35,7 @@ function formatRelativeTime(value) {
   if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`
   return date.toLocaleDateString()
 }
+
 
 function normaliseFactionKey(value) {
   return typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : ''
@@ -58,7 +60,7 @@ function stationIconFromType(type = '') {
   return 'coriolis-starport'
 }
 
-function formatCredits(value, fallback) {
+function formatCredits (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
     return `${Math.round(value).toLocaleString()} Cr`
   }
@@ -72,58 +74,86 @@ function formatCredits(value, fallback) {
   return fallback || '--'
 }
 
+const FILTER_FORM_STYLE = {
+  margin: '1.4rem 0 1.25rem'
+}
+
+const FILTERS_GRID_STYLE = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+  gap: '.75rem 1rem',
+  width: '100%',
+  alignItems: 'start',
+  justifyItems: 'stretch',
+  alignContent: 'start',
+  gridAutoFlow: 'row dense'
+}
+
 const FILTER_FIELD_STYLE = {
-  flex: '1 1 160px',
-  minWidth: 150,
-  maxWidth: 210,
   display: 'flex',
-  flexDirection: 'column'
+  flexDirection: 'column',
+  gap: '.25rem',
+  width: '100%',
+  minWidth: 0
 }
 
 const FILTER_LABEL_STYLE = {
   display: 'block',
-  marginBottom: '.35rem',
+  marginBottom: 0,
   color: '#ff7c22',
-  fontSize: '0.85rem',
+  fontSize: '0.75rem',
   textTransform: 'uppercase',
-  letterSpacing: '.05em'
+  letterSpacing: '.08em'
 }
 
 const FILTER_CONTROL_STYLE = {
   width: '100%',
-  padding: '.45rem .6rem',
-  fontSize: '0.95rem',
-  borderRadius: '.4rem',
-  border: '1px solid #444',
-  background: '#1b1b1b',
-  color: '#fff'
+  minHeight: '2.35rem',
+  height: '2.35rem',
+  padding: '.35rem .7rem',
+  fontSize: '0.9rem',
+  borderRadius: '.35rem',
+  border: '1px solid #2f3442',
+  background: 'rgba(10, 14, 23, 0.95)',
+  color: '#f5f7ff',
+  lineHeight: '1.2',
+  boxSizing: 'border-box'
 }
 
 const FILTER_TOGGLE_BUTTON_STYLE = {
-  background: 'rgba(255, 124, 34, 0.15)',
+  background: 'rgba(255, 124, 34, 0.1)',
   border: '1px solid #ff7c22',
   color: '#ff7c22',
-  borderRadius: '.5rem',
-  padding: '.45rem 1rem',
-  fontSize: '0.9rem',
-  cursor: 'pointer'
+  borderRadius: '.35rem',
+  padding: '0 1rem',
+  fontSize: '0.85rem',
+  cursor: 'pointer',
+  height: '2.35rem',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center'
 }
 
 const FILTER_SUMMARY_STYLE = {
-  flex: '1 1 auto',
-  minWidth: 220,
+  flex: '1 1 220px',
+  minWidth: 200,
   color: '#ffa45b',
-  fontSize: '0.95rem',
+  fontSize: '0.85rem',
   fontWeight: 500,
+  marginLeft: 'auto',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis'
 }
 
 const FILTER_SUBMIT_BUTTON_STYLE = {
-  padding: '.65rem 1.6rem',
-  fontSize: '1rem',
-  borderRadius: '.65rem'
+  padding: '0 1.4rem',
+  fontSize: '0.9rem',
+  borderRadius: '.35rem',
+  height: '2.35rem',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center'
 }
 
 const DEFAULT_SORT_DIRECTION = {
@@ -132,7 +162,7 @@ const DEFAULT_SORT_DIRECTION = {
   distance: 'asc'
 }
 
-function getStationIconName(localInfo = {}, remoteInfo = {}) {
+function getStationIconName (localInfo = {}, remoteInfo = {}) {
   if (localInfo?.icon) return localInfo.icon
   const candidates = [
     localInfo?.stationType,
@@ -145,7 +175,7 @@ function getStationIconName(localInfo = {}, remoteInfo = {}) {
   return stationIconFromType(candidates[0])
 }
 
-function StationIcon({ icon, size = 26, color = '#ffb347' }) {
+function StationIcon ({ icon, size = 26, color = '#ffb347' }) {
   if (!icon) return null
   const paths = Icons[icon]
   if (!paths) return null
@@ -162,7 +192,7 @@ function StationIcon({ icon, size = 26, color = '#ffb347' }) {
   )
 }
 
-function parseNumberFromText(value) {
+function parseNumberFromText (value) {
   if (typeof value !== 'string') return null
   const cleaned = value.replace(/[^0-9.-]/g, '')
   if (!cleaned) return null
@@ -170,7 +200,7 @@ function parseNumberFromText(value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-function extractProfitPerTon(route) {
+function extractProfitPerTon (route) {
   if (!route) return null
   const summary = route.summary || {}
   const numericCandidates = [summary.profitPerUnit, route.profitPerUnit]
@@ -185,7 +215,7 @@ function extractProfitPerTon(route) {
   return null
 }
 
-function extractRouteDistance(route) {
+function extractRouteDistance (route) {
   if (!route) return null
   const numericCandidates = [
     route?.summary?.routeDistanceLy,
@@ -208,7 +238,7 @@ function extractRouteDistance(route) {
   return null
 }
 
-function extractSystemDistance(route) {
+function extractSystemDistance (route) {
   if (!route) return null
   const numericCandidates = [
     route?.summary?.distanceLy,
@@ -229,11 +259,11 @@ function extractSystemDistance(route) {
   return null
 }
 
-function generateMockTradeRoutes({ systemName, commodity, cargoCapacity, count = 5 }) {
+function generateMockTradeRoutes ({ systemName, cargoCapacity, count = 5 }) {
   const normalizedCapacity = Number.isFinite(Number(cargoCapacity)) && Number(cargoCapacity) > 0
     ? Math.round(Number(cargoCapacity))
     : 256
-  const baseCommodity = commodity && commodity.trim() ? commodity.trim() : null
+  const baseCommodity = null
   const now = Date.now()
 
   const formatPrice = value => `${Math.round(value).toLocaleString()} Cr`
@@ -388,7 +418,6 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   }
 }
 
-
 function SystemSelect ({
   label = 'System',
   systemSelection,
@@ -398,7 +427,7 @@ function SystemSelect ({
   onManualSystemChange,
   placeholder = 'Enter system name...'
 }) {
-  const containerStyle = { ...FILTER_FIELD_STYLE, flexBasis: '220px', maxWidth: 240 }
+  const containerStyle = { ...FILTER_FIELD_STYLE }
 
   return (
     <div style={containerStyle}>
@@ -420,14 +449,14 @@ function SystemSelect ({
           value={systemInput}
           onChange={onManualSystemChange}
           placeholder={placeholder}
-          style={{ ...FILTER_CONTROL_STYLE, marginTop: '.35rem' }}
+          style={{ ...FILTER_CONTROL_STYLE }}
         />
       )}
     </div>
   )
 }
 
-function ShipsPanel() {
+function ShipsPanel () {
   const [ships, setShips] = useState([])
   const [selectedShip, setSelectedShip] = useState('')
   const {
@@ -551,11 +580,13 @@ function ShipsPanel() {
                         </td>
                         <td>
                           <div className='text-no-wrap' style={{ paddingLeft: '0.5rem', paddingRight: '.75rem' }}>
-                            {isCurrentSystem ? (
-                              <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
-                            ) : (
-                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
-                            )}
+                            {isCurrentSystem
+                              ? (
+                                <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
+                                )
+                              : (
+                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
+                                )}
                             <span className='visible-medium'>{row.system || 'Unknown'}</span>
                             <span className='hidden-medium'>{row.system || 'Unknown'}</span>
                           </div>
@@ -817,22 +848,42 @@ function MissionsPanel () {
                   return (
                     <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
                       <td style={{ padding: '.65rem 1rem' }}>
-                        {mission.faction ? (
-                          <span className={standingClass} title={factionTitle}>
-                            {mission.faction}
-                          </span>
-                        ) : '--'}
+                        {mission.faction
+                          ? (
+                              mission.factionUrl
+                                ? (
+                                  <a href={mission.factionUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>
+                                    {mission.faction}
+                                  </a>
+                                  )
+                                : (
+                                    mission.faction
+                                  )
+                            )
+                          : '--'}
                       </td>
                       <td style={{ padding: '.65rem 1rem' }}>
                         <div className='text-no-wrap' style={{ display: 'flex', alignItems: 'center' }}>
-                          {isTargetSystem ? (
-                            <i className='icon system-object-icon icarus-terminal-location-filled text-primary' style={{ marginRight: '.5rem' }} />
-                          ) : (
-                            <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
-                          )}
-                          {mission.system ? (
-                            <span className='text-primary'>{mission.system}</span>
-                          ) : '--'}
+                          {isTargetSystem
+                            ? (
+                              <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
+                              )
+                            : (
+                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
+                              )}
+                          {mission.system
+                            ? (
+                                mission.systemUrl
+                                  ? (
+                                    <a href={mission.systemUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>
+                                      {mission.system}
+                                    </a>
+                                    )
+                                  : (
+                                      mission.system
+                                    )
+                              )
+                            : '--'}
                         </div>
                       </td>
                       <td className='hidden-small text-right' style={{ padding: '.65rem 1rem' }}>{distanceDisplay || '--'}</td>
@@ -850,6 +901,7 @@ function MissionsPanel () {
 }
 
 function TradeRoutesPanel () {
+  const { connected, ready } = useSocket()
   const {
     currentSystem,
     system,
@@ -859,9 +911,8 @@ function TradeRoutesPanel () {
     handleSystemChange,
     handleManualSystemChange
   } = useSystemSelector({ autoSelectCurrent: true })
-  const [commodity, setCommodity] = useState('')
-  const [minProfit, setMinProfit] = useState('')
-  const [cargoCapacity, setCargoCapacity] = useState('304')
+  const [cargoCapacity, setCargoCapacity] = useState('')
+  const [initialCapacityLoaded, setInitialCapacityLoaded] = useState(false)
   const [routeDistance, setRouteDistance] = useState('30')
   const [priceAge, setPriceAge] = useState('8')
   const [padSize, setPadSize] = useState('2')
@@ -880,13 +931,34 @@ function TradeRoutesPanel () {
   const [message, setMessage] = useState('')
   const [sortField, setSortField] = useState('distance')
   const [sortDirection, setSortDirection] = useState('asc')
-  const [filtersCollapsed, setFiltersCollapsed] = useState(false)
+  const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [expandedRouteKey, setExpandedRouteKey] = useState(null)
 
-  const parsedMinProfit = useMemo(() => {
-    const value = parseFloat(minProfit)
-    return Number.isFinite(value) ? value : null
-  }, [minProfit])
+  useEffect(() => {
+    if (!connected || initialCapacityLoaded) return
+
+    let cancelled = false
+
+    const loadCapacityFromShip = async () => {
+      try {
+        const shipStatus = await sendEvent('getShipStatus')
+        if (cancelled) return
+
+        const capacityNumber = Number(shipStatus?.cargo?.capacity)
+        if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
+          setCargoCapacity(String(Math.round(capacityNumber)))
+        }
+      } catch (err) {
+        // Ignore errors fetching ship status; the UI will fall back to showing an unknown hold size.
+      } finally {
+        if (!cancelled) setInitialCapacityLoaded(true)
+      }
+    }
+
+    loadCapacityFromShip()
+
+    return () => { cancelled = true }
+  }, [connected, ready, initialCapacityLoaded])
 
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
@@ -971,13 +1043,20 @@ function TradeRoutesPanel () {
       .trim() || 'Any'
   }, [])
 
-  const filtersSummary = useMemo(() => {
-    const selectedSystem = (system && system.trim())
-      || ((systemSelection && systemSelection !== '__manual') ? systemSelection : '')
-      || currentSystem?.name
-      || 'Any System'
+  const cargoCapacityDisplay = useMemo(() => {
+    const capacityNumber = Number(cargoCapacity)
+    if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
+      return `${Math.round(capacityNumber).toLocaleString()} t`
+    }
+    return initialCapacityLoaded ? 'Unknown' : 'Detecting…'
+  }, [cargoCapacity, initialCapacityLoaded])
 
-    const capacityValue = cargoCapacity && String(cargoCapacity).trim() ? String(cargoCapacity).trim() : 'Any'
+  const filtersSummary = useMemo(() => {
+    const selectedSystem = (system && system.trim()) ||
+      ((systemSelection && systemSelection !== '__manual') ? systemSelection : '') ||
+      currentSystem?.name ||
+      'Any System'
+
     const padLabelRaw = pickOptionLabel(padSizeOptions, padSize, 'Any')
     const padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
     const supplyLabel = simplifySupplyDemandLabel(pickOptionLabel(supplyOptions, minSupply, 'Any'))
@@ -985,23 +1064,18 @@ function TradeRoutesPanel () {
 
     return [
       selectedSystem,
-      `Capacity: ${capacityValue}`,
+      `Capacity: ${cargoCapacityDisplay}`,
       `Landing Pad: ${padLabel}`,
       `Min Supply: ${supplyLabel}`,
       `Min Demand: ${demandLabel}`
     ].join(' | ')
-  }, [system, systemSelection, currentSystem, cargoCapacity, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel])
+  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel])
 
   const filterRoutes = useCallback((list = []) => {
     if (!Array.isArray(list)) return []
     const effectiveDistanceLimit = isDistanceFilterLimited ? parsedDistanceFilter : DISTANCE_FILTER_MAX
 
     return list.filter(route => {
-      if (parsedMinProfit !== null) {
-        const numericProfit = extractProfitPerTon(route)
-        if (Number.isFinite(numericProfit) && numericProfit < parsedMinProfit) return false
-      }
-
       if (isDistanceFilterLimited) {
         const numericDistance = extractRouteDistance(route)
         if (Number.isFinite(numericDistance) && numericDistance > effectiveDistanceLimit) return false
@@ -1009,8 +1083,7 @@ function TradeRoutesPanel () {
 
       return true
     })
-  }, [parsedMinProfit, isDistanceFilterLimited, parsedDistanceFilter])
-
+  }, [isDistanceFilterLimited, parsedDistanceFilter])
 
   const sortRoutes = useCallback((list = []) => {
     if (!Array.isArray(list)) return []
@@ -1127,11 +1200,8 @@ function TradeRoutesPanel () {
     setError('')
     setMessage('')
 
-    const trimmedCommodity = commodity.trim()
-    const minProfitValue = parseFloat(minProfit)
-
     const filters = {
-      cargoCapacity,
+      ...(cargoCapacity !== '' ? { cargoCapacity } : {}),
       maxRouteDistance: routeDistance,
       maxPriceAge: priceAge,
       minLandingPad: padSize,
@@ -1164,16 +1234,13 @@ function TradeRoutesPanel () {
 
     const payload = {
       system: targetSystem,
-      filters,
-      ...(trimmedCommodity ? { commodity: trimmedCommodity } : {}),
-      ...(Number.isFinite(minProfitValue) ? { minProfit: minProfitValue } : {})
+      filters
     }
 
     const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('inaraUseMockData') === 'true'
     if (shouldUseMockData) {
       const mockRoutes = generateMockTradeRoutes({
         systemName: targetSystem,
-        commodity: trimmedCommodity,
         cargoCapacity
       })
 
@@ -1210,17 +1277,17 @@ function TradeRoutesPanel () {
   const renderRoutesTable = () => (
     <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
       <colgroup>
-        <col style={{ width: '4%' }}/>
-        <col style={{ width: '20%' }}/>
-        <col style={{ width: '20%' }}/>
-        <col style={{ width: '14%' }}/>
-        <col style={{ width: '14%' }}/>
-        <col style={{ width: '8%' }}/>
-        <col style={{ width: '8%' }}/>
-        <col style={{ width: '6%' }}/>
-        <col style={{ width: '6%' }}/>
-        <col style={{ width: '6%' }}/>
-        <col style={{ width: '4%' }}/>
+        <col style={{ width: '4%' }} />
+        <col style={{ width: '20%' }} />
+        <col style={{ width: '20%' }} />
+        <col style={{ width: '14%' }} />
+        <col style={{ width: '14%' }} />
+        <col style={{ width: '8%' }} />
+        <col style={{ width: '8%' }} />
+        <col style={{ width: '6%' }} />
+        <col style={{ width: '6%' }} />
+        <col style={{ width: '6%' }} />
+        <col style={{ width: '4%' }} />
       </colgroup>
       <thead>
         <tr style={{ fontSize: '0.95rem' }}>
@@ -1390,8 +1457,16 @@ function TradeRoutesPanel () {
   return (
     <div>
       <h2>Find Trade Routes</h2>
-      <form onSubmit={handleSubmit} style={{ margin: '2rem 0 1.5rem 0' }}>
+      <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
+          <button
+            type='submit'
+            className='button--active button--secondary'
+            style={{ ...FILTER_SUBMIT_BUTTON_STYLE }}
+            disabled={status === 'loading'}
+          >
+            {status === 'loading' ? 'Refreshing…' : 'Refresh Trade Routes'}
+          </button>
           <button
             type='button'
             onClick={() => setFiltersCollapsed(prev => !prev)}
@@ -1406,18 +1481,10 @@ function TradeRoutesPanel () {
               {filtersSummary}
             </div>
           )}
-          <button
-            type='submit'
-            className='button--active button--secondary'
-            style={{ ...FILTER_SUBMIT_BUTTON_STYLE, marginLeft: 'auto' }}
-            disabled={status === 'loading'}
-          >
-            {status === 'loading' ? 'Searching...' : 'Find Routes'}
-          </button>
         </div>
 
         {!filtersCollapsed && (
-          <div id='trade-route-filters' style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: '1.1rem' }}>
+          <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
             <SystemSelect
               label='System'
               systemSelection={systemSelection}
@@ -1426,27 +1493,6 @@ function TradeRoutesPanel () {
               systemInput={systemInput}
               onManualSystemChange={handleManualSystemChange}
             />
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Commodity (optional)</label>
-              <input
-                type='text'
-                value={commodity}
-                onChange={event => setCommodity(event.target.value)}
-                placeholder='Commodity name...'
-                style={{ ...FILTER_CONTROL_STYLE }}
-              />
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Cargo Capacity (t)</label>
-              <input
-                type='number'
-                min='0'
-                value={cargoCapacity}
-                onChange={event => setCargoCapacity(event.target.value)}
-                placeholder='e.g. 304'
-                style={{ ...FILTER_CONTROL_STYLE }}
-              />
-            </div>
             <div style={{ ...FILTER_FIELD_STYLE }}>
               <label style={FILTER_LABEL_STYLE}>Max Route Distance</label>
               <select
@@ -1531,17 +1577,6 @@ function TradeRoutesPanel () {
                 ))}
               </select>
             </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Min Profit/Ton (optional)</label>
-              <input
-                type='number'
-                step='any'
-                value={minProfit}
-                onChange={event => setMinProfit(event.target.value)}
-                placeholder='e.g. 7500'
-                style={{ ...FILTER_CONTROL_STYLE }}
-              />
-            </div>
           </div>
         )}
       </form>
@@ -1551,10 +1586,10 @@ function TradeRoutesPanel () {
             <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>{message}</div>
           )}
           {status === 'idle' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Choose your filters and search to see profitable trade routes.</div>
+            <div style={{ color: '#aaa', padding: '2rem' }}>Choose your filters and refresh to see profitable trade routes.</div>
           )}
           {status === 'loading' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Searching for trade routes...</div>
+            <div style={{ color: '#aaa', padding: '2rem' }}>Refreshing trade routes...</div>
           )}
           {status === 'error' && (
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>{error || 'Unable to fetch trade routes.'}</div>
@@ -1571,7 +1606,6 @@ function TradeRoutesPanel () {
 
 export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
-
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Missions', icon: 'table-rows', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
@@ -1581,7 +1615,7 @@ export default function InaraPage() {
   ]), [activeTab])
 
   return (
-    <Layout connected={true} active={true} ready={true} loader={false}>
+    <Layout connected active ready loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div>
           <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
@@ -1598,9 +1632,3 @@ export default function InaraPage() {
     </Layout>
   )
 }
-
-
-
-
-
-
