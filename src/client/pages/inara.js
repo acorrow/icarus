@@ -247,11 +247,11 @@ function extractSystemDistance (route) {
   return null
 }
 
-function generateMockTradeRoutes ({ systemName, commodity, cargoCapacity, count = 5 }) {
+function generateMockTradeRoutes ({ systemName, cargoCapacity, count = 5 }) {
   const normalizedCapacity = Number.isFinite(Number(cargoCapacity)) && Number(cargoCapacity) > 0
     ? Math.round(Number(cargoCapacity))
     : 256
-  const baseCommodity = commodity && commodity.trim() ? commodity.trim() : null
+  const baseCommodity = null
   const now = Date.now()
 
   const formatPrice = value => `${Math.round(value).toLocaleString()} Cr`
@@ -845,8 +845,6 @@ function TradeRoutesPanel () {
     handleSystemChange,
     handleManualSystemChange
   } = useSystemSelector({ autoSelectCurrent: true })
-  const [commodity, setCommodity] = useState('')
-  const [minProfit, setMinProfit] = useState('')
   const [cargoCapacity, setCargoCapacity] = useState('')
   const [initialCapacityLoaded, setInitialCapacityLoaded] = useState(false)
   const [routeDistance, setRouteDistance] = useState('30')
@@ -885,7 +883,7 @@ function TradeRoutesPanel () {
           setCargoCapacity(String(Math.round(capacityNumber)))
         }
       } catch (err) {
-        // Ignore errors fetching ship status; user can still edit manually.
+        // Ignore errors fetching ship status; the UI will fall back to showing an unknown hold size.
       } finally {
         if (!cancelled) setInitialCapacityLoaded(true)
       }
@@ -895,11 +893,6 @@ function TradeRoutesPanel () {
 
     return () => { cancelled = true }
   }, [connected, ready, initialCapacityLoaded])
-
-  const parsedMinProfit = useMemo(() => {
-    const value = parseFloat(minProfit)
-    return Number.isFinite(value) ? value : null
-  }, [minProfit])
 
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
@@ -984,13 +977,20 @@ function TradeRoutesPanel () {
       .trim() || 'Any'
   }, [])
 
+  const cargoCapacityDisplay = useMemo(() => {
+    const capacityNumber = Number(cargoCapacity)
+    if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
+      return `${Math.round(capacityNumber).toLocaleString()} t`
+    }
+    return initialCapacityLoaded ? 'Unknown' : 'Detecting…'
+  }, [cargoCapacity, initialCapacityLoaded])
+
   const filtersSummary = useMemo(() => {
     const selectedSystem = (system && system.trim()) ||
       ((systemSelection && systemSelection !== '__manual') ? systemSelection : '') ||
       currentSystem?.name ||
       'Any System'
 
-    const capacityValue = cargoCapacity && String(cargoCapacity).trim() ? String(cargoCapacity).trim() : 'Any'
     const padLabelRaw = pickOptionLabel(padSizeOptions, padSize, 'Any')
     const padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
     const supplyLabel = simplifySupplyDemandLabel(pickOptionLabel(supplyOptions, minSupply, 'Any'))
@@ -998,23 +998,18 @@ function TradeRoutesPanel () {
 
     return [
       selectedSystem,
-      `Capacity: ${capacityValue}`,
+      `Capacity: ${cargoCapacityDisplay}`,
       `Landing Pad: ${padLabel}`,
       `Min Supply: ${supplyLabel}`,
       `Min Demand: ${demandLabel}`
     ].join(' | ')
-  }, [system, systemSelection, currentSystem, cargoCapacity, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel])
+  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel])
 
   const filterRoutes = useCallback((list = []) => {
     if (!Array.isArray(list)) return []
     const effectiveDistanceLimit = isDistanceFilterLimited ? parsedDistanceFilter : DISTANCE_FILTER_MAX
 
     return list.filter(route => {
-      if (parsedMinProfit !== null) {
-        const numericProfit = extractProfitPerTon(route)
-        if (Number.isFinite(numericProfit) && numericProfit < parsedMinProfit) return false
-      }
-
       if (isDistanceFilterLimited) {
         const numericDistance = extractRouteDistance(route)
         if (Number.isFinite(numericDistance) && numericDistance > effectiveDistanceLimit) return false
@@ -1022,7 +1017,7 @@ function TradeRoutesPanel () {
 
       return true
     })
-  }, [parsedMinProfit, isDistanceFilterLimited, parsedDistanceFilter])
+  }, [isDistanceFilterLimited, parsedDistanceFilter])
 
   const sortRoutes = useCallback((list = []) => {
     if (!Array.isArray(list)) return []
@@ -1139,11 +1134,8 @@ function TradeRoutesPanel () {
     setError('')
     setMessage('')
 
-    const trimmedCommodity = commodity.trim()
-    const minProfitValue = parseFloat(minProfit)
-
     const filters = {
-      cargoCapacity,
+      ...(cargoCapacity !== '' ? { cargoCapacity } : {}),
       maxRouteDistance: routeDistance,
       maxPriceAge: priceAge,
       minLandingPad: padSize,
@@ -1176,16 +1168,13 @@ function TradeRoutesPanel () {
 
     const payload = {
       system: targetSystem,
-      filters,
-      ...(trimmedCommodity ? { commodity: trimmedCommodity } : {}),
-      ...(Number.isFinite(minProfitValue) ? { minProfit: minProfitValue } : {})
+      filters
     }
 
     const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('inaraUseMockData') === 'true'
     if (shouldUseMockData) {
       const mockRoutes = generateMockTradeRoutes({
         systemName: targetSystem,
-        commodity: trimmedCommodity,
         cargoCapacity
       })
 
@@ -1439,25 +1428,19 @@ function TradeRoutesPanel () {
               onManualSystemChange={handleManualSystemChange}
             />
             <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Commodity (optional)</label>
-              <input
-                type='text'
-                value={commodity}
-                onChange={event => setCommodity(event.target.value)}
-                placeholder='Commodity name...'
-                style={{ ...FILTER_CONTROL_STYLE }}
-              />
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
               <label style={FILTER_LABEL_STYLE}>Cargo Capacity (t)</label>
-              <input
-                type='number'
-                min='0'
-                value={cargoCapacity}
-                onChange={event => setCargoCapacity(event.target.value)}
-                placeholder='e.g. 304'
-                style={{ ...FILTER_CONTROL_STYLE }}
-              />
+              <div
+                style={{
+                  ...FILTER_CONTROL_STYLE,
+                  display: 'flex',
+                  alignItems: 'center',
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                  fontWeight: 600
+                }}
+              >
+                {cargoCapacityDisplay}
+              </div>
             </div>
             <div style={{ ...FILTER_FIELD_STYLE }}>
               <label style={FILTER_LABEL_STYLE}>Max Route Distance</label>
@@ -1542,17 +1525,6 @@ function TradeRoutesPanel () {
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Min Profit/Ton (optional)</label>
-              <input
-                type='number'
-                step='any'
-                value={minProfit}
-                onChange={event => setMinProfit(event.target.value)}
-                placeholder='e.g. 7500'
-                style={{ ...FILTER_CONTROL_STYLE }}
-              />
             </div>
           </div>
         )}
