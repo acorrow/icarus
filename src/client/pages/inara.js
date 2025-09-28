@@ -63,65 +63,70 @@ function formatCredits (value, fallback) {
 }
 
 const FILTER_FORM_STYLE = {
-  margin: '1.75rem 0 1.5rem'
+  margin: '1.4rem 0 1.25rem'
 }
 
 const FILTERS_GRID_STYLE = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-  gap: '1.15rem',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+  gap: '.75rem 1rem',
   width: '100%',
-  alignItems: 'stretch'
+  alignItems: 'start',
+  justifyItems: 'stretch',
+  alignContent: 'start',
+  gridAutoFlow: 'row dense'
 }
 
 const FILTER_FIELD_STYLE = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '.4rem',
+  gap: '.25rem',
   width: '100%',
   minWidth: 0
 }
 
 const FILTER_LABEL_STYLE = {
   display: 'block',
-  marginBottom: '.35rem',
+  marginBottom: 0,
   color: '#ff7c22',
-  fontSize: '0.85rem',
+  fontSize: '0.75rem',
   textTransform: 'uppercase',
-  letterSpacing: '.05em'
+  letterSpacing: '.08em'
 }
 
 const FILTER_CONTROL_STYLE = {
   width: '100%',
-  height: '2.8rem',
-  padding: '0 .85rem',
-  fontSize: '1rem',
-  borderRadius: '.45rem',
-  border: '1px solid #303544',
-  background: 'rgba(14, 18, 28, 0.85)',
-  color: '#fff',
-  lineHeight: '2.8rem'
+  minHeight: '2.35rem',
+  height: '2.35rem',
+  padding: '.35rem .7rem',
+  fontSize: '0.9rem',
+  borderRadius: '.35rem',
+  border: '1px solid #2f3442',
+  background: 'rgba(10, 14, 23, 0.95)',
+  color: '#f5f7ff',
+  lineHeight: '1.2',
+  boxSizing: 'border-box'
 }
 
 const FILTER_TOGGLE_BUTTON_STYLE = {
-  background: 'rgba(255, 124, 34, 0.15)',
+  background: 'rgba(255, 124, 34, 0.1)',
   border: '1px solid #ff7c22',
   color: '#ff7c22',
-  borderRadius: '.45rem',
+  borderRadius: '.35rem',
   padding: '0 1rem',
-  fontSize: '0.95rem',
+  fontSize: '0.85rem',
   cursor: 'pointer',
-  height: '2.8rem',
+  height: '2.35rem',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center'
 }
 
 const FILTER_SUMMARY_STYLE = {
-  flex: '1 1 240px',
-  minWidth: 220,
+  flex: '1 1 220px',
+  minWidth: 200,
   color: '#ffa45b',
-  fontSize: '0.95rem',
+  fontSize: '0.85rem',
   fontWeight: 500,
   marginLeft: 'auto',
   whiteSpace: 'nowrap',
@@ -130,10 +135,10 @@ const FILTER_SUMMARY_STYLE = {
 }
 
 const FILTER_SUBMIT_BUTTON_STYLE = {
-  padding: '0 1.6rem',
-  fontSize: '1rem',
-  borderRadius: '.45rem',
-  height: '2.8rem',
+  padding: '0 1.4rem',
+  fontSize: '0.9rem',
+  borderRadius: '.35rem',
+  height: '2.35rem',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center'
