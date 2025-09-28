@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
-import { useSocket, sendEvent } from '../lib/socket'
+import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 
 function formatSystemDistance (value, fallback) {
@@ -352,13 +352,17 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   const [systemOptions, setSystemOptions] = useState([])
   const [currentSystem, setCurrentSystem] = useState(null)
   const autoSelectApplied = useRef(false)
+  const isMounted = useRef(true)
 
   useEffect(() => {
-    let cancelled = false
+    return () => { isMounted.current = false }
+  }, [])
+
+  const fetchCurrentSystem = useCallback(({ allowAutoSelect = false } = {}) => {
     fetch('/api/current-system')
       .then(res => res.json())
       .then(data => {
-        if (cancelled) return
+        if (!isMounted.current) return
         setCurrentSystem(data.currentSystem)
         const seen = new Set()
         const opts = []
@@ -373,18 +377,31 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
           }
         })
         setSystemOptions(opts)
-        const shouldAutoSelect = autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
-        const nextValue = shouldAutoSelect ? data.currentSystem.name : ''
-        setSystemSelection(nextValue)
-        setSystemInput('')
-        setSystem(nextValue)
-        if (shouldAutoSelect) autoSelectApplied.current = true
+        const shouldAutoSelect = allowAutoSelect && autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
+        if (shouldAutoSelect) {
+          const nextValue = data.currentSystem.name
+          setSystemSelection(nextValue)
+          setSystemInput('')
+          setSystem(nextValue)
+          autoSelectApplied.current = true
+        }
       })
       .catch(() => {
-        if (!cancelled) setCurrentSystem(null)
+        if (!isMounted.current) return
+        setCurrentSystem(null)
       })
-    return () => { cancelled = true }
   }, [autoSelectCurrent])
+
+  useEffect(() => {
+    fetchCurrentSystem({ allowAutoSelect: true })
+  }, [fetchCurrentSystem])
+
+  useEffect(() => eventListener('newLogEntry', log => {
+    if (!log?.event) return
+    if (['Location', 'FSDJump', 'CarrierJump'].includes(log.event)) {
+      fetchCurrentSystem({ allowAutoSelect: !autoSelectApplied.current })
+    }
+  }), [fetchCurrentSystem])
 
   const handleSystemChange = e => {
     const nextValue = e.target.value
@@ -1607,15 +1624,7 @@ function TradeRoutesPanel () {
 }
 
 function PristineMiningPanel () {
-  const {
-    currentSystem,
-    system,
-    systemSelection,
-    systemInput,
-    systemOptions,
-    handleSystemChange,
-    handleManualSystemChange
-  } = useSystemSelector({ autoSelectCurrent: true })
+  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [locations, setLocations] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
@@ -1623,20 +1632,18 @@ function PristineMiningPanel () {
   const [sourceUrl, setSourceUrl] = useState('')
 
   const trimmedSystem = useMemo(() => {
-    if (typeof system === 'string') {
-      const value = system.trim()
+    if (typeof currentSystem?.name === 'string') {
+      const value = currentSystem.name.trim()
       if (value) return value
     }
     return ''
-  }, [system])
+  }, [currentSystem?.name])
 
   const displaySystemName = useMemo(() => {
     if (trimmedSystem) return trimmedSystem
-    if (systemSelection && systemSelection !== '__manual') return systemSelection
-    if (systemInput && systemInput.trim()) return systemInput.trim()
     if (currentSystem?.name) return currentSystem.name
     return ''
-  }, [trimmedSystem, systemSelection, systemInput, currentSystem])
+  }, [trimmedSystem, currentSystem])
 
   useEffect(() => {
     if (!trimmedSystem) {
@@ -1701,16 +1708,11 @@ function PristineMiningPanel () {
   return (
     <div>
       <h2>Pristine Mining Locations</h2>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
-        <SystemSelect
-          label='System'
-          systemSelection={systemSelection}
-          systemOptions={systemOptions}
-          onSystemChange={handleSystemChange}
-          systemInput={systemInput}
-          onManualSystemChange={handleManualSystemChange}
-          placeholder='Enter system name...'
-        />
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+        <div>
+          <div style={{ color: '#ff7c22', fontSize: '0.75rem', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.35rem' }}>Current System</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{displaySystemName || 'Unknown'}</div>
+        </div>
         {sourceUrl && (
           <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }}>
             <a
@@ -1737,7 +1739,7 @@ function PristineMiningPanel () {
           )}
           {status === 'idle' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>
-              Select a system to discover nearby pristine mining locations.
+              Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
@@ -1748,7 +1750,7 @@ function PristineMiningPanel () {
           )}
           {status === 'empty' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>
-              No pristine mining locations found near {displaySystemName || 'the selected system'}.
+              No pristine mining locations found near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
