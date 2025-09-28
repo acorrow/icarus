@@ -1511,7 +1511,7 @@ export default function InaraPage() {
   const navigationItems = useMemo(() => ([
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
     { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') },
-    { name: 'Missions', icon: 'table-rows', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
+    { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') }
   ]), [activeTab])
 
