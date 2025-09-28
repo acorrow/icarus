@@ -718,16 +718,8 @@ function MissionsPanel () {
           placeholder='Enter system name...'
         />
         {sourceUrl && (
-          <div style={{ marginBottom: '.75rem' }}>
-            <a
-              href={sourceUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-secondary'
-              style={{ fontSize: '0.95rem' }}
-            >
-              View on INARA
-            </a>
+          <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }} className='text-secondary'>
+            Data sourced from INARA community submissions
           </div>
         )}
       </div>
@@ -795,19 +787,9 @@ function MissionsPanel () {
                     <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
                       <td style={{ padding: '.65rem 1rem' }}>
                         {mission.faction ? (
-                          mission.factionUrl ? (
-                            <a
-                              href={mission.factionUrl}
-                              target='_blank'
-                              rel='noopener noreferrer'
-                              className={standingClass}
-                              title={factionTitle}
-                            >
-                              {mission.faction}
-                            </a>
-                          ) : (
-                            <span className={standingClass} title={factionTitle}>{mission.faction}</span>
-                          )
+                          <span className={standingClass} title={factionTitle}>
+                            {mission.faction}
+                          </span>
                         ) : '--'}
                       </td>
                       <td style={{ padding: '.65rem 1rem' }}>
@@ -818,18 +800,7 @@ function MissionsPanel () {
                             <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
                           )}
                           {mission.system ? (
-                            mission.systemUrl ? (
-                              <a
-                                href={mission.systemUrl}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                className='text-primary'
-                              >
-                                {mission.system}
-                              </a>
-                            ) : (
-                              <span className='text-primary'>{mission.system}</span>
-                            )
+                            <span className='text-primary'>{mission.system}</span>
                           ) : '--'}
                         </div>
                       </td>
