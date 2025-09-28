@@ -60,6 +60,60 @@ function formatCredits(value, fallback) {
   return fallback || '--'
 }
 
+const FILTER_FIELD_STYLE = {
+  flex: '1 1 160px',
+  minWidth: 150,
+  maxWidth: 210,
+  display: 'flex',
+  flexDirection: 'column'
+}
+
+const FILTER_LABEL_STYLE = {
+  display: 'block',
+  marginBottom: '.35rem',
+  color: '#ff7c22',
+  fontSize: '0.85rem',
+  textTransform: 'uppercase',
+  letterSpacing: '.05em'
+}
+
+const FILTER_CONTROL_STYLE = {
+  width: '100%',
+  padding: '.45rem .6rem',
+  fontSize: '0.95rem',
+  borderRadius: '.4rem',
+  border: '1px solid #444',
+  background: '#1b1b1b',
+  color: '#fff'
+}
+
+const FILTER_TOGGLE_BUTTON_STYLE = {
+  background: 'rgba(255, 124, 34, 0.15)',
+  border: '1px solid #ff7c22',
+  color: '#ff7c22',
+  borderRadius: '.5rem',
+  padding: '.45rem 1rem',
+  fontSize: '0.9rem',
+  cursor: 'pointer'
+}
+
+const FILTER_SUMMARY_STYLE = {
+  flex: '1 1 auto',
+  minWidth: 220,
+  color: '#ffa45b',
+  fontSize: '0.95rem',
+  fontWeight: 500,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis'
+}
+
+const FILTER_SUBMIT_BUTTON_STYLE = {
+  padding: '.65rem 1.6rem',
+  fontSize: '1rem',
+  borderRadius: '.65rem'
+}
+
 const DEFAULT_SORT_DIRECTION = {
   profitPerTon: 'desc',
   routeDistance: 'asc',
@@ -302,10 +356,12 @@ function SystemSelect ({
   onManualSystemChange,
   placeholder = 'Enter system name...'
 }) {
+  const containerStyle = { ...FILTER_FIELD_STYLE, flexBasis: '220px', maxWidth: 240 }
+
   return (
-    <div style={{ flex: 1, minWidth: 200 }}>
-      <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>{label}</label>
-      <select value={systemSelection} onChange={onSystemChange} style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}>
+    <div style={containerStyle}>
+      <label style={FILTER_LABEL_STYLE}>{label}</label>
+      <select value={systemSelection} onChange={onSystemChange} style={{ ...FILTER_CONTROL_STYLE }}>
         <option value=''>Select a system...</option>
         {systemOptions.map(opt => (
           <option key={opt.name} value={opt.name}>
@@ -322,7 +378,7 @@ function SystemSelect ({
           value={systemInput}
           onChange={onManualSystemChange}
           placeholder={placeholder}
-          style={{ width: '100%', marginTop: '.5rem', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+          style={{ ...FILTER_CONTROL_STYLE, marginTop: '.35rem' }}
         />
       )}
     </div>
@@ -528,6 +584,7 @@ function TradeRoutesPanel () {
   const [message, setMessage] = useState('')
   const [sortField, setSortField] = useState('distance')
   const [sortDirection, setSortDirection] = useState('asc')
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false)
 
   const parsedMinProfit = useMemo(() => {
     const value = parseFloat(minProfit)
@@ -602,6 +659,41 @@ function TradeRoutesPanel () {
     { value: '2', label: 'Yes (exclude Odyssey stations)' },
     { value: '1', label: 'No' }
   ]), [])
+
+  const pickOptionLabel = useCallback((options, value, fallback) => {
+    if (!Array.isArray(options)) return fallback
+    const match = options.find(option => option.value === value)
+    return match ? match.label : fallback
+  }, [])
+
+  const simplifySupplyDemandLabel = useCallback(label => {
+    if (typeof label !== 'string' || !label.trim()) return 'Any'
+    return label
+      .replace(/\s*Units(?:\s*or\s*unlimited)?/i, '')
+      .replace(/\s*or\s*unlimited/i, '')
+      .trim() || 'Any'
+  }, [])
+
+  const filtersSummary = useMemo(() => {
+    const selectedSystem = (system && system.trim())
+      || ((systemSelection && systemSelection !== '__manual') ? systemSelection : '')
+      || currentSystem?.name
+      || 'Any System'
+
+    const capacityValue = cargoCapacity && String(cargoCapacity).trim() ? String(cargoCapacity).trim() : 'Any'
+    const padLabelRaw = pickOptionLabel(padSizeOptions, padSize, 'Any')
+    const padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
+    const supplyLabel = simplifySupplyDemandLabel(pickOptionLabel(supplyOptions, minSupply, 'Any'))
+    const demandLabel = simplifySupplyDemandLabel(pickOptionLabel(demandOptions, minDemand, 'Any'))
+
+    return [
+      selectedSystem,
+      `Capacity: ${capacityValue}`,
+      `Landing Pad: ${padLabel}`,
+      `Min Supply: ${supplyLabel}`,
+      `Min Demand: ${demandLabel}`
+    ].join(' | ')
+  }, [system, systemSelection, currentSystem, cargoCapacity, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel])
 
   const filterRoutes = useCallback((list = []) => {
     if (!Array.isArray(list)) return []
@@ -941,142 +1033,159 @@ function TradeRoutesPanel () {
     <div>
       <h2>Find Trade Routes</h2>
       <form onSubmit={handleSubmit} style={{ margin: '2rem 0 1.5rem 0' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem' }}>
-          <SystemSelect
-            label='System'
-            systemSelection={systemSelection}
-            systemOptions={systemOptions}
-            onSystemChange={handleSystemChange}
-            systemInput={systemInput}
-            onManualSystemChange={handleManualSystemChange}
-          />
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Commodity (optional)</label>
-            <input
-              type='text'
-              value={commodity}
-              onChange={event => setCommodity(event.target.value)}
-              placeholder='Commodity name...'
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            />
-          </div>
-          <div style={{ flex: 1, minWidth: 140 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Cargo Capacity (t)</label>
-            <input
-              type='number'
-              min='0'
-              value={cargoCapacity}
-              onChange={event => setCargoCapacity(event.target.value)}
-              placeholder='e.g. 304'
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            />
-          </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Max Route Distance</label>
-            <select
-              value={routeDistance}
-              onChange={event => setRouteDistance(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            >
-              {routeDistanceOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Max Price Age</label>
-            <select
-              value={priceAge}
-              onChange={event => setPriceAge(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            >
-              {priceAgeOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Min Landing Pad</label>
-            <select
-              value={padSize}
-              onChange={event => setPadSize(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            >
-              {padSizeOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Min Supply</label>
-            <select
-              value={minSupply}
-              onChange={event => setMinSupply(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            >
-              {supplyOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Min Demand</label>
-            <select
-              value={minDemand}
-              onChange={event => setMinDemand(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            >
-              {demandOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Use Surface Stations</label>
-            <select
-              value={surfacePreference}
-              onChange={event => setSurfacePreference(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            >
-              {surfaceOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Max Station Distance</label>
-            <select
-              value={stationDistance}
-              onChange={event => setStationDistance(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            >
-              {stationDistanceOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Min Profit/Ton (optional)</label>
-            <input
-              type='number'
-              step='any'
-              value={minProfit}
-              onChange={event => setMinProfit(event.target.value)}
-              placeholder='e.g. 7500'
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button
-              type='submit'
-              className='button--active button--secondary'
-              style={{ padding: '.85rem 2rem', fontSize: '1.1rem', borderRadius: '.75rem' }}
-              disabled={status === 'loading'}
-            >
-              {status === 'loading' ? 'Searching...' : 'Find Routes'}
-            </button>
-          </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
+          <button
+            type='button'
+            onClick={() => setFiltersCollapsed(prev => !prev)}
+            style={FILTER_TOGGLE_BUTTON_STYLE}
+            aria-expanded={!filtersCollapsed}
+            aria-controls='trade-route-filters'
+          >
+            {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
+          </button>
+          {filtersCollapsed && (
+            <div style={FILTER_SUMMARY_STYLE}>
+              {filtersSummary}
+            </div>
+          )}
+          <button
+            type='submit'
+            className='button--active button--secondary'
+            style={{ ...FILTER_SUBMIT_BUTTON_STYLE, marginLeft: 'auto' }}
+            disabled={status === 'loading'}
+          >
+            {status === 'loading' ? 'Searching...' : 'Find Routes'}
+          </button>
         </div>
+
+        {!filtersCollapsed && (
+          <div id='trade-route-filters' style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: '1.1rem' }}>
+            <SystemSelect
+              label='System'
+              systemSelection={systemSelection}
+              systemOptions={systemOptions}
+              onSystemChange={handleSystemChange}
+              systemInput={systemInput}
+              onManualSystemChange={handleManualSystemChange}
+            />
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Commodity (optional)</label>
+              <input
+                type='text'
+                value={commodity}
+                onChange={event => setCommodity(event.target.value)}
+                placeholder='Commodity name...'
+                style={{ ...FILTER_CONTROL_STYLE }}
+              />
+            </div>
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Cargo Capacity (t)</label>
+              <input
+                type='number'
+                min='0'
+                value={cargoCapacity}
+                onChange={event => setCargoCapacity(event.target.value)}
+                placeholder='e.g. 304'
+                style={{ ...FILTER_CONTROL_STYLE }}
+              />
+            </div>
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Max Route Distance</label>
+              <select
+                value={routeDistance}
+                onChange={event => setRouteDistance(event.target.value)}
+                style={{ ...FILTER_CONTROL_STYLE }}
+              >
+                {routeDistanceOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Max Price Age</label>
+              <select
+                value={priceAge}
+                onChange={event => setPriceAge(event.target.value)}
+                style={{ ...FILTER_CONTROL_STYLE }}
+              >
+                {priceAgeOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Min Landing Pad</label>
+              <select
+                value={padSize}
+                onChange={event => setPadSize(event.target.value)}
+                style={{ ...FILTER_CONTROL_STYLE }}
+              >
+                {padSizeOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Min Supply</label>
+              <select
+                value={minSupply}
+                onChange={event => setMinSupply(event.target.value)}
+                style={{ ...FILTER_CONTROL_STYLE }}
+              >
+                {supplyOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Min Demand</label>
+              <select
+                value={minDemand}
+                onChange={event => setMinDemand(event.target.value)}
+                style={{ ...FILTER_CONTROL_STYLE }}
+              >
+                {demandOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Use Surface Stations</label>
+              <select
+                value={surfacePreference}
+                onChange={event => setSurfacePreference(event.target.value)}
+                style={{ ...FILTER_CONTROL_STYLE }}
+              >
+                {surfaceOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Max Station Distance</label>
+              <select
+                value={stationDistance}
+                onChange={event => setStationDistance(event.target.value)}
+                style={{ ...FILTER_CONTROL_STYLE }}
+              >
+                {stationDistanceOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ ...FILTER_FIELD_STYLE }}>
+              <label style={FILTER_LABEL_STYLE}>Min Profit/Ton (optional)</label>
+              <input
+                type='number'
+                step='any'
+                value={minProfit}
+                onChange={event => setMinProfit(event.target.value)}
+                placeholder='e.g. 7500'
+                style={{ ...FILTER_CONTROL_STYLE }}
+              />
+            </div>
+          </div>
+        )}
       </form>
       <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
