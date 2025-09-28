@@ -2,6 +2,35 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 
+const TRADE_ROUTE_CONTROL_STYLE = Object.freeze({
+  width: '100%',
+  padding: '0.65rem 0.85rem',
+  fontSize: '1rem',
+  lineHeight: 1.4,
+  borderRadius: '0.65rem',
+  border: '1px solid #444',
+  background: '#1b1b1b',
+  color: '#fff',
+  height: '3.1rem',
+  minHeight: '3.1rem',
+  boxSizing: 'border-box',
+  transition: 'border-color .2s ease, box-shadow .2s ease'
+})
+
+const TRADE_ROUTE_SELECT_STYLE = Object.freeze({
+  ...TRADE_ROUTE_CONTROL_STYLE,
+  paddingRight: '2.5rem'
+})
+
+const TRADE_ROUTE_LABEL_STYLE = Object.freeze({
+  display: 'block',
+  marginBottom: '.45rem',
+  color: '#ff7c22',
+  fontSize: '0.92rem',
+  fontWeight: 600,
+  letterSpacing: '0.015em'
+})
+
 function formatSystemDistance(value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
     return `${value.toFixed(2)} Ly`
@@ -146,8 +175,8 @@ function SystemSelect ({
 }) {
   return (
     <div style={{ flex: 1, minWidth: 200 }}>
-      <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>{label}</label>
-      <select value={systemSelection} onChange={onSystemChange} style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}>
+      <label style={TRADE_ROUTE_LABEL_STYLE}>{label}</label>
+      <select value={systemSelection} onChange={onSystemChange} style={TRADE_ROUTE_SELECT_STYLE}>
         <option value=''>Select a system...</option>
         {systemOptions.map(opt => (
           <option key={opt.name} value={opt.name}>
@@ -164,7 +193,7 @@ function SystemSelect ({
           value={systemInput}
           onChange={onManualSystemChange}
           placeholder={placeholder}
-          style={{ width: '100%', marginTop: '.5rem', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+          style={{ ...TRADE_ROUTE_CONTROL_STYLE, marginTop: '.65rem' }}
         />
       )}
     </div>
@@ -720,32 +749,32 @@ function TradeRoutesPanel () {
             onManualSystemChange={handleManualSystemChange}
           />
           <div style={{ flex: 1, minWidth: 200 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Commodity (optional)</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Commodity (optional)</label>
             <input
               type='text'
               value={commodity}
               onChange={event => setCommodity(event.target.value)}
               placeholder='Commodity name...'
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_CONTROL_STYLE}
             />
           </div>
           <div style={{ flex: 1, minWidth: 140 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Cargo Capacity (t)</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Cargo Capacity (t)</label>
             <input
               type='number'
               min='0'
               value={cargoCapacity}
               onChange={event => setCargoCapacity(event.target.value)}
               placeholder='e.g. 304'
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_CONTROL_STYLE}
             />
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Max Route Distance</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Max Route Distance</label>
             <select
               value={routeDistance}
               onChange={event => setRouteDistance(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_SELECT_STYLE}
             >
               {routeDistanceOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -753,11 +782,11 @@ function TradeRoutesPanel () {
             </select>
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Max Price Age</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Max Price Age</label>
             <select
               value={priceAge}
               onChange={event => setPriceAge(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_SELECT_STYLE}
             >
               {priceAgeOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -765,11 +794,11 @@ function TradeRoutesPanel () {
             </select>
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Min Landing Pad</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Min Landing Pad</label>
             <select
               value={padSize}
               onChange={event => setPadSize(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_SELECT_STYLE}
             >
               {padSizeOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -777,11 +806,11 @@ function TradeRoutesPanel () {
             </select>
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Min Supply</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Min Supply</label>
             <select
               value={minSupply}
               onChange={event => setMinSupply(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_SELECT_STYLE}
             >
               {supplyOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -789,11 +818,11 @@ function TradeRoutesPanel () {
             </select>
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Min Demand</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Min Demand</label>
             <select
               value={minDemand}
               onChange={event => setMinDemand(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_SELECT_STYLE}
             >
               {demandOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -801,11 +830,11 @@ function TradeRoutesPanel () {
             </select>
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Use Surface Stations</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Use Surface Stations</label>
             <select
               value={surfacePreference}
               onChange={event => setSurfacePreference(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_SELECT_STYLE}
             >
               {surfaceOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -813,11 +842,11 @@ function TradeRoutesPanel () {
             </select>
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Max Station Distance</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Max Station Distance</label>
             <select
               value={stationDistance}
               onChange={event => setStationDistance(event.target.value)}
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_SELECT_STYLE}
             >
               {stationDistanceOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -825,14 +854,14 @@ function TradeRoutesPanel () {
             </select>
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Min Profit/Ton (optional)</label>
+            <label style={TRADE_ROUTE_LABEL_STYLE}>Min Profit/Ton (optional)</label>
             <input
               type='number'
               step='any'
               value={minProfit}
               onChange={event => setMinProfit(event.target.value)}
               placeholder='e.g. 7500'
-              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+              style={TRADE_ROUTE_CONTROL_STYLE}
             />
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
