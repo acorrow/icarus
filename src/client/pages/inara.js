@@ -766,6 +766,17 @@ function MissionsPanel () {
   const [sourceUrl, setSourceUrl] = useState('')
   const [factionStandings, setFactionStandings] = useState({})
 
+  const displayMessage = useMemo(() => {
+    if (typeof message !== 'string') return ''
+    const trimmed = message.trim()
+    if (!trimmed) return ''
+    const lower = trimmed.toLowerCase()
+    if (lower.startsWith('showing nearby mining mission factions near') || lower.startsWith('shwoing nearby mining mission factions near')) {
+      return ''
+    }
+    return trimmed
+  }, [message])
+
   useEffect(() => {
     let cancelled = false
 
@@ -914,9 +925,9 @@ function MissionsPanel () {
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
-          {message && status !== 'idle' && status !== 'loading' && (
+          {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
-              {message}
+              {displayMessage}
             </div>
           )}
           {status === 'idle' && (
@@ -936,7 +947,7 @@ function MissionsPanel () {
             </div>
           )}
           {status === 'populated' && missions.length > 0 && (
-            <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
+            <table className='table--animated fx-fade-in' style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Faction</th>
