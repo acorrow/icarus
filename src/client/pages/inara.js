@@ -36,7 +36,19 @@ function formatRelativeTime (value) {
   return date.toLocaleDateString()
 }
 
-function stationIconFromType (type = '') {
+
+function normaliseFactionKey(value) {
+  return typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : ''
+}
+
+function formatReputationPercent(value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return null
+  const percentage = Math.round(value * 100)
+  const sign = percentage > 0 ? '+' : ''
+  return `${sign}${percentage}%`
+}
+
+function stationIconFromType(type = '') {
   const lower = type.toLowerCase()
   if (lower.includes('asteroid')) return 'asteroid-base'
   if (lower.includes('outpost')) return 'outpost'
@@ -629,6 +641,52 @@ function MissionsPanel () {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
+  const [factionStandings, setFactionStandings] = useState({})
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetch('/api/faction-standings')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load faction standings')
+        return res.json()
+      })
+      .then(data => {
+        if (cancelled) return
+        const nextStandings = {}
+        if (data && typeof data === 'object') {
+          if (data?.standings && typeof data.standings === 'object') {
+            for (const [key, value] of Object.entries(data.standings)) {
+              if (!key || !value || typeof value !== 'object') continue
+              const normalizedKey = typeof key === 'string' ? key.trim().toLowerCase() : ''
+              if (!normalizedKey) continue
+              nextStandings[normalizedKey] = {
+                standing: value.standing || null,
+                relation: typeof value.relation === 'string' ? value.relation : null,
+                reputation: typeof value.reputation === 'number' ? value.reputation : null
+              }
+            }
+          } else if (Array.isArray(data?.factions)) {
+            for (const faction of data.factions) {
+              if (!faction || typeof faction !== 'object') continue
+              const key = normaliseFactionKey(faction.name)
+              if (!key) continue
+              nextStandings[key] = {
+                standing: faction.standing || null,
+                relation: typeof faction.relation === 'string' ? faction.relation : null,
+                reputation: typeof faction.reputation === 'number' ? faction.reputation : null
+              }
+            }
+          }
+        }
+        setFactionStandings(nextStandings)
+      })
+      .catch(() => {
+        if (!cancelled) setFactionStandings({})
+      })
+
+    return () => { cancelled = true }
+  }, [])
 
   const trimmedSystem = useMemo(() => {
     if (typeof system === 'string') {
@@ -710,7 +768,7 @@ function MissionsPanel () {
 
   return (
     <div>
-      <h2>Nearby Missions</h2>
+      <h2>Mining Missions</h2>
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
         <SystemSelect
           label='System'
@@ -722,16 +780,8 @@ function MissionsPanel () {
           placeholder='Enter system name...'
         />
         {sourceUrl && (
-          <div style={{ marginBottom: '.75rem' }}>
-            <a
-              href={sourceUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-secondary'
-              style={{ fontSize: '0.95rem' }}
-            >
-              View on INARA
-            </a>
+          <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }} className='text-secondary'>
+            Data sourced from INARA community submissions
           </div>
         )}
       </div>
@@ -778,6 +828,22 @@ function MissionsPanel () {
                   const distanceDisplay = formatSystemDistance(mission.distanceLy, mission.distanceText)
                   const updatedDisplay = formatRelativeTime(mission.updatedAt || mission.updatedText)
                   const isTargetSystem = mission.isTargetSystem
+                  const factionKey = normaliseFactionKey(mission.faction)
+                  const factionInfo = factionKey ? factionStandings[factionKey] : null
+                  const standingClass = factionInfo?.standing === 'ally'
+                    ? 'text-success'
+                    : factionInfo?.standing === 'hostile'
+                      ? 'text-danger'
+                      : 'text-primary'
+                  const standingLabel = factionInfo?.relation || (factionInfo?.standing
+                    ? `${factionInfo.standing.charAt(0).toUpperCase()}${factionInfo.standing.slice(1)}`
+                    : null)
+                  const reputationLabel = typeof factionInfo?.reputation === 'number'
+                    ? formatReputationPercent(factionInfo.reputation)
+                    : null
+                  const factionTitle = [standingLabel, reputationLabel && `Reputation ${reputationLabel}`]
+                    .filter(Boolean)
+                    .join(' · ') || undefined
 
                   return (
                     <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
@@ -1538,28 +1604,28 @@ function TradeRoutesPanel () {
   )
 }
 
-export default function InaraPage () {
-  const [activeTab, setActiveTab] = useState('ships')
-
+export default function InaraPage() {
+  const [activeTab, setActiveTab] = useState('tradeRoutes')
   const navigationItems = useMemo(() => ([
-    { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
-    { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') },
+    { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Missions', icon: 'table-rows', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
-    { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') }
+    { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
+    { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') }
+
   ]), [activeTab])
 
   return (
     <Layout connected active ready loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div>
-          <div style={{ display: activeTab === 'ships' ? 'block' : 'none' }}>
-            <ShipsPanel />
+          <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+            <TradeRoutesPanel />
           </div>
           <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
             <MissionsPanel />
           </div>
-          <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
-            <TradeRoutesPanel />
+          <div style={{ display: activeTab === 'ships' ? 'block' : 'none' }}>
+            <ShipsPanel />
           </div>
         </div>
       </Panel>
