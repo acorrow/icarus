@@ -1,0 +1,18 @@
+{
+  "timestamp": "2024-01-01T12:00:07Z",
+  "event": "NavRoute",
+  "Route": [
+    {
+      "StarSystem": "Sol",
+      "SystemAddress": 10477373803,
+      "StarPos": [0, 0, 0],
+      "StarClass": "G"
+    },
+    {
+      "StarSystem": "Alpha Centauri",
+      "SystemAddress": 3932277478106,
+      "StarPos": [3.032, 0.123, 3.123],
+      "StarClass": "G"
+    }
+  ]
+}

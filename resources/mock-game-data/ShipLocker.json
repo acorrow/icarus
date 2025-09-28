@@ -1,0 +1,22 @@
+{
+  "timestamp": "2024-01-01T12:00:08Z",
+  "event": "ShipLocker",
+  "Items": [
+    {
+      "Name": "healthpack",
+      "Name_Localised": "Medkit",
+      "Count": 2,
+      "OwnerID": 0
+    }
+  ],
+  "Components": [],
+  "Consumables": [
+    {
+      "Name": "energycell",
+      "Name_Localised": "Energy Cell",
+      "Count": 3,
+      "OwnerID": 0
+    }
+  ],
+  "Data": []
+}

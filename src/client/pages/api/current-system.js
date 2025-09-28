@@ -28,6 +28,8 @@ function resolveLogDir() {
   }
   const fallback = path.join(os.homedir(), 'Saved Games', 'Frontier Developments', 'Elite Dangerous')
   if (fs.existsSync(fallback)) return fallback
+  const mockDir = process.env.ICARUS_MOCK_DATA_DIR || path.join(process.cwd(), 'resources', 'mock-game-data')
+  if (fs.existsSync(mockDir)) return mockDir
   return null
 }
 

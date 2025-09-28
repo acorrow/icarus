@@ -37,14 +37,28 @@ console.log(`ICARUS Terminal Service ${packageJson.version}`)
 const PORT = commandLineArgs.port || commandLineArgs.p || 3300 // Port to listen on
 const DEVELOPMENT = commandLineArgs.dev || false // Development mode
 const WEB_DIR = 'build/client'
-const LOG_DIR = getLogDir()
+const DEFAULT_LOG_DIR = getLogDir()
+const MOCK_DATA_DIR = path.join(__dirname, '..', '..', 'resources', 'mock-game-data')
+
+let LOG_DIR = DEFAULT_LOG_DIR
+let USING_MOCK_DATA = false
 
 if (!fs.existsSync(LOG_DIR)) {
-  console.error('ERROR: No save game data found in', LOG_DIR, '\n')
-  yargs.showHelp()
-  process.exit(1)
+  if (fs.existsSync(MOCK_DATA_DIR)) {
+    USING_MOCK_DATA = true
+    LOG_DIR = MOCK_DATA_DIR
+    console.warn('WARNING: No save game data found. Using mock data from', MOCK_DATA_DIR)
+  } else {
+    console.error('ERROR: No save game data found in', DEFAULT_LOG_DIR, '\n')
+    yargs.showHelp()
+    process.exit(1)
+  }
 } else {
   console.log('Loading save game data from', LOG_DIR)
+}
+
+if (USING_MOCK_DATA) {
+  console.log('Mock data mode enabled – UI will use bundled fallback data for testing.')
 }
 
 function getLogDir () {
@@ -84,6 +98,7 @@ function getLogDir () {
 // Export globals BEFORE loading libraries that use them
 global.PORT = PORT
 global.LOG_DIR = LOG_DIR
+global.USING_MOCK_DATA = USING_MOCK_DATA
 global.BROADCAST_EVENT = broadcastEvent
 
 // Initalise simple in-memory object cache (reset when program restarted)
