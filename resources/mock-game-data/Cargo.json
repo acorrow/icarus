@@ -1,0 +1,14 @@
+{
+  "timestamp": "2024-01-01T12:00:09Z",
+  "event": "Cargo",
+  "Vessel": "Ship",
+  "Count": 5,
+  "Inventory": [
+    {
+      "Name": "gold",
+      "Name_Localised": "Gold",
+      "Count": 5,
+      "Stolen": 0
+    }
+  ]
+}
