@@ -49,15 +49,13 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
 }
 
 function InaraSettings () {
-  const [appName, setAppName] = useState('ICARUS-Terminal')
-  const [appVersion, setAppVersion] = useState('0.1')
+  const patreonUrl = 'https://www.patreon.com/artieinara'
+  const patreonWindowFeatures = 'noopener,noreferrer'
   const [useMockData, setUseMockData] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setAppName(window.localStorage.getItem('inaraAppName') || 'ICARUS-Terminal')
-      setAppVersion(window.localStorage.getItem('inaraAppVersion') || '0.1')
       setUseMockData(window.localStorage.getItem('inaraUseMockData') === 'true')
     }
   }, [])
@@ -65,8 +63,6 @@ function InaraSettings () {
   function handleSave(e) {
     e.preventDefault()
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('inaraAppName', appName)
-      window.localStorage.setItem('inaraAppVersion', appVersion)
       window.localStorage.setItem('inaraUseMockData', useMockData ? 'true' : 'false')
       setSaved(true)
       setTimeout(() => setSaved(false), 1500)
@@ -76,22 +72,8 @@ function InaraSettings () {
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
       <h3 className='text-primary'>INARA Integration Settings</h3>
-      <p>Configure your INARA app name and app version to enable live search and integration features.</p>
+      <p>Enable or disable the Trade Route Layout Sandbox using mock data.</p>
       <form onSubmit={handleSave} style={{ maxWidth: 400 }}>
-        <input
-          type='text'
-          value={appName}
-          onChange={e => setAppName(e.target.value)}
-          placeholder='INARA App Name'
-          style={{ width: '100%', fontSize: '1.1rem', marginBottom: '1rem' }}
-        />
-        <input
-          type='text'
-          value={appVersion}
-          onChange={e => setAppVersion(e.target.value)}
-          placeholder='INARA App Version'
-          style={{ width: '100%', fontSize: '1.1rem', marginBottom: '1rem' }}
-        />
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', fontSize: '1rem' }}>
           <input
             type='checkbox'
@@ -105,9 +87,21 @@ function InaraSettings () {
         <button type='submit' style={{ fontSize: '1.1rem' }}>Save</button>
         {saved && <span className='text-success' style={{ marginLeft: '1rem' }}>Saved!</span>}
       </form>
-      <p className='text-muted' style={{ fontSize: '0.95rem', marginTop: '1rem' }}>
-        App name and version are for identification and can be set to any value.
-      </p>
+      <hr style={{ margin: '2rem 0 1rem 0' }} />
+      <section>
+        <h4 className='text-primary' style={{ marginBottom: '0.5rem' }}>Support INARA</h4>
+        <p className='text-muted' style={{ fontSize: '0.95rem', marginBottom: '1rem' }}>
+          Show your support for INARA and access exclusive updates on Patreon.
+        </p>
+        <button
+          type='button'
+          className='button'
+          onClick={() => typeof window !== 'undefined' && window.open(patreonUrl, '_blank', patreonWindowFeatures)}
+          style={{ fontSize: '1.05rem' }}
+        >
+          Visit INARA on Patreon
+        </button>
+      </section>
     </div>
   )
 }
