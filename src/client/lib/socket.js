@@ -1,8 +1,8 @@
 /* global WebSocket, CustomEvent */
-import { createContext, useState, useContext } from 'react'
+import { createContext, useState, useContext, useEffect } from 'react'
 import notification from 'lib/notification'
 
-let socket = null// Store socket connection (defaults to null)
+let socket = null // Store socket connection (defaults to null)
 let callbackHandlers = {} // Store callbacks waiting to be executed (pending response from server)
 let deferredEventQueue = [] // Store events waiting to be sent (used when server is not ready yet or offline)
 let recentBroadcastEvents = 0
@@ -19,7 +19,8 @@ const socketOptions = {
 
 function socketDebugMessage () { /* console.log(...arguments) */ }
 
-function connect (socketState, setSocketState) {
+function connect (setSocketState) {
+  if (typeof window === 'undefined' || typeof WebSocket === 'undefined') return
   if (socket !== null) return
 
   // Reset on reconnect
@@ -45,7 +46,7 @@ function connect (socketState, setSocketState) {
     }
 
     // Broadcast event to anything that is listening for an event with this name
-    if (!requestId && name) {
+    if (!requestId && name && typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') {
       window.dispatchEvent(new CustomEvent(`socketEvent_${name}`, { detail: message }))
 
       // When a broadcast message is received, use recentBroadcastEvents to
@@ -134,7 +135,7 @@ function connect (socketState, setSocketState) {
       connected: false,
       ready: false
     }))
-    setTimeout(() => { connect(socketState, setSocketState) }, 5000)
+    setTimeout(() => { connect(setSocketState) }, 5000)
   }
 
   socket.onerror = function (err) {
@@ -148,9 +149,16 @@ const SocketContext = createContext()
 function SocketProvider ({ children }) {
   const [socketState, setSocketState] = useState(defaultSocketState)
 
-  if (typeof WebSocket !== 'undefined' && socketState.connected !== true) {
-    connect(socketState, setSocketState)
-  }
+  useEffect(() => {
+    connect(setSocketState)
+
+    return () => {
+      if (socket && typeof socket.close === 'function' && typeof window !== 'undefined') {
+        try { socket.close() } catch (e) {}
+        socket = null
+      }
+    }
+  }, [])
 
   return (
     <SocketContext.Provider value={socketState}>
@@ -162,6 +170,9 @@ function SocketProvider ({ children }) {
 function useSocket () { return useContext(SocketContext) }
 
 function sendEvent (name, message = null) {
+  if (typeof WebSocket === 'undefined') {
+    return Promise.resolve(null)
+  }
   return new Promise((resolve, reject) => {
     const requestId = generateUuid()
     callbackHandlers[requestId] = (event, setSocketState) => {
@@ -184,6 +195,7 @@ function sendEvent (name, message = null) {
 }
 
 function eventListener (eventName, callback) {
+  if (typeof window === 'undefined') return () => {}
   const eventHandler = (e) => { callback(e.detail) }
   window.addEventListener(`socketEvent_${eventName}`, eventHandler)
   return () => window.removeEventListener(`socketEvent_${eventName}`, eventHandler)
