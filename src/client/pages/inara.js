@@ -164,25 +164,31 @@ function getFactionStandingDisplay(factionName, standings) {
     })
   }
 
+  const relationLabel = typeof info.relation === 'string' && info.relation.trim()
+    ? `${info.relation.trim().charAt(0).toUpperCase()}${info.relation.trim().slice(1)}`
+    : null
+  const standingLabel = typeof info.standing === 'string' && info.standing.trim()
+    ? `${info.standing.trim().charAt(0).toUpperCase()}${info.standing.trim().slice(1)}`
+    : null
+  const statusLabel = relationLabel || standingLabel || null
   const className = info.standing === 'ally'
     ? 'text-success'
     : info.standing === 'hostile'
       ? 'text-danger'
       : null
-  const standingLabel = info.relation || (info.standing
-    ? `${info.standing.charAt(0).toUpperCase()}${info.standing.slice(1)}`
-    : null)
   const reputationLabel = typeof info.reputation === 'number'
     ? formatReputationPercent(info.reputation)
     : null
-  const title = [standingLabel, reputationLabel && `Reputation ${reputationLabel}`]
+  const statusDescription = [statusLabel, reputationLabel && `Rep ${reputationLabel}`]
     .filter(Boolean)
     .join(' · ') || undefined
 
   return {
     info,
     className,
-    title
+    title: statusDescription,
+    statusLabel,
+    statusDescription
   }
 }
 
@@ -223,13 +229,16 @@ function resolveRouteFactionName (localData, endpointData) {
     localData?.minorFaction,
     localData?.minorFactionName,
     localData?.factionDetails,
+    localData?.StationFaction,
+    localData?.SystemFaction,
     endpointData?.faction,
     endpointData?.factionName,
     endpointData?.controllingFaction,
     endpointData?.controllingFactionName,
     endpointData?.minorFaction,
     endpointData?.minorFactionName,
-    endpointData?.stationFaction
+    endpointData?.stationFaction,
+    endpointData?.StationFaction
   ]
 
   for (const candidate of candidates) {
@@ -1506,6 +1515,8 @@ function TradeRoutesPanel () {
           const destinationStationClassName = destinationStandingDisplay.className || undefined
           const originStationTitle = originStandingDisplay.title
           const destinationStationTitle = destinationStandingDisplay.title
+          const originStandingStatusText = originStandingDisplay.statusDescription || null
+          const destinationStandingStatusText = destinationStandingDisplay.statusDescription || null
 
           const outboundBuy = route?.origin?.buy || null
           const outboundSell = route?.destination?.sell || null
@@ -1601,6 +1612,34 @@ function TradeRoutesPanel () {
                       >
                         {originSystemName || 'Unknown system'}
                       </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Faction:&nbsp;
+                        <span
+                          className={originFactionName ? originStationClassName : undefined}
+                          style={originFactionName ? { fontWeight: 600 } : { fontWeight: 600, color: '#7f8697' }}
+                          title={originStationTitle}
+                        >
+                          {originFactionName || 'Unknown faction'}
+                        </span>
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Standing:&nbsp;
+                        {originStandingStatusText
+                          ? (
+                            <span
+                              className={originStationClassName}
+                              title={originStationTitle}
+                              style={{ fontWeight: 600 }}
+                            >
+                              {originStandingStatusText}
+                            </span>
+                            )
+                          : (
+                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                              {originFactionName ? 'No local standing data' : 'Not available'}
+                            </span>
+                            )}
+                      </span>
                       <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
                       <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
                     </div>
@@ -1613,6 +1652,34 @@ function TradeRoutesPanel () {
                         title={destinationStationTitle}
                       >
                         {destinationSystemName || 'Unknown system'}
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Faction:&nbsp;
+                        <span
+                          className={destinationFactionName ? destinationStationClassName : undefined}
+                          style={destinationFactionName ? { fontWeight: 600 } : { fontWeight: 600, color: '#7f8697' }}
+                          title={destinationStationTitle}
+                        >
+                          {destinationFactionName || 'Unknown faction'}
+                        </span>
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Standing:&nbsp;
+                        {destinationStandingStatusText
+                          ? (
+                            <span
+                              className={destinationStationClassName}
+                              title={destinationStationTitle}
+                              style={{ fontWeight: 600 }}
+                            >
+                              {destinationStandingStatusText}
+                            </span>
+                            )
+                          : (
+                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                              {destinationFactionName ? 'No local standing data' : 'Not available'}
+                            </span>
+                            )}
                       </span>
                       <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
                       <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>

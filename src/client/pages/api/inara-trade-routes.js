@@ -86,6 +86,10 @@ function cleanText(value) {
   return (value || '').replace(/\s+/g, ' ').trim()
 }
 
+function escapeRegExp(value = '') {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function parseFirstNumber(text) {
   if (!text) return null
   const match = String(text).match(/[-+]?\d[\d,]*(?:\.\d+)?/)
@@ -486,6 +490,7 @@ export default async function handler(req, res) {
     const sysInstance = await ensureSystemInstance()
     const systemCache = new Map()
     const localStationCache = new Map()
+    const eliteLogInstance = sysInstance?.eliteLog
     let stationIndex = null
     let stationIndexPopulatedFromCache = false
 
@@ -496,8 +501,34 @@ export default async function handler(req, res) {
         systemData.planetaryOutposts,
         systemData.settlements,
         systemData.megaships,
+        systemData.fleetCarriers,
         systemData.stations
       ].filter(Boolean).flat()
+    }
+
+    async function getJournalStationDetails(stationName) {
+      if (!stationName || typeof stationName !== 'string') return null
+      if (!eliteLogInstance || typeof eliteLogInstance._query !== 'function') return null
+
+      try {
+        const escapedName = escapeRegExp(stationName.trim())
+        if (!escapedName) return null
+        const stationRegex = new RegExp(`^${escapedName}$`, 'i')
+        const query = {
+          StationName: stationRegex,
+          event: { $in: ['Docked', 'Location'] }
+        }
+        const [entry] = await eliteLogInstance._query(query, 1, { timestamp: -1 })
+        if (entry) {
+          logInaraTrade(`JOURNAL_LOOKUP_MATCH: station=${stationName} event=${entry.event || ''} timestamp=${entry.timestamp || ''}`)
+          return entry
+        }
+        logInaraTrade(`JOURNAL_LOOKUP_MISS: station=${stationName}`)
+      } catch (err) {
+        logInaraTrade(`JOURNAL_LOOKUP_ERROR: station=${stationName} error=${err}`)
+      }
+
+      return null
     }
 
     function addSystemToStationIndex(systemData) {
@@ -640,9 +671,14 @@ export default async function handler(req, res) {
         station.minorFaction,
         station.minorFactionName,
         station.stationFaction,
+        station.StationFaction,
+        station.SystemFaction,
         station.controllingFaction,
         station.controllingMinorFaction,
         station.controllingFactionName,
+        station.minorFactionInfo,
+        station.Faction,
+        station.FactionName,
         station.owner
       ]
 
@@ -654,7 +690,7 @@ export default async function handler(req, res) {
       return ''
     }
 
-    function buildLocalResult(systemData, station) {
+    function buildLocalResult({ stationName, systemData, station, journalData }) {
       const systemCoords = Array.isArray(systemData?.position) ? systemData.position : null
       let systemDistanceLy = null
       if (selectedSystemPosition && systemCoords) {
@@ -665,16 +701,39 @@ export default async function handler(req, res) {
         systemDistanceLy = systemData.distance
       }
 
-      const stationDistanceLs = typeof station.distanceToArrival === 'number'
+      const journalDistanceLs = typeof journalData?.DistanceFromStarLS === 'number'
+        ? journalData.DistanceFromStarLS
+        : (typeof journalData?.distanceFromStarLs === 'number' ? journalData.distanceFromStarLs : null)
+      const stationDistanceLs = typeof station?.distanceToArrival === 'number'
         ? station.distanceToArrival
-        : (typeof station.distanceToArrivalLS === 'number' ? station.distanceToArrivalLS : null)
-      const updatedAt = pickUpdatedTimestamp(station)
+        : (typeof station?.distanceToArrivalLS === 'number'
+            ? station.distanceToArrivalLS
+            : journalDistanceLs)
+      const updatedAt = pickUpdatedTimestamp(station) || journalData?.timestamp || journalData?.eventTime || null
 
-      const factionName = resolveStationFactionName(station)
+      const edsmFaction = resolveStationFactionName(station)
+      const journalFaction = resolveStationFactionName(journalData)
+      const factionName = journalFaction || edsmFaction
+      const factionSource = journalFaction ? 'journal' : (edsmFaction ? 'edsm' : null)
 
-      return {
-        station: station.name,
-        system: systemData?.name || '',
+      const landingPads = station?.landingPads || journalData?.LandingPads || journalData?.landingPads || {}
+      const padSize = formatPadSize(landingPads)
+      const journalServices = Array.isArray(journalData?.StationServices)
+        ? journalData.StationServices.map(service => cleanText(service)).filter(Boolean)
+        : []
+      const journalEconomies = Array.isArray(journalData?.StationEconomies)
+        ? journalData.StationEconomies.map(entry => cleanText(entry?.Name_Localised || entry?.Name || entry)).filter(Boolean)
+        : []
+      const journalPrimaryEconomy = cleanText(journalData?.StationEconomy_Localised || journalData?.StationEconomy)
+      if (journalPrimaryEconomy && !journalEconomies.includes(journalPrimaryEconomy)) {
+        journalEconomies.unshift(journalPrimaryEconomy)
+      }
+
+      const stationType = station?.type || station?.subType || journalData?.StationType || journalData?.stationType || ''
+
+      const result = {
+        station: station?.name || journalData?.StationName || stationName || '',
+        system: systemData?.name || journalData?.StarSystem || journalData?.systemName || '',
         systemDistance: (typeof systemDistanceLy === 'number' && !Number.isNaN(systemDistanceLy))
           ? `${systemDistanceLy.toFixed(2)} Ly`
           : '',
@@ -689,26 +748,60 @@ export default async function handler(req, res) {
           : null,
         updated: updatedAt || '',
         updatedAt: updatedAt || '',
-        padSize: formatPadSize(station.landingPads),
-        type: station.type || '',
-        stationType: station.type || '',
-        market: !!station.haveMarket,
-        outfitting: !!station.haveOutfitting,
-        shipyard: !!station.haveShipyard,
-        services: Array.isArray(station.otherServices) ? station.otherServices : [],
-        economies: Array.isArray(station.economies) ? station.economies : [],
+        padSize: padSize || '',
+        type: stationType || '',
+        stationType: stationType || '',
+        market: typeof station?.haveMarket === 'boolean'
+          ? station.haveMarket
+          : (journalServices.includes('Commodities') || journalServices.includes('CommodityMarket')),
+        outfitting: typeof station?.haveOutfitting === 'boolean'
+          ? station.haveOutfitting
+          : journalServices.includes('Outfitting'),
+        shipyard: typeof station?.haveShipyard === 'boolean'
+          ? station.haveShipyard
+          : journalServices.includes('Shipyard'),
+        services: Array.isArray(station?.otherServices) && station.otherServices.length
+          ? station.otherServices
+          : journalServices,
+        economies: Array.isArray(station?.economies) && station.economies.length
+          ? station.economies
+          : journalEconomies,
         faction: factionName || '',
         stationFaction: station.stationFaction || null,
         controllingFaction: station.controllingFaction || null,
         controllingFactionName: typeof station.controllingFactionName === 'string' ? station.controllingFactionName : '',
         minorFaction: station.minorFaction || null,
         minorFactionName: typeof station.minorFactionName === 'string' ? station.minorFactionName : '',
-        factionDetails: station.factionDetails || null,
-        government: station.government || '',
-        allegiance: station.allegiance || '',
-        icon: inferStationIcon(station),
-        isCurrentSystem: selectedSystemName && systemData?.name && systemData.name.toLowerCase() === selectedSystemName.toLowerCase()
+        factionDetails: station.factionDetails || journalData?.StationFaction || null,
+        government: station?.government || journalData?.StationGovernment_Localised || journalData?.StationGovernment || '',
+        allegiance: station?.allegiance || journalData?.StationAllegiance || '',
+        icon: inferStationIcon(station || { type: stationType }),
+        isCurrentSystem: (() => {
+          const compareName = systemData?.name || journalData?.StarSystem || ''
+          return selectedSystemName && compareName && compareName.toLowerCase() === selectedSystemName.toLowerCase()
+        })(),
+        factionSource
       }
+
+      if (!result.stationFaction && journalData?.StationFaction) {
+        result.stationFaction = journalData.StationFaction
+      }
+      if (!result.controllingFaction && journalData?.StationFaction) {
+        result.controllingFaction = journalData.StationFaction
+      }
+      if (!result.controllingFactionName && journalData?.StationFaction) {
+        const controllingName = resolveStationFactionName(journalData.StationFaction)
+        if (controllingName) result.controllingFactionName = controllingName
+      }
+      if (!result.minorFaction && journalData?.MinorFaction) {
+        result.minorFaction = journalData.MinorFaction
+      }
+      if (!result.minorFactionName && journalData?.MinorFaction) {
+        const minorName = resolveStationFactionName(journalData.MinorFaction)
+        if (minorName) result.minorFactionName = minorName
+      }
+
+      return result
     }
 
     async function getLocalStationDetails(stationName, candidateSystems = []) {
@@ -718,6 +811,8 @@ export default async function handler(req, res) {
       if (localStationCache.has(normalizedStation)) {
         return localStationCache.get(normalizedStation)
       }
+
+      const journalDataPromise = getJournalStationDetails(stationName).catch(() => null)
 
       const searchOrder = candidateSystems
         .filter(Boolean)
@@ -739,14 +834,16 @@ export default async function handler(req, res) {
         const stationCollections = collectStations(systemData)
         const station = stationCollections.find(entry => entry?.name?.trim().toLowerCase() === normalizedStation)
         if (station) {
-          const result = buildLocalResult(systemData, station)
+          const journalData = await journalDataPromise
+          const result = buildLocalResult({ stationName, systemData, station, journalData })
           localStationCache.set(normalizedStation, result)
           const logParts = [
             `station=${stationName}`,
             `system=${systemData?.name || ''}`,
             `faction=${result.faction || ''}`,
             `controllingFaction=${result.controllingFactionName || ''}`,
-            `allegiance=${result.allegiance || ''}`
+            `allegiance=${result.allegiance || ''}`,
+            `factionSource=${result.factionSource || ''}`
           ]
           logInaraTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
           return result
@@ -756,7 +853,8 @@ export default async function handler(req, res) {
       const index = ensureStationIndexFromGlobalCache()
       const indexedEntry = index.get(normalizedStation)
       if (indexedEntry && indexedEntry.system && indexedEntry.station) {
-        const result = buildLocalResult(indexedEntry.system, indexedEntry.station)
+        const journalData = await journalDataPromise
+        const result = buildLocalResult({ stationName, systemData: indexedEntry.system, station: indexedEntry.station, journalData })
         localStationCache.set(normalizedStation, result)
         const cacheKey = indexedEntry.systemKey || indexedEntry.system?.name?.trim().toLowerCase()
         if (cacheKey && !systemCache.has(cacheKey)) {
@@ -767,10 +865,27 @@ export default async function handler(req, res) {
           `system=${indexedEntry.system?.name || ''}`,
           `faction=${result.faction || ''}`,
           `controllingFaction=${result.controllingFactionName || ''}`,
-          `allegiance=${result.allegiance || ''}`
+          `allegiance=${result.allegiance || ''}`,
+          `factionSource=${result.factionSource || ''}`
         ]
         logInaraTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
         return result
+      }
+
+      const journalData = await journalDataPromise
+      if (journalData) {
+        const journalResult = buildLocalResult({ stationName, systemData: null, station: null, journalData })
+        localStationCache.set(normalizedStation, journalResult)
+        const logParts = [
+          `station=${stationName}`,
+          `system=${journalResult.system || ''}`,
+          `faction=${journalResult.faction || ''}`,
+          `controllingFaction=${journalResult.controllingFactionName || ''}`,
+          `allegiance=${journalResult.allegiance || ''}`,
+          'factionSource=journal-only'
+        ]
+        logInaraTrade(`LOCAL_LOOKUP_JOURNAL_ONLY: ${logParts.join(' ')}`)
+        return journalResult
       }
 
       localStationCache.set(normalizedStation, null)
