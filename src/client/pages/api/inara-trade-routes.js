@@ -645,16 +645,18 @@ export default async function handler(req, res) {
       return null
     }
 
-    const enrichedResults = []
-    for (const route of routes) {
-      const originLocal = await getLocalStationDetails(route.origin.stationName, [route.origin.systemName])
-      const destinationLocal = await getLocalStationDetails(route.destination.stationName, [route.destination.systemName])
-      enrichedResults.push({
+    const enrichedResults = await Promise.all(routes.map(async route => {
+      if (!route || !route.origin || !route.destination) return route
+      const [originLocal, destinationLocal] = await Promise.all([
+        getLocalStationDetails(route.origin.stationName, [route.origin.systemName]),
+        getLocalStationDetails(route.destination.stationName, [route.destination.systemName])
+      ])
+      return {
         ...route,
         origin: { ...route.origin, local: originLocal },
         destination: { ...route.destination, local: destinationLocal }
-      })
-    }
+      }
+    }))
 
     logInaraTrade(`RESPONSE: system=${system} url=${url} results=${enrichedResults.length}`)
     res.status(200).json({ results: enrichedResults })
