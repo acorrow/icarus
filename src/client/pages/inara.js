@@ -115,18 +115,6 @@ const FILTER_SUBMIT_BUTTON_STYLE = {
   borderRadius: '.65rem'
 }
 
-const ROW_TOGGLE_BUTTON_STYLE = {
-  background: 'rgba(255, 124, 34, 0.12)',
-  border: '1px solid rgba(255, 124, 34, 0.55)',
-  color: '#ffb347',
-  borderRadius: '999px',
-  padding: '.2rem .75rem',
-  fontSize: '0.75rem',
-  letterSpacing: '.05em',
-  textTransform: 'uppercase',
-  cursor: 'pointer'
-}
-
 const DEFAULT_SORT_DIRECTION = {
   profitPerTon: 'desc',
   routeDistance: 'asc',
@@ -628,7 +616,7 @@ function TradeRoutesPanel () {
   const [sortField, setSortField] = useState('distance')
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(false)
-  const [collapsedRows, setCollapsedRows] = useState({})
+  const [expandedRouteKey, setExpandedRouteKey] = useState(null)
 
   const parsedMinProfit = useMemo(() => {
     const value = parseFloat(minProfit)
@@ -828,15 +816,19 @@ function TradeRoutesPanel () {
   }, [rawRoutes, filterRoutes, sortRoutes])
 
   useEffect(() => {
-    setCollapsedRows({})
+    setExpandedRouteKey(null)
   }, [rawRoutes])
 
-  const toggleRowExpansion = useCallback(rowId => {
-    setCollapsedRows(prev => ({
-      ...prev,
-      [rowId]: !prev[rowId]
-    }))
+  const handleRowToggle = useCallback(rowId => {
+    setExpandedRouteKey(prev => (prev === rowId ? null : rowId))
   }, [])
+
+  const handleRowKeyDown = useCallback((event, rowId) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      handleRowToggle(rowId)
+    }
+  }, [handleRowToggle])
 
   const renderQuantityIndicator = (entry, type) => {
     if (!entry) return null
@@ -1037,26 +1029,30 @@ function TradeRoutesPanel () {
 
           const rowKey = `route-${index}`
           const detailsId = `${rowKey}-details`
-          const isExpanded = !collapsedRows[rowKey]
+          const isExpanded = expandedRouteKey === rowKey
           const originIconName = getStationIconName(originLocal, route?.origin)
           const destinationIconName = getStationIconName(destinationLocal, route?.destination)
+          const expansionSymbol = isExpanded ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
 
           return (
-            <tr key={index} style={{ fontSize: '0.95rem' }}>
+            <tr
+              key={index}
+              style={{ fontSize: '0.95rem', cursor: 'pointer', background: isExpanded ? 'rgba(255, 124, 34, 0.06)' : 'transparent' }}
+              onClick={() => handleRowToggle(rowKey)}
+              onKeyDown={event => handleRowKeyDown(event, rowKey)}
+              role='button'
+              tabIndex={0}
+              aria-expanded={isExpanded}
+              aria-controls={isExpanded ? detailsId : undefined}
+            >
               <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: isExpanded ? '0.45rem' : '0.3rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                     {originIconName && <StationIcon icon={originIconName} />}
                     <span style={{ fontWeight: 600, flexGrow: 1 }}>{originStation}</span>
-                    <button
-                      type='button'
-                      onClick={() => toggleRowExpansion(rowKey)}
-                      aria-expanded={isExpanded}
-                      aria-controls={detailsId}
-                      style={{ ...ROW_TOGGLE_BUTTON_STYLE, marginLeft: 'auto' }}
-                    >
-                      {isExpanded ? 'Hide details' : 'Show details'}
-                    </button>
+                    <span style={{ marginLeft: 'auto', color: '#ffb347', fontSize: '1.1rem', lineHeight: 1 }}>
+                      {expansionSymbol}
+                    </span>
                   </div>
                   {isExpanded && (
                     <div id={detailsId} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
