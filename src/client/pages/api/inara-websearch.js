@@ -389,14 +389,17 @@ export default async function handler(req, res) {
     }
 
     const seenStations = new Set()
-    const results = []
+    const dedupedStations = []
     for (const entry of parsedStations) {
       const key = entry.station.trim().toLowerCase()
-      if (seenStations.has(key)) continue
+      if (!key || seenStations.has(key)) continue
       seenStations.add(key)
-      const localDetails = await getLocalStationDetails(entry.station, entry.system ? [entry.system] : [])
-      if (localDetails) results.push(localDetails)
+      dedupedStations.push(entry)
     }
+
+    const detailPromises = dedupedStations.map(entry => getLocalStationDetails(entry.station, entry.system ? [entry.system] : []))
+    const detailResults = await Promise.all(detailPromises)
+    const results = detailResults.filter(Boolean)
 
     logInaraSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} results=${results.length}`)
     res.status(200).json({ results })
@@ -405,5 +408,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Failed to fetch or parse INARA results', details: err.message })
   }
 }
-
-
