@@ -361,3 +361,130 @@ table.navigation-panel__route-plan tbody tr.table__row--highlight-primary-hover:
   color: var(--color-primary-dark) !important;
   text-shadow: none;
 }
+
+.navigation-panel__route-hop-cell {
+  padding: .75rem 1rem .75rem .5rem;
+}
+
+.navigation-panel__route-hop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+.navigation-panel__route-hop-card {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  flex: 1 1 auto;
+}
+
+.navigation-panel__route-hop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.navigation-panel__route-hop-system {
+  display: flex;
+  gap: .75rem;
+  align-items: flex-start;
+}
+
+.navigation-panel__route-hop-icon {
+  font-size: 2rem;
+  position: relative;
+  top: .15rem;
+}
+
+.navigation-panel__route-hop-system-meta {
+  margin-top: .25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.navigation-panel__route-hop-system-count {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.navigation-panel__route-hop-system-count .icon {
+  font-size: 1.5rem;
+  position: relative;
+  top: .35rem;
+}
+
+.navigation-panel__route-hop-distance {
+  text-align: right;
+  min-width: 12rem;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.navigation-panel__route-hop-distance-label {
+  text-transform: uppercase;
+  font-size: 1.2rem;
+}
+
+.navigation-panel__route-hop-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.navigation-panel__route-hop-star {
+  flex: 1 1 auto;
+}
+
+.navigation-panel__route-hop-flags {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.navigation-panel__route-hop-flags .icarus-terminal-scan,
+.navigation-panel__route-hop-flags .icarus-terminal-fuel,
+.navigation-panel__route-hop-flags .icarus-terminal-warning {
+  font-size: 2rem;
+  position: relative;
+  top: .25rem;
+}
+
+.navigation-panel__route-hop-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.navigation-panel__route-hop-chevron .icon {
+  font-size: 1rem;
+}
+
+.navigation-panel__route-hop--visited {
+  opacity: .6;
+}
+
+@media only screen and (max-width: 799px) {
+  .navigation-panel__route-hop {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navigation-panel__route-hop-distance {
+    text-align: left;
+    min-width: 0;
+  }
+
+  .navigation-panel__route-hop-chevron {
+    justify-content: flex-start;
+  }
+}
