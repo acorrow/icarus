@@ -33,6 +33,53 @@ class EDSM {
     })
   }
 
+  static async nearbySystems (systemName, { radius = 50, limit = 25 } = {}) {
+    const trimmedName = typeof systemName === 'string' ? systemName.trim() : ''
+    if (!trimmedName) return []
+
+    const parsedRadius = Number(radius)
+    const normalisedRadius = Number.isFinite(parsedRadius) && parsedRadius > 0 ? parsedRadius : 50
+
+    const parsedLimit = Number(limit)
+    const normalisedLimit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(Math.floor(parsedLimit), 200) : 25
+
+    return await retry(async bail => {
+      const res = await axios.get(`${baseUrl}api-v1/sphere-systems`, {
+        params: {
+          systemName: trimmedName,
+          radius: normalisedRadius,
+          showCoordinates: 1,
+          showId: 1,
+          showId64: 1,
+          showDistance: 1
+        }
+      })
+
+      const payload = res?.data
+      if (payload && typeof payload === 'object' && payload.msgnum && payload.msgnum !== 0) {
+        if (payload.msgnum === 201 || payload.msgnum === 202 || payload.msgnum === 203 || payload.msgnum === 301) {
+          return []
+        }
+        throw new Error(payload.msg || 'EDSM sphere systems error')
+      }
+
+      let systems = []
+      if (Array.isArray(payload)) {
+        systems = payload
+      } else if (Array.isArray(payload?.systems)) {
+        systems = payload.systems
+      }
+
+      if (!Array.isArray(systems)) return []
+
+      if (normalisedLimit > 0) return systems.slice(0, normalisedLimit)
+
+      return systems
+    }, {
+      retries: 5
+    })
+  }
+
   static async system (systemName) {
     return await retry(async bail => {
       const resSystem = await axios.get(`${baseUrl}api-v1/system?systemName=${encodeURIComponent(systemName)}&showInformation=1&showCoordinates=1`)

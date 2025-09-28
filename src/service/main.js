@@ -56,7 +56,11 @@ function getLogDir () {
   // variable to specify the direct path (relative or absolute). You can also
   // use a .env file. This is overriden by command line args.
   if (process.env.LOG_DIR) {
-    logDir = process.env.LOG_DIR.startsWith('/') ? process.env.LOG_DIR : path.join(__dirname, process.env.LOG_DIR)
+    // Check for absolute path: Unix (starts with '/') or Windows (e.g., C:\ or C:/)
+    const isAbsolute =
+      process.env.LOG_DIR.startsWith('/') ||
+      /^[a-zA-Z]:[\\\/]/.test(process.env.LOG_DIR);
+    logDir = isAbsolute ? process.env.LOG_DIR : path.join(__dirname, process.env.LOG_DIR);
   }
   // Use provided Save Game dir as base path to look for the the files we need
   // This must be obtained via native OS APIs so is typically passed by the client.

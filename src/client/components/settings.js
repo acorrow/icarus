@@ -24,9 +24,19 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
               </button>
             </Fragment>
           )}
+          <Fragment key='INARA'>
+            <button
+              tabIndex='2'
+              className={`button--icon ${activeSettingsPanel === 'INARA' ? 'button--active' : ''}`}
+              onClick={() => setActiveSettingsPanel('INARA')}
+            >
+              <i className='icon icarus-terminal-info' />
+            </button>
+          </Fragment>
         </div>
         {activeSettingsPanel === 'Theme' && <ThemeSettings visible={visible} />}
         {activeSettingsPanel === 'Sounds' && <SoundSettings visible={visible} />}
+        {activeSettingsPanel === 'INARA' && <InaraSettings />}
         <div className='modal-dialog__footer'>
           <hr style={{ margin: '1rem 0 .5rem 0' }} />
           <button className='float-right' onClick={toggleVisible}>
@@ -35,6 +45,68 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         </div>
       </div>
     </>
+  )
+}
+
+function InaraSettings () {
+  const [apiKey, setApiKey] = useState('')
+  const [appName, setAppName] = useState('ICARUS-Terminal')
+  const [appVersion, setAppVersion] = useState('0.1')
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setApiKey(window.localStorage.getItem('inaraApiKey') || '')
+      setAppName(window.localStorage.getItem('inaraAppName') || 'ICARUS-Terminal')
+      setAppVersion(window.localStorage.getItem('inaraAppVersion') || '0.1')
+    }
+  }, [])
+
+  function handleSave(e) {
+    e.preventDefault()
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('inaraApiKey', apiKey)
+      window.localStorage.setItem('inaraAppName', appName)
+      window.localStorage.setItem('inaraAppVersion', appVersion)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 1500)
+    }
+  }
+
+  return (
+    <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
+      <h3 className='text-primary'>INARA API Settings</h3>
+      <p>Enter your INARA API key, app name, and app version to enable live search and integration features.</p>
+      <form onSubmit={handleSave} style={{ maxWidth: 400 }}>
+        <input
+          type='text'
+          value={apiKey}
+          onChange={e => setApiKey(e.target.value)}
+          placeholder='INARA API Key'
+          style={{ width: '100%', fontSize: '1.1rem', marginBottom: '1rem' }}
+        />
+        <input
+          type='text'
+          value={appName}
+          onChange={e => setAppName(e.target.value)}
+          placeholder='INARA App Name'
+          style={{ width: '100%', fontSize: '1.1rem', marginBottom: '1rem' }}
+        />
+        <input
+          type='text'
+          value={appVersion}
+          onChange={e => setAppVersion(e.target.value)}
+          placeholder='INARA App Version'
+          style={{ width: '100%', fontSize: '1.1rem', marginBottom: '1rem' }}
+        />
+        <button type='submit' style={{ fontSize: '1.1rem' }}>Save</button>
+        {saved && <span className='text-success' style={{ marginLeft: '1rem' }}>Saved!</span>}
+      </form>
+      <p className='text-muted' style={{ fontSize: '0.95rem', marginTop: '1rem' }}>
+        You can get your API key from your <a href='https://inara.cz/settings-api/' target='_blank' rel='noopener noreferrer'>INARA account settings</a>.<br/>
+        App name and version are for identification and can be set to any value.
+      </p>
+    </div>
   )
 }
 
