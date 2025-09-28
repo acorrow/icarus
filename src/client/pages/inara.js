@@ -933,6 +933,7 @@ function TradeRoutesPanel () {
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [expandedRouteKey, setExpandedRouteKey] = useState(null)
+  const isSearchDisabled = status === 'loading' || !(system && system.trim())
 
   useEffect(() => {
     if (!connected || initialCapacityLoaded) return
@@ -1463,7 +1464,7 @@ function TradeRoutesPanel () {
             type='submit'
             className='button--active button--secondary'
             style={{ ...FILTER_SUBMIT_BUTTON_STYLE }}
-            disabled={status === 'loading'}
+            disabled={isSearchDisabled}
           >
             {status === 'loading' ? 'Refreshing…' : 'Refresh Trade Routes'}
           </button>
