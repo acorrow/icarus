@@ -52,6 +52,7 @@ function InaraSettings () {
   const [apiKey, setApiKey] = useState('')
   const [appName, setAppName] = useState('ICARUS-Terminal')
   const [appVersion, setAppVersion] = useState('0.1')
+  const [useMockData, setUseMockData] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
@@ -59,6 +60,7 @@ function InaraSettings () {
       setApiKey(window.localStorage.getItem('inaraApiKey') || '')
       setAppName(window.localStorage.getItem('inaraAppName') || 'ICARUS-Terminal')
       setAppVersion(window.localStorage.getItem('inaraAppVersion') || '0.1')
+      setUseMockData(window.localStorage.getItem('inaraUseMockData') === 'true')
     }
   }, [])
 
@@ -68,6 +70,7 @@ function InaraSettings () {
       window.localStorage.setItem('inaraApiKey', apiKey)
       window.localStorage.setItem('inaraAppName', appName)
       window.localStorage.setItem('inaraAppVersion', appVersion)
+      window.localStorage.setItem('inaraUseMockData', useMockData ? 'true' : 'false')
       setSaved(true)
       setTimeout(() => setSaved(false), 1500)
     }
@@ -99,6 +102,16 @@ function InaraSettings () {
           placeholder='INARA App Version'
           style={{ width: '100%', fontSize: '1.1rem', marginBottom: '1rem' }}
         />
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', fontSize: '1rem' }}>
+          <input
+            type='checkbox'
+            checked={useMockData}
+            onChange={event => setUseMockData(event.target.checked)}
+          />
+          <span>
+            Enable Trade Route Layout Sandbox (use mock data)
+          </span>
+        </label>
         <button type='submit' style={{ fontSize: '1.1rem' }}>Save</button>
         {saved && <span className='text-success' style={{ marginLeft: '1rem' }}>Saved!</span>}
       </form>

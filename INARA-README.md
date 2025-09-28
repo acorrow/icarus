@@ -75,6 +75,13 @@ The INARA integration allows users to search for ships for sale at stations near
 - **Response handling:** The panel parses the returned HTML blocks for each trade route (origin/destination, commodity, supply/demand, distance, and profit metrics) and renders them inside the navigation-themed list. Values such as average profit, profit per unit/trip/hour, and station distances are displayed exactly as provided by INARA; no additional local reconciliation is performed yet.
 - **Data origin:** All trade route rows and profit calculations come straight from INARA's public trade route search. Unlike the ship tab, we currently do not enrich these rows with ICARUS's local system or station metadata.
 
+#### Trade Route Layout Sandbox
+
+- **Feature name:** Trade Route Layout Sandbox.
+- **What it does:** When enabled from **Settings → INARA**, the "Enable Trade Route Layout Sandbox (use mock data)" checkbox tells the trade route panel to bypass live INARA requests and instead render five deterministic mock rows. This allows designers to iterate on layout and styling changes without waiting for the network round-trip or relying on volatile live data.
+- **How it works:** The checkbox persists its value to `window.localStorage` using the key `inaraUseMockData`. The trade route panel reads that flag during every search. If the flag is set to `true`, the panel short-circuits the fetch, never issues the INARA request, and hydrates the table with structured mock data that mirrors the shape of real responses (including supply/demand indicators and profit metrics).
+- **For engineers:** Additional INARA tooling that needs a mock mode should reuse the same `inaraUseMockData` flag so a single toggle controls all mock behaviours.
+
 ## Notes
 - All station/system details (except for-sale status and last updated) are always sourced from ICARUS's local data, never from INARA.
 - The integration is robust to INARA HTML changes and logs all backend activity for troubleshooting.

@@ -60,6 +60,91 @@ function formatCredits(value, fallback) {
   return fallback || '--'
 }
 
+function generateMockTradeRoutes({ systemName, commodity, cargoCapacity, count = 5 }) {
+  const normalizedCapacity = Number.isFinite(Number(cargoCapacity)) && Number(cargoCapacity) > 0
+    ? Math.round(Number(cargoCapacity))
+    : 256
+  const baseCommodity = commodity && commodity.trim() ? commodity.trim() : null
+  const now = Date.now()
+
+  const formatPrice = value => `${Math.round(value).toLocaleString()} Cr`
+
+  return Array.from({ length: count }).map((_, index) => {
+    const id = index + 1
+    const profitPerUnit = 4500 + (index * 800)
+    const outboundBuyPrice = 1200 + (index * 150)
+    const outboundSellPrice = outboundBuyPrice + profitPerUnit
+    const returnBuyPrice = 900 + (index * 130)
+    const returnSellPrice = returnBuyPrice + Math.round(profitPerUnit * 0.65)
+    const routeDistanceLy = 12 + (index * 4)
+    const distanceLy = 5 + (index * 2)
+    const updated = new Date(now - index * 45 * 60000).toISOString()
+
+    const outboundCommodity = baseCommodity || `Mock Commodity ${id}`
+    const returnCommodity = `Return Sample ${id}`
+
+    return {
+      summary: {
+        profitPerUnit,
+        profitPerUnitText: formatPrice(profitPerUnit),
+        profitPerTrip: profitPerUnit * normalizedCapacity,
+        profitPerTripText: formatPrice(profitPerUnit * normalizedCapacity),
+        profitPerHour: profitPerUnit * normalizedCapacity * 2,
+        profitPerHourText: formatPrice(profitPerUnit * normalizedCapacity * 2),
+        routeDistanceLy,
+        routeDistanceText: `${routeDistanceLy.toFixed(2)} Ly`,
+        distanceLy,
+        distanceText: `${distanceLy.toFixed(2)} Ly`,
+        updated
+      },
+      origin: {
+        local: {
+          station: `Sandbox Origin ${id}`,
+          system: systemName || `Sandbox System ${id}`
+        },
+        buy: {
+          commodity: outboundCommodity,
+          price: outboundBuyPrice,
+          priceText: formatPrice(outboundBuyPrice),
+          quantity: 4500 - (index * 250),
+          quantityText: `${(4500 - (index * 250)).toLocaleString()} t`,
+          level: Math.min(3, (index % 3) + 1)
+        },
+        sellReturn: {
+          commodity: returnCommodity,
+          price: returnSellPrice,
+          priceText: formatPrice(returnSellPrice),
+          quantity: 3200 - (index * 200),
+          quantityText: `${(3200 - (index * 200)).toLocaleString()} t`,
+          level: Math.min(3, ((index + 1) % 3) + 1)
+        }
+      },
+      destination: {
+        local: {
+          station: `Sandbox Destination ${id}`,
+          system: `Neighbor System ${id}`
+        },
+        sell: {
+          commodity: outboundCommodity,
+          price: outboundSellPrice,
+          priceText: formatPrice(outboundSellPrice),
+          quantity: 3800 - (index * 180),
+          quantityText: `${(3800 - (index * 180)).toLocaleString()} t`,
+          level: Math.min(3, ((index + 2) % 3) + 1)
+        },
+        buyReturn: {
+          commodity: returnCommodity,
+          price: returnBuyPrice,
+          priceText: formatPrice(returnBuyPrice),
+          quantity: 2600 - (index * 160),
+          quantityText: `${(2600 - (index * 160)).toLocaleString()} t`,
+          level: Math.min(3, (index % 4) + 1)
+        }
+      }
+    }
+  })
+}
+
 function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   const [systemSelection, setSystemSelection] = useState('')
   const [systemInput, setSystemInput] = useState('')
@@ -526,11 +611,44 @@ function TradeRoutesPanel () {
       includeRoundTrips: true
     }
 
+    const applyResults = (nextRoutes = [], meta = {}) => {
+      const filteredRoutes = filterRoutes(nextRoutes)
+      const nextError = meta.error || ''
+      const nextMessage = meta.message || ''
+
+      setRawRoutes(nextRoutes)
+      setRoutes(filteredRoutes)
+      setError(nextError)
+      setMessage(nextMessage)
+
+      if (nextError && filteredRoutes.length === 0) {
+        setStatus('error')
+      } else if (filteredRoutes.length === 0) {
+        setStatus('empty')
+      } else {
+        setStatus('populated')
+      }
+    }
+
     const payload = {
       system: targetSystem,
       filters,
       ...(trimmedCommodity ? { commodity: trimmedCommodity } : {}),
       ...(Number.isFinite(minProfitValue) ? { minProfit: minProfitValue } : {})
+    }
+
+    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('inaraUseMockData') === 'true'
+    if (shouldUseMockData) {
+      const mockRoutes = generateMockTradeRoutes({
+        systemName: targetSystem,
+        commodity: trimmedCommodity,
+        cargoCapacity
+      })
+
+      applyResults(mockRoutes, {
+        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in INARA settings to restore live results.'
+      })
+      return
     }
 
     fetch('/api/inara-trade-routes', {
@@ -546,55 +664,13 @@ function TradeRoutesPanel () {
             ? data.results
             : []
 
-        const distanceFilterValue = Number.isFinite(parsedDistanceFilter) ? parsedDistanceFilter : DISTANCE_FILTER_MAX
-        const hasDistanceFilter = Number.isFinite(distanceFilterValue) && distanceFilterValue < DISTANCE_FILTER_MAX
-
-        const filteredRoutes = nextRoutes.filter(route => {
-          if (Number.isFinite(minProfitValue)) {
-            const numericProfit = typeof route?.summary?.profitPerUnit === 'number' && !Number.isNaN(route.summary.profitPerUnit)
-              ? route.summary.profitPerUnit
-              : (typeof route?.profitPerUnit === 'number' && !Number.isNaN(route.profitPerUnit) ? route.profitPerUnit : null)
-            if (numericProfit !== null && numericProfit < minProfitValue) return false
-
-            if (numericProfit === null) {
-              const profitText = route?.summary?.profitPerUnitText || route?.profitPerUnitText
-              if (typeof profitText === 'string' && profitText.trim()) {
-                const parsed = Number(profitText.replace(/[^0-9.-]/g, ''))
-                if (!Number.isNaN(parsed) && parsed < minProfitValue) return false
-              }
-            }
-          }
-
-          if (hasDistanceFilter) {
-            const numericDistance = typeof route?.summary?.routeDistanceLy === 'number' && !Number.isNaN(route.summary.routeDistanceLy)
-              ? route.summary.routeDistanceLy
-              : (typeof route?.summary?.distanceLy === 'number' && !Number.isNaN(route.summary.distanceLy)
-                ? route.summary.distanceLy
-                : (typeof route?.distanceLy === 'number' && !Number.isNaN(route.distanceLy)
-                  ? route.distanceLy
-                  : (typeof route?.distance === 'number' && !Number.isNaN(route.distance) ? route.distance : null)))
-            if (numericDistance !== null && numericDistance > distanceFilterValue) return false
-          }
-
-          return true
-        })
-
-        setRoutes(filteredRoutes)
-        setError(data?.error || '')
-        setMessage(data?.message || '')
-
-        if (data?.error && filteredRoutes.length === 0) {
-          setStatus('error')
-        } else if (filteredRoutes.length === 0) {
-          setStatus('empty')
-        } else {
-          setStatus('populated')
-        }
+        applyResults(nextRoutes, { error: data?.error, message: data?.message })
       })
       .catch(err => {
         setError(err.message || 'Unable to fetch trade routes.')
         setMessage('')
         setRoutes([])
+        setRawRoutes([])
         setStatus('error')
       })
   }
