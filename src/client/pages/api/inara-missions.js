@@ -6,6 +6,16 @@ const BASE_URL = 'https://inara.cz'
 const MINING_MISSION_TYPE = 7
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
 
+const INARA_REQUEST_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Cache-Control': 'no-cache',
+  Pragma: 'no-cache',
+  Referer: 'https://inara.cz/elite/',
+  Cookie: 'inarasite=1'
+}
+
 function cleanText (value) {
   return (value || '').replace(/\s+/g, ' ').trim()
 }
@@ -89,7 +99,10 @@ export default async function handler (req, res) {
     const targetSystem = system || 'Sol'
     const url = buildInaraUrl(targetSystem)
 
-    const response = await fetch(url, { agent: ipv4HttpsAgent })
+    const response = await fetch(url, {
+      agent: ipv4HttpsAgent,
+      headers: INARA_REQUEST_HEADERS
+    })
     if (!response.ok) {
       throw new Error(`INARA request failed with status ${response.status}`)
     }
