@@ -1,0 +1,118 @@
+.trade-routes-panel {
+  color: #fff;
+}
+
+.trade-routes-panel__form {
+  margin: 2rem 0 1.5rem;
+}
+
+.trade-routes-panel__grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: flex-end;
+}
+
+.trade-routes-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.trade-routes-field__label {
+  color: #ff7c22;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+}
+
+.trade-routes-field__control {
+  width: 100%;
+  min-height: 3rem;
+  height: 3rem;
+  padding: 0 1rem;
+  margin: 0;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(14, 14, 14, 0.85);
+  color: #f5f7fa;
+  font-size: 1.05rem;
+  font-family: "Jura", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  line-height: 1.35;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: inset 0 0 0.75rem rgba(0, 0, 0, 0.35);
+}
+
+.trade-routes-field__control:focus,
+.trade-routes-field__control:hover {
+  outline: none;
+  border-color: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.7);
+  box-shadow: 0 0 0.85rem rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.25);
+  background: rgba(26, 26, 26, 0.95);
+}
+
+.trade-routes-field__control::placeholder {
+  color: rgba(223, 228, 235, 0.6);
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.trade-routes-field__control--select {
+  appearance: none;
+  padding-right: 2.75rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.41.59 6 5.17 10.59.59 12 2l-6 6-6-6L1.41.59Z' fill='%23ff7c22'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.85rem;
+}
+
+.trade-routes-field__control--number {
+  padding-right: 1.5rem;
+}
+
+.trade-routes-field__control[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.trade-routes-panel__submit {
+  align-self: stretch;
+  display: flex;
+  align-items: flex-end;
+}
+
+.trade-routes-panel__submit-button {
+  width: 100%;
+  height: 3rem;
+  min-height: 3rem;
+  padding: 0 1.75rem;
+  border-radius: 0.85rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+.trade-routes-field__control--manual {
+  margin-top: 0;
+}
+
+@media only screen and (max-width: 699px) {
+  .trade-routes-panel__grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .trade-routes-field__control {
+    font-size: 1rem;
+  }
+
+  .trade-routes-panel__submit-button {
+    font-size: 1rem;
+  }
+}

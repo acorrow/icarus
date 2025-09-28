@@ -2,35 +2,6 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 
-const TRADE_ROUTE_CONTROL_STYLE = Object.freeze({
-  width: '100%',
-  padding: '0.65rem 0.85rem',
-  fontSize: '1rem',
-  lineHeight: 1.4,
-  borderRadius: '0.65rem',
-  border: '1px solid #444',
-  background: '#1b1b1b',
-  color: '#fff',
-  height: '3.1rem',
-  minHeight: '3.1rem',
-  boxSizing: 'border-box',
-  transition: 'border-color .2s ease, box-shadow .2s ease'
-})
-
-const TRADE_ROUTE_SELECT_STYLE = Object.freeze({
-  ...TRADE_ROUTE_CONTROL_STYLE,
-  paddingRight: '2.5rem'
-})
-
-const TRADE_ROUTE_LABEL_STYLE = Object.freeze({
-  display: 'block',
-  marginBottom: '.45rem',
-  color: '#ff7c22',
-  fontSize: '0.92rem',
-  fontWeight: 600,
-  letterSpacing: '0.015em'
-})
-
 function formatSystemDistance(value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
     return `${value.toFixed(2)} Ly`
@@ -171,12 +142,17 @@ function SystemSelect ({
   onSystemChange,
   systemInput,
   onManualSystemChange,
-  placeholder = 'Enter system name...'
+  placeholder = 'Enter system name...',
+  className = ''
 }) {
   return (
-    <div style={{ flex: 1, minWidth: 200 }}>
-      <label style={TRADE_ROUTE_LABEL_STYLE}>{label}</label>
-      <select value={systemSelection} onChange={onSystemChange} style={TRADE_ROUTE_SELECT_STYLE}>
+    <div className={`trade-routes-field ${className}`}>
+      <label className='trade-routes-field__label'>{label}</label>
+      <select
+        value={systemSelection}
+        onChange={onSystemChange}
+        className='trade-routes-field__control trade-routes-field__control--select'
+      >
         <option value=''>Select a system...</option>
         {systemOptions.map(opt => (
           <option key={opt.name} value={opt.name}>
@@ -193,7 +169,7 @@ function SystemSelect ({
           value={systemInput}
           onChange={onManualSystemChange}
           placeholder={placeholder}
-          style={{ ...TRADE_ROUTE_CONTROL_STYLE, marginTop: '.65rem' }}
+          className='trade-routes-field__control trade-routes-field__control--manual'
         />
       )}
     </div>
@@ -736,10 +712,10 @@ function TradeRoutesPanel () {
   )
 
   return (
-    <div>
+    <div className='trade-routes-panel'>
       <h2>Find Trade Routes</h2>
-      <form onSubmit={handleSubmit} style={{ margin: '2rem 0 1.5rem 0' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem' }}>
+      <form onSubmit={handleSubmit} className='trade-routes-panel__form'>
+        <div className='trade-routes-panel__grid'>
           <SystemSelect
             label='System'
             systemSelection={systemSelection}
@@ -748,127 +724,126 @@ function TradeRoutesPanel () {
             systemInput={systemInput}
             onManualSystemChange={handleManualSystemChange}
           />
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Commodity (optional)</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Commodity (optional)</label>
             <input
               type='text'
               value={commodity}
               onChange={event => setCommodity(event.target.value)}
               placeholder='Commodity name...'
-              style={TRADE_ROUTE_CONTROL_STYLE}
+              className='trade-routes-field__control'
             />
           </div>
-          <div style={{ flex: 1, minWidth: 140 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Cargo Capacity (t)</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Cargo Capacity (t)</label>
             <input
               type='number'
               min='0'
               value={cargoCapacity}
               onChange={event => setCargoCapacity(event.target.value)}
               placeholder='e.g. 304'
-              style={TRADE_ROUTE_CONTROL_STYLE}
+              className='trade-routes-field__control trade-routes-field__control--number'
             />
           </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Max Route Distance</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Max Route Distance</label>
             <select
               value={routeDistance}
               onChange={event => setRouteDistance(event.target.value)}
-              style={TRADE_ROUTE_SELECT_STYLE}
+              className='trade-routes-field__control trade-routes-field__control--select'
             >
               {routeDistanceOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Max Price Age</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Max Price Age</label>
             <select
               value={priceAge}
               onChange={event => setPriceAge(event.target.value)}
-              style={TRADE_ROUTE_SELECT_STYLE}
+              className='trade-routes-field__control trade-routes-field__control--select'
             >
               {priceAgeOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Min Landing Pad</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Min Landing Pad</label>
             <select
               value={padSize}
               onChange={event => setPadSize(event.target.value)}
-              style={TRADE_ROUTE_SELECT_STYLE}
+              className='trade-routes-field__control trade-routes-field__control--select'
             >
               {padSizeOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Min Supply</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Min Supply</label>
             <select
               value={minSupply}
               onChange={event => setMinSupply(event.target.value)}
-              style={TRADE_ROUTE_SELECT_STYLE}
+              className='trade-routes-field__control trade-routes-field__control--select'
             >
               {supplyOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Min Demand</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Min Demand</label>
             <select
               value={minDemand}
               onChange={event => setMinDemand(event.target.value)}
-              style={TRADE_ROUTE_SELECT_STYLE}
+              className='trade-routes-field__control trade-routes-field__control--select'
             >
               {demandOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Use Surface Stations</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Use Surface Stations</label>
             <select
               value={surfacePreference}
               onChange={event => setSurfacePreference(event.target.value)}
-              style={TRADE_ROUTE_SELECT_STYLE}
+              className='trade-routes-field__control trade-routes-field__control--select'
             >
               {surfaceOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Max Station Distance</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Max Station Distance</label>
             <select
               value={stationDistance}
               onChange={event => setStationDistance(event.target.value)}
-              style={TRADE_ROUTE_SELECT_STYLE}
+              className='trade-routes-field__control trade-routes-field__control--select'
             >
               {stationDistanceOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={TRADE_ROUTE_LABEL_STYLE}>Min Profit/Ton (optional)</label>
+          <div className='trade-routes-field'>
+            <label className='trade-routes-field__label'>Min Profit/Ton (optional)</label>
             <input
               type='number'
               step='any'
               value={minProfit}
               onChange={event => setMinProfit(event.target.value)}
               placeholder='e.g. 7500'
-              style={TRADE_ROUTE_CONTROL_STYLE}
+              className='trade-routes-field__control trade-routes-field__control--number'
             />
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <div className='trade-routes-panel__submit'>
             <button
               type='submit'
-              className='button--active button--secondary'
-              style={{ padding: '.85rem 2rem', fontSize: '1.1rem', borderRadius: '.75rem' }}
+              className='button--active button--secondary trade-routes-panel__submit-button'
               disabled={status === 'loading'}
             >
               {status === 'loading' ? 'Searching...' : 'Find Routes'}
