@@ -1604,11 +1604,212 @@ function TradeRoutesPanel () {
   )
 }
 
+function PristineMiningPanel () {
+  const {
+    currentSystem,
+    system,
+    systemSelection,
+    systemInput,
+    systemOptions,
+    handleSystemChange,
+    handleManualSystemChange
+  } = useSystemSelector({ autoSelectCurrent: true })
+  const [locations, setLocations] = useState([])
+  const [status, setStatus] = useState('idle')
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const [sourceUrl, setSourceUrl] = useState('')
+
+  const trimmedSystem = useMemo(() => {
+    if (typeof system === 'string') {
+      const value = system.trim()
+      if (value) return value
+    }
+    return ''
+  }, [system])
+
+  const displaySystemName = useMemo(() => {
+    if (trimmedSystem) return trimmedSystem
+    if (systemSelection && systemSelection !== '__manual') return systemSelection
+    if (systemInput && systemInput.trim()) return systemInput.trim()
+    if (currentSystem?.name) return currentSystem.name
+    return ''
+  }, [trimmedSystem, systemSelection, systemInput, currentSystem])
+
+  useEffect(() => {
+    if (!trimmedSystem) {
+      setLocations([])
+      setStatus('idle')
+      setError('')
+      setMessage('')
+      setSourceUrl('')
+      return
+    }
+
+    let cancelled = false
+
+    setStatus('loading')
+    setError('')
+    setMessage('')
+
+    fetch('/api/inara-pristine-mining', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: trimmedSystem })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (cancelled) return
+
+        const nextLocations = Array.isArray(data?.locations)
+          ? data.locations
+          : Array.isArray(data?.bodies)
+            ? data.bodies
+            : []
+
+        const nextError = typeof data?.error === 'string' ? data.error : ''
+        const nextMessage = typeof data?.message === 'string' ? data.message : ''
+        const nextSourceUrl = typeof data?.sourceUrl === 'string' ? data.sourceUrl : ''
+
+        setLocations(nextLocations)
+        setError(nextError)
+        setMessage(nextMessage)
+        setSourceUrl(nextSourceUrl)
+
+        if (nextError && nextLocations.length === 0) {
+          setStatus('error')
+        } else if (nextLocations.length === 0) {
+          setStatus('empty')
+        } else {
+          setStatus('populated')
+        }
+      })
+      .catch(err => {
+        if (cancelled) return
+        setLocations([])
+        setError(err.message || 'Unable to fetch pristine mining locations.')
+        setMessage('')
+        setSourceUrl('')
+        setStatus('error')
+      })
+
+    return () => { cancelled = true }
+  }, [trimmedSystem])
+
+  return (
+    <div>
+      <h2>Pristine Mining Locations</h2>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+        <SystemSelect
+          label='System'
+          systemSelection={systemSelection}
+          systemOptions={systemOptions}
+          onSystemChange={handleSystemChange}
+          systemInput={systemInput}
+          onManualSystemChange={handleManualSystemChange}
+          placeholder='Enter system name...'
+        />
+        {sourceUrl && (
+          <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }}>
+            <a
+              href={sourceUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-secondary'
+            >
+              View results on INARA
+            </a>
+          </div>
+        )}
+      </div>
+      <p style={{ color: '#aaa', marginTop: '-0.5rem' }}>
+        Location data is provided by INARA community submissions.
+      </p>
+      {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
+      <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
+        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+          {message && status !== 'idle' && status !== 'loading' && (
+            <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
+              {message}
+            </div>
+          )}
+          {status === 'idle' && (
+            <div style={{ color: '#aaa', padding: '2rem' }}>
+              Select a system to discover nearby pristine mining locations.
+            </div>
+          )}
+          {status === 'loading' && (
+            <div style={{ color: '#aaa', padding: '2rem' }}>Searching for pristine mining locations...</div>
+          )}
+          {status === 'error' && !error && (
+            <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load pristine mining locations.</div>
+          )}
+          {status === 'empty' && (
+            <div style={{ color: '#aaa', padding: '2rem' }}>
+              No pristine mining locations found near {displaySystemName || 'the selected system'}.
+            </div>
+          )}
+          {status === 'populated' && locations.length > 0 && (
+            <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Body</th>
+                  <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>System</th>
+                  <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Body Distance</th>
+                  <th className='text-right' style={{ padding: '.75rem 1rem' }}>Distance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {locations.map((location, index) => {
+                  const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
+                  const detailParts = []
+                  if (location.bodyType) detailParts.push(location.bodyType)
+                  if (location.ringType) detailParts.push(`${location.ringType} ring`)
+                  if (location.reservesLevel) detailParts.push(`${location.reservesLevel} reserves`)
+                  const detailText = detailParts.join(' · ')
+                  const bodyDistanceDisplay = formatStationDistance(location.bodyDistanceLs, location.bodyDistanceText)
+                  const distanceDisplay = formatSystemDistance(location.distanceLy, location.distanceText)
+
+                  return (
+                    <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
+                      <td style={{ padding: '.65rem 1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span className='text-primary'>{location.body || '--'}</span>
+                          {detailText && (
+                            <span style={{ color: '#aaa', fontSize: '0.95rem', marginTop: '.25rem' }}>{detailText}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ padding: '.65rem 1rem' }}>
+                        <div className='text-no-wrap' style={{ display: 'flex', alignItems: 'center' }}>
+                          {location.isTargetSystem ? (
+                            <i className='icon system-object-icon icarus-terminal-location-filled text-primary' style={{ marginRight: '.5rem' }} />
+                          ) : (
+                            <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
+                          )}
+                          <span className='text-primary'>{location.system || '--'}</span>
+                        </div>
+                      </td>
+                      <td className='hidden-small text-right text-no-wrap' style={{ padding: '.65rem 1rem' }}>{bodyDistanceDisplay || '--'}</td>
+                      <td className='text-right text-no-wrap' style={{ padding: '.65rem 1rem' }}>{distanceDisplay || '--'}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Missions', icon: 'table-rows', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
+    { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
     { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') }
 
@@ -1623,6 +1824,9 @@ export default function InaraPage() {
           </div>
           <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
             <MissionsPanel />
+          </div>
+          <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
+            <PristineMiningPanel />
           </div>
           <div style={{ display: activeTab === 'ships' ? 'block' : 'none' }}>
             <ShipsPanel />
