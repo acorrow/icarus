@@ -18,6 +18,7 @@ const ROOT_OUTPUT_DATA_DIR = path.join('src', 'service', 'data')
   await fdevids()
   coriolisDataBlueprints()
   coriolisDataModules()
+  coriolisDataShips()
   materialUses()
   await codexArticles()
 })()
@@ -125,6 +126,66 @@ function coriolisDataModules () {
 
     fs.writeFileSync(`${outputDir}/modules.json`, JSON.stringify(modules, null, 2))
   })
+}
+
+function coriolisDataShips () {
+  // https://github.com/EDCD/coriolis-data
+  const dataDir = 'edcd/coriolis/ships'
+  const outputDir = `${ROOT_OUTPUT_DATA_DIR}/edcd/coriolis`
+  fs.mkdirSync(outputDir, { recursive: true })
+
+  const files = glob.sync(`${ROOT_INPUT_DATA_DIR}/${dataDir}/*.json`)
+  const ships = []
+
+  files.forEach(filePath => {
+    const fileContents = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+
+    Object.entries(fileContents).forEach(([slug, shipData]) => {
+      if (!shipData) return
+
+      const id = shipData?.edID != null ? String(shipData.edID) : null
+      if (!id) return
+
+      ships.push({
+        id,
+        slug,
+        name: shipData?.properties?.name || slug,
+        manufacturer: shipData?.properties?.manufacturer || null,
+        class: shipData?.properties?.class ?? null,
+        retailCost: shipData?.retailCost ?? null,
+        hullCost: shipData?.properties?.hullCost ?? null,
+        crew: shipData?.properties?.crew ?? null,
+        speed: shipData?.properties?.speed ?? null,
+        boost: shipData?.properties?.boost ?? null,
+        boostEnergy: shipData?.properties?.boostEnergy ?? null,
+        heatCapacity: shipData?.properties?.heatCapacity ?? null,
+        baseShieldStrength: shipData?.properties?.baseShieldStrength ?? null,
+        baseArmour: shipData?.properties?.baseArmour ?? null,
+        hardness: shipData?.properties?.hardness ?? null,
+        hullMass: shipData?.properties?.hullMass ?? null,
+        masslock: shipData?.properties?.masslock ?? null,
+        pipSpeed: shipData?.properties?.pipSpeed ?? null,
+        pitch: shipData?.properties?.pitch ?? null,
+        roll: shipData?.properties?.roll ?? null,
+        yaw: shipData?.properties?.yaw ?? null,
+        reserveFuelCapacity: shipData?.properties?.reserveFuelCapacity ?? null,
+        edID: shipData?.edID ?? null,
+        eddbID: shipData?.eddbID ?? null,
+        slots: shipData?.slots ?? null,
+        defaults: shipData?.defaults ?? null
+      })
+    })
+  })
+
+  ships.sort((a, b) => {
+    const nameA = (a.name || '').toLowerCase()
+    const nameB = (b.name || '').toLowerCase()
+    if (nameA < nameB) return -1
+    if (nameA > nameB) return 1
+    return 0
+  })
+
+  fs.writeFileSync(`${outputDir}/ships.json`, JSON.stringify(ships, null, 2))
 }
 
 function materialUses () {
