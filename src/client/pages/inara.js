@@ -1428,21 +1428,6 @@ function TradeRoutesPanel () {
               onManualSystemChange={handleManualSystemChange}
             />
             <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Cargo Capacity (t)</label>
-              <div
-                style={{
-                  ...FILTER_CONTROL_STYLE,
-                  display: 'flex',
-                  alignItems: 'center',
-                  pointerEvents: 'none',
-                  userSelect: 'none',
-                  fontWeight: 600
-                }}
-              >
-                {cargoCapacityDisplay}
-              </div>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
               <label style={FILTER_LABEL_STYLE}>Max Route Distance</label>
               <select
                 value={routeDistance}
