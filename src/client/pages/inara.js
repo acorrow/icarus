@@ -4,6 +4,7 @@ import Panel from '../components/panel'
 import Icons from '../lib/icons'
 import { useSocket, sendEvent } from '../lib/socket'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
+import notification from '../lib/notification'
 
 function formatSystemDistance (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
@@ -94,6 +95,186 @@ function formatCredits (value, fallback) {
     return value
   }
   return fallback || '--'
+}
+
+function fallbackCopyText (text) {
+  return new Promise((resolve, reject) => {
+    if (typeof document === 'undefined') {
+      reject(new Error('Clipboard unavailable'))
+      return
+    }
+
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'absolute'
+      textarea.style.left = '-9999px'
+      textarea.style.top = '0'
+      document.body.appendChild(textarea)
+
+      const selection = document.getSelection()
+      const selectedRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null
+
+      textarea.focus()
+      textarea.select()
+
+      const successful = document.execCommand('copy')
+      document.body.removeChild(textarea)
+
+      if (selectedRange && selection) {
+        selection.removeAllRanges()
+        selection.addRange(selectedRange)
+      }
+
+      if (successful) {
+        resolve()
+      } else {
+        reject(new Error('Copy command failed'))
+      }
+    } catch (error) {
+      reject(error)
+    }
+  })
+}
+
+function copyTextToClipboard (text) {
+  if (typeof text !== 'string' || !text.trim()) {
+    return Promise.reject(new Error('Nothing to copy'))
+  }
+
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text))
+  }
+
+  return fallbackCopyText(text)
+}
+
+function copyInaraLink (url, description) {
+  if (!url) return
+
+  const label = description || url
+
+  copyTextToClipboard(url)
+    .then(() => {
+      notification(() => (
+        <p>
+          <span className='text-primary'>INARA link copied</span>
+          <br />
+          <span className='text-info'>{label}</span>
+        </p>
+      ))
+    })
+    .catch(() => {
+      notification(() => (
+        <p>
+          <span className='text-primary'>Unable to copy INARA link</span>
+          <br />
+          <span className='text-info'>{label}</span>
+        </p>
+      ))
+    })
+}
+
+function PristineMiningArtwork ({ systemObject }) {
+  const ringMaskId = useMemo(() => {
+    if (!systemObject) return 'pristine-artwork-ring-mask'
+    const base = (systemObject.id || normaliseName(systemObject.name) || 'object')
+      .toString()
+      .replace(/[^a-z0-9-]/gi, '-')
+    return `pristine-artwork-ring-mask-${base}`
+  }, [systemObject?.id, systemObject?.name])
+
+  if (!systemObject) return null
+
+  const type = systemObject.type || ''
+  const subType = systemObject.subType || type
+  const hasRings = Array.isArray(systemObject.rings) && systemObject.rings.length > 0
+  const isBelt = /belt|cluster/i.test(type) || /belt|ring/i.test(subType)
+  const isStar = type === 'Star'
+  const hasAtmosphere = Boolean(systemObject.atmosphereType && systemObject.atmosphereType !== 'No atmosphere')
+
+  const dataAttributes = {
+    'data-system-object-type': type,
+    'data-system-object-sub-type': subType,
+    'data-system-object-landable': systemObject.isLandable || undefined,
+    'data-system-object-atmosphere': systemObject.atmosphereType || undefined,
+    'data-system-object-name': systemObject.name || undefined
+  }
+
+  if (isBelt) {
+    return (
+      <div className='pristine-mining__artwork pristine-mining__artwork--belt' aria-hidden='true'>
+        <svg viewBox='0 0 1000 600' className='pristine-mining__artwork-svg pristine-mining__artwork-svg--belt' focusable='false'>
+          <g className='pristine-mining__belt'>
+            <ellipse className='pristine-mining__belt-ring pristine-mining__belt-ring--outer' cx='500' cy='300' rx='420' ry='160' />
+            <ellipse className='pristine-mining__belt-ring pristine-mining__belt-ring--inner' cx='500' cy='300' rx='340' ry='120' />
+            <ellipse className='pristine-mining__belt-dust' cx='500' cy='300' rx='260' ry='90' />
+          </g>
+        </svg>
+      </div>
+    )
+  }
+
+  const radius = isStar ? 320 : 300
+  const atmosphereRadius = radius + 70
+  const ringOuterRx = radius * 2
+  const ringOuterRy = radius / 3
+  const ringInnerRx = radius
+  const ringInnerRy = radius / 3
+  const ringMiddleRx = radius * 1.2
+  const ringMiddleRy = radius / 5
+
+  return (
+    <div className='pristine-mining__artwork' aria-hidden='true'>
+      <svg viewBox='0 0 1000 1000' className='pristine-mining__artwork-svg' focusable='false'>
+        <g className='system-map__system-object pristine-mining__artwork-object' {...dataAttributes}>
+          {hasAtmosphere && (
+            <g className='system-map__body'>
+              <g className='system-map__planet'>
+                <circle className='system-map__planet-atmosphere' cx='500' cy='500' r={atmosphereRadius} />
+              </g>
+            </g>
+          )}
+          <g className='system-map__body'>
+            <g className='system-map__planet'>
+              <circle cx='500' cy='500' r={radius} />
+              <circle className='system-map__planet-surface' cx='500' cy='500' r={radius} />
+              {hasRings && (
+                <>
+                  <defs>
+                    <mask id={ringMaskId} className='system-map__planet-ring-mask'>
+                      <ellipse cx='500' cy='500' rx={ringOuterRx} ry={ringOuterRy} fill='white' />
+                      <ellipse cx='500' cy={500 - (radius / 5)} rx={ringInnerRx} ry={ringInnerRy} fill='black' />
+                      <ellipse cx='500' cy={500 - (radius / 15)} rx={ringMiddleRx} ry={ringMiddleRy} fill='black' />
+                    </mask>
+                  </defs>
+                  <ellipse
+                    className='system-map__planet-ring'
+                    cx='500'
+                    cy='500'
+                    rx={ringOuterRx}
+                    ry={ringOuterRy}
+                    mask={`url(#${ringMaskId})`}
+                    opacity='1'
+                  />
+                  <ellipse
+                    className='system-map__planet-ring'
+                    cx='500'
+                    cy={500 - (radius / 80)}
+                    rx={radius * 1.85}
+                    ry={radius / 4.2}
+                    mask={`url(#${ringMaskId})`}
+                    opacity='.25'
+                  />
+                </>
+              )}
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+  )
 }
 
 const FILTER_FORM_STYLE = {
@@ -788,6 +969,10 @@ function MissionsPanel () {
     }
   }, [trimmedSystem])
 
+  const handleInaraLinkCopy = useCallback((url, label) => {
+    copyInaraLink(url, label)
+  }, [])
+
   return (
     <div>
       <h2>Mining Missions</h2>
@@ -874,12 +1059,17 @@ function MissionsPanel () {
                           ? (
                               mission.factionUrl
                                 ? (
-                                  <a href={mission.factionUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>
+                                  <button
+                                    type='button'
+                                    className={`inara-link-button ${standingClass}`}
+                                    title={factionTitle}
+                                    onClick={() => handleInaraLinkCopy(mission.factionUrl, `Faction: ${mission.faction}`)}
+                                  >
                                     {mission.faction}
-                                  </a>
+                                  </button>
                                   )
                                 : (
-                                    mission.faction
+                                  <span className={standingClass} title={factionTitle}>{mission.faction}</span>
                                   )
                             )
                           : '--'}
@@ -897,9 +1087,13 @@ function MissionsPanel () {
                             ? (
                                 mission.systemUrl
                                   ? (
-                                    <a href={mission.systemUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>
+                                    <button
+                                      type='button'
+                                      className='inara-link-button'
+                                      onClick={() => handleInaraLinkCopy(mission.systemUrl, `System: ${mission.system}`)}
+                                    >
                                       {mission.system}
-                                    </a>
+                                    </button>
                                     )
                                   : (
                                       mission.system
@@ -1648,6 +1842,8 @@ function PristineMiningPanel () {
   const [detailError, setDetailError] = useState('')
   const [systemDataCache, setSystemDataCache] = useState({})
   const detailRequestRef = useRef({ id: 0, key: null })
+  const inspectorReserved = Boolean(expandedLocationKey)
+  const inspectorVisible = inspectorReserved && !detailError && !!expandedSystemObject
 
   const trimmedSystem = useMemo(() => {
     if (typeof system === 'string') {
@@ -1844,14 +2040,13 @@ function PristineMiningPanel () {
         />
         {sourceUrl && (
           <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }}>
-            <a
-              href={sourceUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-secondary'
+            <button
+              type='button'
+              className='inara-link-button'
+              onClick={() => copyInaraLink(sourceUrl, `Pristine mining results${displaySystemName ? ` for ${displaySystemName}` : ''}`)}
             >
-              View results on INARA
-            </a>
+              Copy INARA results link
+            </button>
           </div>
         )}
       </div>
@@ -1859,8 +2054,14 @@ function PristineMiningPanel () {
         Location data is provided by INARA community submissions.
       </p>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
-        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+      <div
+        className='pristine-mining__container'
+        style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden', position: 'relative' }}
+      >
+        <div
+          className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
+          style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}
+        >
           {message && status !== 'idle' && status !== 'loading' && (
             <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
               {message}
@@ -1944,36 +2145,47 @@ function PristineMiningPanel () {
                       {isExpanded && (
                         <tr>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: '#080808', borderTop: '1px solid #222' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '1.25rem' }}>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', color: '#bbb', fontSize: '0.95rem' }}>
-                                {detailText && <span>{detailText}</span>}
-                                {bodyDistanceDisplay && <span>Body Distance: <span className='text-primary'>{bodyDistanceDisplay}</span></span>}
-                                {distanceDisplay && <span>System Distance: <span className='text-primary'>{distanceDisplay}</span></span>}
+                            <div className='pristine-mining__detail'>
+                              <div className='pristine-mining__detail-info'>
+                                <div className='pristine-mining__detail-summary'>
+                                  {detailText && <span>{detailText}</span>}
+                                  {bodyDistanceDisplay && <span>Body Distance: <span className='text-primary'>{bodyDistanceDisplay}</span></span>}
+                                  {distanceDisplay && <span>System Distance: <span className='text-primary'>{distanceDisplay}</span></span>}
+                                </div>
+                                {(location.systemUrl || location.bodyUrl) && (
+                                  <div className='pristine-mining__detail-links'>
+                                    {location.systemUrl && (
+                                      <button
+                                        type='button'
+                                        className='inara-link-button'
+                                        onClick={() => copyInaraLink(location.systemUrl, `System: ${location.system || location.systemUrl}`)}
+                                      >
+                                        Copy INARA system link
+                                      </button>
+                                    )}
+                                    {location.bodyUrl && (
+                                      <button
+                                        type='button'
+                                        className='inara-link-button'
+                                        onClick={() => copyInaraLink(location.bodyUrl, `Body: ${location.body || location.bodyUrl}`)}
+                                      >
+                                        Copy INARA body link
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                                {detailLoadingKey === key && (
+                                  <div className='pristine-mining__detail-status'>Loading system details...</div>
+                                )}
+                                {detailLoadingKey !== key && detailError && (
+                                  <div className='pristine-mining__detail-status pristine-mining__detail-status--error'>{detailError}</div>
+                                )}
                               </div>
-                              {(location.systemUrl || location.bodyUrl) && (
-                                <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: '0.95rem' }}>
-                                  {location.systemUrl && (
-                                    <a href={location.systemUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>View system on INARA</a>
-                                  )}
-                                  {location.bodyUrl && (
-                                    <a href={location.bodyUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>View body on INARA</a>
-                                  )}
-                                </div>
-                              )}
-                              {detailLoadingKey === key && (
-                                <div style={{ color: '#aaa' }}>Loading system details...</div>
-                              )}
-                              {detailLoadingKey !== key && detailError && (
-                                <div style={{ color: '#ffb347' }}>{detailError}</div>
-                              )}
-                              {detailLoadingKey !== key && !detailError && expandedSystemObject && (
-                                <div style={{ border: '1px solid #222', borderRadius: '.65rem', overflow: 'hidden' }}>
-                                  <NavigationInspectorPanel
-                                    systemObject={expandedSystemObject}
-                                    setSystemObjectByName={handleInspectorSelection}
-                                  />
-                                </div>
-                              )}
+                              <div className='pristine-mining__detail-artwork'>
+                                {detailLoadingKey !== key && !detailError && expandedSystemObject && (
+                                  <PristineMiningArtwork systemObject={expandedSystemObject} />
+                                )}
+                              </div>
                             </div>
                           </td>
                         </tr>
@@ -1983,6 +2195,20 @@ function PristineMiningPanel () {
                 })}
               </tbody>
             </table>
+          )}
+        </div>
+        <div className={`pristine-mining__inspector${inspectorReserved ? ' pristine-mining__inspector--reserved' : ''}`}>
+          {inspectorReserved && detailLoadingKey === expandedLocationKey && (
+            <div className='pristine-mining__inspector-status'>Loading system details...</div>
+          )}
+          {inspectorReserved && detailLoadingKey !== expandedLocationKey && detailError && (
+            <div className='pristine-mining__inspector-status pristine-mining__inspector-status--error'>{detailError}</div>
+          )}
+          {inspectorVisible && (
+            <NavigationInspectorPanel
+              systemObject={expandedSystemObject}
+              setSystemObjectByName={handleInspectorSelection}
+            />
           )}
         </div>
       </div>
