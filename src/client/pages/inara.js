@@ -553,6 +553,216 @@ function ShipsPanel() {
   )
 }
 
+function MissionsPanel () {
+  const {
+    currentSystem,
+    system,
+    systemSelection,
+    systemInput,
+    systemOptions,
+    handleSystemChange,
+    handleManualSystemChange
+  } = useSystemSelector({ autoSelectCurrent: true })
+  const [missions, setMissions] = useState([])
+  const [status, setStatus] = useState('idle')
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const [sourceUrl, setSourceUrl] = useState('')
+
+  const trimmedSystem = useMemo(() => {
+    if (typeof system === 'string') {
+      const value = system.trim()
+      if (value) return value
+    }
+    return ''
+  }, [system])
+
+  const displaySystemName = useMemo(() => {
+    if (trimmedSystem) return trimmedSystem
+    if (systemSelection && systemSelection !== '__manual') return systemSelection
+    if (systemInput && systemInput.trim()) return systemInput.trim()
+    if (currentSystem?.name) return currentSystem.name
+    return ''
+  }, [trimmedSystem, systemSelection, systemInput, currentSystem])
+
+  useEffect(() => {
+    if (!trimmedSystem) {
+      setMissions([])
+      setStatus('idle')
+      setError('')
+      setMessage('')
+      setSourceUrl('')
+      return
+    }
+
+    let cancelled = false
+
+    setStatus('loading')
+    setError('')
+    setMessage('')
+
+    fetch('/api/inara-missions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: trimmedSystem })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (cancelled) return
+
+        const nextMissions = Array.isArray(data?.missions)
+          ? data.missions
+          : Array.isArray(data?.results)
+            ? data.results
+            : []
+
+        const nextError = typeof data?.error === 'string' ? data.error : ''
+        const nextMessage = typeof data?.message === 'string' ? data.message : ''
+        const nextSourceUrl = typeof data?.sourceUrl === 'string' ? data.sourceUrl : ''
+
+        setMissions(nextMissions)
+        setError(nextError)
+        setMessage(nextMessage)
+        setSourceUrl(nextSourceUrl)
+
+        if (nextError && nextMissions.length === 0) {
+          setStatus('error')
+        } else if (nextMissions.length === 0) {
+          setStatus('empty')
+        } else {
+          setStatus('populated')
+        }
+      })
+      .catch(err => {
+        if (cancelled) return
+        setMissions([])
+        setError(err.message || 'Unable to fetch missions.')
+        setMessage('')
+        setSourceUrl('')
+        setStatus('error')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [trimmedSystem])
+
+  return (
+    <div>
+      <h2>Nearby Missions</h2>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+        <SystemSelect
+          label='System'
+          systemSelection={systemSelection}
+          systemOptions={systemOptions}
+          onSystemChange={handleSystemChange}
+          systemInput={systemInput}
+          onManualSystemChange={handleManualSystemChange}
+          placeholder='Enter system name...'
+        />
+        {sourceUrl && (
+          <div style={{ marginBottom: '.75rem' }}>
+            <a
+              href={sourceUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-secondary'
+              style={{ fontSize: '0.95rem' }}
+            >
+              View on INARA
+            </a>
+          </div>
+        )}
+      </div>
+      <p style={{ color: '#aaa', marginTop: '-0.5rem' }}>
+        Mission availability is sourced from INARA player submissions and may not reflect in-game boards in real time.
+      </p>
+      {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
+      <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
+        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+          {message && status !== 'idle' && status !== 'loading' && (
+            <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
+              {message}
+            </div>
+          )}
+          {status === 'idle' && (
+            <div style={{ color: '#aaa', padding: '2rem' }}>
+              Select a system to view nearby mining mission factions.
+            </div>
+          )}
+          {status === 'loading' && (
+            <div style={{ color: '#aaa', padding: '2rem' }}>Loading missions...</div>
+          )}
+          {status === 'error' && !error && (
+            <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load missions.</div>
+          )}
+          {status === 'empty' && (
+            <div style={{ color: '#aaa', padding: '2rem' }}>
+              No mining missions found near {displaySystemName || 'the selected system'}.
+            </div>
+          )}
+          {status === 'populated' && missions.length > 0 && (
+            <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Faction</th>
+                  <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>System</th>
+                  <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Distance</th>
+                  <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+                {missions.map((mission, index) => {
+                  const key = `${mission.system || 'unknown'}-${mission.faction || 'faction'}-${index}`
+                  const distanceDisplay = formatSystemDistance(mission.distanceLy, mission.distanceText)
+                  const updatedDisplay = formatRelativeTime(mission.updatedAt || mission.updatedText)
+                  const isTargetSystem = mission.isTargetSystem
+
+                  return (
+                    <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
+                      <td style={{ padding: '.65rem 1rem' }}>
+                        {mission.faction ? (
+                          mission.factionUrl ? (
+                            <a href={mission.factionUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>
+                              {mission.faction}
+                            </a>
+                          ) : (
+                            mission.faction
+                          )
+                        ) : '--'}
+                      </td>
+                      <td style={{ padding: '.65rem 1rem' }}>
+                        <div className='text-no-wrap' style={{ display: 'flex', alignItems: 'center' }}>
+                          {isTargetSystem ? (
+                            <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
+                          ) : (
+                            <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
+                          )}
+                          {mission.system ? (
+                            mission.systemUrl ? (
+                              <a href={mission.systemUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>
+                                {mission.system}
+                              </a>
+                            ) : (
+                              mission.system
+                            )
+                          ) : '--'}
+                        </div>
+                      </td>
+                      <td className='hidden-small text-right' style={{ padding: '.65rem 1rem' }}>{distanceDisplay || '--'}</td>
+                      <td className='hidden-small text-right' style={{ padding: '.65rem 1rem' }}>{updatedDisplay || mission.updatedText || '--'}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TradeRoutesPanel () {
   const {
     currentSystem,
@@ -1217,6 +1427,7 @@ export default function InaraPage() {
   const navigationItems = useMemo(() => ([
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
     { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') },
+    { name: 'Missions', icon: 'table-rows', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') }
   ]), [activeTab])
 
@@ -1226,6 +1437,9 @@ export default function InaraPage() {
         <div>
           <div style={{ display: activeTab === 'ships' ? 'block' : 'none' }}>
             <ShipsPanel />
+          </div>
+          <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
+            <MissionsPanel />
           </div>
           <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
             <TradeRoutesPanel />
