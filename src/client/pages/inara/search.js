@@ -1,23 +1,11 @@
 import Layout from 'components/layout'
 import Panel from 'components/panel'
 import PanelNavigation from 'components/panel-navigation'
-
-const navItems = [
-  {
-    name: 'Search',
-    icon: 'search',
-    url: '/inara/search',
-    active: true
-  },
-  {
-    name: 'Outfitting',
-    icon: 'wrench',
-    url: '/inara/outfitting',
-    active: false
-  }
-]
+import { getInaraNavItems } from './nav-items'
 
 export default function InaraSearchPage() {
+  const navItems = getInaraNavItems('search')
+
   return (
     <Layout>
       <PanelNavigation items={navItems} />

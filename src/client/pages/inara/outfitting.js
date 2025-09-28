@@ -1,23 +1,8 @@
 import Layout from 'components/layout'
 import Panel from 'components/panel'
 import PanelNavigation from 'components/panel-navigation'
-import { useRouter } from 'next/router'
-
-const navItems = [
-  {
-    name: 'Search',
-    icon: 'search',
-    url: '/inara/search',
-    active: false
-  },
-  {
-    name: 'Ships',
-    icon: 'ship',
-    url: '/inara/ships',
-    active: true
-  }
-]
-
+import { useState } from 'react'
+import { getInaraNavItems } from './nav-items'
 
 // Example ship list (should be loaded from backend or static file)
 const ships = [
@@ -40,12 +25,10 @@ const ships = [
   { id: '128049345', name: 'Beluga Liner' }
 ]
 
-import { useState } from 'react'
-
-
-export default function InaraShipsPage() {
+export default function InaraOutfittingPage() {
   const [selectedShip, setSelectedShip] = useState('')
   const [system, setSystem] = useState('')
+  const navItems = getInaraNavItems('ships')
 
   return (
     <Layout>

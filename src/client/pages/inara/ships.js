@@ -1,25 +1,11 @@
 // Ships page for INARA search (mimics nearest-outfitting for ships)
 // This file was created by copying and adapting the old Outfitting page.
 import React, { useState } from 'react'
-import Layout from '../../components/layout'
-import PanelNavigation from '../../components/panel-navigation'
-import Panel from '../../components/panel'
+import Layout from 'components/layout'
+import PanelNavigation from 'components/panel-navigation'
+import Panel from 'components/panel'
 import ships from '../../../service/data/edcd/fdevids/shipyard.json'
-
-const navItems = [
-  {
-    name: 'Search',
-    icon: 'search',
-    url: '/inara/search',
-    active: false
-  },
-  {
-    name: 'Ships',
-    icon: 'ship',
-    url: '/inara/ships',
-    active: true
-  }
-]
+import { getInaraNavItems } from './nav-items'
 
 export default function InaraShipsPage() {
   const [selectedShip, setSelectedShip] = useState('')
@@ -27,6 +13,8 @@ export default function InaraShipsPage() {
   const [results, setResults] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const navItems = getInaraNavItems('ships')
 
   async function handleSubmit(e) {
     e.preventDefault()
