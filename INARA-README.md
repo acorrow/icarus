@@ -58,6 +58,23 @@ The INARA integration allows users to search for ships for sale at stations near
   - Appends a log entry for every search, error, and backend event.
 - **Why it's here:** Ensures traceability and helps with debugging backend issues.
 
+### Trade Routes Panel
+
+- **Purpose:** Surface INARA's "Trade routes search" results directly in the terminal so commanders can quickly inspect profitable round trips without leaving ICARUS.
+- **Primary request:** A GET against `https://inara.cz/elite/market-traderoutes-search/?formbrief=1` with the search form fields mirrored in the panel. Key parameters include:
+  - `ps1` – origin station (defaults to Daedalus [Sol] on INARA and is typically replaced with the user's current station/system when available).
+  - `ps2` – optional destination station/system to constrain the search (empty by default).
+  - `ps3` – optional minor faction filter.
+  - `pi1` – maximum route distance in ly (defaults to 40 ly).
+  - `pi2`/`pi13` – minimum supply and demand thresholds (default 1,000 units supply, any demand).
+  - `pi3` – maximum market price age (default 168 hours / 7 days).
+  - `pi4`/`pi6` – minimum pad size and maximum station distance (default small pads allowed, any station distance).
+  - `pi5`/`pi7` – toggles for surface settlements and fleet carriers (defaults include both).
+  - `pi10` – cargo capacity used for profit-per-trip/hour calculations (default 720t, matching INARA's sample cargo hold).
+  - `pi8` – optional "favourites only" limiter (left disabled/off by default).
+- **Response handling:** The panel parses the returned HTML blocks for each trade route (origin/destination, commodity, supply/demand, distance, and profit metrics) and renders them inside the navigation-themed list. Values such as average profit, profit per unit/trip/hour, and station distances are displayed exactly as provided by INARA; no additional local reconciliation is performed yet.
+- **Data origin:** All trade route rows and profit calculations come straight from INARA's public trade route search. Unlike the ship tab, we currently do not enrich these rows with ICARUS's local system or station metadata.
+
 ## Notes
 - All station/system details (except for-sale status and last updated) are always sourced from ICARUS's local data, never from INARA.
 - The integration is robust to INARA HTML changes and logs all backend activity for troubleshooting.
