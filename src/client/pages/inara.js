@@ -1570,27 +1570,28 @@ function TradeRoutesPanel () {
 }
 
 export default function InaraPage() {
-  const [activeTab, setActiveTab] = useState('ships')
+  const [activeTab, setActiveTab] = useState('tradeRoutes')
 
   const navigationItems = useMemo(() => ([
+    { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
+    { name: 'Missions', icon: 'table-rows', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
-    { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') },
-    { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
-    { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') }
+    { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') }
+
   ]), [activeTab])
 
   return (
     <Layout connected={true} active={true} ready={true} loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div>
-          <div style={{ display: activeTab === 'ships' ? 'block' : 'none' }}>
-            <ShipsPanel />
+          <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+            <TradeRoutesPanel />
           </div>
           <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
             <MissionsPanel />
           </div>
-          <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
-            <TradeRoutesPanel />
+          <div style={{ display: activeTab === 'ships' ? 'block' : 'none' }}>
+            <ShipsPanel />
           </div>
         </div>
       </Panel>
