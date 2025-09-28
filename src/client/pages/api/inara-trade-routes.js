@@ -7,13 +7,12 @@ import https from 'https'
 import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
+import { appendInaraLogEntry } from './inara-log-utils.js'
 
 const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
 function logInaraTrade(entry) {
-  try {
-    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${entry}\n`)
-  } catch (e) {}
+  appendInaraLogEntry(logPath, entry)
 }
 
 function resolveLogDir() {

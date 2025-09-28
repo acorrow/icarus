@@ -8,12 +8,11 @@ import os from 'os'
 import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
+import { appendInaraLogEntry } from './inara-log-utils.js'
 
 const logPath = path.join(process.cwd(), 'inara-websearch.log')
 function logInaraSearch(entry) {
-  try {
-    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${entry}\n`)
-  } catch (e) {}
+  appendInaraLogEntry(logPath, entry)
 }
 
 function resolveLogDir() {
