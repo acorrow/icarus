@@ -610,6 +610,7 @@ function TradeRoutesPanel () {
         <col style={{ width: '8%' }}/>
         <col style={{ width: '6%' }}/>
         <col style={{ width: '6%' }}/>
+        <col style={{ width: '6%' }}/>
         <col style={{ width: '4%' }}/>
       </colgroup>
       <thead>
@@ -622,6 +623,7 @@ function TradeRoutesPanel () {
           <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Profit/Trip</th>
           <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Profit/Hour</th>
           <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Route Distance</th>
+          <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Distance</th>
           <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Updated</th>
         </tr>
       </thead>
@@ -652,6 +654,7 @@ function TradeRoutesPanel () {
           const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
           const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
           const routeDistanceDisplay = formatSystemDistance(route?.summary?.routeDistanceLy ?? route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.routeDistanceText || route?.summary?.distanceText || route?.distanceDisplay)
+          const systemDistanceDisplay = formatSystemDistance(route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.distanceText || route?.distanceDisplay)
           const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
 
           return (
@@ -694,6 +697,7 @@ function TradeRoutesPanel () {
               <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerTrip || '--'}</td>
               <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerHour || '--'}</td>
               <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{routeDistanceDisplay || '--'}</td>
+              <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{systemDistanceDisplay || '--'}</td>
               <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{updatedDisplay || '--'}</td>
             </tr>
           )
