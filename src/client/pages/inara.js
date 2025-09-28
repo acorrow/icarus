@@ -60,6 +60,79 @@ function formatCredits(value, fallback) {
   return fallback || '--'
 }
 
+const DEFAULT_SORT_DIRECTION = {
+  profitPerTon: 'desc',
+  routeDistance: 'asc',
+  distance: 'asc'
+}
+
+function parseNumberFromText(value) {
+  if (typeof value !== 'string') return null
+  const cleaned = value.replace(/[^0-9.-]/g, '')
+  if (!cleaned) return null
+  const parsed = Number(cleaned)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function extractProfitPerTon(route) {
+  if (!route) return null
+  const summary = route.summary || {}
+  const numericCandidates = [summary.profitPerUnit, route.profitPerUnit]
+  for (const value of numericCandidates) {
+    if (typeof value === 'number' && !Number.isNaN(value)) return value
+  }
+  const textCandidates = [summary.profitPerUnitText, route.profitPerUnitText]
+  for (const textValue of textCandidates) {
+    const parsed = parseNumberFromText(textValue)
+    if (parsed !== null) return parsed
+  }
+  return null
+}
+
+function extractRouteDistance(route) {
+  if (!route) return null
+  const numericCandidates = [
+    route?.summary?.routeDistanceLy,
+    route?.summary?.distanceLy,
+    route?.distanceLy,
+    route?.distance
+  ]
+  for (const value of numericCandidates) {
+    if (typeof value === 'number' && !Number.isNaN(value)) return value
+  }
+  const textCandidates = [
+    route?.summary?.routeDistanceText,
+    route?.summary?.distanceText,
+    route?.distanceDisplay
+  ]
+  for (const textValue of textCandidates) {
+    const parsed = parseNumberFromText(textValue)
+    if (parsed !== null) return parsed
+  }
+  return null
+}
+
+function extractSystemDistance(route) {
+  if (!route) return null
+  const numericCandidates = [
+    route?.summary?.distanceLy,
+    route?.distanceLy,
+    route?.distance
+  ]
+  for (const value of numericCandidates) {
+    if (typeof value === 'number' && !Number.isNaN(value)) return value
+  }
+  const textCandidates = [
+    route?.summary?.distanceText,
+    route?.distanceDisplay
+  ]
+  for (const textValue of textCandidates) {
+    const parsed = parseNumberFromText(textValue)
+    if (parsed !== null) return parsed
+  }
+  return null
+}
+
 function generateMockTradeRoutes({ systemName, commodity, cargoCapacity, count = 5 }) {
   const normalizedCapacity = Number.isFinite(Number(cargoCapacity)) && Number(cargoCapacity) > 0
     ? Math.round(Number(cargoCapacity))
@@ -453,6 +526,8 @@ function TradeRoutesPanel () {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [sortField, setSortField] = useState('distance')
+  const [sortDirection, setSortDirection] = useState('asc')
 
   const parsedMinProfit = useMemo(() => {
     const value = parseFloat(minProfit)
@@ -534,35 +609,87 @@ function TradeRoutesPanel () {
 
     return list.filter(route => {
       if (parsedMinProfit !== null) {
-        const numericProfit = typeof route?.summary?.profitPerUnit === 'number' && !Number.isNaN(route.summary.profitPerUnit)
-          ? route.summary.profitPerUnit
-          : (typeof route?.profitPerUnit === 'number' && !Number.isNaN(route.profitPerUnit) ? route.profitPerUnit : null)
-        if (numericProfit !== null && numericProfit < parsedMinProfit) return false
-
-        if (numericProfit === null) {
-          const profitText = route?.summary?.profitPerUnitText || route?.profitPerUnitText
-          if (typeof profitText === 'string' && profitText.trim()) {
-            const parsed = Number(profitText.replace(/[^0-9.-]/g, ''))
-            if (!Number.isNaN(parsed) && parsed < parsedMinProfit) return false
-          }
-        }
+        const numericProfit = extractProfitPerTon(route)
+        if (Number.isFinite(numericProfit) && numericProfit < parsedMinProfit) return false
       }
 
       if (isDistanceFilterLimited) {
-        const numericDistance = typeof route?.summary?.routeDistanceLy === 'number' && !Number.isNaN(route.summary.routeDistanceLy)
-          ? route.summary.routeDistanceLy
-          : (typeof route?.summary?.distanceLy === 'number' && !Number.isNaN(route.summary.distanceLy)
-            ? route.summary.distanceLy
-            : (typeof route?.distanceLy === 'number' && !Number.isNaN(route.distanceLy)
-              ? route.distanceLy
-              : (typeof route?.distance === 'number' && !Number.isNaN(route.distance) ? route.distance : null)))
-        if (numericDistance !== null && numericDistance > effectiveDistanceLimit) return false
+        const numericDistance = extractRouteDistance(route)
+        if (Number.isFinite(numericDistance) && numericDistance > effectiveDistanceLimit) return false
       }
 
       return true
     })
   }, [parsedMinProfit, isDistanceFilterLimited, parsedDistanceFilter])
 
+
+  const sortRoutes = useCallback((list = []) => {
+    if (!Array.isArray(list)) return []
+    if (!sortField) return Array.isArray(list) ? [...list] : []
+
+    const directionFactor = sortDirection === 'asc' ? 1 : -1
+
+    const getValue = route => {
+      switch (sortField) {
+        case 'profitPerTon':
+          return extractProfitPerTon(route)
+        case 'routeDistance':
+          return extractRouteDistance(route)
+        case 'distance':
+          return extractSystemDistance(route)
+        default:
+          return null
+      }
+    }
+
+    return [...list].sort((a, b) => {
+      const aValue = getValue(a)
+      const bValue = getValue(b)
+
+      const aValid = Number.isFinite(aValue)
+      const bValid = Number.isFinite(bValue)
+
+      if (!aValid && !bValid) return 0
+      if (!aValid) return 1
+      if (!bValid) return -1
+      if (aValue === bValue) return 0
+
+      return (aValue < bValue ? -1 : 1) * directionFactor
+    })
+  }, [sortField, sortDirection])
+
+  const handleSortChange = useCallback(field => {
+    if (!field) return
+    setSortField(prevField => {
+      if (prevField === field) {
+        setSortDirection(prevDirection => (prevDirection === 'asc' ? 'desc' : 'asc'))
+        return prevField
+      }
+      setSortDirection(DEFAULT_SORT_DIRECTION[field] || 'asc')
+      return field
+    })
+  }, [])
+
+  const handleSortKeyDown = useCallback((event, field) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      handleSortChange(field)
+    }
+  }, [handleSortChange])
+
+  const renderSortArrow = field => {
+    if (sortField !== field) return null
+    const arrow = sortDirection === 'asc' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
+    return (
+      <span style={{ color: '#ff7c22', marginLeft: '0.35rem', fontSize: '0.8rem' }}>{arrow}</span>
+    )
+  }
+
+  useEffect(() => {
+    const filtered = filterRoutes(rawRoutes)
+    const sorted = sortRoutes(filtered)
+    setRoutes(sorted)
+  }, [rawRoutes, filterRoutes, sortRoutes])
 
   const renderQuantityIndicator = (entry, type) => {
     if (!entry) return null
@@ -613,11 +740,12 @@ function TradeRoutesPanel () {
 
     const applyResults = (nextRoutes = [], meta = {}) => {
       const filteredRoutes = filterRoutes(nextRoutes)
+      const sortedRoutes = sortRoutes(filteredRoutes)
       const nextError = meta.error || ''
       const nextMessage = meta.message || ''
 
       setRawRoutes(nextRoutes)
-      setRoutes(filteredRoutes)
+      setRoutes(sortedRoutes)
       setError(nextError)
       setMessage(nextMessage)
 
@@ -695,11 +823,38 @@ function TradeRoutesPanel () {
           <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Destination</th>
           <th className='hidden-small' style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Outbound Commodity</th>
           <th className='hidden-small' style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Return Commodity</th>
-          <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Profit/Ton</th>
+          <th
+            className='hidden-small text-right'
+            style={{ padding: '.6rem .65rem', cursor: 'pointer', userSelect: 'none' }}
+            onClick={() => handleSortChange('profitPerTon')}
+            onKeyDown={event => handleSortKeyDown(event, 'profitPerTon')}
+            tabIndex={0}
+            aria-sort={sortField === 'profitPerTon' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Profit/Ton{renderSortArrow('profitPerTon')}
+          </th>
           <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Profit/Trip</th>
           <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Profit/Hour</th>
-          <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Route Distance</th>
-          <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Distance</th>
+          <th
+            className='hidden-small text-right'
+            style={{ padding: '.6rem .65rem', cursor: 'pointer', userSelect: 'none' }}
+            onClick={() => handleSortChange('routeDistance')}
+            onKeyDown={event => handleSortKeyDown(event, 'routeDistance')}
+            tabIndex={0}
+            aria-sort={sortField === 'routeDistance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Route Distance{renderSortArrow('routeDistance')}
+          </th>
+          <th
+            className='hidden-small text-right'
+            style={{ padding: '.6rem .65rem', cursor: 'pointer', userSelect: 'none' }}
+            onClick={() => handleSortChange('distance')}
+            onKeyDown={event => handleSortKeyDown(event, 'distance')}
+            tabIndex={0}
+            aria-sort={sortField === 'distance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Distance{renderSortArrow('distance')}
+          </th>
           <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Updated</th>
         </tr>
       </thead>
