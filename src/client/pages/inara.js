@@ -48,6 +48,110 @@ function formatReputationPercent(value) {
   return `${sign}${percentage}%`
 }
 
+let factionStandingsCache = null
+let factionStandingsPromise = null
+
+function parseFactionStandingsResponse(data) {
+  const nextStandings = {}
+  if (!data || typeof data !== 'object') return nextStandings
+
+  if (data?.standings && typeof data.standings === 'object') {
+    for (const [key, value] of Object.entries(data.standings)) {
+      if (!key || !value || typeof value !== 'object') continue
+      const normalizedKey = typeof key === 'string' ? key.trim().toLowerCase() : ''
+      if (!normalizedKey) continue
+      nextStandings[normalizedKey] = {
+        standing: value.standing || null,
+        relation: typeof value.relation === 'string' ? value.relation : null,
+        reputation: typeof value.reputation === 'number' ? value.reputation : null
+      }
+    }
+  } else if (Array.isArray(data?.factions)) {
+    for (const faction of data.factions) {
+      if (!faction || typeof faction !== 'object') continue
+      const key = normaliseFactionKey(faction.name)
+      if (!key) continue
+      nextStandings[key] = {
+        standing: faction.standing || null,
+        relation: typeof faction.relation === 'string' ? faction.relation : null,
+        reputation: typeof faction.reputation === 'number' ? faction.reputation : null
+      }
+    }
+  }
+
+  return nextStandings
+}
+
+function useFactionStandings() {
+  const [standings, setStandings] = useState(() => factionStandingsCache || {})
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (factionStandingsCache) {
+      return () => { cancelled = true }
+    }
+
+    if (!factionStandingsPromise) {
+      factionStandingsPromise = fetch('/api/faction-standings')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load faction standings')
+          return res.json()
+        })
+        .then(data => {
+          factionStandingsCache = parseFactionStandingsResponse(data)
+          return factionStandingsCache
+        })
+        .catch(() => {
+          factionStandingsCache = {}
+          return factionStandingsCache
+        })
+    }
+
+    factionStandingsPromise
+      .then(result => {
+        if (!cancelled) setStandings(result || {})
+      })
+      .catch(() => {
+        if (!cancelled) setStandings({})
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return standings
+}
+
+function getFactionStandingDisplay(factionName, standings) {
+  const key = normaliseFactionKey(factionName)
+  if (!key || !standings) return {}
+  const info = standings[key]
+  if (!info) return {}
+
+  const className = info.standing === 'ally'
+    ? 'text-success'
+    : info.standing === 'hostile'
+      ? 'text-danger'
+      : null
+  const standingLabel = info.relation || (info.standing
+    ? `${info.standing.charAt(0).toUpperCase()}${info.standing.slice(1)}`
+    : null)
+  const reputationLabel = typeof info.reputation === 'number'
+    ? formatReputationPercent(info.reputation)
+    : null
+  const title = [standingLabel, reputationLabel && `Reputation ${reputationLabel}`]
+    .filter(Boolean)
+    .join(' · ') || undefined
+
+  return {
+    info,
+    className,
+    title
+  }
+}
+
 function stationIconFromType(type = '') {
   const lower = type.toLowerCase()
   if (lower.includes('asteroid')) return 'asteroid-base'
@@ -641,52 +745,7 @@ function MissionsPanel () {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
-  const [factionStandings, setFactionStandings] = useState({})
-
-  useEffect(() => {
-    let cancelled = false
-
-    fetch('/api/faction-standings')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to load faction standings')
-        return res.json()
-      })
-      .then(data => {
-        if (cancelled) return
-        const nextStandings = {}
-        if (data && typeof data === 'object') {
-          if (data?.standings && typeof data.standings === 'object') {
-            for (const [key, value] of Object.entries(data.standings)) {
-              if (!key || !value || typeof value !== 'object') continue
-              const normalizedKey = typeof key === 'string' ? key.trim().toLowerCase() : ''
-              if (!normalizedKey) continue
-              nextStandings[normalizedKey] = {
-                standing: value.standing || null,
-                relation: typeof value.relation === 'string' ? value.relation : null,
-                reputation: typeof value.reputation === 'number' ? value.reputation : null
-              }
-            }
-          } else if (Array.isArray(data?.factions)) {
-            for (const faction of data.factions) {
-              if (!faction || typeof faction !== 'object') continue
-              const key = normaliseFactionKey(faction.name)
-              if (!key) continue
-              nextStandings[key] = {
-                standing: faction.standing || null,
-                relation: typeof faction.relation === 'string' ? faction.relation : null,
-                reputation: typeof faction.reputation === 'number' ? faction.reputation : null
-              }
-            }
-          }
-        }
-        setFactionStandings(nextStandings)
-      })
-      .catch(() => {
-        if (!cancelled) setFactionStandings({})
-      })
-
-    return () => { cancelled = true }
-  }, [])
+  const factionStandings = useFactionStandings()
 
   const trimmedSystem = useMemo(() => {
     if (typeof system === 'string') {
@@ -933,6 +992,7 @@ function TradeRoutesPanel () {
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [expandedRouteKey, setExpandedRouteKey] = useState(null)
+  const factionStandings = useFactionStandings()
 
   useEffect(() => {
     if (!connected || initialCapacityLoaded) return
@@ -1340,6 +1400,15 @@ function TradeRoutesPanel () {
           const destinationStation = destinationLocal?.station || route?.destination?.stationName || route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || '--'
           const destinationSystemName = destinationLocal?.system || route?.destination?.systemName || route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || ''
 
+          const originFactionName = originLocal?.faction || route?.origin?.faction || ''
+          const destinationFactionName = destinationLocal?.faction || route?.destination?.faction || ''
+          const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
+          const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
+          const originStationClassName = originStandingDisplay.className || undefined
+          const destinationStationClassName = destinationStandingDisplay.className || undefined
+          const originStationTitle = originStandingDisplay.title
+          const destinationStationTitle = destinationStandingDisplay.title
+
           const outboundBuy = route?.origin?.buy || null
           const outboundSell = route?.destination?.sell || null
           const returnBuy = route?.destination?.buyReturn || null
@@ -1385,13 +1454,25 @@ function TradeRoutesPanel () {
                 <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                     {originIconName && <StationIcon icon={originIconName} />}
-                    <span style={{ fontWeight: 600 }}>{originStation}</span>
+                    <span
+                      style={{ fontWeight: 600 }}
+                      className={originStationClassName}
+                      title={originStationTitle}
+                    >
+                      {originStation}
+                    </span>
                   </div>
                 </td>
                 <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                     {destinationIconName && <StationIcon icon={destinationIconName} />}
-                    <span style={{ fontWeight: 600 }}>{destinationStation}</span>
+                    <span
+                      style={{ fontWeight: 600 }}
+                      className={destinationStationClassName}
+                      title={destinationStationTitle}
+                    >
+                      {destinationStation}
+                    </span>
                   </div>
                 </td>
                 <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
@@ -1415,14 +1496,26 @@ function TradeRoutesPanel () {
                   <td style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                      <span style={{ color: '#9da4b3' }}>{originSystemName || 'Unknown system'}</span>
+                      <span
+                        style={originStationClassName ? undefined : { color: '#9da4b3' }}
+                        className={originStationClassName}
+                        title={originStationTitle}
+                      >
+                        {originSystemName || 'Unknown system'}
+                      </span>
                       <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
                       <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
                     </div>
                   </td>
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                      <span style={{ color: '#9da4b3' }}>{destinationSystemName || 'Unknown system'}</span>
+                      <span
+                        style={destinationStationClassName ? undefined : { color: '#9da4b3' }}
+                        className={destinationStationClassName}
+                        title={destinationStationTitle}
+                      >
+                        {destinationSystemName || 'Unknown system'}
+                      </span>
                       <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
                       <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
                     </div>
