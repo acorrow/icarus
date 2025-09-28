@@ -1,12 +1,14 @@
-
 // Backend API: Proxies INARA nearest-outfitting for ships only
 // Only supports ship search (not modules or other outfitting)
-
 
 import fetch from 'node-fetch'
 import path from 'path'
 import fs from 'fs'
+import os from 'os'
+import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
+import distance from '../../../shared/distance.js'
+
 const logPath = path.join(process.cwd(), 'inara-websearch.log')
 function logInaraSearch(entry) {
   try {
@@ -14,45 +16,75 @@ function logInaraSearch(entry) {
   } catch (e) {}
 }
 
-export default async function handler(req, res) {
-  // Helper: get local station details from ICARUS data
-  async function getLocalStationDetails(systemName, stationName) {
-    try {
-      // Use global cache if available, else instantiate System
-      let sysInstance = global.ICARUS_SYSTEM_INSTANCE
-      if (!sysInstance) {
-        sysInstance = new System({ eliteLog: { getEvent: async () => null, getEventsFromTimestamp: async () => [], _query: async () => [] } })
-        global.ICARUS_SYSTEM_INSTANCE = sysInstance
-      }
-      const sysData = await sysInstance.getSystem({ name: systemName })
-      if (!sysData || !sysData.spaceStations) return null;
-      // Find station by name (case-insensitive)
-      const station = sysData.spaceStations.find(s => s.name && s.name.toLowerCase() === stationName.toLowerCase());
-      if (!station) return null;
-      // Return canonical details
-      return {
-        padSize: station.landingPads?.large ? 'Large' : station.landingPads?.medium ? 'Medium' : station.landingPads?.small ? 'Small' : '',
-        market: !!station.haveMarket,
-        outfitting: !!station.haveOutfitting,
-        shipyard: !!station.haveShipyard,
-        stationDistance: station.distanceToArrival ? `${Math.round(station.distanceToArrival)} Ls` : '',
-        type: station.type || '',
-        services: station.otherServices || [],
-        economies: station.economies || [],
-        faction: station.faction || '',
-        government: station.government || '',
-        allegiance: station.allegiance || '',
-        updatedAt: station.updatedAt || '',
-      };
-    } catch (e) {
-      return null;
-    }
+function resolveLogDir() {
+  if (global.LOG_DIR && fs.existsSync(global.LOG_DIR)) return global.LOG_DIR
+  const envLogDir = process.env.LOG_DIR
+  if (envLogDir) {
+    const absolute = path.isAbsolute(envLogDir) || /^[a-zA-Z]:[\\/]/.test(envLogDir)
+    const resolved = absolute ? envLogDir : path.join(process.cwd(), envLogDir)
+    if (fs.existsSync(resolved)) return resolved
   }
+  const saveGameDir = process.env.SAVE_GAME_DIR || process.env.ICARUS_SAVE_GAME_DIR
+  if (saveGameDir) {
+    const candidate = path.join(saveGameDir, 'Frontier Developments', 'Elite Dangerous')
+    if (fs.existsSync(candidate)) return candidate
+    if (fs.existsSync(saveGameDir)) return saveGameDir
+  }
+  const fallback = path.join(os.homedir(), 'Saved Games', 'Frontier Developments', 'Elite Dangerous')
+  if (fs.existsSync(fallback)) return fallback
+  return null
+}
+
+let systemInitPromise = null
+
+async function ensureSystemInstance() {
+  if (global.ICARUS_SYSTEM_INSTANCE) return global.ICARUS_SYSTEM_INSTANCE
+  if (systemInitPromise) return systemInitPromise
+
+  systemInitPromise = (async () => {
+    let eliteLog = global.ICARUS_ELITE_LOG
+    if (!eliteLog) {
+      const logDir = resolveLogDir()
+      if (logDir) {
+        try {
+          eliteLog = new EliteLog(logDir)
+          await eliteLog.load({ reload: true })
+          if (typeof eliteLog.watch === 'function') eliteLog.watch()
+          global.ICARUS_ELITE_LOG = eliteLog
+        } catch (err) {
+          logInaraSearch(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
+          eliteLog = null
+        }
+      }
+    }
+
+    if (!eliteLog) {
+      logInaraSearch('ELITE_LOG_FALLBACK: using stub eliteLog')
+      eliteLog = {
+        getEvent: async () => null,
+        getEventsFromTimestamp: async () => [],
+        _query: async () => []
+      }
+    }
+
+    if (!global.CACHE) global.CACHE = { SYSTEMS: {} }
+    if (!global.CACHE.SYSTEMS) global.CACHE.SYSTEMS = {}
+
+    const systemInstance = new System({ eliteLog })
+    global.ICARUS_SYSTEM_INSTANCE = systemInstance
+    return systemInstance
+  })()
+
+  return systemInitPromise
+}
+
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     logInaraSearch(`INVALID_METHOD: ${req.method} ${req.url}`)
     res.status(405).json({ error: 'Method not allowed' })
     return
   }
+
   const { shipId, system } = req.body || {}
   if (!shipId || !system) {
     logInaraSearch(`MISSING_PARAMS: shipId=${shipId} system=${system}`)
@@ -60,15 +92,176 @@ export default async function handler(req, res) {
     return
   }
 
+  const sysInstance = await ensureSystemInstance()
 
-  // Map shipId to INARA xshipXX code using shipyard.json
+  const systemCache = new Map()
+
+  async function getSystemData(systemName) {
+    if (!systemName || typeof systemName !== 'string') return null
+    const key = systemName.trim().toLowerCase()
+    if (!key) return null
+    if (systemCache.has(key)) return systemCache.get(key)
+    try {
+      const data = await sysInstance.getSystem({ name: systemName })
+      if (data && data.name) {
+        systemCache.set(key, data)
+        return data
+      }
+    } catch (err) {
+      logInaraSearch(`SYSTEM_LOOKUP_ERROR: system=${systemName} error=${err}`)
+    }
+    return null
+  }
+
+  const selectedSystemData = await getSystemData(system)
+  const selectedSystemPosition = Array.isArray(selectedSystemData?.position)
+    ? selectedSystemData.position
+    : null
+  const selectedSystemName = selectedSystemData?.name || system
+
+  function formatPadSize(landingPads = {}) {
+    if (landingPads.large) return 'Large'
+    if (landingPads.medium) return 'Medium'
+    if (landingPads.small) return 'Small'
+    return ''
+  }
+
+  function pickUpdatedTimestamp(station = {}) {
+    return station.updatedAt || station.shipyardUpdatedAt || station.lastUpdated || station.timestamp || null
+  }
+
+  function inferStationIcon(station = {}) {
+    const type = (station.type || station.subType || '').toLowerCase()
+    if (type.includes('asteroid')) return 'asteroid-base'
+    if (type.includes('outpost')) return 'outpost'
+    if (type.includes('ocellus')) return 'ocellus-starport'
+    if (type.includes('orbis')) return 'orbis-starport'
+    if (type.includes('planetary port') || type.includes('planetary outpost') || type.includes('workshop')) return 'planetary-port'
+    if (type.includes('settlement')) return 'settlement'
+    if (type.includes('installation') || type.includes('mega ship') || type.includes('megaship') || type.includes('fleet carrier')) return 'megaship'
+    return 'coriolis-starport'
+  }
+
+  function buildLocalResult(systemData, station) {
+    const systemCoords = Array.isArray(systemData?.position) ? systemData.position : null
+    let systemDistanceLy = null
+    if (selectedSystemPosition && systemCoords) {
+      const rawDistance = distance(selectedSystemPosition, systemCoords)
+      if (!Number.isNaN(rawDistance)) systemDistanceLy = rawDistance
+    }
+    if (systemDistanceLy === null && typeof systemData?.distance === 'number') {
+      systemDistanceLy = systemData.distance
+    }
+
+    const stationDistanceLs = typeof station.distanceToArrival === 'number'
+      ? station.distanceToArrival
+      : (typeof station.distanceToArrivalLS === 'number' ? station.distanceToArrivalLS : null)
+    const updatedAt = pickUpdatedTimestamp(station)
+
+    return {
+      station: station.name,
+      system: systemData?.name || '',
+      systemDistance: (typeof systemDistanceLy === 'number' && !Number.isNaN(systemDistanceLy))
+        ? `${systemDistanceLy.toFixed(2)} Ly`
+        : '',
+      systemDistanceLy: (typeof systemDistanceLy === 'number' && !Number.isNaN(systemDistanceLy))
+        ? systemDistanceLy
+        : null,
+      stationDistance: (typeof stationDistanceLs === 'number')
+        ? `${Math.round(stationDistanceLs).toLocaleString()} Ls`
+        : '',
+      stationDistanceLs: (typeof stationDistanceLs === 'number')
+        ? stationDistanceLs
+        : null,
+      updated: updatedAt || '',
+      updatedAt: updatedAt || '',
+      padSize: formatPadSize(station.landingPads),
+      type: station.type || '',
+      stationType: station.type || '',
+      market: !!station.haveMarket,
+      outfitting: !!station.haveOutfitting,
+      shipyard: !!station.haveShipyard,
+      services: Array.isArray(station.otherServices) ? station.otherServices : [],
+      economies: Array.isArray(station.economies) ? station.economies : [],
+      faction: station.faction || '',
+      government: station.government || '',
+      allegiance: station.allegiance || '',
+      icon: inferStationIcon(station),
+      isCurrentSystem: selectedSystemName && systemData?.name && systemData.name.toLowerCase() === selectedSystemName.toLowerCase()
+    }
+  }
+
+  async function getLocalStationDetails(stationName, candidateSystems = []) {
+    if (!stationName) return null
+    const normalizedStation = stationName.trim().toLowerCase()
+    if (!normalizedStation) return null
+
+    const searchOrder = candidateSystems
+      .filter(Boolean)
+      .map(name => name.trim())
+      .filter(Boolean)
+
+    if (selectedSystemName && !searchOrder.find(n => n.toLowerCase() === selectedSystemName.toLowerCase())) {
+      searchOrder.push(selectedSystemName)
+    }
+
+    const seenSystems = new Set()
+    for (const systemName of searchOrder) {
+      if (!systemName) continue
+      const key = systemName.trim().toLowerCase()
+      if (seenSystems.has(key)) continue
+      seenSystems.add(key)
+      const systemData = await getSystemData(systemName)
+      if (!systemData) continue
+      const stationCollections = [
+        systemData.spaceStations,
+        systemData.planetaryPorts,
+        systemData.planetaryOutposts,
+        systemData.settlements,
+        systemData.megaships,
+        systemData.stations
+      ].filter(Boolean).flat()
+      const station = stationCollections.find(entry => entry?.name?.trim().toLowerCase() === normalizedStation)
+      if (station) {
+        return buildLocalResult(systemData, station)
+      }
+    }
+
+    if (global.CACHE?.SYSTEMS) {
+      for (const key of Object.keys(global.CACHE.SYSTEMS)) {
+        const cached = global.CACHE.SYSTEMS[key]
+        if (!cached) continue
+        const stationCollections = [
+          cached.spaceStations,
+          cached.planetaryPorts,
+          cached.planetaryOutposts,
+          cached.settlements,
+          cached.megaships,
+          cached.stations
+        ].filter(Boolean).flat()
+        const station = stationCollections.find(entry => entry?.name?.trim().toLowerCase() === normalizedStation)
+        if (station) {
+          const cacheKey = (cached.name || key || '').toLowerCase()
+          if (cacheKey) systemCache.set(cacheKey, cached)
+          return buildLocalResult(cached, station)
+        }
+      }
+    }
+
+    logInaraSearch(`LOCAL_LOOKUP_MISS: station=${stationName}`)
+    return {
+      station: stationName,
+      system: searchOrder[0] || '',
+      missing: true
+    }
+  }
+
   let xshipCode = null
   try {
     const filePath = path.join(process.cwd(), 'src/service/data/edcd/fdevids/shipyard.json')
     const ships = JSON.parse(fs.readFileSync(filePath, 'utf8'))
     const ship = ships.find(s => s.id === shipId || s.symbol === shipId || s.name === shipId)
     if (ship) {
-      // Full mapping from INARA ships page (https://inara.cz/elite/ships)
       const inaraShipMap = {
         'Sidewinder': 'xship1',
         'Eagle': 'xship2',
@@ -107,7 +300,7 @@ export default async function handler(req, res) {
         'Asp Scout': 'xship33',
         'Alliance Chieftain': 'xship38',
         'Alliance Crusader': 'xship39',
-        'Alliance Challenger': 'xship40',
+        'Alliance Challenger': 'xship40'
       }
       xshipCode = inaraShipMap[ship.name] || null
     }
@@ -120,16 +313,14 @@ export default async function handler(req, res) {
     return
   }
 
-  // Build INARA search URL for nearest-outfitting (ships) using form params
-  // Example: https://inara.cz/elite/nearest-outfitting/?formbrief=1&pa3[]=xship15&ps1=Sol&pi18=0&pi19=0&pi17=0&pi14=0
   const params = new URLSearchParams()
   params.append('formbrief', '1')
   params.append('pa3[]', xshipCode)
   params.append('ps1', system)
-  params.append('pi18', '0') // Min pad size: 0 (any)
-  params.append('pi19', '0') // Only discounted: 0 (no)
-  params.append('pi17', '0') // Only higher equip chance: 0 (no)
-  params.append('pi14', '0') // Max station distance: 0 (any)
+  params.append('pi18', '0')
+  params.append('pi19', '0')
+  params.append('pi17', '0')
+  params.append('pi14', '0')
   const url = `https://inara.cz/elite/nearest-outfitting/?${params.toString()}`
   logInaraSearch(`REQUEST: shipId=${shipId} system=${system} url=${url}`)
 
@@ -143,113 +334,76 @@ export default async function handler(req, res) {
     if (!response.ok) throw new Error('INARA request failed')
     const html = await response.text()
 
-    // Parse HTML for results table
-    // Table rows: <tr> ... <td>Station</td> <td>System</td> <td>Distance</td> <td>Price</td> <td>Updated</td> ... </tr>
-    const results = []
-    // Detect INARA's 'no results' message
     if (/No station within [\d,]+ Ly range found/i.test(html)) {
       logInaraSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} NO_RESULTS`)
       res.status(200).json({ results: [], message: 'No station within range found on INARA.' })
       return
     }
-    // Find the first <table> after the 'SHIPS, MODULES AND PERSONAL EQUIPMENT SEARCH RESULTS' heading, or just the first <table>
-    let tableHtml = null;
-    const headingIdx = html.indexOf('SHIPS, MODULES AND PERSONAL EQUIPMENT SEARCH RESULTS');
+
+    let tableHtml = null
+    const headingIdx = html.indexOf('SHIPS, MODULES AND PERSONAL EQUIPMENT SEARCH RESULTS')
     if (headingIdx !== -1) {
-      const afterHeading = html.slice(headingIdx);
-      const tableMatch = afterHeading.match(/<table[\s\S]*?<\/table>/i);
-      if (tableMatch) tableHtml = tableMatch[0];
+      const afterHeading = html.slice(headingIdx)
+      const tableMatch = afterHeading.match(/<table[\s\S]*?<\/table>/i)
+      if (tableMatch) tableHtml = tableMatch[0]
     }
     if (!tableHtml) {
-      // fallback: just first table in HTML
-      const tableMatch = html.match(/<table[\s\S]*?<\/table>/i);
-      if (tableMatch) tableHtml = tableMatch[0];
+      const tableMatch = html.match(/<table[\s\S]*?<\/table>/i)
+      if (tableMatch) tableHtml = tableMatch[0]
     }
+
+    const parsedStations = []
     if (tableHtml) {
-      const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
-      let rowMatch;
-      let headerSkipped = false;
+      const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi
+      let rowMatch
+      let headerSkipped = false
       while ((rowMatch = rowRegex.exec(tableHtml))) {
-        const rowHtml = rowMatch[1];
-        // Extract columns
-        const cols = [...rowHtml.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map(m => m[1].replace(/<[^>]+>/g, '').trim());
-        // Skip header row (may be <th> or <td> with 'Station')
+        const rowHtml = rowMatch[1]
+        const cols = [...rowHtml.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map(m => m[1].replace(/<[^>]+>/g, '').trim())
         if (!headerSkipped && (cols.includes('Station') || cols.includes('System'))) {
-          headerSkipped = true;
-          continue;
+          headerSkipped = true
+          continue
         }
-        if (cols.length >= 5) {
-          // Parse station, system, notes from cols[0]
-          let stationRaw = cols[0];
-          let station = stationRaw;
-          let system = cols[1];
-          let notes = '';
+        if (cols.length >= 2) {
+          let stationRaw = cols[0]
+          let stationName = stationRaw
+          let systemName = cols[1]
           if (stationRaw.includes('|')) {
-            const parts = stationRaw.split('|');
-            station = parts[0].trim();
-            let rest = parts[1].trim();
-            // Remove all non-ASCII and non-printable chars from rest
-            rest = rest.replace(/[^\x20-\x7E]+/g, '');
-            // System name: up to first non-word/space character (e.g. before dash, percent, etc)
-            const sysMatch = rest.match(/^([\w\s'-]+?)(?:\s*[-–—%].*)?$/u);
+            const parts = stationRaw.split('|')
+            stationName = parts[0].trim()
+            let rest = parts[1].trim()
+            rest = rest.replace(/[^\x20-\x7E]+/g, '')
+            const sysMatch = rest.match(/^([\w\s'\-]+?)(?:\s*[-\u2013\u2014%].*)?$/u)
             if (sysMatch) {
-              system = sysMatch[1].trim();
-              // Notes: everything after system name
-              notes = rest.slice(sysMatch[1].length).replace(/^[-–—%\s]+/, '').trim();
-            } else {
-              system = rest;
+              systemName = sysMatch[1].trim()
             }
           }
-          // Distance (system distance, in Ly)
-          let systemDistance = '';
-          let stationDistance = '';
-          // Try to extract number and 'Ly' from cols[2] and cols[3] (sometimes in either)
-          const lyMatch = (cols[2] + ' ' + (cols[3] || '')).match(/([\d.]+)\s*Ly/);
-          if (lyMatch) systemDistance = lyMatch[0].trim();
-          // Try to extract number and 'Ls' from cols[4] and cols[3] (sometimes in either)
-          const lsMatch = (cols[4] + ' ' + (cols[3] || '')).match(/([\d,]+)\s*Ls/);
-          if (lsMatch) stationDistance = lsMatch[0].replace(/,/g, '').trim();
-          // Updated time (try to extract from cols[3] or cols[5] if present)
-          let updated = '';
-          if (cols.length >= 6) {
-            updated = cols[5];
-          } else {
-            if (/\d{1,2}:\d{2}/.test(cols[3])) updated = cols[3];
-            else if (/(\d+\s+(minutes?|hours?|days?)\s+ago)/i.test(cols[3])) updated = cols[3];
+          if (stationName) {
+            parsedStations.push({
+              station: stationName,
+              system: systemName || ''
+            })
           }
-          // Guess station type for icon (from station name)
-          let stationType = '';
-          const nameLower = station.toLowerCase();
-          if (nameLower.includes('outpost')) stationType = 'outpost';
-          else if (nameLower.includes('asteroid')) stationType = 'asteroid-base';
-          else if (nameLower.includes('ocellus')) stationType = 'ocellus-starport';
-          else if (nameLower.includes('orbis')) stationType = 'orbis-starport';
-          else if (nameLower.includes('megaship')) stationType = 'megaship';
-          else if (nameLower.includes('planetary')) stationType = 'planetary-port';
-          else if (nameLower.includes('settlement')) stationType = 'settlement';
-          else stationType = 'coriolis-starport';
-
-          // Merge in local ICARUS data
-          let localDetails = await getLocalStationDetails(system, station);
-          results.push({
-            station,
-            system,
-            notes,
-            systemDistance,
-            stationDistance,
-            updated,
-            stationType,
-            price: '',
-            distance: systemDistance,
-            ...localDetails
-          });
         }
       }
     }
-    logInaraSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} results=${results.length}`);
-    res.status(200).json({ results });
+
+    const seenStations = new Set()
+    const results = []
+    for (const entry of parsedStations) {
+      const key = entry.station.trim().toLowerCase()
+      if (seenStations.has(key)) continue
+      seenStations.add(key)
+      const localDetails = await getLocalStationDetails(entry.station, entry.system ? [entry.system] : [])
+      if (localDetails) results.push(localDetails)
+    }
+
+    logInaraSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} results=${results.length}`)
+    res.status(200).json({ results })
   } catch (err) {
     logInaraSearch(`ERROR: shipId=${shipId} system=${system} url=${url} error=${err}`)
     res.status(500).json({ error: 'Failed to fetch or parse INARA results', details: err.message })
   }
 }
+
+
