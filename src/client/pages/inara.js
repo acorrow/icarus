@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 
@@ -359,10 +359,20 @@ function TradeRoutesPanel () {
   const [minDemand, setMinDemand] = useState('0')
   const [stationDistance, setStationDistance] = useState('0')
   const [surfacePreference, setSurfacePreference] = useState('0')
+  const DISTANCE_FILTER_MAX = 200
+  const [distanceFilter, setDistanceFilter] = useState(String(DISTANCE_FILTER_MAX))
+  const parsedDistanceFilter = Number(distanceFilter)
+  const isDistanceFilterLimited = Number.isFinite(parsedDistanceFilter) && parsedDistanceFilter < DISTANCE_FILTER_MAX
+  const [rawRoutes, setRawRoutes] = useState([])
   const [routes, setRoutes] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+
+  const parsedMinProfit = useMemo(() => {
+    const value = parseFloat(minProfit)
+    return Number.isFinite(value) ? value : null
+  }, [minProfit])
 
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
@@ -432,6 +442,42 @@ function TradeRoutesPanel () {
     { value: '2', label: 'Yes (exclude Odyssey stations)' },
     { value: '1', label: 'No' }
   ]), [])
+
+  const filterRoutes = useCallback((list = []) => {
+    if (!Array.isArray(list)) return []
+    const effectiveDistanceLimit = isDistanceFilterLimited ? parsedDistanceFilter : DISTANCE_FILTER_MAX
+
+    return list.filter(route => {
+      if (parsedMinProfit !== null) {
+        const numericProfit = typeof route?.summary?.profitPerUnit === 'number' && !Number.isNaN(route.summary.profitPerUnit)
+          ? route.summary.profitPerUnit
+          : (typeof route?.profitPerUnit === 'number' && !Number.isNaN(route.profitPerUnit) ? route.profitPerUnit : null)
+        if (numericProfit !== null && numericProfit < parsedMinProfit) return false
+
+        if (numericProfit === null) {
+          const profitText = route?.summary?.profitPerUnitText || route?.profitPerUnitText
+          if (typeof profitText === 'string' && profitText.trim()) {
+            const parsed = Number(profitText.replace(/[^0-9.-]/g, ''))
+            if (!Number.isNaN(parsed) && parsed < parsedMinProfit) return false
+          }
+        }
+      }
+
+      if (isDistanceFilterLimited) {
+        const numericDistance = typeof route?.summary?.routeDistanceLy === 'number' && !Number.isNaN(route.summary.routeDistanceLy)
+          ? route.summary.routeDistanceLy
+          : (typeof route?.summary?.distanceLy === 'number' && !Number.isNaN(route.summary.distanceLy)
+            ? route.summary.distanceLy
+            : (typeof route?.distanceLy === 'number' && !Number.isNaN(route.distanceLy)
+              ? route.distanceLy
+              : (typeof route?.distance === 'number' && !Number.isNaN(route.distance) ? route.distance : null)))
+        if (numericDistance !== null && numericDistance > effectiveDistanceLimit) return false
+      }
+
+      return true
+    })
+  }, [parsedMinProfit, isDistanceFilterLimited, parsedDistanceFilter])
+
 
   const renderQuantityIndicator = (entry, type) => {
     if (!entry) return null
@@ -845,6 +891,7 @@ export default function InaraPage() {
     </Layout>
   )
 }
+
 
 
 
