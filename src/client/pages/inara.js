@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
+import Icons from '../lib/icons'
 
 function formatSystemDistance(value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
@@ -114,10 +115,52 @@ const FILTER_SUBMIT_BUTTON_STYLE = {
   borderRadius: '.65rem'
 }
 
+const ROW_TOGGLE_BUTTON_STYLE = {
+  background: 'rgba(255, 124, 34, 0.12)',
+  border: '1px solid rgba(255, 124, 34, 0.55)',
+  color: '#ffb347',
+  borderRadius: '999px',
+  padding: '.2rem .75rem',
+  fontSize: '0.75rem',
+  letterSpacing: '.05em',
+  textTransform: 'uppercase',
+  cursor: 'pointer'
+}
+
 const DEFAULT_SORT_DIRECTION = {
   profitPerTon: 'desc',
   routeDistance: 'asc',
   distance: 'asc'
+}
+
+function getStationIconName(localInfo = {}, remoteInfo = {}) {
+  if (localInfo?.icon) return localInfo.icon
+  const candidates = [
+    localInfo?.stationType,
+    localInfo?.type,
+    remoteInfo?.stationType,
+    remoteInfo?.type,
+    remoteInfo?.subType
+  ].filter(entry => typeof entry === 'string' && entry.trim())
+  if (candidates.length === 0) return null
+  return stationIconFromType(candidates[0])
+}
+
+function StationIcon({ icon, size = 26, color = '#ffb347' }) {
+  if (!icon) return null
+  const paths = Icons[icon]
+  if (!paths) return null
+  const viewBox = icon === 'asteroid-base' ? '0 0 2000 2000' : '0 0 1000 1000'
+  return (
+    <svg
+      viewBox={viewBox}
+      focusable='false'
+      aria-hidden='true'
+      style={{ width: size, height: size, fill: color, flexShrink: 0 }}
+    >
+      {paths}
+    </svg>
+  )
 }
 
 function parseNumberFromText(value) {
@@ -585,6 +628,7 @@ function TradeRoutesPanel () {
   const [sortField, setSortField] = useState('distance')
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(false)
+  const [collapsedRows, setCollapsedRows] = useState({})
 
   const parsedMinProfit = useMemo(() => {
     const value = parseFloat(minProfit)
@@ -783,6 +827,17 @@ function TradeRoutesPanel () {
     setRoutes(sorted)
   }, [rawRoutes, filterRoutes, sortRoutes])
 
+  useEffect(() => {
+    setCollapsedRows({})
+  }, [rawRoutes])
+
+  const toggleRowExpansion = useCallback(rowId => {
+    setCollapsedRows(prev => ({
+      ...prev,
+      [rowId]: !prev[rowId]
+    }))
+  }, [])
+
   const renderQuantityIndicator = (entry, type) => {
     if (!entry) return null
     const quantityText = entry?.quantityText || (typeof entry?.quantity === 'number' && !Number.isNaN(entry.quantity)
@@ -980,40 +1035,77 @@ function TradeRoutesPanel () {
           const systemDistanceDisplay = formatSystemDistance(route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.distanceText || route?.distanceDisplay)
           const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
 
+          const rowKey = `route-${index}`
+          const detailsId = `${rowKey}-details`
+          const isExpanded = !collapsedRows[rowKey]
+          const originIconName = getStationIconName(originLocal, route?.origin)
+          const destinationIconName = getStationIconName(destinationLocal, route?.destination)
+
           return (
             <tr key={index} style={{ fontSize: '0.95rem' }}>
               <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <span style={{ fontWeight: 600 }}>{originStation}</span>
-                  <span style={{ color: '#9da4b3', fontSize: '0.82rem' }}>{originSystemName || 'Unknown system'}</span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                    <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
-                    <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: isExpanded ? '0.45rem' : '0.3rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                    {originIconName && <StationIcon icon={originIconName} />}
+                    <span style={{ fontWeight: 600, flexGrow: 1 }}>{originStation}</span>
+                    <button
+                      type='button'
+                      onClick={() => toggleRowExpansion(rowKey)}
+                      aria-expanded={isExpanded}
+                      aria-controls={detailsId}
+                      style={{ ...ROW_TOGGLE_BUTTON_STYLE, marginLeft: 'auto' }}
+                    >
+                      {isExpanded ? 'Hide details' : 'Show details'}
+                    </button>
                   </div>
+                  {isExpanded && (
+                    <div id={detailsId} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span style={{ color: '#9da4b3', fontSize: '0.82rem' }}>{originSystemName || 'Unknown system'}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
+                        <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
+                        <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </td>
               <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <span style={{ fontWeight: 600 }}>{destinationStation}</span>
-                  <span style={{ color: '#9da4b3', fontSize: '0.82rem' }}>{destinationSystemName || 'Unknown system'}</span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                    <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
-                    <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: isExpanded ? '0.45rem' : '0.3rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                    {destinationIconName && <StationIcon icon={destinationIconName} />}
+                    <span style={{ fontWeight: 600 }}>{destinationStation}</span>
                   </div>
+                  {isExpanded && (
+                    <>
+                      <span style={{ color: '#9da4b3', fontSize: '0.82rem' }}>{destinationSystemName || 'Unknown system'}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
+                        <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
+                        <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </td>
               <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <strong>{outboundCommodity || '--'}</strong>
-                  <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Buy: {outboundBuy?.priceText || '--'}</span>
-                  <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Sell: {outboundSell?.priceText || '--'}</span>
+                  {isExpanded && (
+                    <>
+                      <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Buy: {outboundBuy?.priceText || '--'}</span>
+                      <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Sell: {outboundSell?.priceText || '--'}</span>
+                    </>
+                  )}
                 </div>
               </td>
               <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <strong>{returnCommodity || '--'}</strong>
-                  <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Buy: {returnBuy?.priceText || '--'}</span>
-                  <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Sell: {returnSell?.priceText || '--'}</span>
+                  {isExpanded && (
+                    <>
+                      <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Buy: {returnBuy?.priceText || '--'}</span>
+                      <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Sell: {returnSell?.priceText || '--'}</span>
+                    </>
+                  )}
                 </div>
               </td>
               <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerTon || '--'}</td>
