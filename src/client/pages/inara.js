@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 
@@ -46,36 +46,34 @@ function stationIconFromType(type = '') {
   return 'coriolis-starport'
 }
 
-const navItems = [
-  { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
-  { name: 'Ships', icon: 'ship', active: true }
-]
+function formatCredits(value, fallback) {
+  if (typeof value === 'number' && !Number.isNaN(value)) {
+    return `${Math.round(value).toLocaleString()} Cr`
+  }
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value)
+    if (!Number.isNaN(parsed)) {
+      return `${Math.round(parsed).toLocaleString()} Cr`
+    }
+    return value
+  }
+  return fallback || '--'
+}
 
-function ShipsPanel() {
-  const [ships, setShips] = useState([])
-  const [selectedShip, setSelectedShip] = useState('')
+function useSystemSelector () {
   const [systemSelection, setSystemSelection] = useState('')
   const [systemInput, setSystemInput] = useState('')
   const [system, setSystem] = useState('')
   const [systemOptions, setSystemOptions] = useState([])
-  const [results, setResults] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
   const [currentSystem, setCurrentSystem] = useState(null)
-  const [nearby, setNearby] = useState([])
-  const [expandedRow, setExpandedRow] = useState(null)
-  const [hasSearched, setHasSearched] = useState(false)
 
   useEffect(() => {
-    fetch('/api/shipyard-list')
-      .then(res => res.json())
-      .then(data => setShips(data))
-      .catch(() => setShips([]))
+    let cancelled = false
     fetch('/api/current-system')
       .then(res => res.json())
       .then(data => {
+        if (cancelled) return
         setCurrentSystem(data.currentSystem)
-        setNearby(data.nearby)
         setSystemSelection('')
         setSystemInput('')
         setSystem('')
@@ -93,7 +91,103 @@ function ShipsPanel() {
         })
         setSystemOptions(opts)
       })
-      .catch(() => setCurrentSystem(null))
+      .catch(() => {
+        if (!cancelled) setCurrentSystem(null)
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  const handleSystemChange = e => {
+    const nextValue = e.target.value
+    setSystemSelection(nextValue)
+    if (nextValue === '__manual') {
+      setSystemInput('')
+      setSystem('')
+      return
+    }
+    setSystem(nextValue)
+  }
+
+  const handleManualSystemChange = e => {
+    const value = e.target.value
+    setSystemInput(value)
+    setSystem(value)
+  }
+
+  return {
+    currentSystem,
+    system,
+    systemSelection,
+    systemInput,
+    systemOptions,
+    handleSystemChange,
+    handleManualSystemChange,
+    resetSystem: () => {
+      setSystemSelection('')
+      setSystemInput('')
+      setSystem('')
+    }
+  }
+}
+
+function SystemSelect ({
+  label = 'System',
+  systemSelection,
+  systemOptions,
+  onSystemChange,
+  systemInput,
+  onManualSystemChange,
+  placeholder = 'Enter system name...'
+}) {
+  return (
+    <div style={{ flex: 1, minWidth: 200 }}>
+      <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>{label}</label>
+      <select value={systemSelection} onChange={onSystemChange} style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}>
+        <option value=''>Select a system...</option>
+        {systemOptions.map(opt => (
+          <option key={opt.name} value={opt.name}>
+            {opt.name} {opt.distance > 0 ? `(${opt.distance} ly)` : '(current)'}
+          </option>
+        ))}
+        <option value='' disabled>------------</option>
+        <option value='__manual'>Other (type manually)</option>
+      </select>
+      {systemSelection === '__manual' && (
+        <input
+          type='text'
+          autoFocus
+          value={systemInput}
+          onChange={onManualSystemChange}
+          placeholder={placeholder}
+          style={{ width: '100%', marginTop: '.5rem', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+        />
+      )}
+    </div>
+  )
+}
+
+function ShipsPanel() {
+  const [ships, setShips] = useState([])
+  const [selectedShip, setSelectedShip] = useState('')
+  const {
+    system,
+    systemSelection,
+    systemInput,
+    systemOptions,
+    handleSystemChange,
+    handleManualSystemChange
+  } = useSystemSelector()
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [expandedRow, setExpandedRow] = useState(null)
+  const [hasSearched, setHasSearched] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/shipyard-list')
+      .then(res => res.json())
+      .then(data => setShips(data))
+      .catch(() => setShips([]))
   }, [])
 
   useEffect(() => {
@@ -120,23 +214,6 @@ function ShipsPanel() {
       .finally(() => setLoading(false))
   }, [selectedShip, system])
 
-  const handleSystemChange = e => {
-    const nextValue = e.target.value
-    setSystemSelection(nextValue)
-    if (nextValue === '__manual') {
-      setSystemInput('')
-      setSystem('')
-      return
-    }
-    setSystem(nextValue)
-  }
-
-  const handleManualSystemChange = e => {
-    const value = e.target.value
-    setSystemInput(value)
-    setSystem(value)
-  }
-
   const showResults = hasSearched || loading
 
   return (
@@ -152,29 +229,14 @@ function ShipsPanel() {
             ))}
           </select>
         </div>
-        <div style={{ flex: 1, minWidth: 200 }}>
-          <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>System</label>
-          <select value={systemSelection} onChange={handleSystemChange} style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}>
-            <option value=''>Select a system...</option>
-            {systemOptions.map(opt => (
-              <option key={opt.name} value={opt.name}>
-                {opt.name} {opt.distance > 0 ? `(${opt.distance} ly)` : '(current)'}
-              </option>
-            ))}
-            <option value='' disabled>------------</option>
-            <option value='__manual'>Other (type manually)</option>
-          </select>
-          {systemSelection === '__manual' && (
-            <input
-              type='text'
-              autoFocus
-              value={systemInput}
-              onChange={handleManualSystemChange}
-              placeholder='Enter system name...'
-              style={{ width: '100%', marginTop: '.5rem', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
-            />
-          )}
-        </div>
+        <SystemSelect
+          label='System'
+          systemSelection={systemSelection}
+          systemOptions={systemOptions}
+          onSystemChange={handleSystemChange}
+          systemInput={systemInput}
+          onManualSystemChange={handleManualSystemChange}
+        />
       </div>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       {showResults && (
@@ -272,11 +334,231 @@ function ShipsPanel() {
   )
 }
 
+function TradeRoutesPanel() {
+  const {
+    system,
+    systemSelection,
+    systemInput,
+    systemOptions,
+    handleSystemChange,
+    handleManualSystemChange
+  } = useSystemSelector()
+  const [commodity, setCommodity] = useState('')
+  const [maxDistance, setMaxDistance] = useState('')
+  const [minProfit, setMinProfit] = useState('')
+  const [routes, setRoutes] = useState([])
+  const [status, setStatus] = useState('idle')
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+
+  const handleSubmit = event => {
+    event.preventDefault()
+    if (!system || !system.trim()) {
+      setError('Please choose a system before searching for trade routes.')
+      setMessage('')
+      setRoutes([])
+      setStatus('error')
+      return
+    }
+
+    setStatus('loading')
+    setError('')
+    setMessage('')
+
+    const trimmedCommodity = commodity.trim()
+    const maxDistanceValue = parseFloat(maxDistance)
+    const minProfitValue = parseFloat(minProfit)
+    const payload = {
+      system: system.trim(),
+      ...(trimmedCommodity ? { commodity: trimmedCommodity } : {}),
+      ...(Number.isFinite(maxDistanceValue) ? { maxDistance: maxDistanceValue } : {}),
+      ...(Number.isFinite(minProfitValue) ? { minProfit: minProfitValue } : {})
+    }
+
+    fetch('/api/inara-trade-routes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json())
+      .then(data => {
+        const nextRoutes = Array.isArray(data?.routes)
+          ? data.routes
+          : Array.isArray(data?.results)
+            ? data.results
+            : []
+
+        setRoutes(nextRoutes)
+        setError(data?.error || '')
+        setMessage(data?.message || '')
+
+        if (data?.error && nextRoutes.length === 0) {
+          setStatus('error')
+        } else if (nextRoutes.length === 0) {
+          setStatus('empty')
+        } else {
+          setStatus('populated')
+        }
+      })
+      .catch(err => {
+        setError(err.message || 'Unable to fetch trade routes.')
+        setMessage('')
+        setRoutes([])
+        setStatus('error')
+      })
+  }
+
+  const renderRoutesTable = () => (
+    <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
+      <thead>
+        <tr>
+          <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Origin</th>
+          <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Destination</th>
+          <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Commodity</th>
+          <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Profit/Ton</th>
+          <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Distance</th>
+          <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {routes.map((route, index) => {
+          const originStation = route?.originStation || route?.sourceStation || route?.startStation || route?.fromStation || route?.station || '--'
+          const originSystem = route?.originSystem || route?.sourceSystem || route?.startSystem || route?.fromSystem || route?.system || ''
+          const destinationStation = route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || '--'
+          const destinationSystem = route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || ''
+          const commodityName = route?.commodity || route?.item || route?.good || route?.product || '--'
+          const profitPerTon = formatCredits(route?.profitPerTon ?? route?.profit ?? route?.profitPerUnit)
+          const distance = formatSystemDistance(route?.distanceLy ?? route?.distance ?? route?.rangeLy, route?.distanceDisplay)
+          const updatedDisplay = formatRelativeTime(route?.updatedAt || route?.lastUpdated || route?.timestamp)
+
+          return (
+            <tr key={index}>
+              <td>
+                <div className='text-no-wrap' style={{ paddingLeft: '0.5rem', paddingRight: '.75rem' }}>
+                  <span className='visible-medium'>{originStation}</span>
+                  <span className='hidden-medium'>{originStation}</span>
+                  <span style={{ display: 'block', color: '#888', fontSize: '0.95em' }}>{originSystem || 'Unknown system'}</span>
+                </div>
+              </td>
+              <td>
+                <div className='text-no-wrap' style={{ paddingLeft: '0.5rem', paddingRight: '.75rem' }}>
+                  <span className='visible-medium'>{destinationStation}</span>
+                  <span className='hidden-medium'>{destinationStation}</span>
+                  <span style={{ display: 'block', color: '#888', fontSize: '0.95em' }}>{destinationSystem || 'Unknown system'}</span>
+                </div>
+              </td>
+              <td className='hidden-small text-right text-no-transform text-no-wrap'>{commodityName}</td>
+              <td className='hidden-small text-right text-no-transform text-no-wrap'>{profitPerTon}</td>
+              <td className='hidden-small text-right text-no-transform text-no-wrap'>{distance || '--'}</td>
+              <td className='hidden-small text-right text-no-transform text-no-wrap'>{updatedDisplay || '--'}</td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+
+  return (
+    <div>
+      <h2>Find Trade Routes</h2>
+      <form onSubmit={handleSubmit} style={{ margin: '2rem 0 1.5rem 0' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem' }}>
+          <SystemSelect
+            label='System'
+            systemSelection={systemSelection}
+            systemOptions={systemOptions}
+            onSystemChange={handleSystemChange}
+            systemInput={systemInput}
+            onManualSystemChange={handleManualSystemChange}
+          />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Commodity (optional)</label>
+            <input
+              type='text'
+              value={commodity}
+              onChange={event => setCommodity(event.target.value)}
+              placeholder='Commodity name...'
+              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 140 }}>
+            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Max Distance (Ly)</label>
+            <input
+              type='number'
+              step='any'
+              value={maxDistance}
+              onChange={event => setMaxDistance(event.target.value)}
+              placeholder='e.g. 40'
+              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Min Profit/Ton (Cr)</label>
+            <input
+              type='number'
+              step='any'
+              value={minProfit}
+              onChange={event => setMinProfit(event.target.value)}
+              placeholder='e.g. 5000'
+              style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button
+              type='submit'
+              className='button--active button--secondary'
+              style={{ padding: '.85rem 2rem', fontSize: '1.1rem', borderRadius: '.75rem' }}
+              disabled={status === 'loading'}
+            >
+              {status === 'loading' ? 'Searching…' : 'Find Routes'}
+            </button>
+          </div>
+        </div>
+      </form>
+      <div style={{ marginTop: '1.5rem', borderRadius: '1rem', border: '1px solid #333', background: '#151515', overflow: 'hidden', boxShadow: '0 0 1.5rem rgba(0, 0, 0, 0.45)' }}>
+        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+          {message && status !== 'idle' && status !== 'loading' && (
+            <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>{message}</div>
+          )}
+          {status === 'idle' && (
+            <div style={{ color: '#aaa', padding: '2rem' }}>Choose your filters and search to see profitable trade routes.</div>
+          )}
+          {status === 'loading' && (
+            <div style={{ color: '#aaa', padding: '2rem' }}>Searching for trade routes...</div>
+          )}
+          {status === 'error' && (
+            <div style={{ color: '#ff4d4f', padding: '2rem' }}>{error || 'Unable to fetch trade routes.'}</div>
+          )}
+          {status === 'empty' && (
+            <div style={{ color: '#aaa', padding: '2rem' }}>No trade routes found near {system || systemSelection || 'the selected system'}.</div>
+          )}
+          {status === 'populated' && renderRoutesTable()}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function InaraPage() {
+  const [activeTab, setActiveTab] = useState('ships')
+
+  const navigationItems = useMemo(() => ([
+    { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
+    { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') },
+    { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') }
+  ]), [activeTab])
+
   return (
     <Layout connected={true} active={true} ready={true} loader={false}>
-      <Panel layout='full-width' navigation={navItems} search={false}>
-        <ShipsPanel />
+      <Panel layout='full-width' navigation={navigationItems} search={false}>
+        <div>
+          <div style={{ display: activeTab === 'ships' ? 'block' : 'none' }}>
+            <ShipsPanel />
+          </div>
+          <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+            <TradeRoutesPanel />
+          </div>
+        </div>
       </Panel>
     </Layout>
   )
