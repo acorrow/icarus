@@ -52,10 +52,13 @@ async function ensureSystemInstance() {
           await eliteLog.load({ reload: true })
           if (typeof eliteLog.watch === 'function') eliteLog.watch()
           global.ICARUS_ELITE_LOG = eliteLog
+          logInaraTrade(`ELITE_LOG_LOADED: dir=${logDir}`)
         } catch (err) {
           logInaraTrade(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
           eliteLog = null
         }
+      } else {
+        logInaraTrade('ELITE_LOG_DIR_MISSING')
       }
     }
 
@@ -540,6 +543,8 @@ export default async function handler(req, res) {
         if (data && data.name) {
           systemCache.set(key, data)
           addSystemToStationIndex(data)
+          const stationCount = collectStations(data).length
+          logInaraTrade(`SYSTEM_LOOKUP_RESULT: source=service query=${systemName} resolved=${data.name} stations=${stationCount}`)
           return data
         }
       } catch (err) {
@@ -550,9 +555,12 @@ export default async function handler(req, res) {
         if (cached) {
           systemCache.set(key, cached)
           addSystemToStationIndex(cached)
+          const stationCount = collectStations(cached).length
+          logInaraTrade(`SYSTEM_LOOKUP_RESULT: source=cache query=${systemName} resolved=${cached.name || systemName} stations=${stationCount}`)
           return cached
         }
       }
+      logInaraTrade(`SYSTEM_LOOKUP_MISS: system=${systemName}`)
       return null
     }
 
@@ -733,6 +741,14 @@ export default async function handler(req, res) {
         if (station) {
           const result = buildLocalResult(systemData, station)
           localStationCache.set(normalizedStation, result)
+          const logParts = [
+            `station=${stationName}`,
+            `system=${systemData?.name || ''}`,
+            `faction=${result.faction || ''}`,
+            `controllingFaction=${result.controllingFactionName || ''}`,
+            `allegiance=${result.allegiance || ''}`
+          ]
+          logInaraTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
           return result
         }
       }
@@ -746,11 +762,19 @@ export default async function handler(req, res) {
         if (cacheKey && !systemCache.has(cacheKey)) {
           systemCache.set(cacheKey, indexedEntry.system)
         }
+        const logParts = [
+          `station=${stationName}`,
+          `system=${indexedEntry.system?.name || ''}`,
+          `faction=${result.faction || ''}`,
+          `controllingFaction=${result.controllingFactionName || ''}`,
+          `allegiance=${result.allegiance || ''}`
+        ]
+        logInaraTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
         return result
       }
 
       localStationCache.set(normalizedStation, null)
-      logInaraTrade(`LOCAL_LOOKUP_MISS: station=${stationName}`)
+      logInaraTrade(`LOCAL_LOOKUP_MISS: station=${stationName} systems=${searchOrder.join('|')}`)
       return null
     }
 
@@ -760,11 +784,23 @@ export default async function handler(req, res) {
         getLocalStationDetails(route.origin.stationName, [route.origin.systemName]),
         getLocalStationDetails(route.destination.stationName, [route.destination.systemName])
       ])
-      return {
+      const enrichedRoute = {
         ...route,
         origin: { ...route.origin, local: originLocal },
         destination: { ...route.destination, local: destinationLocal }
       }
+      const originFaction = originLocal?.faction || originLocal?.controllingFactionName || originLocal?.controllingFaction || ''
+      const destinationFaction = destinationLocal?.faction || destinationLocal?.controllingFactionName || destinationLocal?.controllingFaction || ''
+      const routeLogParts = [
+        `originStation=${route.origin.stationName || ''}`,
+        `originSystem=${route.origin.systemName || ''}`,
+        `originFaction=${originFaction}`,
+        `destinationStation=${route.destination.stationName || ''}`,
+        `destinationSystem=${route.destination.systemName || ''}`,
+        `destinationFaction=${destinationFaction}`
+      ]
+      logInaraTrade(`ROUTE_FACTION_DATA: ${routeLogParts.join(' ')}`)
+      return enrichedRoute
     }))
 
     logInaraTrade(`RESPONSE: system=${system} url=${url} results=${enrichedResults.length}`)

@@ -48,6 +48,15 @@ function formatReputationPercent(value) {
   return `${sign}${percentage}%`
 }
 
+function shouldDebugFactionStandings () {
+  if (typeof window === 'undefined') return false
+  try {
+    return window.localStorage.getItem('inaraDebugFactions') === 'true'
+  } catch (err) {
+    return false
+  }
+}
+
 let factionStandingsCache = null
 let factionStandingsPromise = null
 
@@ -126,9 +135,34 @@ function useFactionStandings() {
 
 function getFactionStandingDisplay(factionName, standings) {
   const key = normaliseFactionKey(factionName)
-  if (!key || !standings) return {}
+  const debug = shouldDebugFactionStandings()
+  if (!key || !standings) {
+    if (debug && factionName) {
+      console.debug('[INARA] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
+    }
+    return {}
+  }
   const info = standings[key]
-  if (!info) return {}
+  if (!info) {
+    if (debug) {
+      console.debug('[INARA] Faction standing missing', {
+        factionName,
+        key,
+        availableCount: Object.keys(standings || {}).length
+      })
+    }
+    return {}
+  }
+
+  if (debug) {
+    console.debug('[INARA] Faction standing resolved', {
+      factionName,
+      key,
+      standing: info.standing,
+      relation: info.relation,
+      reputation: info.reputation
+    })
+  }
 
   const className = info.standing === 'ally'
     ? 'text-success'

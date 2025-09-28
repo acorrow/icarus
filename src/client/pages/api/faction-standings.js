@@ -2,6 +2,13 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 import EliteLog from '../../../service/lib/elite-log.js'
+import { appendInaraLogEntry } from './inara-log-utils.js'
+
+const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
+
+function logFactionStandings (entry) {
+  appendInaraLogEntry(logPath, entry)
+}
 
 function resolveLogDir () {
   if (global.LOG_DIR && fs.existsSync(global.LOG_DIR)) return global.LOG_DIR
@@ -45,9 +52,13 @@ async function ensureEliteLog () {
         await eliteLog.load({ reload: true })
         if (typeof eliteLog.watch === 'function') eliteLog.watch()
         global.ICARUS_ELITE_LOG = eliteLog
+        logFactionStandings(`FACTION_STANDINGS_ELITE_LOG_LOADED: dir=${logDir}`)
       } catch (err) {
+        logFactionStandings(`FACTION_STANDINGS_ELITE_LOG_ERROR: dir=${logDir} error=${err}`)
         eliteLog = null
       }
+    } else {
+      logFactionStandings('FACTION_STANDINGS_LOG_DIR_MISSING')
     }
 
     if (!eliteLog) {
@@ -57,6 +68,7 @@ async function ensureEliteLog () {
         getEventsFromTimestamp: async () => [],
         _query: async () => []
       }
+      logFactionStandings('FACTION_STANDINGS_ELITE_LOG_FALLBACK')
     }
 
     return eliteLog
@@ -130,6 +142,14 @@ export default async function handler (req, res) {
     const factions = Array.isArray(snapshot?.Factions) ? snapshot.Factions : []
     const standings = {}
 
+    if (!snapshot) {
+      logFactionStandings('FACTION_STANDINGS_SNAPSHOT_MISSING')
+    } else {
+      logFactionStandings(
+        `FACTION_STANDINGS_SNAPSHOT: timestamp=${snapshot.timestamp || ''} factions=${factions.length}`
+      )
+    }
+
     const processed = factions
       .map(faction => {
         const name = faction?.Name_Localised || faction?.Name || null
@@ -161,12 +181,19 @@ export default async function handler (req, res) {
       })
       .filter(Boolean)
 
-    res.status(200).json({
+    const responsePayload = {
       updatedAt: snapshot?.timestamp || null,
       factions: processed,
       standings
-    })
+    }
+
+    logFactionStandings(
+      `FACTION_STANDINGS_RESPONSE: factions=${processed.length} standings=${Object.keys(standings).length}`
+    )
+
+    res.status(200).json(responsePayload)
   } catch (err) {
+    logFactionStandings(`FACTION_STANDINGS_ERROR: error=${err}`)
     res.status(500).json({ error: 'Failed to resolve faction standings', details: err?.message || String(err) })
   }
 }
