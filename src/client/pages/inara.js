@@ -63,12 +63,7 @@ function formatCredits (value, fallback) {
 }
 
 const FILTER_FORM_STYLE = {
-  margin: '2rem 0 1.5rem 0',
-  padding: '1.6rem 1.8rem',
-  borderRadius: '0.85rem',
-  border: '1px solid #2f3440',
-  background: 'rgba(12, 15, 24, 0.85)',
-  boxShadow: '0 18px 45px rgba(0, 0, 0, 0.35)'
+  margin: '1.75rem 0 1.5rem'
 }
 
 const FILTERS_GRID_STYLE = {
@@ -98,24 +93,28 @@ const FILTER_LABEL_STYLE = {
 
 const FILTER_CONTROL_STYLE = {
   width: '100%',
-  padding: '.65rem .85rem',
+  height: '2.8rem',
+  padding: '0 .85rem',
   fontSize: '1rem',
-  borderRadius: '.55rem',
+  borderRadius: '.45rem',
   border: '1px solid #303544',
   background: 'rgba(14, 18, 28, 0.85)',
   color: '#fff',
-  minHeight: '2.9rem'
+  lineHeight: '2.8rem'
 }
 
 const FILTER_TOGGLE_BUTTON_STYLE = {
   background: 'rgba(255, 124, 34, 0.15)',
   border: '1px solid #ff7c22',
   color: '#ff7c22',
-  borderRadius: '.5rem',
-  padding: '.55rem 1rem',
+  borderRadius: '.45rem',
+  padding: '0 1rem',
   fontSize: '0.95rem',
   cursor: 'pointer',
-  minHeight: '2.9rem'
+  height: '2.8rem',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center'
 }
 
 const FILTER_SUMMARY_STYLE = {
@@ -131,10 +130,13 @@ const FILTER_SUMMARY_STYLE = {
 }
 
 const FILTER_SUBMIT_BUTTON_STYLE = {
-  padding: '.65rem 1.6rem',
+  padding: '0 1.6rem',
   fontSize: '1rem',
-  borderRadius: '.65rem',
-  minHeight: '2.9rem'
+  borderRadius: '.45rem',
+  height: '2.8rem',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center'
 }
 
 const DEFAULT_SORT_DIRECTION = {
