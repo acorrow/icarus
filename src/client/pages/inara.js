@@ -945,6 +945,7 @@ function TradeRoutesPanel () {
   const renderRoutesTable = () => (
     <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
       <colgroup>
+        <col style={{ width: '4%' }}/>
         <col style={{ width: '20%' }}/>
         <col style={{ width: '20%' }}/>
         <col style={{ width: '14%' }}/>
@@ -958,6 +959,7 @@ function TradeRoutesPanel () {
       </colgroup>
       <thead>
         <tr style={{ fontSize: '0.95rem' }}>
+          <th aria-hidden='true' />
           <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Origin</th>
           <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Destination</th>
           <th className='hidden-small' style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Outbound Commodity</th>
@@ -1035,82 +1037,85 @@ function TradeRoutesPanel () {
           const expansionSymbol = isExpanded ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
 
           return (
-            <tr
-              key={index}
-              style={{ fontSize: '0.95rem', cursor: 'pointer', background: isExpanded ? 'rgba(255, 124, 34, 0.06)' : 'transparent' }}
-              onClick={() => handleRowToggle(rowKey)}
-              onKeyDown={event => handleRowKeyDown(event, rowKey)}
-              role='button'
-              tabIndex={0}
-              aria-expanded={isExpanded}
-              aria-controls={isExpanded ? detailsId : undefined}
-            >
-              <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: isExpanded ? '0.45rem' : '0.3rem' }}>
+            <React.Fragment key={rowKey}>
+              <tr
+                style={{ fontSize: '0.95rem', cursor: 'pointer', background: isExpanded ? 'rgba(255, 124, 34, 0.06)' : 'transparent' }}
+                onClick={() => handleRowToggle(rowKey)}
+                onKeyDown={event => handleRowKeyDown(event, rowKey)}
+                role='button'
+                tabIndex={0}
+                aria-expanded={isExpanded}
+                aria-controls={isExpanded ? detailsId : undefined}
+              >
+                <td style={{ padding: '.6rem .35rem', textAlign: 'center', verticalAlign: 'top', color: '#ffb347', fontSize: '1.1rem', lineHeight: 1 }} aria-hidden='true'>
+                  {expansionSymbol}
+                </td>
+                <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                     {originIconName && <StationIcon icon={originIconName} />}
-                    <span style={{ fontWeight: 600, flexGrow: 1 }}>{originStation}</span>
-                    <span style={{ marginLeft: 'auto', color: '#ffb347', fontSize: '1.1rem', lineHeight: 1 }}>
-                      {expansionSymbol}
-                    </span>
+                    <span style={{ fontWeight: 600 }}>{originStation}</span>
                   </div>
-                  {isExpanded && (
-                    <div id={detailsId} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span style={{ color: '#9da4b3', fontSize: '0.82rem' }}>{originSystemName || 'Unknown system'}</span>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                        <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
-                        <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </td>
-              <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: isExpanded ? '0.45rem' : '0.3rem' }}>
+                </td>
+                <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                     {destinationIconName && <StationIcon icon={destinationIconName} />}
                     <span style={{ fontWeight: 600 }}>{destinationStation}</span>
                   </div>
-                  {isExpanded && (
-                    <>
-                      <span style={{ color: '#9da4b3', fontSize: '0.82rem' }}>{destinationSystemName || 'Unknown system'}</span>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                        <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
-                        <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </td>
-              <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                </td>
+                <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
                   <strong>{outboundCommodity || '--'}</strong>
-                  {isExpanded && (
-                    <>
-                      <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Buy: {outboundBuy?.priceText || '--'}</span>
-                      <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Sell: {outboundSell?.priceText || '--'}</span>
-                    </>
-                  )}
-                </div>
-              </td>
-              <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                </td>
+                <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
                   <strong>{returnCommodity || '--'}</strong>
-                  {isExpanded && (
-                    <>
-                      <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Buy: {returnBuy?.priceText || '--'}</span>
-                      <span style={{ color: '#8f96a3', fontSize: '0.82rem' }}>Sell: {returnSell?.priceText || '--'}</span>
-                    </>
-                  )}
-                </div>
-              </td>
-              <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerTon || '--'}</td>
-              <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerTrip || '--'}</td>
-              <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerHour || '--'}</td>
-              <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{routeDistanceDisplay || '--'}</td>
-              <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{systemDistanceDisplay || '--'}</td>
-              <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{updatedDisplay || '--'}</td>
-            </tr>
+                </td>
+                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerTon || '--'}</td>
+                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerTrip || '--'}</td>
+                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerHour || '--'}</td>
+                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{routeDistanceDisplay || '--'}</td>
+                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{systemDistanceDisplay || '--'}</td>
+                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{updatedDisplay || '--'}</td>
+              </tr>
+              {isExpanded && (
+                <tr
+                  id={detailsId}
+                  style={{ background: 'rgba(255, 124, 34, 0.06)' }}
+                >
+                  <td style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
+                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
+                      <span style={{ color: '#9da4b3' }}>{originSystemName || 'Unknown system'}</span>
+                      <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
+                      <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
+                    </div>
+                  </td>
+                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
+                      <span style={{ color: '#9da4b3' }}>{destinationSystemName || 'Unknown system'}</span>
+                      <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
+                      <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
+                    </div>
+                  </td>
+                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top', fontSize: '0.82rem', color: '#8f96a3' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span>Buy: {outboundBuy?.priceText || '--'}</span>
+                      <span>Sell: {outboundSell?.priceText || '--'}</span>
+                    </div>
+                  </td>
+                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top', fontSize: '0.82rem', color: '#8f96a3' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span>Buy: {returnBuy?.priceText || '--'}</span>
+                      <span>Sell: {returnSell?.priceText || '--'}</span>
+                    </div>
+                  </td>
+                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
+                </tr>
+              )}
+            </React.Fragment>
           )
         })}
       </tbody>
