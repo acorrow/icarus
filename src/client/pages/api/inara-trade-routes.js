@@ -433,7 +433,7 @@ export default async function handler(req, res) {
     params.append('pi12', normalized)
   }
 
-  const orderRaw = normalizeChoice(filters.orderBy ?? filters.pi1)
+  const orderRaw = normalizeChoice((filters.orderBy ?? filters.pi1) ?? '3')
   if (orderRaw) {
     const normalized = orderRaw.replace(/,/g, '')
     if (!allowedOrder.has(normalized)) {
