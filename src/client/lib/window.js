@@ -2,7 +2,12 @@ function isWindowsApp () { return (typeof window !== 'undefined' && typeof windo
 function isWindowFullScreen () { if (isWindowsApp()) { return window.icarusTerminal_isFullScreen() } }
 function isWindowPinned () { if (isWindowsApp()) { return window.icarusTerminal_isPinned() } }
 function openReleaseNotes () { if (isWindowsApp()) { return window.icarusTerminal_openReleaseNotes() } }
-function openTerminalInBrowser () { if (isWindowsApp()) { return window.icarusTerminal_openTerminalInBrowser() } }
+function openTerminalInBrowser () {
+  if (isWindowsApp()) { return window.icarusTerminal_openTerminalInBrowser() }
+  if (typeof window !== 'undefined') {
+    window.open(`//${window.location.host}`)
+  }
+}
 
 function appVersion () {
   if (isWindowsApp()) { return window.icarusTerminal_version() }
@@ -12,13 +17,17 @@ function appVersion () {
 function newWindow () {
   if (isWindowsApp()) { return window.icarusTerminal_newWindow() }
 
-  window.open(`//${window.location.host}`)
+  if (typeof window !== 'undefined') {
+    window.open(`//${window.location.host}`)
+  }
 }
 
 function closeWindow () {
   if (isWindowsApp()) { return window.icarusTerminal_quit() }
 
-  window.close()
+  if (typeof window !== 'undefined') {
+    window.close()
+  }
 }
 
 async function checkForUpdate () {
@@ -36,6 +45,8 @@ function installUpdate () {
 
 async function toggleFullScreen () {
   if (isWindowsApp()) { return await window.icarusTerminal_toggleFullScreen() }
+
+  if (typeof document === 'undefined') return
 
   if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.webkitCurrentFullScreenElement) {
     if (document.documentElement.requestFullscreen) {
