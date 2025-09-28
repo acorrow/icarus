@@ -585,6 +585,67 @@ export default async function handler(req, res) {
       return 'coriolis-starport'
     }
 
+    function resolveStationFactionName(station = {}) {
+      if (!station || typeof station !== 'object') {
+        return typeof station === 'string' ? station : ''
+      }
+
+      const normalizeEntry = entry => {
+        if (!entry) return null
+        if (typeof entry === 'string') {
+          const trimmed = entry.trim()
+          return trimmed ? trimmed : null
+        }
+        if (typeof entry === 'object') {
+          const candidates = [
+            entry.name,
+            entry.Name,
+            entry.localisedName,
+            entry.localizedName,
+            entry.LocalisedName,
+            entry.stationName,
+            entry.faction,
+            entry.factionName,
+            entry.title,
+            entry.groupName
+          ]
+
+          for (const candidate of candidates) {
+            if (typeof candidate === 'string' && candidate.trim()) return candidate.trim()
+          }
+
+          if (entry.faction && typeof entry.faction === 'object') {
+            const nested = normalizeEntry(entry.faction)
+            if (nested) return nested
+          }
+
+          return null
+        }
+
+        return null
+      }
+
+      const factionCandidates = [
+        station.faction,
+        station.factionName,
+        station.factionDetails,
+        station.minorFaction,
+        station.minorFactionName,
+        station.stationFaction,
+        station.controllingFaction,
+        station.controllingMinorFaction,
+        station.controllingFactionName,
+        station.owner
+      ]
+
+      for (const candidate of factionCandidates) {
+        const resolved = normalizeEntry(candidate)
+        if (resolved) return resolved
+      }
+
+      return ''
+    }
+
     function buildLocalResult(systemData, station) {
       const systemCoords = Array.isArray(systemData?.position) ? systemData.position : null
       let systemDistanceLy = null
@@ -600,6 +661,8 @@ export default async function handler(req, res) {
         ? station.distanceToArrival
         : (typeof station.distanceToArrivalLS === 'number' ? station.distanceToArrivalLS : null)
       const updatedAt = pickUpdatedTimestamp(station)
+
+      const factionName = resolveStationFactionName(station)
 
       return {
         station: station.name,
@@ -626,7 +689,13 @@ export default async function handler(req, res) {
         shipyard: !!station.haveShipyard,
         services: Array.isArray(station.otherServices) ? station.otherServices : [],
         economies: Array.isArray(station.economies) ? station.economies : [],
-        faction: station.faction || '',
+        faction: factionName || '',
+        stationFaction: station.stationFaction || null,
+        controllingFaction: station.controllingFaction || null,
+        controllingFactionName: typeof station.controllingFactionName === 'string' ? station.controllingFactionName : '',
+        minorFaction: station.minorFaction || null,
+        minorFactionName: typeof station.minorFactionName === 'string' ? station.minorFactionName : '',
+        factionDetails: station.factionDetails || null,
         government: station.government || '',
         allegiance: station.allegiance || '',
         icon: inferStationIcon(station),

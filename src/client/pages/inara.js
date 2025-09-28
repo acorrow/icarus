@@ -152,6 +152,60 @@ function getFactionStandingDisplay(factionName, standings) {
   }
 }
 
+function extractFactionNameCandidate (value) {
+  if (!value) return ''
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    return trimmed || ''
+  }
+  if (typeof value === 'object') {
+    const candidates = [
+      value.name,
+      value.Name,
+      value.localisedName,
+      value.localizedName,
+      value.LocalisedName,
+      value.faction,
+      value.factionName,
+      value.title
+    ]
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) return candidate.trim()
+    }
+    if (value.faction) {
+      const nested = extractFactionNameCandidate(value.faction)
+      if (nested) return nested
+    }
+  }
+  return ''
+}
+
+function resolveRouteFactionName (localData, endpointData) {
+  const candidates = [
+    localData?.faction,
+    localData?.stationFaction,
+    localData?.controllingFaction,
+    localData?.controllingFactionName,
+    localData?.minorFaction,
+    localData?.minorFactionName,
+    localData?.factionDetails,
+    endpointData?.faction,
+    endpointData?.factionName,
+    endpointData?.controllingFaction,
+    endpointData?.controllingFactionName,
+    endpointData?.minorFaction,
+    endpointData?.minorFactionName,
+    endpointData?.stationFaction
+  ]
+
+  for (const candidate of candidates) {
+    const resolved = extractFactionNameCandidate(candidate)
+    if (resolved) return resolved
+  }
+
+  return ''
+}
+
 function stationIconFromType(type = '') {
   const lower = type.toLowerCase()
   if (lower.includes('asteroid')) return 'asteroid-base'
@@ -904,6 +958,8 @@ function MissionsPanel () {
                     .filter(Boolean)
                     .join(' · ') || undefined
 
+                  const factionClassName = standingClass || 'text-secondary'
+
                   return (
                     <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
                       <td style={{ padding: '.65rem 1rem' }}>
@@ -911,12 +967,20 @@ function MissionsPanel () {
                           ? (
                               mission.factionUrl
                                 ? (
-                                  <a href={mission.factionUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>
+                                  <a
+                                    href={mission.factionUrl}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    className={factionClassName}
+                                    title={factionTitle}
+                                  >
                                     {mission.faction}
                                   </a>
                                   )
                                 : (
-                                    mission.faction
+                                  <span className={factionClassName} title={factionTitle}>
+                                    {mission.faction}
+                                  </span>
                                   )
                             )
                           : '--'}
@@ -1400,8 +1464,8 @@ function TradeRoutesPanel () {
           const destinationStation = destinationLocal?.station || route?.destination?.stationName || route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || '--'
           const destinationSystemName = destinationLocal?.system || route?.destination?.systemName || route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || ''
 
-          const originFactionName = originLocal?.faction || route?.origin?.faction || ''
-          const destinationFactionName = destinationLocal?.faction || route?.destination?.faction || ''
+          const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
+          const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
           const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
           const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
           const originStationClassName = originStandingDisplay.className || undefined
