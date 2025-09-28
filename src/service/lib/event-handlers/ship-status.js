@@ -250,6 +250,7 @@ class ShipStatus {
     const shipState = {
       timestamp: new Date().toISOString(),
       type: ship?.name ?? Loadout?.Ship ?? UNKNOWN_VALUE,
+      symbol: Loadout?.Ship ?? null,
       name: Loadout?.ShipName ?? UNKNOWN_VALUE,
       ident: Loadout?.ShipIdent ?? UNKNOWN_VALUE,
       pips: {

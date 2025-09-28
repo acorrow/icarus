@@ -3,6 +3,7 @@ import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
 import { useSocket, sendEvent } from '../lib/socket'
+import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 
 function formatSystemDistance (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
@@ -912,10 +913,11 @@ function TradeRoutesPanel () {
     handleManualSystemChange
   } = useSystemSelector({ autoSelectCurrent: true })
   const [cargoCapacity, setCargoCapacity] = useState('')
-  const [initialCapacityLoaded, setInitialCapacityLoaded] = useState(false)
+  const [initialShipInfoLoaded, setInitialShipInfoLoaded] = useState(false)
   const [routeDistance, setRouteDistance] = useState('30')
   const [priceAge, setPriceAge] = useState('8')
   const [padSize, setPadSize] = useState('2')
+  const [padSizeAutoDetected, setPadSizeAutoDetected] = useState(false)
   const [minSupply, setMinSupply] = useState('500')
   const [minDemand, setMinDemand] = useState('0')
   const [stationDistance, setStationDistance] = useState('0')
@@ -936,11 +938,11 @@ function TradeRoutesPanel () {
   const isSearchDisabled = status === 'loading' || !(system && system.trim())
 
   useEffect(() => {
-    if (!connected || initialCapacityLoaded) return
+    if (!connected || initialShipInfoLoaded) return
 
     let cancelled = false
 
-    const loadCapacityFromShip = async () => {
+    const loadShipInfo = async () => {
       try {
         const shipStatus = await sendEvent('getShipStatus')
         if (cancelled) return
@@ -949,17 +951,23 @@ function TradeRoutesPanel () {
         if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
           setCargoCapacity(String(Math.round(capacityNumber)))
         }
+
+        const landingPadSize = getShipLandingPadSize(shipStatus)
+        if (landingPadSize) {
+          setPadSize(landingPadSize)
+          setPadSizeAutoDetected(true)
+        }
       } catch (err) {
         // Ignore errors fetching ship status; the UI will fall back to showing an unknown hold size.
       } finally {
-        if (!cancelled) setInitialCapacityLoaded(true)
+        if (!cancelled) setInitialShipInfoLoaded(true)
       }
     }
 
-    loadCapacityFromShip()
+    loadShipInfo()
 
     return () => { cancelled = true }
-  }, [connected, ready, initialCapacityLoaded])
+  }, [connected, ready, initialShipInfoLoaded])
 
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
@@ -1049,8 +1057,8 @@ function TradeRoutesPanel () {
     if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
       return `${Math.round(capacityNumber).toLocaleString()} t`
     }
-    return initialCapacityLoaded ? 'Unknown' : 'Detecting…'
-  }, [cargoCapacity, initialCapacityLoaded])
+    return initialShipInfoLoaded ? 'Unknown' : 'Detecting…'
+  }, [cargoCapacity, initialShipInfoLoaded])
 
   const filtersSummary = useMemo(() => {
     const selectedSystem = (system && system.trim()) ||
@@ -1058,8 +1066,13 @@ function TradeRoutesPanel () {
       currentSystem?.name ||
       'Any System'
 
-    const padLabelRaw = pickOptionLabel(padSizeOptions, padSize, 'Any')
-    const padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
+    const padLabelRaw = initialShipInfoLoaded
+      ? pickOptionLabel(padSizeOptions, padSize, 'Unknown')
+      : 'Detecting…'
+    let padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
+    if (initialShipInfoLoaded && padSizeAutoDetected && padLabelRaw !== 'Detecting…' && padLabelRaw !== 'Unknown') {
+      padLabel = `${padLabel} (Ship)`
+    }
     const supplyLabel = simplifySupplyDemandLabel(pickOptionLabel(supplyOptions, minSupply, 'Any'))
     const demandLabel = simplifySupplyDemandLabel(pickOptionLabel(demandOptions, minDemand, 'Any'))
 
@@ -1070,7 +1083,7 @@ function TradeRoutesPanel () {
       `Min Supply: ${supplyLabel}`,
       `Min Demand: ${demandLabel}`
     ].join(' | ')
-  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel])
+  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
 
   const filterRoutes = useCallback((list = []) => {
     if (!Array.isArray(list)) return []
@@ -1514,18 +1527,6 @@ function TradeRoutesPanel () {
                 style={{ ...FILTER_CONTROL_STYLE }}
               >
                 {priceAgeOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Min Landing Pad</label>
-              <select
-                value={padSize}
-                onChange={event => setPadSize(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {padSizeOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
