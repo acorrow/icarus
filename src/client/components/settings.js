@@ -49,7 +49,6 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
 }
 
 function InaraSettings () {
-  const [apiKey, setApiKey] = useState('')
   const [appName, setAppName] = useState('ICARUS-Terminal')
   const [appVersion, setAppVersion] = useState('0.1')
   const [useMockData, setUseMockData] = useState(false)
@@ -57,7 +56,6 @@ function InaraSettings () {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setApiKey(window.localStorage.getItem('inaraApiKey') || '')
       setAppName(window.localStorage.getItem('inaraAppName') || 'ICARUS-Terminal')
       setAppVersion(window.localStorage.getItem('inaraAppVersion') || '0.1')
       setUseMockData(window.localStorage.getItem('inaraUseMockData') === 'true')
@@ -67,7 +65,6 @@ function InaraSettings () {
   function handleSave(e) {
     e.preventDefault()
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('inaraApiKey', apiKey)
       window.localStorage.setItem('inaraAppName', appName)
       window.localStorage.setItem('inaraAppVersion', appVersion)
       window.localStorage.setItem('inaraUseMockData', useMockData ? 'true' : 'false')
@@ -78,16 +75,9 @@ function InaraSettings () {
 
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
-      <h3 className='text-primary'>INARA API Settings</h3>
-      <p>Enter your INARA API key, app name, and app version to enable live search and integration features.</p>
+      <h3 className='text-primary'>INARA Integration Settings</h3>
+      <p>Configure your INARA app name and app version to enable live search and integration features.</p>
       <form onSubmit={handleSave} style={{ maxWidth: 400 }}>
-        <input
-          type='text'
-          value={apiKey}
-          onChange={e => setApiKey(e.target.value)}
-          placeholder='INARA API Key'
-          style={{ width: '100%', fontSize: '1.1rem', marginBottom: '1rem' }}
-        />
         <input
           type='text'
           value={appName}
@@ -116,7 +106,6 @@ function InaraSettings () {
         {saved && <span className='text-success' style={{ marginLeft: '1rem' }}>Saved!</span>}
       </form>
       <p className='text-muted' style={{ fontSize: '0.95rem', marginTop: '1rem' }}>
-        You can get your API key from your <a href='https://inara.cz/settings-api/' target='_blank' rel='noopener noreferrer'>INARA account settings</a>.<br/>
         App name and version are for identification and can be set to any value.
       </p>
     </div>

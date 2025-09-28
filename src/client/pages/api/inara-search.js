@@ -3,8 +3,8 @@ import fetch from 'node-fetch'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { apiKey, searchType, searchTerm, appName, appVersion } = req.body
-  if (!apiKey || !searchType || !searchTerm || !appName || !appVersion) {
+  const { searchType, searchTerm, appName, appVersion } = req.body
+  if (!searchType || !searchTerm || !appName || !appVersion) {
     return res.status(400).json({ error: 'Missing required fields' })
   }
 
@@ -15,8 +15,7 @@ export default async function handler(req, res) {
   const requestBody = {
     header: {
       appName,
-      appVersion,
-      APIkey: apiKey
+      appVersion
     },
     events: []
   }
