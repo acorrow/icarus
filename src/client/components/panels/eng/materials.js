@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 import CopyOnClick from 'components/copy-on-click'
+import { openInaraMaterials } from 'lib/inara'
 
 export default function Materials ({ materialType, materials }) {
   if (materials.length === 0) return (<p className='text-info text-uppercase'>No materials found.</p>)
@@ -54,6 +55,17 @@ function MaterialsTable ({ materialType, materialCategory, materials }) {
                   <div style={{ width: '70%', display: 'inline-block' }}>
                     <progress style={{ height: '1.25rem' }} value={item.count} max={item?.maxCount ?? item.count} className={item.count === item?.maxCount ? 'progress--secondary' : ''} />
                   </div>
+                </div>
+                <div style={{ marginTop: '.75rem', display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
+                  <button
+                    type='button'
+                    className='button button--secondary'
+                    style={{ padding: '.75rem 1.5rem', borderRadius: '.85rem', fontSize: '.95rem' }}
+                    onClick={() => openInaraMaterials({ symbol: item.symbol, name: item.name })}
+                  >
+                    <i className='icon icarus-terminal-materials' style={{ marginRight: '.5rem' }} />
+                    Find on INARA
+                  </button>
                 </div>
               </td>
               <td className='hidden-large text-no-transform'>

@@ -18,17 +18,23 @@ const navItems = [
     icon: 'ship',
     url: '/inara/ships',
     active: true
+  },
+  {
+    name: 'Materials',
+    icon: 'materials',
+    url: '/inara/materials',
+    active: false
   }
 ]
 
-export default function InaraShipsPage() {
+export default function InaraShipsPage () {
   const [selectedShip, setSelectedShip] = useState('')
   const [system, setSystem] = useState('')
   const [results, setResults] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleSubmit(e) {
+  async function handleSubmit (e) {
     e.preventDefault()
     setResults(null)
     setError('')
@@ -78,32 +84,34 @@ export default function InaraShipsPage() {
         {results && (
           <div style={{ maxWidth: 900, margin: '2rem auto', background: '#181818', border: '1px solid #333', borderRadius: '1rem', padding: '2rem' }}>
             <h3 style={{ color: '#ff7c22', marginBottom: '1rem' }}>Results</h3>
-            {results.length === 0 ? (
-              <div style={{ color: '#aaa' }}>No stations found with this ship for sale near {system}.</div>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
-                <thead>
-                  <tr style={{ background: '#222' }}>
-                    <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'left' }}>Station</th>
-                    <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'left' }}>System</th>
-                    <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'right' }}>Distance</th>
-                    <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'right' }}>Price</th>
-                    <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'right' }}>Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((row, i) => (
-                    <tr key={i} style={{ background: i % 2 ? '#202020' : '#181818' }}>
-                      <td style={{ padding: '.5rem', borderBottom: '1px solid #333' }}>{row.station}</td>
-                      <td style={{ padding: '.5rem', borderBottom: '1px solid #333' }}>{row.system}</td>
-                      <td style={{ padding: '.5rem', borderBottom: '1px solid #333', textAlign: 'right' }}>{row.distance}</td>
-                      <td style={{ padding: '.5rem', borderBottom: '1px solid #333', textAlign: 'right' }}>{row.price}</td>
-                      <td style={{ padding: '.5rem', borderBottom: '1px solid #333', textAlign: 'right' }}>{row.updated}</td>
+            {results.length === 0
+              ? (
+                <div style={{ color: '#aaa' }}>No stations found with this ship for sale near {system}.</div>
+                )
+              : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
+                  <thead>
+                    <tr style={{ background: '#222' }}>
+                      <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'left' }}>Station</th>
+                      <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'left' }}>System</th>
+                      <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'right' }}>Distance</th>
+                      <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'right' }}>Price</th>
+                      <th style={{ padding: '.5rem', borderBottom: '1px solid #444', textAlign: 'right' }}>Updated</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                  </thead>
+                  <tbody>
+                    {results.map((row, i) => (
+                      <tr key={i} style={{ background: i % 2 ? '#202020' : '#181818' }}>
+                        <td style={{ padding: '.5rem', borderBottom: '1px solid #333' }}>{row.station}</td>
+                        <td style={{ padding: '.5rem', borderBottom: '1px solid #333' }}>{row.system}</td>
+                        <td style={{ padding: '.5rem', borderBottom: '1px solid #333', textAlign: 'right' }}>{row.distance}</td>
+                        <td style={{ padding: '.5rem', borderBottom: '1px solid #333', textAlign: 'right' }}>{row.price}</td>
+                        <td style={{ padding: '.5rem', borderBottom: '1px solid #333', textAlign: 'right' }}>{row.updated}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                )}
           </div>
         )}
       </Panel>

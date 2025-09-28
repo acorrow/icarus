@@ -10,14 +10,20 @@ const navItems = [
     active: true
   },
   {
-    name: 'Outfitting',
-    icon: 'wrench',
-    url: '/inara/outfitting',
+    name: 'Ships',
+    icon: 'ship',
+    url: '/inara/ships',
+    active: false
+  },
+  {
+    name: 'Materials',
+    icon: 'materials',
+    url: '/inara/materials',
     active: false
   }
 ]
 
-export default function InaraSearchPage() {
+export default function InaraSearchPage () {
   return (
     <Layout>
       <PanelNavigation items={navItems} />
