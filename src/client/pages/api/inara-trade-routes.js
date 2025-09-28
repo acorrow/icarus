@@ -482,6 +482,53 @@ export default async function handler(req, res) {
 
     const sysInstance = await ensureSystemInstance()
     const systemCache = new Map()
+    const localStationCache = new Map()
+    let stationIndex = null
+    let stationIndexPopulatedFromCache = false
+
+    function collectStations(systemData = {}) {
+      return [
+        systemData.spaceStations,
+        systemData.planetaryPorts,
+        systemData.planetaryOutposts,
+        systemData.settlements,
+        systemData.megaships,
+        systemData.stations
+      ].filter(Boolean).flat()
+    }
+
+    function addSystemToStationIndex(systemData) {
+      if (!systemData) return
+      const stations = collectStations(systemData)
+      if (!stations.length) return
+      if (!stationIndex) stationIndex = new Map()
+      const systemNameKey = typeof systemData.name === 'string'
+        ? systemData.name.trim().toLowerCase()
+        : ''
+      for (const station of stations) {
+        const stationKey = station?.name?.trim().toLowerCase()
+        if (!stationKey) continue
+        if (stationIndex.has(stationKey)) continue
+        stationIndex.set(stationKey, {
+          system: systemData,
+          station,
+          systemKey: systemNameKey
+        })
+      }
+    }
+
+    function ensureStationIndexFromGlobalCache() {
+      if (!stationIndex) stationIndex = new Map()
+      if (stationIndexPopulatedFromCache) return stationIndex
+      stationIndexPopulatedFromCache = true
+      if (global.CACHE?.SYSTEMS) {
+        for (const cached of Object.values(global.CACHE.SYSTEMS)) {
+          if (!cached) continue
+          addSystemToStationIndex(cached)
+        }
+      }
+      return stationIndex
+    }
 
     async function getSystemData(systemName) {
       if (!systemName || typeof systemName !== 'string') return null
@@ -492,6 +539,7 @@ export default async function handler(req, res) {
         const data = await sysInstance.getSystem({ name: systemName })
         if (data && data.name) {
           systemCache.set(key, data)
+          addSystemToStationIndex(data)
           return data
         }
       } catch (err) {
@@ -501,6 +549,7 @@ export default async function handler(req, res) {
         const cached = global.CACHE.SYSTEMS[key]
         if (cached) {
           systemCache.set(key, cached)
+          addSystemToStationIndex(cached)
           return cached
         }
       }
@@ -589,6 +638,9 @@ export default async function handler(req, res) {
       if (!stationName) return null
       const normalizedStation = stationName.trim().toLowerCase()
       if (!normalizedStation) return null
+      if (localStationCache.has(normalizedStation)) {
+        return localStationCache.get(normalizedStation)
+      }
 
       const searchOrder = candidateSystems
         .filter(Boolean)
@@ -607,41 +659,28 @@ export default async function handler(req, res) {
         seenSystems.add(key)
         const systemData = await getSystemData(systemName)
         if (!systemData) continue
-        const stationCollections = [
-          systemData.spaceStations,
-          systemData.planetaryPorts,
-          systemData.planetaryOutposts,
-          systemData.settlements,
-          systemData.megaships,
-          systemData.stations
-        ].filter(Boolean).flat()
+        const stationCollections = collectStations(systemData)
         const station = stationCollections.find(entry => entry?.name?.trim().toLowerCase() === normalizedStation)
         if (station) {
-          return buildLocalResult(systemData, station)
+          const result = buildLocalResult(systemData, station)
+          localStationCache.set(normalizedStation, result)
+          return result
         }
       }
 
-      if (global.CACHE?.SYSTEMS) {
-        for (const key of Object.keys(global.CACHE.SYSTEMS)) {
-          const cached = global.CACHE.SYSTEMS[key]
-          if (!cached) continue
-          const stationCollections = [
-            cached.spaceStations,
-            cached.planetaryPorts,
-            cached.planetaryOutposts,
-            cached.settlements,
-            cached.megaships,
-            cached.stations
-          ].filter(Boolean).flat()
-          const station = stationCollections.find(entry => entry?.name?.trim().toLowerCase() === normalizedStation)
-          if (station) {
-            const cacheKey = (cached.name || key || '').toLowerCase()
-            if (cacheKey) systemCache.set(cacheKey, cached)
-            return buildLocalResult(cached, station)
-          }
+      const index = ensureStationIndexFromGlobalCache()
+      const indexedEntry = index.get(normalizedStation)
+      if (indexedEntry && indexedEntry.system && indexedEntry.station) {
+        const result = buildLocalResult(indexedEntry.system, indexedEntry.station)
+        localStationCache.set(normalizedStation, result)
+        const cacheKey = indexedEntry.systemKey || indexedEntry.system?.name?.trim().toLowerCase()
+        if (cacheKey && !systemCache.has(cacheKey)) {
+          systemCache.set(cacheKey, indexedEntry.system)
         }
+        return result
       }
 
+      localStationCache.set(normalizedStation, null)
       logInaraTrade(`LOCAL_LOOKUP_MISS: station=${stationName}`)
       return null
     }
