@@ -1276,6 +1276,7 @@ function TradeRoutesPanel () {
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [expandedRouteKey, setExpandedRouteKey] = useState(null)
   const factionStandings = useFactionStandings()
+  const lastAutoRefreshSystem = useRef('')
 
   useEffect(() => {
     if (!connected || initialShipInfoLoaded) return
@@ -1404,7 +1405,7 @@ function TradeRoutesPanel () {
     const selectedSystem = (system && system.trim()) ||
       ((systemSelection && systemSelection !== '__manual') ? systemSelection : '') ||
       currentSystem?.name ||
-      'Any System'
+      'Unknown System'
 
     const padLabelRaw = initialShipInfoLoaded
       ? pickOptionLabel(padSizeOptions, padSize, 'Unknown')
@@ -1507,6 +1508,96 @@ function TradeRoutesPanel () {
     setRoutes(sorted)
   }, [rawRoutes, filterRoutes, sortRoutes])
 
+  const applyResults = useCallback((nextRoutes = [], meta = {}) => {
+    const filteredRoutes = filterRoutes(nextRoutes)
+    const sortedRoutes = sortRoutes(filteredRoutes)
+    const nextError = meta.error || ''
+    const nextMessage = meta.message || ''
+
+    setRawRoutes(Array.isArray(nextRoutes) ? nextRoutes : [])
+    setRoutes(sortedRoutes)
+    setError(nextError)
+    setMessage(nextMessage)
+
+    if (nextError && filteredRoutes.length === 0) {
+      setStatus('error')
+    } else if (filteredRoutes.length === 0) {
+      setStatus('empty')
+    } else {
+      setStatus('populated')
+    }
+  }, [filterRoutes, sortRoutes])
+
+  const refreshRoutes = useCallback(targetSystem => {
+    const trimmedTargetSystem = typeof targetSystem === 'string' ? targetSystem.trim() : ''
+
+    if (!trimmedTargetSystem) {
+      setError('Please choose a system before searching for trade routes.')
+      setMessage('')
+      setRoutes([])
+      setRawRoutes([])
+      setStatus('error')
+      return
+    }
+
+    setStatus('loading')
+    setError('')
+    setMessage('')
+
+    const filters = {
+      ...(cargoCapacity !== '' ? { cargoCapacity } : {}),
+      maxRouteDistance: routeDistance,
+      maxPriceAge: priceAge,
+      minLandingPad: padSize,
+      minSupply,
+      minDemand,
+      maxStationDistance: stationDistance,
+      surfacePreference,
+      includeRoundTrips: true
+    }
+
+    const payload = {
+      system: trimmedTargetSystem,
+      filters
+    }
+
+    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('inaraUseMockData') === 'true'
+    if (shouldUseMockData) {
+      const mockRoutes = generateMockTradeRoutes({
+        systemName: trimmedTargetSystem,
+        cargoCapacity
+      })
+
+      applyResults(mockRoutes, {
+        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in INARA settings to restore live results.'
+      })
+      return
+    }
+
+    fetch('/api/inara-trade-routes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json())
+      .then(data => {
+        const nextRoutes = Array.isArray(data?.routes)
+          ? data.routes
+          : Array.isArray(data?.results)
+            ? data.results
+            : []
+
+        applyResults(nextRoutes, { error: data?.error, message: data?.message })
+      })
+      .catch(err => {
+        setError(err.message || 'Unable to fetch trade routes.')
+        setMessage('')
+        setRoutes([])
+        setRawRoutes([])
+        setStatus('error')
+      })
+  }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference])
+
   useEffect(() => {
     setExpandedRouteKey(null)
   }, [rawRoutes])
@@ -1542,91 +1633,26 @@ function TradeRoutesPanel () {
   const handleSubmit = event => {
     event.preventDefault()
     const targetSystem = system && system.trim() ? system.trim() : currentSystem?.name
-    if (!targetSystem) {
-      setError('Please choose a system before searching for trade routes.')
-      setMessage('')
-      setRoutes([])
-      setStatus('error')
-      return
-    }
-
-    setStatus('loading')
-    setError('')
-    setMessage('')
-
-    const filters = {
-      ...(cargoCapacity !== '' ? { cargoCapacity } : {}),
-      maxRouteDistance: routeDistance,
-      maxPriceAge: priceAge,
-      minLandingPad: padSize,
-      minSupply,
-      minDemand,
-      maxStationDistance: stationDistance,
-      surfacePreference,
-      includeRoundTrips: true
-    }
-
-    const applyResults = (nextRoutes = [], meta = {}) => {
-      const filteredRoutes = filterRoutes(nextRoutes)
-      const sortedRoutes = sortRoutes(filteredRoutes)
-      const nextError = meta.error || ''
-      const nextMessage = meta.message || ''
-
-      setRawRoutes(nextRoutes)
-      setRoutes(sortedRoutes)
-      setError(nextError)
-      setMessage(nextMessage)
-
-      if (nextError && filteredRoutes.length === 0) {
-        setStatus('error')
-      } else if (filteredRoutes.length === 0) {
-        setStatus('empty')
-      } else {
-        setStatus('populated')
-      }
-    }
-
-    const payload = {
-      system: targetSystem,
-      filters
-    }
-
-    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('inaraUseMockData') === 'true'
-    if (shouldUseMockData) {
-      const mockRoutes = generateMockTradeRoutes({
-        systemName: targetSystem,
-        cargoCapacity
-      })
-
-      applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in INARA settings to restore live results.'
-      })
-      return
-    }
-
-    fetch('/api/inara-trade-routes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(res => res.json())
-      .then(data => {
-        const nextRoutes = Array.isArray(data?.routes)
-          ? data.routes
-          : Array.isArray(data?.results)
-            ? data.results
-            : []
-
-        applyResults(nextRoutes, { error: data?.error, message: data?.message })
-      })
-      .catch(err => {
-        setError(err.message || 'Unable to fetch trade routes.')
-        setMessage('')
-        setRoutes([])
-        setRawRoutes([])
-        setStatus('error')
-      })
+    refreshRoutes(targetSystem)
   }
+
+  useEffect(() => {
+    const currentName = typeof currentSystem?.name === 'string' ? currentSystem.name.trim() : ''
+    if (!currentName) {
+      lastAutoRefreshSystem.current = ''
+      return
+    }
+
+    if (systemSelection === '__manual') return
+
+    const selectedSystem = typeof system === 'string' ? system.trim() : ''
+    if (selectedSystem && selectedSystem.toLowerCase() !== currentName.toLowerCase()) return
+
+    if (lastAutoRefreshSystem.current === currentName) return
+
+    lastAutoRefreshSystem.current = currentName
+    refreshRoutes(currentName)
+  }, [currentSystem, system, systemSelection, refreshRoutes])
 
   const renderRoutesTable = () => (
     <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
@@ -1906,27 +1932,29 @@ function TradeRoutesPanel () {
       <h2>Find Trade Routes</h2>
       <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', flexGrow: 1 }}>
+            <button
+              type='button'
+              onClick={() => setFiltersCollapsed(prev => !prev)}
+              style={FILTER_TOGGLE_BUTTON_STYLE}
+              aria-expanded={!filtersCollapsed}
+              aria-controls='trade-route-filters'
+            >
+              {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
+            </button>
+            {filtersCollapsed && (
+              <div style={FILTER_SUMMARY_STYLE}>
+                {filtersSummary}
+              </div>
+            )}
+          </div>
           <button
             type='submit'
             className='button--active button--secondary'
-            style={{ ...FILTER_SUBMIT_BUTTON_STYLE }}
+            style={{ ...FILTER_SUBMIT_BUTTON_STYLE, marginLeft: 'auto' }}
           >
             {status === 'loading' ? 'Refreshing…' : 'Refresh Trade Routes'}
           </button>
-          <button
-            type='button'
-            onClick={() => setFiltersCollapsed(prev => !prev)}
-            style={FILTER_TOGGLE_BUTTON_STYLE}
-            aria-expanded={!filtersCollapsed}
-            aria-controls='trade-route-filters'
-          >
-            {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
-          </button>
-          {filtersCollapsed && (
-            <div style={FILTER_SUMMARY_STYLE}>
-              {filtersSummary}
-            </div>
-          )}
         </div>
 
         {!filtersCollapsed && (
@@ -2029,7 +2057,7 @@ function TradeRoutesPanel () {
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>{error || 'Unable to fetch trade routes.'}</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>No trade routes found near {system || currentSystem?.name || systemSelection || 'the selected system'}.</div>
+            <div style={{ color: '#aaa', padding: '2rem' }}>No trade routes found near {system || currentSystem?.name || systemSelection || 'Unknown System'}.</div>
           )}
           {status === 'populated' && renderRoutesTable()}
         </div>
