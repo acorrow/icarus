@@ -3,28 +3,51 @@ const fs = require('fs')
 const path = require('path')
 const Package = require('../../../package.json')
 
-const PREFERENCES_FILE = 'Preferences.json'
+const PREFERENCES_FILE_NAME = 'Preferences.json'
 
-class Preferences {
-  getPreferences () {
-    return fs.readSync(path.join(this.preferencesDir(), PREFERENCES_FILE))
-  }
-
-  savePreferences (preferencesObject) {
-    preferencesObject.version = Package.version
-    return fs.writeSync(path.join(this.preferencesDir(), PREFERENCES_FILE), JSON.stringify(preferencesObject))
-  }
-
-  preferencesDir () {
-    switch (os.platform()) {
-      case 'win32': // Windows (all versions)
-        return path.join(os.homedir(), 'AppData', 'Local', 'ICARUS Terminal')
-      case 'darwin': // Mac OS
-        return path.join(os.homedir(), 'Library', 'ICARUS Terminal')
-      default: // Default to a location for some other form of unix
-        return path.join(os.homedir(), '.icarus-terminal')
-    }
+function resolvePreferencesDir () {
+  switch (os.platform()) {
+    case 'win32':
+      return path.join(os.homedir(), 'AppData', 'Local', 'ICARUS Terminal')
+    case 'darwin':
+      return path.join(os.homedir(), 'Library', 'ICARUS Terminal')
+    default:
+      return path.join(os.homedir(), '.icarus-terminal')
   }
 }
 
-module.exports = new Preferences()
+const PREFERENCES_DIR = resolvePreferencesDir()
+const PREFERENCES_FILE = path.join(PREFERENCES_DIR, PREFERENCES_FILE_NAME)
+const INPUT_MAPPINGS_FILE = path.join(PREFERENCES_DIR, 'InputMappings.json')
+
+function ensurePreferencesDir () {
+  if (!fs.existsSync(PREFERENCES_DIR)) fs.mkdirSync(PREFERENCES_DIR, { recursive: true })
+}
+
+class Preferences {
+  getPreferences () {
+    const filePath = path.join(this.preferencesDir(), PREFERENCES_FILE_NAME)
+    if (!fs.existsSync(filePath)) return null
+    return fs.readFileSync(filePath)
+  }
+
+  savePreferences (preferencesObject) {
+    const filePath = path.join(this.preferencesDir(), PREFERENCES_FILE_NAME)
+    const preferences = { ...preferencesObject, version: Package.version }
+    ensurePreferencesDir()
+    fs.writeFileSync(filePath, JSON.stringify(preferences))
+    return preferences
+  }
+
+  preferencesDir () {
+    return resolvePreferencesDir()
+  }
+}
+
+const preferencesInstance = new Preferences()
+preferencesInstance.PREFERENCES_DIR = PREFERENCES_DIR
+preferencesInstance.PREFERENCES_FILE = PREFERENCES_FILE
+preferencesInstance.INPUT_MAPPINGS_FILE = INPUT_MAPPINGS_FILE
+preferencesInstance.ensurePreferencesDir = ensurePreferencesDir
+
+module.exports = preferencesInstance

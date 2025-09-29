@@ -56,6 +56,7 @@
     "glob": "^7.1.7",
     "http-proxy": "^1.18.1",
     "nedb-promises": "^5.0.2",
+    "node-hid": "^2.2.0",
     "one-time": "^0.0.4",
     "say": "^0.16.0",
     "serve-static": "^1.14.1",

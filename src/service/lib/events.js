@@ -3,6 +3,8 @@ const os = require('os')
 const EliteLog = require('./elite-log')
 const EliteJson = require('./elite-json')
 const EventHandlers = require('./event-handlers')
+const InputManager = require('./input')
+const { INPUT_ACTIONS, INPUT_GROUPS } = require('../../shared/input-actions')
 
 const {
   PORT,
@@ -18,6 +20,7 @@ const eliteJson = new EliteJson(LOG_DIR)
 const _eventHandlers = new EventHandlers({ eliteLog, eliteJson })
 // Define handlers for events trigged by the client
 const eventHandlers = _eventHandlers.getEventHandlers()
+const inputManager = new InputManager({ broadcastEvent })
 // Define global handler for events trigged by the game
 const logEventHandler = (logEvent) => _eventHandlers.logEventHandler(logEvent)
 const gameStateChangeHandler = () => _eventHandlers.gameStateChangeHandler()
@@ -36,6 +39,23 @@ eventHandlers.hostInfo = () => {
 }
 eventHandlers.getLoadingStatus = () => getLoadingStatus()
 eventHandlers.syncMessage = (message) => broadcastEvent('syncMessage', message)
+eventHandlers.inputGetStatus = () => inputManager.getStatus()
+eventHandlers.inputListen = async ({ actionId, timeoutMs }) => {
+  try {
+    return await inputManager.listenForAction(actionId, { timeoutMs })
+  } catch (error) {
+    return { error: error?.message || 'UnknownError' }
+  }
+}
+eventHandlers.inputClear = async ({ actionId }) => {
+  try {
+    return await inputManager.clearMapping(actionId)
+  } catch (error) {
+    return { error: error?.message || 'UnknownError' }
+  }
+}
+eventHandlers.inputGetMappings = () => inputManager.getMappings()
+eventHandlers.inputGetActions = () => ({ actions: INPUT_ACTIONS, groups: INPUT_GROUPS })
 
 // TODO Define these in another file / merge with eventHandlers before porting
 // over existing event handlers from the internal build

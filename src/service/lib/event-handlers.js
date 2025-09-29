@@ -1,4 +1,3 @@
-const os = require('os')
 const fs = require('fs')
 const path = require('path')
 // const pjXML = require('pjxml')
@@ -9,6 +8,7 @@ const { UNKNOWN_VALUE } = require('../../shared/consts')
 const { BROADCAST_EVENT: broadcastEvent } = global
 
 // const TARGET_WINDOW_TITLE = 'Elite - Dangerous (CLIENT)'
+const os = require('os')
 const KEYBINDS_DIR = path.join(os.homedir(), 'AppData', 'Local', 'Frontier Developments', 'Elite Dangerous', 'Options', 'Bindings')
 
 // Prefer Keybinds v4 file
@@ -26,8 +26,7 @@ const KEYBINDS_MAP = {
 }
 
 // FIXME Refactor Preferences handling into a singleton
-const PREFERENCES_DIR = path.join(os.homedir(), 'AppData', 'Local', 'ICARUS Terminal')
-const PREFERENCES_FILE = path.join(PREFERENCES_DIR, 'Preferences.json')
+const { PREFERENCES_DIR, PREFERENCES_FILE, ensurePreferencesDir } = require('./preferences')
 
 const System = require('./event-handlers/system')
 const ShipStatus = require('./event-handlers/ship-status')
@@ -98,7 +97,7 @@ class EventHandlers {
           return fs.existsSync(PREFERENCES_FILE) ? JSON.parse(fs.readFileSync(PREFERENCES_FILE)) : {}
         },
         setPreferences: (preferences) => {
-          if (!fs.existsSync(PREFERENCES_DIR)) fs.mkdirSync(PREFERENCES_DIR, { recursive: true })
+          ensurePreferencesDir()
           fs.writeFileSync(PREFERENCES_FILE, JSON.stringify(preferences))
           broadcastEvent('syncMessage', { name: 'preferences' })
           return preferences
@@ -115,7 +114,7 @@ class EventHandlers {
         //     return null
         //   }
         // },
-        testMessage: ({name, message}) => {
+        testMessage: ({ name, message }) => {
           // Method to simulate messages, intended for developers
           if (name !== 'testMessage') broadcastEvent(name, message)
         },

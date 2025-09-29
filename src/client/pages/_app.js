@@ -93,6 +93,13 @@ const handleKeyPress = (event) => {
   }
 }
 
+const triggerNavigationKey = (key) => {
+  handleKeyPress({
+    key,
+    getModifierState: () => false
+  })
+}
+
 export default class MyApp extends App {
   constructor (props) {
     super(props)
@@ -121,8 +128,22 @@ export default class MyApp extends App {
         }
       })
 
+      eventListener('inputAction', (event) => {
+        if (!event?.actionId) return
+        switch (event.actionId) {
+          case 'nativePanel.navigateUp':
+            triggerNavigationKey('ArrowUp')
+            break
+          case 'nativePanel.navigateDown':
+            triggerNavigationKey('ArrowDown')
+            break
+          default:
+            break
+        }
+      })
+
       document.addEventListener('keydown', handleKeyPress)
-    } 
+    }
   }
 
   render () {

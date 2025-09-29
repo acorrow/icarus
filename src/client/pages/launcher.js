@@ -82,7 +82,7 @@ export default function IndexPage () {
               ><i className='icon icarus-terminal-download' /> Install Update
               </button>}
             {downloadingUpdate && <p className='text-primary text-blink-slow'>
-              <i style={{position: 'relative', top: '.2rem', marginRight: '.2rem'}} className='icon icarus-terminal-download' /> Downloading update...
+              <i style={{ position: 'relative', top: '.2rem', marginRight: '.2rem' }} className='icon icarus-terminal-download' /> Downloading update...
             </p>}
           </div>}
         <div style={{ position: 'absolute', bottom: '.5rem', left: '1rem' }}>
@@ -124,6 +124,12 @@ export default function IndexPage () {
         </div>
         <div style={{ position: 'absolute', bottom: '1rem', right: '1rem' }}>
           <button style={{ width: '20rem' }} onClick={newWindow}>New Terminal</button>
+          <button
+            style={{ width: '20rem', marginTop: '.5rem' }}
+            onClick={() => { window.location.href = '/native/input-mapping' }}
+          >
+            Input Mapping
+          </button>
         </div>
       </div>
     </>
