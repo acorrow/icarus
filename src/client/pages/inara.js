@@ -528,23 +528,43 @@ const FILTER_FORM_STYLE = {
   margin: '1.4rem 0 1.25rem'
 }
 
+const CURRENT_SYSTEM_CONTAINER_STYLE = {
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'flex-end',
+  justifyContent: 'space-between',
+  gap: '2rem',
+  margin: '2rem 0 1.5rem 0'
+}
+
+const CURRENT_SYSTEM_LABEL_STYLE = {
+  color: '#ff7c22',
+  fontSize: '0.75rem',
+  letterSpacing: '.08em',
+  textTransform: 'uppercase',
+  marginBottom: '.35rem'
+}
+
+const CURRENT_SYSTEM_NAME_STYLE = {
+  fontSize: '1.1rem'
+}
+
 const FILTERS_GRID_STYLE = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+  display: 'flex',
+  flexWrap: 'wrap',
   gap: '.75rem 1rem',
   width: '100%',
-  alignItems: 'start',
-  justifyItems: 'stretch',
-  alignContent: 'start',
-  gridAutoFlow: 'row dense'
+  alignItems: 'flex-start'
 }
 
 const FILTER_FIELD_STYLE = {
   display: 'flex',
   flexDirection: 'column',
   gap: '.25rem',
-  width: '100%',
-  minWidth: 0
+  width: '11rem',
+  maxWidth: '100%',
+  minWidth: '8.75rem',
+  flex: '0 1 11rem'
 }
 
 const FILTER_LABEL_STYLE = {
@@ -587,23 +607,40 @@ const FILTER_TOGGLE_BUTTON_STYLE = {
 const FILTER_SUMMARY_STYLE = {
   flex: '1 1 220px',
   minWidth: 200,
+  display: 'flex',
+  alignItems: 'center',
+  gap: '.5rem'
+}
+
+const FILTER_SUMMARY_TEXT_STYLE = {
   color: '#ffa45b',
   fontSize: '0.85rem',
   fontWeight: 500,
-  marginLeft: 'auto',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
-  textOverflow: 'ellipsis'
+  textOverflow: 'ellipsis',
+  flexGrow: 0,
+  flexShrink: 1
 }
 
-const FILTER_SUBMIT_BUTTON_STYLE = {
-  padding: '0 1.4rem',
-  fontSize: '0.9rem',
-  borderRadius: '.35rem',
-  height: '2.35rem',
+const FILTER_SUMMARY_REFRESH_BUTTON_STYLE = {
+  width: '2.1rem',
+  height: '2.1rem',
+  borderRadius: '999px',
+  border: '1px solid var(--color-info)',
+  background: 'rgba(206, 237, 255, 0.18)',
+  color: 'var(--color-info)',
   display: 'inline-flex',
   alignItems: 'center',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  cursor: 'pointer',
+  padding: 0
+}
+
+const FILTER_SUMMARY_REFRESH_ICON_STYLE = {
+  width: '1.05rem',
+  height: '1.05rem',
+  display: 'block'
 }
 
 const DEFAULT_SORT_DIRECTION = {
@@ -896,44 +933,6 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   }
 }
 
-function SystemSelect ({
-  label = 'System',
-  systemSelection,
-  systemOptions,
-  onSystemChange,
-  systemInput,
-  onManualSystemChange,
-  placeholder = 'Enter system name...'
-}) {
-  const containerStyle = { ...FILTER_FIELD_STYLE }
-
-  return (
-    <div style={containerStyle}>
-      <label style={FILTER_LABEL_STYLE}>{label}</label>
-      <select value={systemSelection} onChange={onSystemChange} style={{ ...FILTER_CONTROL_STYLE }}>
-        <option value=''>Select a system...</option>
-        {systemOptions.map(opt => (
-          <option key={opt.name} value={opt.name}>
-            {opt.name} {opt.distance > 0 ? `(${opt.distance} ly)` : '(current)'}
-          </option>
-        ))}
-        <option value='' disabled>------------</option>
-        <option value='__manual'>Other (type manually)</option>
-      </select>
-      {systemSelection === '__manual' && (
-        <input
-          type='text'
-          autoFocus
-          value={systemInput}
-          onChange={onManualSystemChange}
-          placeholder={placeholder}
-          style={{ ...FILTER_CONTROL_STYLE }}
-        />
-      )}
-    </div>
-  )
-}
-
 function MissionsPanel () {
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [missions, setMissions] = useState([])
@@ -1140,10 +1139,10 @@ function MissionsPanel () {
   return (
     <div>
       <h2>Mining Missions</h2>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+      <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
-          <div style={{ color: '#ff7c22', fontSize: '0.75rem', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.35rem' }}>Current System</div>
-          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{displaySystemName || 'Unknown'}</div>
+          <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+          <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
           <div className='inara__data-source'>
@@ -1268,16 +1267,7 @@ function MissionsPanel () {
 
 function TradeRoutesPanel () {
   const { connected, ready } = useSocket()
-  const {
-    currentSystem,
-    system,
-    systemSelection,
-    systemInput,
-    systemOptions,
-    handleSystemChange,
-    handleManualSystemChange,
-    applyCurrentSystemSelection
-  } = useSystemSelector({ autoSelectCurrent: true })
+  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [cargoCapacity, setCargoCapacity] = useState('')
   const [initialShipInfoLoaded, setInitialShipInfoLoaded] = useState(false)
   const [routeDistance, setRouteDistance] = useState('30')
@@ -1294,6 +1284,7 @@ function TradeRoutesPanel () {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
   const [sortField, setSortField] = useState('distance')
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
@@ -1332,6 +1323,12 @@ function TradeRoutesPanel () {
 
     return () => { cancelled = true }
   }, [connected, ready, initialShipInfoLoaded])
+
+  const selectedSystemName = useMemo(() => {
+    if (typeof currentSystem?.name !== 'string') return ''
+    const trimmed = currentSystem.name.trim()
+    return trimmed || ''
+  }, [currentSystem?.name])
 
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
@@ -1372,13 +1369,13 @@ function TradeRoutesPanel () {
 
   const demandOptions = useMemo(() => ([
     { value: '0', label: 'Any' },
-    { value: '100', label: '100 Units or unlimited' },
-    { value: '500', label: '500 Units or unlimited' },
-    { value: '1000', label: '1,000 Units or unlimited' },
-    { value: '2500', label: '2,500 Units or unlimited' },
-    { value: '5000', label: '5,000 Units or unlimited' },
-    { value: '10000', label: '10,000 Units or unlimited' },
-    { value: '50000', label: '50,000 Units or unlimited' }
+    { value: '100', label: '100 Units' },
+    { value: '500', label: '500 Units' },
+    { value: '1000', label: '1,000 Units' },
+    { value: '2500', label: '2,500 Units' },
+    { value: '5000', label: '5,000 Units' },
+    { value: '10000', label: '10,000 Units' },
+    { value: '50000', label: '50,000 Units' }
   ]), [])
 
   const stationDistanceOptions = useMemo(() => ([
@@ -1397,8 +1394,8 @@ function TradeRoutesPanel () {
   ]), [])
 
   const surfaceOptions = useMemo(() => ([
-    { value: '0', label: 'Yes (with Odyssey stations)' },
-    { value: '2', label: 'Yes (exclude Odyssey stations)' },
+    { value: '0', label: 'Yes +Oddsey' },
+    { value: '2', label: 'Yes' },
     { value: '1', label: 'No' }
   ]), [])
 
@@ -1425,10 +1422,7 @@ function TradeRoutesPanel () {
   }, [cargoCapacity, initialShipInfoLoaded])
 
   const filtersSummary = useMemo(() => {
-    const selectedSystem = (system && system.trim()) ||
-      ((systemSelection && systemSelection !== '__manual') ? systemSelection : '') ||
-      currentSystem?.name ||
-      'Unknown System'
+    const selectedSystem = selectedSystemName || 'Unknown System'
 
     const padLabelRaw = initialShipInfoLoaded
       ? pickOptionLabel(padSizeOptions, padSize, 'Unknown')
@@ -1447,7 +1441,7 @@ function TradeRoutesPanel () {
       `Min Supply: ${supplyLabel}`,
       `Min Demand: ${demandLabel}`
     ].join(' | ')
-  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
+  }, [selectedSystemName, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
 
   const filterRoutes = useCallback((list = []) => {
     return Array.isArray(list) ? [...list] : []
@@ -1524,8 +1518,8 @@ function TradeRoutesPanel () {
   const applyResults = useCallback((nextRoutes = [], meta = {}) => {
     const filteredRoutes = filterRoutes(nextRoutes)
     const sortedRoutes = sortRoutes(filteredRoutes)
-    const nextError = meta.error || ''
-    const nextMessage = meta.message || ''
+    const nextError = typeof meta.error === 'string' ? meta.error : ''
+    const nextMessage = typeof meta.message === 'string' ? meta.message : ''
 
     setRawRoutes(Array.isArray(nextRoutes) ? nextRoutes : [])
     setRoutes(sortedRoutes)
@@ -1534,10 +1528,13 @@ function TradeRoutesPanel () {
 
     if (nextError && filteredRoutes.length === 0) {
       setStatus('error')
+      setLastUpdatedAt(null)
     } else if (filteredRoutes.length === 0) {
       setStatus('empty')
+      setLastUpdatedAt(Date.now())
     } else {
       setStatus('populated')
+      setLastUpdatedAt(Date.now())
     }
   }, [filterRoutes, sortRoutes])
 
@@ -1545,12 +1542,13 @@ function TradeRoutesPanel () {
     const trimmedTargetSystem = typeof targetSystem === 'string' ? targetSystem.trim() : ''
 
     if (!trimmedTargetSystem) {
-      setError('Please choose a system before searching for trade routes.')
+      setError('Current system unknown. Unable to load trade routes.')
       setMessage('')
       setRoutes([])
       setRawRoutes([])
       setStatus('error')
       setIsRefreshing(false)
+      setLastUpdatedAt(null)
       return
     }
 
@@ -1616,6 +1614,7 @@ function TradeRoutesPanel () {
         setRoutes([])
         setRawRoutes([])
         setStatus('error')
+        setLastUpdatedAt(null)
       })
       .finally(() => {
         setIsRefreshing(false)
@@ -1656,7 +1655,7 @@ function TradeRoutesPanel () {
 
   const handleSubmit = event => {
     event.preventDefault()
-    const targetSystem = system && system.trim() ? system.trim() : currentSystem?.name
+    const targetSystem = selectedSystemName || currentSystem?.name
     refreshRoutes(targetSystem)
   }
 
@@ -1667,13 +1666,11 @@ function TradeRoutesPanel () {
       return
     }
 
-    applyCurrentSystemSelection({ force: true })
-
     if (lastAutoRefreshSystem.current === currentName) return
 
     lastAutoRefreshSystem.current = currentName
     refreshRoutes(currentName)
-  }, [currentSystem?.name, applyCurrentSystemSelection, refreshRoutes])
+  }, [currentSystem?.name, refreshRoutes])
 
   const renderRoutesTable = () => (
     <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
@@ -1951,6 +1948,14 @@ function TradeRoutesPanel () {
   return (
     <div>
       <h2>Find Trade Routes</h2>
+      <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
+        <div>
+          <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+          <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>
+            {selectedSystemName || 'Unknown'}
+          </div>
+        </div>
+      </div>
       <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', flexGrow: 1 }}>
@@ -1965,29 +1970,32 @@ function TradeRoutesPanel () {
             </button>
             {filtersCollapsed && (
               <div style={FILTER_SUMMARY_STYLE}>
-                {filtersSummary}
+                <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
+                <button
+                  type='submit'
+                  style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
+                  title='Refresh trade routes'
+                  aria-label='Refresh trade routes'
+                >
+                  <svg
+                    viewBox='0 0 24 24'
+                    focusable='false'
+                    aria-hidden='true'
+                    style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
+                  >
+                    <path
+                      fill='currentColor'
+                      d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
+                    />
+                  </svg>
+                </button>
               </div>
             )}
           </div>
-          <button
-            type='submit'
-            className='button--active button--secondary'
-            style={{ ...FILTER_SUBMIT_BUTTON_STYLE, marginLeft: 'auto' }}
-          >
-            {status === 'loading' || isRefreshing ? 'Refreshing…' : 'Refresh Trade Routes'}
-          </button>
         </div>
 
         {!filtersCollapsed && (
           <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
-            <SystemSelect
-              label='System'
-              systemSelection={systemSelection}
-              systemOptions={systemOptions}
-              onSystemChange={handleSystemChange}
-              systemInput={systemInput}
-              onManualSystemChange={handleManualSystemChange}
-            />
             <div style={{ ...FILTER_FIELD_STYLE }}>
               <label style={FILTER_LABEL_STYLE}>Max Route Distance</label>
               <select
@@ -2074,16 +2082,21 @@ function TradeRoutesPanel () {
           {status === 'loading' && (
             <LoadingSpinner label='Loading trade routes…' />
           )}
-          {isRefreshing && status !== 'loading' && (
+          {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
             <div className='trade-routes__refresh-indicator'>
-              <LoadingSpinner inline label='Refreshing trade routes…' />
+              {isRefreshing && <LoadingSpinner inline label='Refreshing trade routes…' />}
+              {lastUpdatedAt && (
+                <span className='trade-routes__refresh-timestamp'>
+                  Last refreshed {formatRelativeTime(lastUpdatedAt)}
+                </span>
+              )}
             </div>
           )}
           {status === 'error' && (
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>{error || 'Unable to fetch trade routes.'}</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>No trade routes found near {system || currentSystem?.name || systemSelection || 'Unknown System'}.</div>
+            <div style={{ color: '#aaa', padding: '2rem' }}>No trade routes found near {selectedSystemName || 'Unknown System'}.</div>
           )}
           {status === 'populated' && renderRoutesTable()}
         </div>
@@ -2302,10 +2315,10 @@ function PristineMiningPanel () {
   return (
     <div>
       <h2>Pristine Mining Locations</h2>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+      <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
-          <div style={{ color: '#ff7c22', fontSize: '0.75rem', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.35rem' }}>Current System</div>
-          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{displaySystemName || 'Unknown'}</div>
+          <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+          <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
           <div className='inara__data-source'>
