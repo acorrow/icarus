@@ -2276,7 +2276,7 @@ function PristineMiningPanel () {
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
-            <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
+            <table className='table--animated fx-fade-in' style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Body</th>
