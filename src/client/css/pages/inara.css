@@ -59,7 +59,7 @@
   align-items: stretch;
   gap: 0;
   padding: 1.25rem;
-  border-radius: 0.75rem;
+  border-radius: 0;
   box-sizing: border-box;
   border: 1px solid #333;
   background: #101010;
