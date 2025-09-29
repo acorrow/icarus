@@ -7,6 +7,23 @@ import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 
+const SHIP_STATUS_UPDATE_EVENTS = new Set([
+  'Loadout',
+  'ModuleBuy',
+  'ModuleSell',
+  'ModuleSwap',
+  'ModuleRetrieve',
+  'ModuleStore',
+  'MassModuleStore',
+  'StoredModules',
+  'StoredShips',
+  'ShipyardSwap',
+  'ShipyardBuy',
+  'ShipyardSell',
+  'ShipyardNew',
+  'ShipyardTransfer'
+])
+
 function formatSystemDistance (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
     return `${value.toFixed(2)} Ly`
@@ -1291,38 +1308,66 @@ function TradeRoutesPanel () {
   const [expandedRouteKey, setExpandedRouteKey] = useState(null)
   const factionStandings = useFactionStandings()
   const lastAutoRefreshSystem = useRef('')
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  const applyShipStatusToFilters = useCallback(shipStatus => {
+    if (!isMountedRef.current) return
+
+    const capacityNumber = Number(shipStatus?.cargo?.capacity)
+    if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
+      setCargoCapacity(String(Math.round(capacityNumber)))
+    } else {
+      setCargoCapacity('')
+    }
+
+    const landingPadSize = getShipLandingPadSize(shipStatus)
+    if (landingPadSize) {
+      setPadSize(landingPadSize)
+      setPadSizeAutoDetected(true)
+    } else {
+      setPadSizeAutoDetected(false)
+    }
+  }, [])
+
+  const syncShipFiltersWithShipStatus = useCallback(async () => {
+    try {
+      const shipStatus = await sendEvent('getShipStatus')
+      applyShipStatusToFilters(shipStatus)
+    } catch (err) {
+      if (isMountedRef.current) {
+        setPadSizeAutoDetected(false)
+        setCargoCapacity('')
+      }
+    } finally {
+      if (isMountedRef.current) setInitialShipInfoLoaded(true)
+    }
+  }, [applyShipStatusToFilters])
 
   useEffect(() => {
     if (!connected || initialShipInfoLoaded) return
+    syncShipFiltersWithShipStatus()
+  }, [connected, ready, initialShipInfoLoaded, syncShipFiltersWithShipStatus])
 
-    let cancelled = false
+  useEffect(() => eventListener('gameStateChange', () => {
+    if (!connected) return
+    syncShipFiltersWithShipStatus()
+  }), [connected, syncShipFiltersWithShipStatus])
 
-    const loadShipInfo = async () => {
-      try {
-        const shipStatus = await sendEvent('getShipStatus')
-        if (cancelled) return
-
-        const capacityNumber = Number(shipStatus?.cargo?.capacity)
-        if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
-          setCargoCapacity(String(Math.round(capacityNumber)))
-        }
-
-        const landingPadSize = getShipLandingPadSize(shipStatus)
-        if (landingPadSize) {
-          setPadSize(landingPadSize)
-          setPadSizeAutoDetected(true)
-        }
-      } catch (err) {
-        // Ignore errors fetching ship status; the UI will fall back to showing an unknown hold size.
-      } finally {
-        if (!cancelled) setInitialShipInfoLoaded(true)
-      }
+  useEffect(() => eventListener('newLogEntry', log => {
+    if (!connected) return
+    const eventName = typeof log?.event === 'string' ? log.event : ''
+    if (!eventName) return
+    if (SHIP_STATUS_UPDATE_EVENTS.has(eventName)) {
+      syncShipFiltersWithShipStatus()
     }
-
-    loadShipInfo()
-
-    return () => { cancelled = true }
-  }, [connected, ready, initialShipInfoLoaded])
+  }), [connected, syncShipFiltersWithShipStatus])
 
   const selectedSystemName = useMemo(() => {
     if (typeof currentSystem?.name !== 'string') return ''
