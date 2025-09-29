@@ -2407,7 +2407,7 @@ export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
-    { name: 'Missions', icon: 'materials-raw', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
+    { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
     { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') }
