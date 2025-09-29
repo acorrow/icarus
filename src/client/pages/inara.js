@@ -49,6 +49,207 @@ function formatReputationPercent(value) {
   return `${sign}${percentage}%`
 }
 
+function shouldDebugFactionStandings () {
+  if (typeof window === 'undefined') return false
+  try {
+    return window.localStorage.getItem('inaraDebugFactions') === 'true'
+  } catch (err) {
+    return false
+  }
+}
+
+let factionStandingsCache = null
+let factionStandingsPromise = null
+
+function parseFactionStandingsResponse(data) {
+  const nextStandings = {}
+  if (!data || typeof data !== 'object') return nextStandings
+
+  if (data?.standings && typeof data.standings === 'object') {
+    for (const [key, value] of Object.entries(data.standings)) {
+      if (!key || !value || typeof value !== 'object') continue
+      const normalizedKey = typeof key === 'string' ? key.trim().toLowerCase() : ''
+      if (!normalizedKey) continue
+      nextStandings[normalizedKey] = {
+        standing: value.standing || null,
+        relation: typeof value.relation === 'string' ? value.relation : null,
+        reputation: typeof value.reputation === 'number' ? value.reputation : null
+      }
+    }
+  } else if (Array.isArray(data?.factions)) {
+    for (const faction of data.factions) {
+      if (!faction || typeof faction !== 'object') continue
+      const key = normaliseFactionKey(faction.name)
+      if (!key) continue
+      nextStandings[key] = {
+        standing: faction.standing || null,
+        relation: typeof faction.relation === 'string' ? faction.relation : null,
+        reputation: typeof faction.reputation === 'number' ? faction.reputation : null
+      }
+    }
+  }
+
+  return nextStandings
+}
+
+function useFactionStandings() {
+  const [standings, setStandings] = useState(() => factionStandingsCache || {})
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (factionStandingsCache) {
+      return () => { cancelled = true }
+    }
+
+    if (!factionStandingsPromise) {
+      factionStandingsPromise = fetch('/api/faction-standings')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load faction standings')
+          return res.json()
+        })
+        .then(data => {
+          factionStandingsCache = parseFactionStandingsResponse(data)
+          return factionStandingsCache
+        })
+        .catch(() => {
+          factionStandingsCache = {}
+          return factionStandingsCache
+        })
+    }
+
+    factionStandingsPromise
+      .then(result => {
+        if (!cancelled) setStandings(result || {})
+      })
+      .catch(() => {
+        if (!cancelled) setStandings({})
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return standings
+}
+
+function getFactionStandingDisplay(factionName, standings) {
+  const key = normaliseFactionKey(factionName)
+  const debug = shouldDebugFactionStandings()
+  if (!key || !standings) {
+    if (debug && factionName) {
+      console.debug('[INARA] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
+    }
+    return {}
+  }
+  const info = standings[key]
+  if (!info) {
+    if (debug) {
+      console.debug('[INARA] Faction standing missing', {
+        factionName,
+        key,
+        availableCount: Object.keys(standings || {}).length
+      })
+    }
+    return {}
+  }
+
+  if (debug) {
+    console.debug('[INARA] Faction standing resolved', {
+      factionName,
+      key,
+      standing: info.standing,
+      relation: info.relation,
+      reputation: info.reputation
+    })
+  }
+
+  const relationLabel = typeof info.relation === 'string' && info.relation.trim()
+    ? `${info.relation.trim().charAt(0).toUpperCase()}${info.relation.trim().slice(1)}`
+    : null
+  const standingLabel = typeof info.standing === 'string' && info.standing.trim()
+    ? `${info.standing.trim().charAt(0).toUpperCase()}${info.standing.trim().slice(1)}`
+    : null
+  const statusLabel = relationLabel || standingLabel || null
+  const className = info.standing === 'ally'
+    ? 'text-success'
+    : info.standing === 'hostile'
+      ? 'text-danger'
+      : null
+  const reputationLabel = typeof info.reputation === 'number'
+    ? formatReputationPercent(info.reputation)
+    : null
+  const statusDescription = [statusLabel, reputationLabel && `Rep ${reputationLabel}`]
+    .filter(Boolean)
+    .join(' · ') || undefined
+
+  return {
+    info,
+    className,
+    title: statusDescription,
+    statusLabel,
+    statusDescription
+  }
+}
+
+function extractFactionNameCandidate (value) {
+  if (!value) return ''
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    return trimmed || ''
+  }
+  if (typeof value === 'object') {
+    const candidates = [
+      value.name,
+      value.Name,
+      value.localisedName,
+      value.localizedName,
+      value.LocalisedName,
+      value.faction,
+      value.factionName,
+      value.title
+    ]
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) return candidate.trim()
+    }
+    if (value.faction) {
+      const nested = extractFactionNameCandidate(value.faction)
+      if (nested) return nested
+    }
+  }
+  return ''
+}
+
+function resolveRouteFactionName (localData, endpointData) {
+  const candidates = [
+    localData?.faction,
+    localData?.stationFaction,
+    localData?.controllingFaction,
+    localData?.controllingFactionName,
+    localData?.minorFaction,
+    localData?.minorFactionName,
+    localData?.factionDetails,
+    localData?.StationFaction,
+    localData?.SystemFaction,
+    endpointData?.faction,
+    endpointData?.factionName,
+    endpointData?.controllingFaction,
+    endpointData?.controllingFactionName,
+    endpointData?.minorFaction,
+    endpointData?.minorFactionName,
+    endpointData?.stationFaction,
+    endpointData?.StationFaction
+  ]
+
+  for (const candidate of candidates) {
+    const resolved = extractFactionNameCandidate(candidate)
+    if (resolved) return resolved
+  }
+
+  return ''
+}
+
 function stationIconFromType(type = '') {
   const lower = type.toLowerCase()
   if (lower.includes('asteroid')) return 'asteroid-base'
@@ -659,52 +860,7 @@ function MissionsPanel () {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
-  const [factionStandings, setFactionStandings] = useState({})
-
-  useEffect(() => {
-    let cancelled = false
-
-    fetch('/api/faction-standings')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to load faction standings')
-        return res.json()
-      })
-      .then(data => {
-        if (cancelled) return
-        const nextStandings = {}
-        if (data && typeof data === 'object') {
-          if (data?.standings && typeof data.standings === 'object') {
-            for (const [key, value] of Object.entries(data.standings)) {
-              if (!key || !value || typeof value !== 'object') continue
-              const normalizedKey = typeof key === 'string' ? key.trim().toLowerCase() : ''
-              if (!normalizedKey) continue
-              nextStandings[normalizedKey] = {
-                standing: value.standing || null,
-                relation: typeof value.relation === 'string' ? value.relation : null,
-                reputation: typeof value.reputation === 'number' ? value.reputation : null
-              }
-            }
-          } else if (Array.isArray(data?.factions)) {
-            for (const faction of data.factions) {
-              if (!faction || typeof faction !== 'object') continue
-              const key = normaliseFactionKey(faction.name)
-              if (!key) continue
-              nextStandings[key] = {
-                standing: faction.standing || null,
-                relation: typeof faction.relation === 'string' ? faction.relation : null,
-                reputation: typeof faction.reputation === 'number' ? faction.reputation : null
-              }
-            }
-          }
-        }
-        setFactionStandings(nextStandings)
-      })
-      .catch(() => {
-        if (!cancelled) setFactionStandings({})
-      })
-
-    return () => { cancelled = true }
-  }, [])
+  const factionStandings = useFactionStandings()
 
   const trimmedSystem = useMemo(() => {
     if (typeof system === 'string') {
@@ -863,6 +1019,8 @@ function MissionsPanel () {
                     .filter(Boolean)
                     .join(' · ') || undefined
 
+                  const factionClassName = standingClass || 'text-secondary'
+
                   return (
                     <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
                       <td style={{ padding: '.65rem 1rem' }}>
@@ -870,12 +1028,20 @@ function MissionsPanel () {
                           ? (
                               mission.factionUrl
                                 ? (
-                                  <a href={mission.factionUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>
+                                  <a
+                                    href={mission.factionUrl}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    className={factionClassName}
+                                    title={factionTitle}
+                                  >
                                     {mission.faction}
                                   </a>
                                   )
                                 : (
-                                    mission.faction
+                                  <span className={factionClassName} title={factionTitle}>
+                                    {mission.faction}
+                                  </span>
                                   )
                             )
                           : '--'}
@@ -952,7 +1118,7 @@ function TradeRoutesPanel () {
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [expandedRouteKey, setExpandedRouteKey] = useState(null)
-  const isSearchDisabled = status === 'loading' || !(system && system.trim())
+  const factionStandings = useFactionStandings()
 
   useEffect(() => {
     if (!connected || initialShipInfoLoaded) return
@@ -1371,6 +1537,17 @@ function TradeRoutesPanel () {
           const destinationStation = destinationLocal?.station || route?.destination?.stationName || route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || '--'
           const destinationSystemName = destinationLocal?.system || route?.destination?.systemName || route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || ''
 
+          const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
+          const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
+          const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
+          const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
+          const originStationClassName = originStandingDisplay.className || undefined
+          const destinationStationClassName = destinationStandingDisplay.className || undefined
+          const originStationTitle = originStandingDisplay.title
+          const destinationStationTitle = destinationStandingDisplay.title
+          const originStandingStatusText = originStandingDisplay.statusDescription || null
+          const destinationStandingStatusText = destinationStandingDisplay.statusDescription || null
+
           const outboundBuy = route?.origin?.buy || null
           const outboundSell = route?.destination?.sell || null
           const returnBuy = route?.destination?.buyReturn || null
@@ -1416,13 +1593,25 @@ function TradeRoutesPanel () {
                 <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                     {originIconName && <StationIcon icon={originIconName} />}
-                    <span style={{ fontWeight: 600 }}>{originStation}</span>
+                    <span
+                      style={{ fontWeight: 600 }}
+                      className={originStationClassName}
+                      title={originStationTitle}
+                    >
+                      {originStation}
+                    </span>
                   </div>
                 </td>
                 <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                     {destinationIconName && <StationIcon icon={destinationIconName} />}
-                    <span style={{ fontWeight: 600 }}>{destinationStation}</span>
+                    <span
+                      style={{ fontWeight: 600 }}
+                      className={destinationStationClassName}
+                      title={destinationStationTitle}
+                    >
+                      {destinationStation}
+                    </span>
                   </div>
                 </td>
                 <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
@@ -1446,14 +1635,82 @@ function TradeRoutesPanel () {
                   <td style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                      <span style={{ color: '#9da4b3' }}>{originSystemName || 'Unknown system'}</span>
+                      <span
+                        style={originStationClassName ? undefined : { color: '#9da4b3' }}
+                        className={originStationClassName}
+                        title={originStationTitle}
+                      >
+                        {originSystemName || 'Unknown system'}
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Faction:&nbsp;
+                        <span
+                          className={originFactionName ? originStationClassName : undefined}
+                          style={originFactionName ? { fontWeight: 600 } : { fontWeight: 600, color: '#7f8697' }}
+                          title={originStationTitle}
+                        >
+                          {originFactionName || 'Unknown faction'}
+                        </span>
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Standing:&nbsp;
+                        {originStandingStatusText
+                          ? (
+                            <span
+                              className={originStationClassName}
+                              title={originStationTitle}
+                              style={{ fontWeight: 600 }}
+                            >
+                              {originStandingStatusText}
+                            </span>
+                            )
+                          : (
+                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                              {originFactionName ? 'No local standing data' : 'Not available'}
+                            </span>
+                            )}
+                      </span>
                       <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
                       <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
                     </div>
                   </td>
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                      <span style={{ color: '#9da4b3' }}>{destinationSystemName || 'Unknown system'}</span>
+                      <span
+                        style={destinationStationClassName ? undefined : { color: '#9da4b3' }}
+                        className={destinationStationClassName}
+                        title={destinationStationTitle}
+                      >
+                        {destinationSystemName || 'Unknown system'}
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Faction:&nbsp;
+                        <span
+                          className={destinationFactionName ? destinationStationClassName : undefined}
+                          style={destinationFactionName ? { fontWeight: 600 } : { fontWeight: 600, color: '#7f8697' }}
+                          title={destinationStationTitle}
+                        >
+                          {destinationFactionName || 'Unknown faction'}
+                        </span>
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Standing:&nbsp;
+                        {destinationStandingStatusText
+                          ? (
+                            <span
+                              className={destinationStationClassName}
+                              title={destinationStationTitle}
+                              style={{ fontWeight: 600 }}
+                            >
+                              {destinationStandingStatusText}
+                            </span>
+                            )
+                          : (
+                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                              {destinationFactionName ? 'No local standing data' : 'Not available'}
+                            </span>
+                            )}
+                      </span>
                       <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
                       <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
                     </div>
