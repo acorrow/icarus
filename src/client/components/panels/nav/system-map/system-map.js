@@ -1,5 +1,4 @@
 import SystemMapStar from 'components/panels/nav/system-map/system-map-star'
-import CopyOnClick from 'components/copy-on-click'
 
 export default function SystemMap ({ system, setSystemObject }) {
   if (!system) return null
