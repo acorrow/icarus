@@ -25,6 +25,82 @@ function normaliseName (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
 
+const MISSIONS_CACHE_KEY = 'icarus.inaraMiningMissions.v1'
+const MISSIONS_CACHE_LIMIT = 8
+
+function getMissionsCacheStorage () {
+  if (typeof window === 'undefined') {
+    return { entries: {} }
+  }
+
+  try {
+    const raw = window.localStorage.getItem(MISSIONS_CACHE_KEY)
+    if (!raw) return { entries: {} }
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return { entries: {} }
+    const entries = parsed.entries && typeof parsed.entries === 'object' ? parsed.entries : {}
+    return { entries }
+  } catch (err) {
+    return { entries: {} }
+  }
+}
+
+function saveMissionsCacheStorage (cache) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(MISSIONS_CACHE_KEY, JSON.stringify(cache))
+  } catch (err) {
+    // Ignore storage write errors (e.g. quota exceeded or private mode)
+  }
+}
+
+function getCachedMissions (system) {
+  const key = normaliseName(system)
+  if (!key) return null
+
+  const cache = getMissionsCacheStorage()
+  const entry = cache.entries?.[key]
+  if (!entry || typeof entry !== 'object') return null
+
+  const missions = Array.isArray(entry.missions) ? entry.missions : []
+
+  return {
+    missions,
+    message: typeof entry.message === 'string' ? entry.message : '',
+    error: typeof entry.error === 'string' ? entry.error : '',
+    sourceUrl: typeof entry.sourceUrl === 'string' ? entry.sourceUrl : '',
+    timestamp: typeof entry.timestamp === 'number' ? entry.timestamp : null
+  }
+}
+
+function setCachedMissions (system, payload) {
+  if (typeof window === 'undefined') return
+
+  const key = normaliseName(system)
+  if (!key) return
+
+  const cache = getMissionsCacheStorage()
+  cache.entries = cache.entries || {}
+
+  cache.entries[key] = {
+    missions: Array.isArray(payload.missions) ? payload.missions : [],
+    message: typeof payload.message === 'string' ? payload.message : '',
+    error: typeof payload.error === 'string' ? payload.error : '',
+    sourceUrl: typeof payload.sourceUrl === 'string' ? payload.sourceUrl : '',
+    timestamp: Date.now()
+  }
+
+  const keys = Object.keys(cache.entries)
+  if (keys.length > MISSIONS_CACHE_LIMIT) {
+    keys.sort((a, b) => (cache.entries[b]?.timestamp || 0) - (cache.entries[a]?.timestamp || 0))
+    for (let i = MISSIONS_CACHE_LIMIT; i < keys.length; i++) {
+      delete cache.entries[keys[i]]
+    }
+  }
+
+  saveMissionsCacheStorage({ entries: cache.entries })
+}
+
 function findSystemObjectByName (systemData, name) {
   const target = normaliseName(name)
   if (!target) return null
@@ -997,6 +1073,8 @@ function MissionsPanel () {
   const [message, setMessage] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
   const [factionStandings, setFactionStandings] = useState({})
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
 
   const displayMessage = useMemo(() => {
     if (typeof message !== 'string') return ''
@@ -1075,22 +1153,55 @@ function MissionsPanel () {
       setError('')
       setMessage('')
       setSourceUrl('')
+      setIsRefreshing(false)
+      setLastUpdatedAt(null)
       return
     }
 
     let cancelled = false
 
-    setStatus('loading')
-    setError('')
-    setMessage('')
+    const cached = getCachedMissions(trimmedSystem)
+    const hasCached = Boolean(cached)
 
-    fetch('/api/inara-missions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ system: trimmedSystem })
-    })
-      .then(res => res.json())
-      .then(data => {
+    if (hasCached) {
+      const cachedMissions = Array.isArray(cached.missions) ? cached.missions : []
+      setMissions(cachedMissions)
+      setMessage(cached.message || '')
+      setError(cached.error || '')
+      setSourceUrl(cached.sourceUrl || '')
+      setLastUpdatedAt(cached.timestamp || null)
+
+      if (cached.error && cachedMissions.length === 0) {
+        setStatus('error')
+      } else if (cachedMissions.length === 0) {
+        setStatus('empty')
+      } else {
+        setStatus('populated')
+      }
+
+      setIsRefreshing(true)
+    } else {
+      setMissions([])
+      setMessage('')
+      setError('')
+      setSourceUrl('')
+      setStatus('loading')
+      setIsRefreshing(false)
+      setLastUpdatedAt(null)
+    }
+
+    const controller = new AbortController()
+
+    const loadMissions = async () => {
+      try {
+        const response = await fetch('/api/inara-missions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ system: trimmedSystem }),
+          signal: controller.signal
+        })
+
+        const data = await response.json()
         if (cancelled) return
 
         const nextMissions = Array.isArray(data?.missions)
@@ -1107,6 +1218,7 @@ function MissionsPanel () {
         setError(nextError)
         setMessage(nextMessage)
         setSourceUrl(nextSourceUrl)
+        setLastUpdatedAt(Date.now())
 
         if (nextError && nextMissions.length === 0) {
           setStatus('error')
@@ -1115,20 +1227,46 @@ function MissionsPanel () {
         } else {
           setStatus('populated')
         }
-      })
-      .catch(err => {
-        if (cancelled) return
-        setMissions([])
-        setError(err.message || 'Unable to fetch missions.')
-        setMessage('')
-        setSourceUrl('')
-        setStatus('error')
-      })
+
+        setCachedMissions(trimmedSystem, {
+          missions: nextMissions,
+          message: nextMessage,
+          error: nextError,
+          sourceUrl: nextSourceUrl
+        })
+      } catch (err) {
+        if (cancelled || err.name === 'AbortError') return
+
+        if (hasCached) {
+          const refreshError = err?.message ? `${err.message} (showing cached results)` : 'Unable to refresh missions. Showing cached results.'
+          setError(refreshError)
+        } else {
+          setMissions([])
+          setError(err?.message || 'Unable to fetch missions.')
+          setMessage('')
+          setSourceUrl('')
+          setStatus('error')
+          setLastUpdatedAt(null)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsRefreshing(false)
+        }
+      }
+    }
+
+    loadMissions()
 
     return () => {
       cancelled = true
+      controller.abort()
     }
   }, [trimmedSystem])
+
+  useEffect(() => {
+    if (status !== 'populated' || !missions.length) return
+    return animateTableEffect()
+  }, [status, missions])
 
   return (
     <div>
@@ -1162,6 +1300,26 @@ function MissionsPanel () {
           )}
           {status === 'loading' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>Loading missions...</div>
+          )}
+          {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '.75rem',
+              color: '#888',
+              padding: '.75rem 1rem',
+              borderBottom: '1px solid #222',
+              fontSize: '.9rem',
+              background: '#0b0b0b'
+            }}
+            >
+              {isRefreshing && <span>Refreshing missions...</span>}
+              {lastUpdatedAt && (
+                <span style={{ marginLeft: 'auto', fontSize: '.85rem' }}>
+                  Updated {formatRelativeTime(lastUpdatedAt)}
+                </span>
+              )}
+            </div>
           )}
           {status === 'error' && !error && (
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load missions.</div>
@@ -1203,8 +1361,6 @@ function MissionsPanel () {
                   const factionTitle = [standingLabel, reputationLabel && `Reputation ${reputationLabel}`]
                     .filter(Boolean)
                     .join(' · ') || undefined
-
-                  const factionClassName = standingClass || 'text-secondary'
 
                   return (
                     <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
