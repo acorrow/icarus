@@ -58,7 +58,7 @@
   display: flex;
   align-items: stretch;
   gap: 0;
-  padding: 1.25rem;
+  padding: 0;
   border-radius: 0;
   box-sizing: border-box;
   border: 1px solid #333;
@@ -276,7 +276,7 @@
 @media (max-width: 1200px) {
   .pristine-mining__container {
     gap: 1rem;
-    padding: 1rem;
+    padding: 0;
   }
 
   .pristine-mining__container--inspector {
