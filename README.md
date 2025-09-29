@@ -3,9 +3,9 @@
   <img alt="ICARUS Terminal" src="https://user-images.githubusercontent.com/595695/192074789-a098e19d-f21c-4148-879a-ea2355893776.svg" height="100" width="auto"/>
 </picture>
 
-![GitHub Version](https://img.shields.io/github/v/release/iaincollins/icarus??display_name=tag&include_prereleases&sort=semver&color=cf7500&style=for-the-badge)
-![GitHub License](https://img.shields.io/github/license/iaincollins/icarus?color=cf7500&style=for-the-badge)
-![GitHub Downloads](https://img.shields.io/github/downloads/iaincollins/icarus/total?color=cf7500&style=for-the-badge)
+![GitHub Version](https://img.shields.io/github/v/release/acorrow/icarus??display_name=tag&include_prereleases&sort=semver&color=cf7500&style=for-the-badge)
+![GitHub License](https://img.shields.io/github/license/acorrow/icarus?color=cf7500&style=for-the-badge)
+![GitHub Downloads](https://img.shields.io/github/downloads/acorrow/icarus/total?color=cf7500&style=for-the-badge)
 
 _ICARUS Terminal is currently in early access._
 
@@ -18,8 +18,8 @@ You can run ICARUS Terminal in a native window, on multiple windows/displays, as
 <p align="center">&nbsp;</p>
 
 <p align="center">
-  <a href="https://github.com/iaincollins/icarus/releases">
-    <img alt="Download" src="https://github.com/iaincollins/icarus/assets/595695/ee98eb94-f293-4eb5-8230-b7a75f17ea44" height="80" width="auto"/>
+  <a href="https://github.com/acorrow/icarus/releases">
+    <img alt="Download" src="https://github.com/acorrow/icarus/assets/595695/ee98eb94-f293-4eb5-8230-b7a75f17ea44" height="80" width="auto"/>
   </a>
 </p>
 
@@ -68,7 +68,7 @@ All INARA-sourced insights are clearly labelled inside the UI so that commanders
 
 If you are running on Linux and/or looking for quick instructions on how to run from source, if you have [Node.js](https://nodejs.org/en/) this is what you need to do to download and install  ICARUS Terminal:
 
-    git clone git@github.com:iaincollins/icarus.git
+    git clone git@github.com:acorrow/icarus.git
     cd icarus
     npm install
     
