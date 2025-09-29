@@ -36,15 +36,24 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  gap: 0.85rem;
   padding: 0.75rem 1.25rem;
   background: rgba(16, 16, 16, 0.92);
   border-bottom: 1px solid #222;
+  color: #888;
+  font-size: 0.85rem;
 }
 
 .trade-routes__refresh-indicator .inara-spinner__label {
   color: #888;
   font-size: 0.85rem;
+}
+
+.trade-routes__refresh-timestamp {
+  margin-left: auto;
+  color: #b7c4d8;
+  font-size: 0.82rem;
 }
 
 @keyframes inara-spinner-rotate {

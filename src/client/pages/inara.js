@@ -550,22 +550,21 @@ const CURRENT_SYSTEM_NAME_STYLE = {
 }
 
 const FILTERS_GRID_STYLE = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+  display: 'flex',
+  flexWrap: 'wrap',
   gap: '.75rem 1rem',
   width: '100%',
-  alignItems: 'start',
-  justifyItems: 'stretch',
-  alignContent: 'start',
-  gridAutoFlow: 'row dense'
+  alignItems: 'flex-start'
 }
 
 const FILTER_FIELD_STYLE = {
   display: 'flex',
   flexDirection: 'column',
   gap: '.25rem',
-  width: '100%',
-  minWidth: 0
+  width: '11rem',
+  maxWidth: '100%',
+  minWidth: '8.75rem',
+  flex: '0 1 11rem'
 }
 
 const FILTER_LABEL_STYLE = {
@@ -628,9 +627,9 @@ const FILTER_SUMMARY_REFRESH_BUTTON_STYLE = {
   width: '2.1rem',
   height: '2.1rem',
   borderRadius: '999px',
-  border: '1px solid #338bff',
-  background: 'rgba(51, 139, 255, 0.2)',
-  color: '#5aa2ff',
+  border: '1px solid var(--color-info)',
+  background: 'rgba(206, 237, 255, 0.18)',
+  color: 'var(--color-info)',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -1285,6 +1284,7 @@ function TradeRoutesPanel () {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
   const [sortField, setSortField] = useState('distance')
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
@@ -1369,13 +1369,13 @@ function TradeRoutesPanel () {
 
   const demandOptions = useMemo(() => ([
     { value: '0', label: 'Any' },
-    { value: '100', label: '100 Units or unlimited' },
-    { value: '500', label: '500 Units or unlimited' },
-    { value: '1000', label: '1,000 Units or unlimited' },
-    { value: '2500', label: '2,500 Units or unlimited' },
-    { value: '5000', label: '5,000 Units or unlimited' },
-    { value: '10000', label: '10,000 Units or unlimited' },
-    { value: '50000', label: '50,000 Units or unlimited' }
+    { value: '100', label: '100 Units' },
+    { value: '500', label: '500 Units' },
+    { value: '1000', label: '1,000 Units' },
+    { value: '2500', label: '2,500 Units' },
+    { value: '5000', label: '5,000 Units' },
+    { value: '10000', label: '10,000 Units' },
+    { value: '50000', label: '50,000 Units' }
   ]), [])
 
   const stationDistanceOptions = useMemo(() => ([
@@ -1394,8 +1394,8 @@ function TradeRoutesPanel () {
   ]), [])
 
   const surfaceOptions = useMemo(() => ([
-    { value: '0', label: 'Yes (with Odyssey stations)' },
-    { value: '2', label: 'Yes (exclude Odyssey stations)' },
+    { value: '0', label: 'Yes +Oddsey' },
+    { value: '2', label: 'Yes' },
     { value: '1', label: 'No' }
   ]), [])
 
@@ -1518,8 +1518,8 @@ function TradeRoutesPanel () {
   const applyResults = useCallback((nextRoutes = [], meta = {}) => {
     const filteredRoutes = filterRoutes(nextRoutes)
     const sortedRoutes = sortRoutes(filteredRoutes)
-    const nextError = meta.error || ''
-    const nextMessage = meta.message || ''
+    const nextError = typeof meta.error === 'string' ? meta.error : ''
+    const nextMessage = typeof meta.message === 'string' ? meta.message : ''
 
     setRawRoutes(Array.isArray(nextRoutes) ? nextRoutes : [])
     setRoutes(sortedRoutes)
@@ -1528,10 +1528,13 @@ function TradeRoutesPanel () {
 
     if (nextError && filteredRoutes.length === 0) {
       setStatus('error')
+      setLastUpdatedAt(null)
     } else if (filteredRoutes.length === 0) {
       setStatus('empty')
+      setLastUpdatedAt(Date.now())
     } else {
       setStatus('populated')
+      setLastUpdatedAt(Date.now())
     }
   }, [filterRoutes, sortRoutes])
 
@@ -1545,6 +1548,7 @@ function TradeRoutesPanel () {
       setRawRoutes([])
       setStatus('error')
       setIsRefreshing(false)
+      setLastUpdatedAt(null)
       return
     }
 
@@ -1610,6 +1614,7 @@ function TradeRoutesPanel () {
         setRoutes([])
         setRawRoutes([])
         setStatus('error')
+        setLastUpdatedAt(null)
       })
       .finally(() => {
         setIsRefreshing(false)
@@ -2077,9 +2082,14 @@ function TradeRoutesPanel () {
           {status === 'loading' && (
             <LoadingSpinner label='Loading trade routes…' />
           )}
-          {isRefreshing && status !== 'loading' && (
+          {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
             <div className='trade-routes__refresh-indicator'>
-              <LoadingSpinner inline label='Refreshing trade routes…' />
+              {isRefreshing && <LoadingSpinner inline label='Refreshing trade routes…' />}
+              {lastUpdatedAt && (
+                <span className='trade-routes__refresh-timestamp'>
+                  Last refreshed {formatRelativeTime(lastUpdatedAt)}
+                </span>
+              )}
             </div>
           )}
           {status === 'error' && (
