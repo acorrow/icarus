@@ -21,6 +21,24 @@ function formatStationDistance (value, fallback) {
   return fallback || ''
 }
 
+function LoadingSpinner ({ label, inline = false }) {
+  return (
+    <div
+      className={`inara-spinner${inline ? ' inara-spinner--inline' : ' inara-spinner--block'}`}
+      role='status'
+      aria-live='polite'
+    >
+      <span className='inara-spinner__icon' aria-hidden='true' />
+      {label ? <span className='inara-spinner__label'>{label}</span> : null}
+    </div>
+  )
+}
+
+LoadingSpinner.defaultProps = {
+  label: '',
+  inline: false
+}
+
 function normaliseName (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
@@ -1435,6 +1453,7 @@ function TradeRoutesPanel () {
   const [rawRoutes, setRawRoutes] = useState([])
   const [routes, setRoutes] = useState([])
   const [status, setStatus] = useState('idle')
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [sortField, setSortField] = useState('distance')
@@ -1703,12 +1722,19 @@ function TradeRoutesPanel () {
       setRoutes([])
       setRawRoutes([])
       setStatus('error')
+      setIsRefreshing(false)
       return
     }
 
-    setStatus('loading')
     setError('')
     setMessage('')
+
+    const hasExistingResults = status === 'populated' || status === 'empty'
+    if (hasExistingResults) {
+      setIsRefreshing(true)
+    } else {
+      setStatus('loading')
+    }
 
     const filters = {
       ...(cargoCapacity !== '' ? { cargoCapacity } : {}),
@@ -1737,6 +1763,7 @@ function TradeRoutesPanel () {
       applyResults(mockRoutes, {
         message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in INARA settings to restore live results.'
       })
+      setIsRefreshing(false)
       return
     }
 
@@ -1762,7 +1789,10 @@ function TradeRoutesPanel () {
         setRawRoutes([])
         setStatus('error')
       })
-  }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference])
+      .finally(() => {
+        setIsRefreshing(false)
+      })
+  }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, status])
 
   useEffect(() => {
     setExpandedRouteKey(null)
@@ -2119,7 +2149,7 @@ function TradeRoutesPanel () {
             className='button--active button--secondary'
             style={{ ...FILTER_SUBMIT_BUTTON_STYLE, marginLeft: 'auto' }}
           >
-            {status === 'loading' ? 'Refreshing…' : 'Refresh Trade Routes'}
+            {status === 'loading' || isRefreshing ? 'Refreshing…' : 'Refresh Trade Routes'}
           </button>
         </div>
 
@@ -2217,7 +2247,12 @@ function TradeRoutesPanel () {
             <div style={{ color: '#aaa', padding: '2rem' }}>Choose your filters and refresh to see profitable trade routes.</div>
           )}
           {status === 'loading' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Refreshing trade routes...</div>
+            <LoadingSpinner label='Loading trade routes…' />
+          )}
+          {isRefreshing && status !== 'loading' && (
+            <div className='trade-routes__refresh-indicator'>
+              <LoadingSpinner inline label='Refreshing trade routes…' />
+            </div>
           )}
           {status === 'error' && (
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>{error || 'Unable to fetch trade routes.'}</div>
