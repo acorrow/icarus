@@ -608,13 +608,40 @@ const FILTER_TOGGLE_BUTTON_STYLE = {
 const FILTER_SUMMARY_STYLE = {
   flex: '1 1 220px',
   minWidth: 200,
+  marginLeft: 'auto',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '.5rem'
+}
+
+const FILTER_SUMMARY_TEXT_STYLE = {
   color: '#ffa45b',
   fontSize: '0.85rem',
   fontWeight: 500,
-  marginLeft: 'auto',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
-  textOverflow: 'ellipsis'
+  textOverflow: 'ellipsis',
+  flexGrow: 1
+}
+
+const FILTER_SUMMARY_REFRESH_BUTTON_STYLE = {
+  width: '2.1rem',
+  height: '2.1rem',
+  borderRadius: '999px',
+  border: '1px solid #ff7c22',
+  background: 'rgba(255, 124, 34, 0.18)',
+  color: '#ff7c22',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  padding: 0
+}
+
+const FILTER_SUMMARY_REFRESH_ICON_STYLE = {
+  width: '1.05rem',
+  height: '1.05rem',
+  display: 'block'
 }
 
 const FILTER_SUBMIT_BUTTON_STYLE = {
@@ -625,6 +652,13 @@ const FILTER_SUBMIT_BUTTON_STYLE = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center'
+}
+
+const FILTERS_ACTION_ROW_STYLE = {
+  gridColumn: '1 / -1',
+  display: 'flex',
+  justifyContent: 'flex-end',
+  paddingTop: '.5rem'
 }
 
 const DEFAULT_SORT_DIRECTION = {
@@ -1948,17 +1982,28 @@ function TradeRoutesPanel () {
             </button>
             {filtersCollapsed && (
               <div style={FILTER_SUMMARY_STYLE}>
-                {filtersSummary}
+                <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
+                <button
+                  type='submit'
+                  style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
+                  title='Refresh trade routes'
+                  aria-label='Refresh trade routes'
+                >
+                  <svg
+                    viewBox='0 0 24 24'
+                    focusable='false'
+                    aria-hidden='true'
+                    style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
+                  >
+                    <path
+                      fill='currentColor'
+                      d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
+                    />
+                  </svg>
+                </button>
               </div>
             )}
           </div>
-          <button
-            type='submit'
-            className='button--active button--secondary'
-            style={{ ...FILTER_SUBMIT_BUTTON_STYLE, marginLeft: 'auto' }}
-          >
-            {status === 'loading' || isRefreshing ? 'Refreshing…' : 'Refresh Trade Routes'}
-          </button>
         </div>
 
         {!filtersCollapsed && (
@@ -2034,6 +2079,15 @@ function TradeRoutesPanel () {
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
+            </div>
+            <div style={FILTERS_ACTION_ROW_STYLE}>
+              <button
+                type='submit'
+                className='button--active button--secondary'
+                style={FILTER_SUBMIT_BUTTON_STYLE}
+              >
+                {status === 'loading' || isRefreshing ? 'Refreshing…' : 'Refresh Trade Routes'}
+              </button>
             </div>
           </div>
         )}
