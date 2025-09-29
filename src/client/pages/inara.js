@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
-import { useSocket, sendEvent } from '../lib/socket'
+import { useSocket, sendEvent, eventListener } from '../lib/socket'
+import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 
 function formatSystemDistance (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
@@ -552,13 +553,17 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   const [systemOptions, setSystemOptions] = useState([])
   const [currentSystem, setCurrentSystem] = useState(null)
   const autoSelectApplied = useRef(false)
+  const isMounted = useRef(true)
 
   useEffect(() => {
-    let cancelled = false
+    return () => { isMounted.current = false }
+  }, [])
+
+  const fetchCurrentSystem = useCallback(({ allowAutoSelect = false } = {}) => {
     fetch('/api/current-system')
       .then(res => res.json())
       .then(data => {
-        if (cancelled) return
+        if (!isMounted.current) return
         setCurrentSystem(data.currentSystem)
         const seen = new Set()
         const opts = []
@@ -573,18 +578,31 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
           }
         })
         setSystemOptions(opts)
-        const shouldAutoSelect = autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
-        const nextValue = shouldAutoSelect ? data.currentSystem.name : ''
-        setSystemSelection(nextValue)
-        setSystemInput('')
-        setSystem(nextValue)
-        if (shouldAutoSelect) autoSelectApplied.current = true
+        const shouldAutoSelect = allowAutoSelect && autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
+        if (shouldAutoSelect) {
+          const nextValue = data.currentSystem.name
+          setSystemSelection(nextValue)
+          setSystemInput('')
+          setSystem(nextValue)
+          autoSelectApplied.current = true
+        }
       })
       .catch(() => {
-        if (!cancelled) setCurrentSystem(null)
+        if (!isMounted.current) return
+        setCurrentSystem(null)
       })
-    return () => { cancelled = true }
   }, [autoSelectCurrent])
+
+  useEffect(() => {
+    fetchCurrentSystem({ allowAutoSelect: true })
+  }, [fetchCurrentSystem])
+
+  useEffect(() => eventListener('newLogEntry', log => {
+    if (!log?.event) return
+    if (['Location', 'FSDJump', 'CarrierJump'].includes(log.event)) {
+      fetchCurrentSystem({ allowAutoSelect: !autoSelectApplied.current })
+    }
+  }), [fetchCurrentSystem])
 
   const handleSystemChange = e => {
     const nextValue = e.target.value
@@ -1078,10 +1096,11 @@ function TradeRoutesPanel () {
     handleManualSystemChange
   } = useSystemSelector({ autoSelectCurrent: true })
   const [cargoCapacity, setCargoCapacity] = useState('')
-  const [initialCapacityLoaded, setInitialCapacityLoaded] = useState(false)
+  const [initialShipInfoLoaded, setInitialShipInfoLoaded] = useState(false)
   const [routeDistance, setRouteDistance] = useState('30')
   const [priceAge, setPriceAge] = useState('8')
   const [padSize, setPadSize] = useState('2')
+  const [padSizeAutoDetected, setPadSizeAutoDetected] = useState(false)
   const [minSupply, setMinSupply] = useState('500')
   const [minDemand, setMinDemand] = useState('0')
   const [stationDistance, setStationDistance] = useState('0')
@@ -1102,11 +1121,11 @@ function TradeRoutesPanel () {
   const factionStandings = useFactionStandings()
 
   useEffect(() => {
-    if (!connected || initialCapacityLoaded) return
+    if (!connected || initialShipInfoLoaded) return
 
     let cancelled = false
 
-    const loadCapacityFromShip = async () => {
+    const loadShipInfo = async () => {
       try {
         const shipStatus = await sendEvent('getShipStatus')
         if (cancelled) return
@@ -1115,17 +1134,23 @@ function TradeRoutesPanel () {
         if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
           setCargoCapacity(String(Math.round(capacityNumber)))
         }
+
+        const landingPadSize = getShipLandingPadSize(shipStatus)
+        if (landingPadSize) {
+          setPadSize(landingPadSize)
+          setPadSizeAutoDetected(true)
+        }
       } catch (err) {
         // Ignore errors fetching ship status; the UI will fall back to showing an unknown hold size.
       } finally {
-        if (!cancelled) setInitialCapacityLoaded(true)
+        if (!cancelled) setInitialShipInfoLoaded(true)
       }
     }
 
-    loadCapacityFromShip()
+    loadShipInfo()
 
     return () => { cancelled = true }
-  }, [connected, ready, initialCapacityLoaded])
+  }, [connected, ready, initialShipInfoLoaded])
 
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
@@ -1215,8 +1240,8 @@ function TradeRoutesPanel () {
     if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
       return `${Math.round(capacityNumber).toLocaleString()} t`
     }
-    return initialCapacityLoaded ? 'Unknown' : 'Detecting…'
-  }, [cargoCapacity, initialCapacityLoaded])
+    return initialShipInfoLoaded ? 'Unknown' : 'Detecting…'
+  }, [cargoCapacity, initialShipInfoLoaded])
 
   const filtersSummary = useMemo(() => {
     const selectedSystem = (system && system.trim()) ||
@@ -1224,8 +1249,13 @@ function TradeRoutesPanel () {
       currentSystem?.name ||
       'Any System'
 
-    const padLabelRaw = pickOptionLabel(padSizeOptions, padSize, 'Any')
-    const padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
+    const padLabelRaw = initialShipInfoLoaded
+      ? pickOptionLabel(padSizeOptions, padSize, 'Unknown')
+      : 'Detecting…'
+    let padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
+    if (initialShipInfoLoaded && padSizeAutoDetected && padLabelRaw !== 'Detecting…' && padLabelRaw !== 'Unknown') {
+      padLabel = `${padLabel} (Ship)`
+    }
     const supplyLabel = simplifySupplyDemandLabel(pickOptionLabel(supplyOptions, minSupply, 'Any'))
     const demandLabel = simplifySupplyDemandLabel(pickOptionLabel(demandOptions, minDemand, 'Any'))
 
@@ -1236,7 +1266,7 @@ function TradeRoutesPanel () {
       `Min Supply: ${supplyLabel}`,
       `Min Demand: ${demandLabel}`
     ].join(' | ')
-  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel])
+  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
 
   const filterRoutes = useCallback((list = []) => {
     if (!Array.isArray(list)) return []
@@ -1721,7 +1751,7 @@ function TradeRoutesPanel () {
             type='submit'
             className='button--active button--secondary'
             style={{ ...FILTER_SUBMIT_BUTTON_STYLE }}
-            disabled={status === 'loading'}
+            disabled={isSearchDisabled}
           >
             {status === 'loading' ? 'Refreshing…' : 'Refresh Trade Routes'}
           </button>
@@ -1771,18 +1801,6 @@ function TradeRoutesPanel () {
                 style={{ ...FILTER_CONTROL_STYLE }}
               >
                 {priceAgeOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Min Landing Pad</label>
-              <select
-                value={padSize}
-                onChange={event => setPadSize(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {padSizeOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
@@ -1863,15 +1881,7 @@ function TradeRoutesPanel () {
 }
 
 function PristineMiningPanel () {
-  const {
-    currentSystem,
-    system,
-    systemSelection,
-    systemInput,
-    systemOptions,
-    handleSystemChange,
-    handleManualSystemChange
-  } = useSystemSelector({ autoSelectCurrent: true })
+  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [locations, setLocations] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
@@ -1879,20 +1889,18 @@ function PristineMiningPanel () {
   const [sourceUrl, setSourceUrl] = useState('')
 
   const trimmedSystem = useMemo(() => {
-    if (typeof system === 'string') {
-      const value = system.trim()
+    if (typeof currentSystem?.name === 'string') {
+      const value = currentSystem.name.trim()
       if (value) return value
     }
     return ''
-  }, [system])
+  }, [currentSystem?.name])
 
   const displaySystemName = useMemo(() => {
     if (trimmedSystem) return trimmedSystem
-    if (systemSelection && systemSelection !== '__manual') return systemSelection
-    if (systemInput && systemInput.trim()) return systemInput.trim()
     if (currentSystem?.name) return currentSystem.name
     return ''
-  }, [trimmedSystem, systemSelection, systemInput, currentSystem])
+  }, [trimmedSystem, currentSystem])
 
   useEffect(() => {
     if (!trimmedSystem) {
@@ -1957,16 +1965,11 @@ function PristineMiningPanel () {
   return (
     <div>
       <h2>Pristine Mining Locations</h2>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
-        <SystemSelect
-          label='System'
-          systemSelection={systemSelection}
-          systemOptions={systemOptions}
-          onSystemChange={handleSystemChange}
-          systemInput={systemInput}
-          onManualSystemChange={handleManualSystemChange}
-          placeholder='Enter system name...'
-        />
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+        <div>
+          <div style={{ color: '#ff7c22', fontSize: '0.75rem', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.35rem' }}>Current System</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{displaySystemName || 'Unknown'}</div>
+        </div>
         {sourceUrl && (
           <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }}>
             <a
@@ -1993,7 +1996,7 @@ function PristineMiningPanel () {
           )}
           {status === 'idle' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>
-              Select a system to discover nearby pristine mining locations.
+              Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
@@ -2004,7 +2007,7 @@ function PristineMiningPanel () {
           )}
           {status === 'empty' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>
-              No pristine mining locations found near {displaySystemName || 'the selected system'}.
+              No pristine mining locations found near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
@@ -2066,7 +2069,7 @@ export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
-    { name: 'Missions', icon: 'table-rows', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
+    { name: 'Missions', icon: 'materials-raw', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
     { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') }
