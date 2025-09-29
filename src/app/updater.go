@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const LATEST_RELEASE_URL = "https://api.github.com/repos/iaincollins/icarus/releases/latest"
+const LATEST_RELEASE_URL = "https://api.github.com/repos/acorrow/icarus/releases/latest"
 
 type Release struct {
 	InstalledVersion string `json:"installedVersion"`
