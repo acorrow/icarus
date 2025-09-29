@@ -2,9 +2,10 @@ import React, { useState, useEffect, useMemo, useRef, useCallback, Fragment } fr
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
-import { useSocket, sendEvent } from '../lib/socket'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
 import animateTableEffect from '../lib/animate-table-effect'
+import { useSocket, sendEvent, eventListener } from '../lib/socket'
+import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 
 function formatSystemDistance (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
@@ -69,6 +70,207 @@ function formatReputationPercent(value) {
   const percentage = Math.round(value * 100)
   const sign = percentage > 0 ? '+' : ''
   return `${sign}${percentage}%`
+}
+
+function shouldDebugFactionStandings () {
+  if (typeof window === 'undefined') return false
+  try {
+    return window.localStorage.getItem('inaraDebugFactions') === 'true'
+  } catch (err) {
+    return false
+  }
+}
+
+let factionStandingsCache = null
+let factionStandingsPromise = null
+
+function parseFactionStandingsResponse(data) {
+  const nextStandings = {}
+  if (!data || typeof data !== 'object') return nextStandings
+
+  if (data?.standings && typeof data.standings === 'object') {
+    for (const [key, value] of Object.entries(data.standings)) {
+      if (!key || !value || typeof value !== 'object') continue
+      const normalizedKey = typeof key === 'string' ? key.trim().toLowerCase() : ''
+      if (!normalizedKey) continue
+      nextStandings[normalizedKey] = {
+        standing: value.standing || null,
+        relation: typeof value.relation === 'string' ? value.relation : null,
+        reputation: typeof value.reputation === 'number' ? value.reputation : null
+      }
+    }
+  } else if (Array.isArray(data?.factions)) {
+    for (const faction of data.factions) {
+      if (!faction || typeof faction !== 'object') continue
+      const key = normaliseFactionKey(faction.name)
+      if (!key) continue
+      nextStandings[key] = {
+        standing: faction.standing || null,
+        relation: typeof faction.relation === 'string' ? faction.relation : null,
+        reputation: typeof faction.reputation === 'number' ? faction.reputation : null
+      }
+    }
+  }
+
+  return nextStandings
+}
+
+function useFactionStandings() {
+  const [standings, setStandings] = useState(() => factionStandingsCache || {})
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (factionStandingsCache) {
+      return () => { cancelled = true }
+    }
+
+    if (!factionStandingsPromise) {
+      factionStandingsPromise = fetch('/api/faction-standings')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load faction standings')
+          return res.json()
+        })
+        .then(data => {
+          factionStandingsCache = parseFactionStandingsResponse(data)
+          return factionStandingsCache
+        })
+        .catch(() => {
+          factionStandingsCache = {}
+          return factionStandingsCache
+        })
+    }
+
+    factionStandingsPromise
+      .then(result => {
+        if (!cancelled) setStandings(result || {})
+      })
+      .catch(() => {
+        if (!cancelled) setStandings({})
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return standings
+}
+
+function getFactionStandingDisplay(factionName, standings) {
+  const key = normaliseFactionKey(factionName)
+  const debug = shouldDebugFactionStandings()
+  if (!key || !standings) {
+    if (debug && factionName) {
+      console.debug('[INARA] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
+    }
+    return {}
+  }
+  const info = standings[key]
+  if (!info) {
+    if (debug) {
+      console.debug('[INARA] Faction standing missing', {
+        factionName,
+        key,
+        availableCount: Object.keys(standings || {}).length
+      })
+    }
+    return {}
+  }
+
+  if (debug) {
+    console.debug('[INARA] Faction standing resolved', {
+      factionName,
+      key,
+      standing: info.standing,
+      relation: info.relation,
+      reputation: info.reputation
+    })
+  }
+
+  const relationLabel = typeof info.relation === 'string' && info.relation.trim()
+    ? `${info.relation.trim().charAt(0).toUpperCase()}${info.relation.trim().slice(1)}`
+    : null
+  const standingLabel = typeof info.standing === 'string' && info.standing.trim()
+    ? `${info.standing.trim().charAt(0).toUpperCase()}${info.standing.trim().slice(1)}`
+    : null
+  const statusLabel = relationLabel || standingLabel || null
+  const className = info.standing === 'ally'
+    ? 'text-success'
+    : info.standing === 'hostile'
+      ? 'text-danger'
+      : null
+  const reputationLabel = typeof info.reputation === 'number'
+    ? formatReputationPercent(info.reputation)
+    : null
+  const statusDescription = [statusLabel, reputationLabel && `Rep ${reputationLabel}`]
+    .filter(Boolean)
+    .join(' · ') || undefined
+
+  return {
+    info,
+    className,
+    title: statusDescription,
+    statusLabel,
+    statusDescription
+  }
+}
+
+function extractFactionNameCandidate (value) {
+  if (!value) return ''
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    return trimmed || ''
+  }
+  if (typeof value === 'object') {
+    const candidates = [
+      value.name,
+      value.Name,
+      value.localisedName,
+      value.localizedName,
+      value.LocalisedName,
+      value.faction,
+      value.factionName,
+      value.title
+    ]
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) return candidate.trim()
+    }
+    if (value.faction) {
+      const nested = extractFactionNameCandidate(value.faction)
+      if (nested) return nested
+    }
+  }
+  return ''
+}
+
+function resolveRouteFactionName (localData, endpointData) {
+  const candidates = [
+    localData?.faction,
+    localData?.stationFaction,
+    localData?.controllingFaction,
+    localData?.controllingFactionName,
+    localData?.minorFaction,
+    localData?.minorFactionName,
+    localData?.factionDetails,
+    localData?.StationFaction,
+    localData?.SystemFaction,
+    endpointData?.faction,
+    endpointData?.factionName,
+    endpointData?.controllingFaction,
+    endpointData?.controllingFactionName,
+    endpointData?.minorFaction,
+    endpointData?.minorFactionName,
+    endpointData?.stationFaction,
+    endpointData?.StationFaction
+  ]
+
+  for (const candidate of candidates) {
+    const resolved = extractFactionNameCandidate(candidate)
+    if (resolved) return resolved
+  }
+
+  return ''
 }
 
 function stationIconFromType(type = '') {
@@ -475,13 +677,17 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   const [systemOptions, setSystemOptions] = useState([])
   const [currentSystem, setCurrentSystem] = useState(null)
   const autoSelectApplied = useRef(false)
+  const isMounted = useRef(true)
 
   useEffect(() => {
-    let cancelled = false
+    return () => { isMounted.current = false }
+  }, [])
+
+  const fetchCurrentSystem = useCallback(({ allowAutoSelect = false } = {}) => {
     fetch('/api/current-system')
       .then(res => res.json())
       .then(data => {
-        if (cancelled) return
+        if (!isMounted.current) return
         setCurrentSystem(data.currentSystem)
         const seen = new Set()
         const opts = []
@@ -496,18 +702,31 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
           }
         })
         setSystemOptions(opts)
-        const shouldAutoSelect = autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
-        const nextValue = shouldAutoSelect ? data.currentSystem.name : ''
-        setSystemSelection(nextValue)
-        setSystemInput('')
-        setSystem(nextValue)
-        if (shouldAutoSelect) autoSelectApplied.current = true
+        const shouldAutoSelect = allowAutoSelect && autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
+        if (shouldAutoSelect) {
+          const nextValue = data.currentSystem.name
+          setSystemSelection(nextValue)
+          setSystemInput('')
+          setSystem(nextValue)
+          autoSelectApplied.current = true
+        }
       })
       .catch(() => {
-        if (!cancelled) setCurrentSystem(null)
+        if (!isMounted.current) return
+        setCurrentSystem(null)
       })
-    return () => { cancelled = true }
   }, [autoSelectCurrent])
+
+  useEffect(() => {
+    fetchCurrentSystem({ allowAutoSelect: true })
+  }, [fetchCurrentSystem])
+
+  useEffect(() => eventListener('newLogEntry', log => {
+    if (!log?.event) return
+    if (['Location', 'FSDJump', 'CarrierJump'].includes(log.event)) {
+      fetchCurrentSystem({ allowAutoSelect: !autoSelectApplied.current })
+    }
+  }), [fetchCurrentSystem])
 
   const handleSystemChange = e => {
     const nextValue = e.target.value
@@ -980,6 +1199,8 @@ function MissionsPanel () {
                     .filter(Boolean)
                     .join(' · ') || undefined
 
+                  const factionClassName = standingClass || 'text-secondary'
+
                   return (
                     <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
                       <td style={{ padding: '.65rem 1rem' }}>
@@ -1027,10 +1248,11 @@ function TradeRoutesPanel () {
     handleManualSystemChange
   } = useSystemSelector({ autoSelectCurrent: true })
   const [cargoCapacity, setCargoCapacity] = useState('')
-  const [initialCapacityLoaded, setInitialCapacityLoaded] = useState(false)
+  const [initialShipInfoLoaded, setInitialShipInfoLoaded] = useState(false)
   const [routeDistance, setRouteDistance] = useState('30')
   const [priceAge, setPriceAge] = useState('8')
   const [padSize, setPadSize] = useState('2')
+  const [padSizeAutoDetected, setPadSizeAutoDetected] = useState(false)
   const [minSupply, setMinSupply] = useState('500')
   const [minDemand, setMinDemand] = useState('0')
   const [stationDistance, setStationDistance] = useState('0')
@@ -1048,13 +1270,14 @@ function TradeRoutesPanel () {
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [expandedRouteKey, setExpandedRouteKey] = useState(null)
+  const factionStandings = useFactionStandings()
 
   useEffect(() => {
-    if (!connected || initialCapacityLoaded) return
+    if (!connected || initialShipInfoLoaded) return
 
     let cancelled = false
 
-    const loadCapacityFromShip = async () => {
+    const loadShipInfo = async () => {
       try {
         const shipStatus = await sendEvent('getShipStatus')
         if (cancelled) return
@@ -1063,17 +1286,23 @@ function TradeRoutesPanel () {
         if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
           setCargoCapacity(String(Math.round(capacityNumber)))
         }
+
+        const landingPadSize = getShipLandingPadSize(shipStatus)
+        if (landingPadSize) {
+          setPadSize(landingPadSize)
+          setPadSizeAutoDetected(true)
+        }
       } catch (err) {
         // Ignore errors fetching ship status; the UI will fall back to showing an unknown hold size.
       } finally {
-        if (!cancelled) setInitialCapacityLoaded(true)
+        if (!cancelled) setInitialShipInfoLoaded(true)
       }
     }
 
-    loadCapacityFromShip()
+    loadShipInfo()
 
     return () => { cancelled = true }
-  }, [connected, ready, initialCapacityLoaded])
+  }, [connected, ready, initialShipInfoLoaded])
 
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
@@ -1163,8 +1392,8 @@ function TradeRoutesPanel () {
     if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
       return `${Math.round(capacityNumber).toLocaleString()} t`
     }
-    return initialCapacityLoaded ? 'Unknown' : 'Detecting…'
-  }, [cargoCapacity, initialCapacityLoaded])
+    return initialShipInfoLoaded ? 'Unknown' : 'Detecting…'
+  }, [cargoCapacity, initialShipInfoLoaded])
 
   const filtersSummary = useMemo(() => {
     const selectedSystem = (system && system.trim()) ||
@@ -1172,8 +1401,13 @@ function TradeRoutesPanel () {
       currentSystem?.name ||
       'Any System'
 
-    const padLabelRaw = pickOptionLabel(padSizeOptions, padSize, 'Any')
-    const padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
+    const padLabelRaw = initialShipInfoLoaded
+      ? pickOptionLabel(padSizeOptions, padSize, 'Unknown')
+      : 'Detecting…'
+    let padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
+    if (initialShipInfoLoaded && padSizeAutoDetected && padLabelRaw !== 'Detecting…' && padLabelRaw !== 'Unknown') {
+      padLabel = `${padLabel} (Ship)`
+    }
     const supplyLabel = simplifySupplyDemandLabel(pickOptionLabel(supplyOptions, minSupply, 'Any'))
     const demandLabel = simplifySupplyDemandLabel(pickOptionLabel(demandOptions, minDemand, 'Any'))
 
@@ -1184,7 +1418,7 @@ function TradeRoutesPanel () {
       `Min Supply: ${supplyLabel}`,
       `Min Demand: ${demandLabel}`
     ].join(' | ')
-  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel])
+  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
 
   const filterRoutes = useCallback((list = []) => {
     if (!Array.isArray(list)) return []
@@ -1455,6 +1689,17 @@ function TradeRoutesPanel () {
           const destinationStation = destinationLocal?.station || route?.destination?.stationName || route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || '--'
           const destinationSystemName = destinationLocal?.system || route?.destination?.systemName || route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || ''
 
+          const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
+          const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
+          const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
+          const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
+          const originStationClassName = originStandingDisplay.className || undefined
+          const destinationStationClassName = destinationStandingDisplay.className || undefined
+          const originStationTitle = originStandingDisplay.title
+          const destinationStationTitle = destinationStandingDisplay.title
+          const originStandingStatusText = originStandingDisplay.statusDescription || null
+          const destinationStandingStatusText = destinationStandingDisplay.statusDescription || null
+
           const outboundBuy = route?.origin?.buy || null
           const outboundSell = route?.destination?.sell || null
           const returnBuy = route?.destination?.buyReturn || null
@@ -1500,13 +1745,25 @@ function TradeRoutesPanel () {
                 <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                     {originIconName && <StationIcon icon={originIconName} />}
-                    <span style={{ fontWeight: 600 }}>{originStation}</span>
+                    <span
+                      style={{ fontWeight: 600 }}
+                      className={originStationClassName}
+                      title={originStationTitle}
+                    >
+                      {originStation}
+                    </span>
                   </div>
                 </td>
                 <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                     {destinationIconName && <StationIcon icon={destinationIconName} />}
-                    <span style={{ fontWeight: 600 }}>{destinationStation}</span>
+                    <span
+                      style={{ fontWeight: 600 }}
+                      className={destinationStationClassName}
+                      title={destinationStationTitle}
+                    >
+                      {destinationStation}
+                    </span>
                   </div>
                 </td>
                 <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
@@ -1530,14 +1787,82 @@ function TradeRoutesPanel () {
                   <td style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                      <span style={{ color: '#9da4b3' }}>{originSystemName || 'Unknown system'}</span>
+                      <span
+                        style={originStationClassName ? undefined : { color: '#9da4b3' }}
+                        className={originStationClassName}
+                        title={originStationTitle}
+                      >
+                        {originSystemName || 'Unknown system'}
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Faction:&nbsp;
+                        <span
+                          className={originFactionName ? originStationClassName : undefined}
+                          style={originFactionName ? { fontWeight: 600 } : { fontWeight: 600, color: '#7f8697' }}
+                          title={originStationTitle}
+                        >
+                          {originFactionName || 'Unknown faction'}
+                        </span>
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Standing:&nbsp;
+                        {originStandingStatusText
+                          ? (
+                            <span
+                              className={originStationClassName}
+                              title={originStationTitle}
+                              style={{ fontWeight: 600 }}
+                            >
+                              {originStandingStatusText}
+                            </span>
+                            )
+                          : (
+                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                              {originFactionName ? 'No local standing data' : 'Not available'}
+                            </span>
+                            )}
+                      </span>
                       <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
                       <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
                     </div>
                   </td>
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
-                      <span style={{ color: '#9da4b3' }}>{destinationSystemName || 'Unknown system'}</span>
+                      <span
+                        style={destinationStationClassName ? undefined : { color: '#9da4b3' }}
+                        className={destinationStationClassName}
+                        title={destinationStationTitle}
+                      >
+                        {destinationSystemName || 'Unknown system'}
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Faction:&nbsp;
+                        <span
+                          className={destinationFactionName ? destinationStationClassName : undefined}
+                          style={destinationFactionName ? { fontWeight: 600 } : { fontWeight: 600, color: '#7f8697' }}
+                          title={destinationStationTitle}
+                        >
+                          {destinationFactionName || 'Unknown faction'}
+                        </span>
+                      </span>
+                      <span style={{ color: '#9da4b3' }}>
+                        Standing:&nbsp;
+                        {destinationStandingStatusText
+                          ? (
+                            <span
+                              className={destinationStationClassName}
+                              title={destinationStationTitle}
+                              style={{ fontWeight: 600 }}
+                            >
+                              {destinationStandingStatusText}
+                            </span>
+                            )
+                          : (
+                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                              {destinationFactionName ? 'No local standing data' : 'Not available'}
+                            </span>
+                            )}
+                      </span>
                       <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
                       <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
                     </div>
@@ -1578,7 +1903,7 @@ function TradeRoutesPanel () {
             type='submit'
             className='button--active button--secondary'
             style={{ ...FILTER_SUBMIT_BUTTON_STYLE }}
-            disabled={status === 'loading'}
+            disabled={isSearchDisabled}
           >
             {status === 'loading' ? 'Refreshing…' : 'Refresh Trade Routes'}
           </button>
@@ -1628,18 +1953,6 @@ function TradeRoutesPanel () {
                 style={{ ...FILTER_CONTROL_STYLE }}
               >
                 {priceAgeOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Min Landing Pad</label>
-              <select
-                value={padSize}
-                onChange={event => setPadSize(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {padSizeOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
@@ -1720,15 +2033,7 @@ function TradeRoutesPanel () {
 }
 
 function PristineMiningPanel () {
-  const {
-    currentSystem,
-    system,
-    systemSelection,
-    systemInput,
-    systemOptions,
-    handleSystemChange,
-    handleManualSystemChange
-  } = useSystemSelector({ autoSelectCurrent: true })
+  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [locations, setLocations] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
@@ -1747,20 +2052,18 @@ function PristineMiningPanel () {
   useEffect(() => animateTableEffect(), [locations, expandedLocationKey])
 
   const trimmedSystem = useMemo(() => {
-    if (typeof system === 'string') {
-      const value = system.trim()
+    if (typeof currentSystem?.name === 'string') {
+      const value = currentSystem.name.trim()
       if (value) return value
     }
     return ''
-  }, [system])
+  }, [currentSystem?.name])
 
   const displaySystemName = useMemo(() => {
     if (trimmedSystem) return trimmedSystem
-    if (systemSelection && systemSelection !== '__manual') return systemSelection
-    if (systemInput && systemInput.trim()) return systemInput.trim()
     if (currentSystem?.name) return currentSystem.name
     return ''
-  }, [trimmedSystem, systemSelection, systemInput, currentSystem])
+  }, [trimmedSystem, currentSystem])
 
   useEffect(() => {
     if (!trimmedSystem) {
@@ -1929,16 +2232,11 @@ function PristineMiningPanel () {
   return (
     <div>
       <h2>Pristine Mining Locations</h2>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
-        <SystemSelect
-          label='System'
-          systemSelection={systemSelection}
-          systemOptions={systemOptions}
-          onSystemChange={handleSystemChange}
-          systemInput={systemInput}
-          onManualSystemChange={handleManualSystemChange}
-          placeholder='Enter system name...'
-        />
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+        <div>
+          <div style={{ color: '#ff7c22', fontSize: '0.75rem', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.35rem' }}>Current System</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{displaySystemName || 'Unknown'}</div>
+        </div>
         {sourceUrl && (
           <div style={{ marginBottom: '.75rem', fontSize: '0.95rem', color: '#bbb' }}>
             Data sourced from INARA community submissions
@@ -1964,7 +2262,7 @@ function PristineMiningPanel () {
           )}
           {status === 'idle' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>
-              Select a system to discover nearby pristine mining locations.
+              Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
@@ -1975,7 +2273,7 @@ function PristineMiningPanel () {
           )}
           {status === 'empty' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>
-              No pristine mining locations found near {displaySystemName || 'the selected system'}.
+              No pristine mining locations found near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
@@ -2103,7 +2401,7 @@ export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
-    { name: 'Missions', icon: 'table-rows', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
+    { name: 'Missions', icon: 'materials-raw', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
     { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') }
