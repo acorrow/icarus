@@ -7,9 +7,9 @@ const PRODUCT_VERSION = `${packageJson.version}.0`
 const APP_FILE_VERSION = PRODUCT_VERSION
 const SERVICE_FILE_VERSION = PRODUCT_VERSION
 
-const PATH_TO_SIGNTOOL = '../code-signing/signtool.exe'
+const PATH_TO_SIGNTOOL = 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.22000.0/x64/signtool.exe'
 const SIGN_BUILD = process.env?.SIGN_BUILD === 'true'
-const SIGN_CERT_NAME = process.env?.SIGN_CERT_NAME ?? 'Open Source Developer, Iain Collins'
+const SIGN_CERT_NAME = process.env?.SIGN_CERT_NAME ?? 'DualCorSoftware LLC'
 const SIGN_TIME_SERVER = process.env?.SIGN_TIME_SERVER ?? 'http://time.certum.pl'
 
 // Development builds are faster, larger and can contain debug routines

@@ -17,10 +17,47 @@ const {
   SIGN_TIME_SERVER
 } = require('./lib/build-options')
 
+
 ;(async () => {
-  clean()
-  await build()
+  try {
+    validateBuildTools()
+    clean()
+    await build()
+  } catch (err) {
+    console.error('Build failed:', err.message)
+    process.exit(1)
+  }
 })()
+function validateBuildTools() {
+  const { existsSync } = require('fs')
+  const { PATH_TO_MAKENSIS, PATH_TO_SIGNTOOL, SIGN_CERT_NAME } = require('./lib/build-options')
+  // Check makensis
+  if (!existsSync(PATH_TO_MAKENSIS)) {
+    throw new Error(`NSIS not found: ${PATH_TO_MAKENSIS}. Please install NSIS.`)
+  }
+  // Check signtool
+  if (!existsSync(PATH_TO_SIGNTOOL)) {
+    throw new Error(`signtool.exe not found: ${PATH_TO_SIGNTOOL}. Please install the Windows SDK.`)
+  }
+  // Check for code signing cert (if signing is enabled)
+  const { SIGN_BUILD } = require('./lib/build-options')
+  if (SIGN_BUILD) {
+    try {
+      // Try to list certs with signtool (use verify command for a harmless check)
+      const { execSync } = require('child_process')
+      execSync(`"${PATH_TO_SIGNTOOL}" verify /n "${SIGN_CERT_NAME}" /pa nul`, { stdio: 'pipe' })
+    } catch (e) {
+      const msg = e && e.message ? e.message : String(e)
+      if (msg.includes('No certificates were found')) {
+        throw new Error('No code signing certificate found matching: ' + SIGN_CERT_NAME)
+      } else if (msg.includes('cannot find the file')) {
+        throw new Error('signtool.exe not found: ' + PATH_TO_SIGNTOOL)
+      } else {
+        throw new Error('Error checking code signing certificate: ' + msg)
+      }
+    }
+  }
+}
 
 function clean () {
   if (!fs.existsSync(BUILD_DIR)) fs.mkdirSync(BUILD_DIR, { recursive: true })
