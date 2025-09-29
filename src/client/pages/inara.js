@@ -4,6 +4,7 @@ import Panel from '../components/panel'
 import Icons from '../lib/icons'
 import { useSocket, sendEvent } from '../lib/socket'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
+import animateTableEffect from '../lib/animate-table-effect'
 
 function formatSystemDistance (value, fallback) {
   if (typeof value === 'number' && !Number.isNaN(value)) {
@@ -1742,6 +1743,8 @@ function PristineMiningPanel () {
   const detailRequestRef = useRef({ id: 0, key: null })
   const inspectorReserved = Boolean(expandedLocationKey)
   const inspectorVisible = inspectorReserved && !detailError && !!expandedSystemObject
+
+  useEffect(() => animateTableEffect(), [locations, expandedLocationKey])
 
   const trimmedSystem = useMemo(() => {
     if (typeof system === 'string') {
