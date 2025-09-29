@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback, Fragment } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
+import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
+import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 
@@ -17,6 +19,28 @@ function formatStationDistance (value, fallback) {
     return `${Math.round(value).toLocaleString()} Ls`
   }
   return fallback || ''
+}
+
+function normaliseName (value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : ''
+}
+
+function findSystemObjectByName (systemData, name) {
+  const target = normaliseName(name)
+  if (!target) return null
+
+  const objects = systemData?.objectsInSystem || []
+  let match = objects.find(obj => normaliseName(obj?.name) === target)
+  if (match) return match
+
+  match = objects.find(obj => normaliseName(obj?.label) === target)
+  if (match) return match
+
+  const targetNoSpaces = target.replace(/\s+/g, '')
+  match = objects.find(obj => normaliseName(obj?.name).replace(/\s+/g, '') === targetNoSpaces)
+  if (match) return match
+
+  return null
 }
 
 function formatRelativeTime (value) {
@@ -36,7 +60,6 @@ function formatRelativeTime (value) {
   if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`
   return date.toLocaleDateString()
 }
-
 
 function normaliseFactionKey(value) {
   return typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : ''
@@ -274,6 +297,107 @@ function formatCredits (value, fallback) {
     return value
   }
   return fallback || '--'
+}
+
+function PristineMiningArtwork ({ systemObject }) {
+  const ringMaskId = useMemo(() => {
+    if (!systemObject) return 'pristine-artwork-ring-mask'
+    const base = (systemObject.id || normaliseName(systemObject.name) || 'object')
+      .toString()
+      .replace(/[^a-z0-9-]/gi, '-')
+    return `pristine-artwork-ring-mask-${base}`
+  }, [systemObject?.id, systemObject?.name])
+
+  if (!systemObject) return null
+
+  const type = systemObject.type || ''
+  const subType = systemObject.subType || type
+  const hasRings = Array.isArray(systemObject.rings) && systemObject.rings.length > 0
+  const isBelt = /belt|cluster/i.test(type) || /belt|ring/i.test(subType)
+  const isStar = type === 'Star'
+  const hasAtmosphere = Boolean(systemObject.atmosphereType && systemObject.atmosphereType !== 'No atmosphere')
+
+  const dataAttributes = {
+    'data-system-object-type': type,
+    'data-system-object-sub-type': subType,
+    'data-system-object-landable': systemObject.isLandable || undefined,
+    'data-system-object-atmosphere': systemObject.atmosphereType || undefined,
+    'data-system-object-name': systemObject.name || undefined
+  }
+
+  if (isBelt) {
+    return (
+      <div className='pristine-mining__artwork pristine-mining__artwork--belt' aria-hidden='true'>
+        <svg viewBox='0 0 1000 600' className='pristine-mining__artwork-svg pristine-mining__artwork-svg--belt' focusable='false'>
+          <g className='pristine-mining__belt'>
+            <ellipse className='pristine-mining__belt-ring pristine-mining__belt-ring--outer' cx='500' cy='300' rx='420' ry='160' />
+            <ellipse className='pristine-mining__belt-ring pristine-mining__belt-ring--inner' cx='500' cy='300' rx='340' ry='120' />
+            <ellipse className='pristine-mining__belt-dust' cx='500' cy='300' rx='260' ry='90' />
+          </g>
+        </svg>
+      </div>
+    )
+  }
+
+  const radius = isStar ? 320 : 300
+  const atmosphereRadius = radius + 70
+  const ringOuterRx = radius * 2
+  const ringOuterRy = radius / 3
+  const ringInnerRx = radius
+  const ringInnerRy = radius / 3
+  const ringMiddleRx = radius * 1.2
+  const ringMiddleRy = radius / 5
+
+  return (
+    <div className='pristine-mining__artwork' aria-hidden='true'>
+      <svg viewBox='0 0 1000 1000' className='pristine-mining__artwork-svg' focusable='false'>
+        <g className='system-map__system-object pristine-mining__artwork-object' {...dataAttributes}>
+          {hasAtmosphere && (
+            <g className='system-map__body'>
+              <g className='system-map__planet'>
+                <circle className='system-map__planet-atmosphere' cx='500' cy='500' r={atmosphereRadius} />
+              </g>
+            </g>
+          )}
+          <g className='system-map__body'>
+            <g className='system-map__planet'>
+              <circle cx='500' cy='500' r={radius} />
+              <circle className='system-map__planet-surface' cx='500' cy='500' r={radius} />
+              {hasRings && (
+                <>
+                  <defs>
+                    <mask id={ringMaskId} className='system-map__planet-ring-mask'>
+                      <ellipse cx='500' cy='500' rx={ringOuterRx} ry={ringOuterRy} fill='white' />
+                      <ellipse cx='500' cy={500 - (radius / 5)} rx={ringInnerRx} ry={ringInnerRy} fill='black' />
+                      <ellipse cx='500' cy={500 - (radius / 15)} rx={ringMiddleRx} ry={ringMiddleRy} fill='black' />
+                    </mask>
+                  </defs>
+                  <ellipse
+                    className='system-map__planet-ring'
+                    cx='500'
+                    cy='500'
+                    rx={ringOuterRx}
+                    ry={ringOuterRy}
+                    mask={`url(#${ringMaskId})`}
+                    opacity='1'
+                  />
+                  <ellipse
+                    className='system-map__planet-ring'
+                    cx='500'
+                    cy={500 - (radius / 80)}
+                    rx={radius * 1.85}
+                    ry={radius / 4.2}
+                    mask={`url(#${ringMaskId})`}
+                    opacity='.25'
+                  />
+                </>
+              )}
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+  )
 }
 
 const FILTER_FORM_STYLE = {
@@ -860,7 +984,63 @@ function MissionsPanel () {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
-  const factionStandings = useFactionStandings()
+  const [factionStandings, setFactionStandings] = useState({})
+
+  const displayMessage = useMemo(() => {
+    if (typeof message !== 'string') return ''
+    const trimmed = message.trim()
+    if (!trimmed) return ''
+    const lower = trimmed.toLowerCase()
+    if (lower.startsWith('showing nearby mining mission factions near') || lower.startsWith('shwoing nearby mining mission factions near')) {
+      return ''
+    }
+    return trimmed
+  }, [message])
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetch('/api/faction-standings')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load faction standings')
+        return res.json()
+      })
+      .then(data => {
+        if (cancelled) return
+        const nextStandings = {}
+        if (data && typeof data === 'object') {
+          if (data?.standings && typeof data.standings === 'object') {
+            for (const [key, value] of Object.entries(data.standings)) {
+              if (!key || !value || typeof value !== 'object') continue
+              const normalizedKey = typeof key === 'string' ? key.trim().toLowerCase() : ''
+              if (!normalizedKey) continue
+              nextStandings[normalizedKey] = {
+                standing: value.standing || null,
+                relation: typeof value.relation === 'string' ? value.relation : null,
+                reputation: typeof value.reputation === 'number' ? value.reputation : null
+              }
+            }
+          } else if (Array.isArray(data?.factions)) {
+            for (const faction of data.factions) {
+              if (!faction || typeof faction !== 'object') continue
+              const key = normaliseFactionKey(faction.name)
+              if (!key) continue
+              nextStandings[key] = {
+                standing: faction.standing || null,
+                relation: typeof faction.relation === 'string' ? faction.relation : null,
+                reputation: typeof faction.reputation === 'number' ? faction.reputation : null
+              }
+            }
+          }
+        }
+        setFactionStandings(nextStandings)
+      })
+      .catch(() => {
+        if (!cancelled) setFactionStandings({})
+      })
+
+    return () => { cancelled = true }
+  }, [])
 
   const trimmedSystem = useMemo(() => {
     if (typeof system === 'string') {
@@ -965,9 +1145,9 @@ function MissionsPanel () {
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
-          {message && status !== 'idle' && status !== 'loading' && (
+          {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
-              {message}
+              {displayMessage}
             </div>
           )}
           {status === 'idle' && (
@@ -987,7 +1167,7 @@ function MissionsPanel () {
             </div>
           )}
           {status === 'populated' && missions.length > 0 && (
-            <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
+            <table className='table--animated fx-fade-in' style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Faction</th>
@@ -1026,23 +1206,7 @@ function MissionsPanel () {
                       <td style={{ padding: '.65rem 1rem' }}>
                         {mission.faction
                           ? (
-                              mission.factionUrl
-                                ? (
-                                  <a
-                                    href={mission.factionUrl}
-                                    target='_blank'
-                                    rel='noopener noreferrer'
-                                    className={factionClassName}
-                                    title={factionTitle}
-                                  >
-                                    {mission.faction}
-                                  </a>
-                                  )
-                                : (
-                                  <span className={factionClassName} title={factionTitle}>
-                                    {mission.faction}
-                                  </span>
-                                  )
+                            <span className={standingClass} title={factionTitle}>{mission.faction}</span>
                             )
                           : '--'}
                       </td>
@@ -1055,19 +1219,7 @@ function MissionsPanel () {
                             : (
                               <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
                               )}
-                          {mission.system
-                            ? (
-                                mission.systemUrl
-                                  ? (
-                                    <a href={mission.systemUrl} target='_blank' rel='noopener noreferrer' className='text-secondary'>
-                                      {mission.system}
-                                    </a>
-                                    )
-                                  : (
-                                      mission.system
-                                    )
-                              )
-                            : '--'}
+                          {mission.system || '--'}
                         </div>
                       </td>
                       <td className='hidden-small text-right' style={{ padding: '.65rem 1rem' }}>{distanceDisplay || '--'}</td>
@@ -1887,6 +2039,17 @@ function PristineMiningPanel () {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
+  const [expandedLocationKey, setExpandedLocationKey] = useState(null)
+  const [expandedSystemData, setExpandedSystemData] = useState(null)
+  const [expandedSystemObject, setExpandedSystemObject] = useState(null)
+  const [detailLoadingKey, setDetailLoadingKey] = useState(null)
+  const [detailError, setDetailError] = useState('')
+  const [systemDataCache, setSystemDataCache] = useState({})
+  const detailRequestRef = useRef({ id: 0, key: null })
+  const inspectorReserved = Boolean(expandedLocationKey)
+  const inspectorVisible = inspectorReserved && !detailError && !!expandedSystemObject
+
+  useEffect(() => animateTableEffect(), [locations, expandedLocationKey])
 
   const trimmedSystem = useMemo(() => {
     if (typeof currentSystem?.name === 'string') {
@@ -1962,6 +2125,110 @@ function PristineMiningPanel () {
     return () => { cancelled = true }
   }, [trimmedSystem])
 
+  const resetExpandedState = useCallback(() => {
+    setExpandedLocationKey(null)
+    setExpandedSystemData(null)
+    setExpandedSystemObject(null)
+    setDetailError('')
+    setDetailLoadingKey(null)
+    detailRequestRef.current = { id: 0, key: null }
+  }, [])
+
+  const showSystemObject = useCallback((systemData, bodyName) => {
+    if (!systemData) {
+      setExpandedSystemObject(null)
+      setDetailError('System data unavailable.')
+      return
+    }
+
+    const match = findSystemObjectByName(systemData, bodyName)
+    if (match) {
+      setExpandedSystemObject(match)
+      setDetailError('')
+    } else {
+      setExpandedSystemObject(null)
+      setDetailError('No additional details available for this body.')
+    }
+  }, [])
+
+  const handleInspectorSelection = useCallback((name) => {
+    if (!name) {
+      resetExpandedState()
+      return
+    }
+    if (!expandedSystemData) return
+
+    const match = findSystemObjectByName(expandedSystemData, name)
+    if (match) {
+      setExpandedSystemObject(match)
+      setDetailError('')
+    } else {
+      setDetailError('No additional details available for this body.')
+    }
+  }, [expandedSystemData, resetExpandedState])
+
+  const handleLocationToggle = useCallback(async (location, key) => {
+    if (!location) return
+
+    if (expandedLocationKey === key) {
+      resetExpandedState()
+      return
+    }
+
+    setExpandedLocationKey(key)
+    setExpandedSystemData(null)
+    setExpandedSystemObject(null)
+    setDetailError('')
+
+    const systemName = location.system?.trim()
+    if (!systemName) {
+      setDetailLoadingKey(null)
+      setDetailError('System data unavailable.')
+      return
+    }
+
+    const cacheKey = systemName.toLowerCase()
+    const cachedSystem = systemDataCache[cacheKey]
+    if (cachedSystem) {
+      setExpandedSystemData(cachedSystem)
+      showSystemObject(cachedSystem, location.body)
+      setDetailLoadingKey(null)
+      return
+    }
+
+    const requestId = detailRequestRef.current.id + 1
+    detailRequestRef.current = { id: requestId, key }
+    setDetailLoadingKey(key)
+
+    try {
+      const fetchedSystem = await sendEvent('getSystem', { name: systemName, useCache: true })
+      if (detailRequestRef.current.id !== requestId || detailRequestRef.current.key !== key) return
+
+      if (fetchedSystem) {
+        setSystemDataCache(prev => ({ ...prev, [cacheKey]: fetchedSystem }))
+        setExpandedSystemData(fetchedSystem)
+        showSystemObject(fetchedSystem, location.body)
+      } else {
+        setExpandedSystemData(null)
+        setDetailError('System data unavailable.')
+      }
+    } catch (err) {
+      if (detailRequestRef.current.id !== requestId || detailRequestRef.current.key !== key) return
+      setExpandedSystemData(null)
+      setDetailError('Unable to load system details.')
+    } finally {
+      if (detailRequestRef.current.id === requestId && detailRequestRef.current.key === key) {
+        setDetailLoadingKey(null)
+      }
+    }
+  }, [expandedLocationKey, resetExpandedState, showSystemObject, systemDataCache])
+
+  const handleLocationKeyDown = useCallback((event, location, key) => {
+    if (!['Enter', ' '].includes(event.key)) return
+    event.preventDefault()
+    handleLocationToggle(location, key)
+  }, [handleLocationToggle])
+
   return (
     <div>
       <h2>Pristine Mining Locations</h2>
@@ -1971,15 +2238,8 @@ function PristineMiningPanel () {
           <div className='text-primary' style={{ fontSize: '1.1rem' }}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
-          <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }}>
-            <a
-              href={sourceUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-secondary'
-            >
-              View results on INARA
-            </a>
+          <div style={{ marginBottom: '.75rem', fontSize: '0.95rem', color: '#bbb' }}>
+            Data sourced from INARA community submissions
           </div>
         )}
       </div>
@@ -1987,8 +2247,14 @@ function PristineMiningPanel () {
         Location data is provided by INARA community submissions.
       </p>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
-        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+      <div
+        className='pristine-mining__container'
+        style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden', position: 'relative' }}
+      >
+        <div
+          className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
+          style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}
+        >
           {message && status !== 'idle' && status !== 'loading' && (
             <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
               {message}
@@ -2030,34 +2296,100 @@ function PristineMiningPanel () {
                   const detailText = detailParts.join(' · ')
                   const bodyDistanceDisplay = formatStationDistance(location.bodyDistanceLs, location.bodyDistanceText)
                   const distanceDisplay = formatSystemDistance(location.distanceLy, location.distanceText)
+                  const isExpanded = expandedLocationKey === key
 
                   return (
-                    <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
-                      <td style={{ padding: '.65rem 1rem' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span className='text-primary'>{location.body || '--'}</span>
-                          {detailText && (
-                            <span style={{ color: '#aaa', fontSize: '0.95rem', marginTop: '.25rem' }}>{detailText}</span>
-                          )}
-                        </div>
-                      </td>
-                      <td style={{ padding: '.65rem 1rem' }}>
-                        <div className='text-no-wrap' style={{ display: 'flex', alignItems: 'center' }}>
-                          {location.isTargetSystem ? (
-                            <i className='icon system-object-icon icarus-terminal-location-filled text-primary' style={{ marginRight: '.5rem' }} />
-                          ) : (
-                            <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
-                          )}
-                          <span className='text-primary'>{location.system || '--'}</span>
-                        </div>
-                      </td>
-                      <td className='hidden-small text-right text-no-wrap' style={{ padding: '.65rem 1rem' }}>{bodyDistanceDisplay || '--'}</td>
-                      <td className='text-right text-no-wrap' style={{ padding: '.65rem 1rem' }}>{distanceDisplay || '--'}</td>
-                    </tr>
+                    <Fragment key={key}>
+                      <tr
+                        style={{
+                          animationDelay: `${index * 0.03}s`,
+                          background: isExpanded ? 'rgba(255, 124, 34, 0.08)' : undefined,
+                          cursor: 'pointer'
+                        }}
+                        role='button'
+                        tabIndex={0}
+                        aria-expanded={isExpanded}
+                        onClick={() => handleLocationToggle(location, key)}
+                        onKeyDown={event => handleLocationKeyDown(event, location, key)}
+                      >
+                        <td style={{ padding: '.65rem 1rem' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span className='text-primary'>{location.body || '--'}</span>
+                            {detailText && (
+                              <span style={{ color: '#aaa', fontSize: '0.95rem', marginTop: '.25rem' }}>{detailText}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td style={{ padding: '.65rem 1rem' }}>
+                          <div className='text-no-wrap' style={{ display: 'flex', alignItems: 'center' }}>
+                            {location.isTargetSystem
+                              ? (
+                                <i className='icon system-object-icon icarus-terminal-location-filled text-primary' style={{ marginRight: '.5rem' }} />
+                                )
+                              : (
+                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
+                                )}
+                            <span className='text-primary'>{location.system || '--'}</span>
+                          </div>
+                        </td>
+                        <td className='hidden-small text-right text-no-wrap' style={{ padding: '.65rem 1rem' }}>{bodyDistanceDisplay || '--'}</td>
+                        <td className='text-right text-no-wrap' style={{ padding: '.65rem 1rem' }}>{distanceDisplay || '--'}</td>
+                      </tr>
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: '#080808', borderTop: '1px solid #222' }}>
+                            <div className='pristine-mining__detail'>
+                              <div className='pristine-mining__detail-info'>
+                                <div className='pristine-mining__detail-summary'>
+                                  {detailText && <span>{detailText}</span>}
+                                  {bodyDistanceDisplay && <span>Body Distance: <span className='text-primary'>{bodyDistanceDisplay}</span></span>}
+                                  {distanceDisplay && <span>System Distance: <span className='text-primary'>{distanceDisplay}</span></span>}
+                                </div>
+                                {(location.systemUrl || location.bodyUrl) && (
+                                  <div className='pristine-mining__detail-links'>
+                                    {location.systemUrl && (
+                                      <span>INARA system entry available</span>
+                                    )}
+                                    {location.bodyUrl && (
+                                      <span>INARA body entry available</span>
+                                    )}
+                                  </div>
+                                )}
+                                {detailLoadingKey === key && (
+                                  <div className='pristine-mining__detail-status'>Loading system details...</div>
+                                )}
+                                {detailLoadingKey !== key && detailError && (
+                                  <div className='pristine-mining__detail-status pristine-mining__detail-status--error'>{detailError}</div>
+                                )}
+                              </div>
+                              <div className='pristine-mining__detail-artwork'>
+                                {detailLoadingKey !== key && !detailError && expandedSystemObject && (
+                                  <PristineMiningArtwork systemObject={expandedSystemObject} />
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   )
                 })}
               </tbody>
             </table>
+          )}
+        </div>
+        <div className={`pristine-mining__inspector${inspectorReserved ? ' pristine-mining__inspector--reserved' : ''}`}>
+          {inspectorReserved && detailLoadingKey === expandedLocationKey && (
+            <div className='pristine-mining__inspector-status'>Loading system details...</div>
+          )}
+          {inspectorReserved && detailLoadingKey !== expandedLocationKey && detailError && (
+            <div className='pristine-mining__inspector-status pristine-mining__inspector-status--error'>{detailError}</div>
+          )}
+          {inspectorVisible && (
+            <NavigationInspectorPanel
+              systemObject={expandedSystemObject}
+              setSystemObjectByName={handleInspectorSelection}
+            />
           )}
         </div>
       </div>
