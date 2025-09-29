@@ -96,24 +96,41 @@ function normaliseFactionName (value) {
   return typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : null
 }
 
-async function getLatestFactionSnapshot (eliteLog) {
+async function getFactionSnapshots (eliteLog) {
   const candidateEvents = ['Location', 'FSDJump', 'CarrierJump', 'SupercruiseExit', 'Docked', 'Touchdown']
+  const snapshots = []
 
   for (const eventName of candidateEvents) {
     try {
       const event = await eliteLog.getEvent(eventName)
       if (event?.Factions && Array.isArray(event.Factions) && event.Factions.length > 0) {
-        return event
+        snapshots.push(event)
       }
     } catch (err) {}
   }
 
   try {
-    const [event] = await eliteLog._query({ Factions: { $exists: true, $ne: [] } }, 1, { timestamp: -1 })
-    if (event?.Factions && Array.isArray(event.Factions) && event.Factions.length > 0) return event
+    const queriedSnapshots = await eliteLog._query({ Factions: { $exists: true, $ne: [] } }, 0, { timestamp: -1 })
+    if (Array.isArray(queriedSnapshots)) {
+      for (const snapshot of queriedSnapshots) {
+        if (snapshot?.Factions && Array.isArray(snapshot.Factions) && snapshot.Factions.length > 0) {
+          snapshots.push(snapshot)
+        }
+      }
+    }
   } catch (err) {}
 
-  return null
+  const uniqueSnapshots = []
+  const seenSnapshots = new Set()
+  for (const snapshot of snapshots.sort((a, b) => new Date(b?.timestamp || 0) - new Date(a?.timestamp || 0))) {
+    const key = `${snapshot?.timestamp || ''}::${snapshot?.event || ''}`
+    if (!seenSnapshots.has(key)) {
+      seenSnapshots.add(key)
+      uniqueSnapshots.push(snapshot)
+    }
+  }
+
+  return uniqueSnapshots
 }
 
 export default async function handler (req, res) {
@@ -125,15 +142,22 @@ export default async function handler (req, res) {
 
   try {
     const eliteLog = await ensureEliteLog()
-    const snapshot = await getLatestFactionSnapshot(eliteLog)
+    const snapshots = await getFactionSnapshots(eliteLog)
 
-    const factions = Array.isArray(snapshot?.Factions) ? snapshot.Factions : []
     const standings = {}
+    let mergedSnapshots = 0
+    let updatedAt = null
 
-    const processed = factions
-      .map(faction => {
+    for (const snapshot of snapshots) {
+      const factions = Array.isArray(snapshot?.Factions) ? snapshot.Factions : []
+      if (factions.length === 0) continue
+
+      if (!updatedAt && snapshot?.timestamp) updatedAt = snapshot.timestamp
+      mergedSnapshots += 1
+
+      for (const faction of factions) {
         const name = faction?.Name_Localised || faction?.Name || null
-        if (!name) return null
+        if (!name) continue
 
         const reputationRaw = typeof faction?.MyReputation === 'number' ? faction.MyReputation : null
         const reputation = normaliseReputation(reputationRaw)
@@ -141,7 +165,7 @@ export default async function handler (req, res) {
         const standing = determineStanding({ relation, reputation })
         const key = normaliseFactionName(name)
 
-        if (key) {
+        if (key && !standings[key]) {
           standings[key] = {
             name,
             standing,
@@ -150,19 +174,15 @@ export default async function handler (req, res) {
             reputationRaw
           }
         }
+      }
+    }
 
-        return {
-          name,
-          relation: relation || null,
-          standing,
-          reputation,
-          reputationRaw
-        }
-      })
-      .filter(Boolean)
+    const processed = Object.values(standings)
+
+    console.info('[faction-standings] merged %d snapshots to produce %d faction standings', mergedSnapshots, processed.length)
 
     res.status(200).json({
-      updatedAt: snapshot?.timestamp || null,
+      updatedAt,
       factions: processed,
       standings
     })
