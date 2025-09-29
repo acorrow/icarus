@@ -2265,7 +2265,6 @@ function PristineMiningPanel () {
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div
         className={`pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
-        style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010' }}
       >
         <div
           className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
