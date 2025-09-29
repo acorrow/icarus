@@ -1288,10 +1288,6 @@ function TradeRoutesPanel () {
   const [minDemand, setMinDemand] = useState('0')
   const [stationDistance, setStationDistance] = useState('0')
   const [surfacePreference, setSurfacePreference] = useState('0')
-  const DISTANCE_FILTER_MAX = 200
-  const [distanceFilter, setDistanceFilter] = useState(String(DISTANCE_FILTER_MAX))
-  const parsedDistanceFilter = Number(distanceFilter)
-  const isDistanceFilterLimited = Number.isFinite(parsedDistanceFilter) && parsedDistanceFilter < DISTANCE_FILTER_MAX
   const [rawRoutes, setRawRoutes] = useState([])
   const [routes, setRoutes] = useState([])
   const [status, setStatus] = useState('idle')
@@ -1454,18 +1450,8 @@ function TradeRoutesPanel () {
   }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
 
   const filterRoutes = useCallback((list = []) => {
-    if (!Array.isArray(list)) return []
-    const effectiveDistanceLimit = isDistanceFilterLimited ? parsedDistanceFilter : DISTANCE_FILTER_MAX
-
-    return list.filter(route => {
-      if (isDistanceFilterLimited) {
-        const numericDistance = extractRouteDistance(route)
-        if (Number.isFinite(numericDistance) && numericDistance > effectiveDistanceLimit) return false
-      }
-
-      return true
-    })
-  }, [isDistanceFilterLimited, parsedDistanceFilter])
+    return Array.isArray(list) ? [...list] : []
+  }, [])
 
   const sortRoutes = useCallback((list = []) => {
     if (!Array.isArray(list)) return []
