@@ -110,14 +110,83 @@ function normaliseFactionName (value) {
 
 async function getFactionSnapshots (eliteLog) {
   try {
-    const snapshots = await eliteLog._query({ Factions: { $exists: true, $ne: [] } }, null, { timestamp: -1 })
+    const query = {
+      $or: [
+        { Factions: { $exists: true, $ne: [] } },
+        { MyReputation: { $exists: true } },
+        { Relation: { $exists: true } },
+        { StationFaction: { $exists: true } },
+        { SystemFaction: { $exists: true } }
+      ]
+    }
+
+    const snapshots = await eliteLog._query(query, null, { timestamp: -1 })
     if (!Array.isArray(snapshots)) return []
-    return snapshots.filter(snapshot => Array.isArray(snapshot?.Factions) && snapshot.Factions.length > 0)
+    return snapshots
   } catch (err) {
     const errorMessage = err?.stack || err?.message || String(err)
     logFactionStandings(`FACTION_STANDINGS_SNAPSHOT_QUERY_ERROR: error=${errorMessage}`)
     return []
   }
+}
+
+function extractFactionRecords (snapshot) {
+  const records = []
+  const visited = new Set()
+
+  function normaliseCandidate (candidate) {
+    if (!candidate || typeof candidate !== 'object') return null
+
+    const relation = typeof candidate.Relation === 'string' ? candidate.Relation.trim() :
+      (typeof candidate.PlayerRelation === 'string' ? candidate.PlayerRelation.trim() : null)
+
+    const reputationRaw = typeof candidate.MyReputation === 'number'
+      ? candidate.MyReputation
+      : (typeof candidate.Reputation === 'number'
+          ? candidate.Reputation
+          : (typeof candidate.PlayerReputation === 'number' ? candidate.PlayerReputation : null))
+
+    const name = candidate.Name_Localised || candidate.FactionName_Localised || candidate.Name || candidate.Faction || candidate.FactionName || null
+
+    if (!name) return null
+
+    return { name, relation, reputationRaw }
+  }
+
+  function traverse (value) {
+    if (!value || typeof value !== 'object') return
+    if (visited.has(value)) return
+    visited.add(value)
+
+    const candidate = normaliseCandidate(value)
+    if (candidate) {
+      records.push(candidate)
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) traverse(item)
+      return
+    }
+
+    for (const key of Object.keys(value)) {
+      const child = value[key]
+      if (child && typeof child === 'object') {
+        traverse(child)
+      }
+    }
+  }
+
+  if (Array.isArray(snapshot?.Factions)) {
+    for (const faction of snapshot.Factions) {
+      traverse(faction)
+    }
+  }
+
+  traverse(snapshot?.SystemFaction)
+  traverse(snapshot?.StationFaction)
+  traverse(snapshot)
+
+  return records
 }
 
 export default async function handler (req, res) {
@@ -143,15 +212,13 @@ export default async function handler (req, res) {
         latestTimestamp = snapshot.timestamp
       }
 
-      const factions = Array.isArray(snapshot?.Factions) ? snapshot.Factions : []
+      const factions = extractFactionRecords(snapshot)
 
       for (const faction of factions) {
-        const name = faction?.Name_Localised || faction?.Name || null
-        if (!name) continue
-
-        const reputationRaw = typeof faction?.MyReputation === 'number' ? faction.MyReputation : null
+        const name = faction.name
+        const reputationRaw = faction.reputationRaw
         const reputation = normaliseReputation(reputationRaw)
-        const relation = typeof faction?.Relation === 'string' ? faction.Relation.trim() : null
+        const relation = faction.relation || null
         const standing = determineStanding({ relation, reputation })
         const key = normaliseFactionName(name)
 
@@ -159,7 +226,7 @@ export default async function handler (req, res) {
           standings[key] = {
             name,
             standing,
-            relation: relation || null,
+            relation,
             reputation,
             reputationRaw
           }
