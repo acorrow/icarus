@@ -160,12 +160,23 @@ function useFactionStandings() {
 function getFactionStandingDisplay(factionName, standings) {
   const key = normaliseFactionKey(factionName)
   const debug = shouldDebugFactionStandings()
+  const defaultResult = {
+    info: null,
+    className: null,
+    title: undefined,
+    statusLabel: null,
+    statusDescription: undefined,
+    hasData: false,
+    color: '#7f8697'
+  }
+
   if (!key || !standings) {
     if (debug && factionName) {
       console.debug('[INARA] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
     }
-    return {}
+    return defaultResult
   }
+
   const info = standings[key]
   if (!info) {
     if (debug) {
@@ -175,7 +186,7 @@ function getFactionStandingDisplay(factionName, standings) {
         availableCount: Object.keys(standings || {}).length
       })
     }
-    return {}
+    return defaultResult
   }
 
   if (debug) {
@@ -195,11 +206,18 @@ function getFactionStandingDisplay(factionName, standings) {
     ? `${info.standing.trim().charAt(0).toUpperCase()}${info.standing.trim().slice(1)}`
     : null
   const statusLabel = relationLabel || standingLabel || null
-  const className = info.standing === 'ally'
-    ? 'text-success'
-    : info.standing === 'hostile'
-      ? 'text-danger'
-      : null
+
+  const normalizedStanding = typeof info.standing === 'string' ? info.standing.trim().toLowerCase() : ''
+  let className = null
+  let color = '#ffb347'
+  if (normalizedStanding === 'ally') {
+    className = 'text-success'
+    color = 'var(--color-success)'
+  } else if (normalizedStanding === 'hostile') {
+    className = 'text-danger'
+    color = 'var(--color-danger)'
+  }
+
   const reputationLabel = typeof info.reputation === 'number'
     ? formatReputationPercent(info.reputation)
     : null
@@ -212,7 +230,9 @@ function getFactionStandingDisplay(factionName, standings) {
     className,
     title: statusDescription,
     statusLabel,
-    statusDescription
+    statusDescription,
+    hasData: true,
+    color
   }
 }
 
@@ -1680,6 +1700,8 @@ function TradeRoutesPanel () {
           const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
           const originStationClassName = originStandingDisplay.className || undefined
           const destinationStationClassName = destinationStandingDisplay.className || undefined
+          const originStationColor = originStandingDisplay.color
+          const destinationStationColor = destinationStandingDisplay.color
           const originStationTitle = originStandingDisplay.title
           const destinationStationTitle = destinationStandingDisplay.title
           const originStandingStatusText = originStandingDisplay.statusDescription || null
@@ -1729,9 +1751,9 @@ function TradeRoutesPanel () {
                 </td>
                 <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-                    {originIconName && <StationIcon icon={originIconName} />}
+                    {originIconName && <StationIcon icon={originIconName} color={originStationColor} />}
                     <span
-                      style={{ fontWeight: 600 }}
+                      style={{ fontWeight: 600, color: originStationColor }}
                       className={originStationClassName}
                       title={originStationTitle}
                     >
@@ -1741,9 +1763,9 @@ function TradeRoutesPanel () {
                 </td>
                 <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-                    {destinationIconName && <StationIcon icon={destinationIconName} />}
+                    {destinationIconName && <StationIcon icon={destinationIconName} color={destinationStationColor} />}
                     <span
-                      style={{ fontWeight: 600 }}
+                      style={{ fontWeight: 600, color: destinationStationColor }}
                       className={destinationStationClassName}
                       title={destinationStationTitle}
                     >
@@ -1783,7 +1805,7 @@ function TradeRoutesPanel () {
                         Faction:&nbsp;
                         <span
                           className={originFactionName ? originStationClassName : undefined}
-                          style={originFactionName ? { fontWeight: 600 } : { fontWeight: 600, color: '#7f8697' }}
+                          style={originFactionName ? { fontWeight: 600, color: originStationColor } : { fontWeight: 600, color: '#7f8697' }}
                           title={originStationTitle}
                         >
                           {originFactionName || 'Unknown faction'}
@@ -1796,7 +1818,7 @@ function TradeRoutesPanel () {
                             <span
                               className={originStationClassName}
                               title={originStationTitle}
-                              style={{ fontWeight: 600 }}
+                              style={{ fontWeight: 600, color: originStationColor }}
                             >
                               {originStandingStatusText}
                             </span>
@@ -1824,7 +1846,7 @@ function TradeRoutesPanel () {
                         Faction:&nbsp;
                         <span
                           className={destinationFactionName ? destinationStationClassName : undefined}
-                          style={destinationFactionName ? { fontWeight: 600 } : { fontWeight: 600, color: '#7f8697' }}
+                          style={destinationFactionName ? { fontWeight: 600, color: destinationStationColor } : { fontWeight: 600, color: '#7f8697' }}
                           title={destinationStationTitle}
                         >
                           {destinationFactionName || 'Unknown faction'}
@@ -1837,7 +1859,7 @@ function TradeRoutesPanel () {
                             <span
                               className={destinationStationClassName}
                               title={destinationStationTitle}
-                              style={{ fontWeight: 600 }}
+                              style={{ fontWeight: 600, color: destinationStationColor }}
                             >
                               {destinationStandingStatusText}
                             </span>
