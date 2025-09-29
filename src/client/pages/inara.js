@@ -803,6 +803,21 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   const autoSelectApplied = useRef(false)
   const isMounted = useRef(true)
 
+  const setSystemFromName = useCallback((nextValue = '') => {
+    const value = typeof nextValue === 'string' ? nextValue : ''
+    setSystemSelection(value)
+    setSystemInput('')
+    setSystem(value)
+  }, [])
+
+  const applyCurrentSystemSelection = useCallback(({ force = false } = {}) => {
+    const nextValue = typeof currentSystem?.name === 'string' ? currentSystem.name : ''
+    if (!nextValue) return
+    if (!force && systemSelection === '__manual') return
+    setSystemFromName(nextValue)
+    autoSelectApplied.current = true
+  }, [currentSystem?.name, systemSelection, setSystemFromName])
+
   useEffect(() => {
     return () => { isMounted.current = false }
   }, [])
@@ -828,10 +843,7 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
         setSystemOptions(opts)
         const shouldAutoSelect = allowAutoSelect && autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
         if (shouldAutoSelect) {
-          const nextValue = data.currentSystem.name
-          setSystemSelection(nextValue)
-          setSystemInput('')
-          setSystem(nextValue)
+          setSystemFromName(data.currentSystem.name)
           autoSelectApplied.current = true
         }
       })
@@ -839,7 +851,7 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
         if (!isMounted.current) return
         setCurrentSystem(null)
       })
-  }, [autoSelectCurrent])
+  }, [autoSelectCurrent, setSystemFromName])
 
   useEffect(() => {
     fetchCurrentSystem({ allowAutoSelect: true })
@@ -877,10 +889,9 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
     systemOptions,
     handleSystemChange,
     handleManualSystemChange,
+    applyCurrentSystemSelection,
     resetSystem: () => {
-      setSystemSelection('')
-      setSystemInput('')
-      setSystem('')
+      setSystemFromName('')
     }
   }
 }
@@ -1264,7 +1275,8 @@ function TradeRoutesPanel () {
     systemInput,
     systemOptions,
     handleSystemChange,
-    handleManualSystemChange
+    handleManualSystemChange,
+    applyCurrentSystemSelection
   } = useSystemSelector({ autoSelectCurrent: true })
   const [cargoCapacity, setCargoCapacity] = useState('')
   const [initialShipInfoLoaded, setInitialShipInfoLoaded] = useState(false)
@@ -1669,16 +1681,13 @@ function TradeRoutesPanel () {
       return
     }
 
-    if (systemSelection === '__manual') return
-
-    const selectedSystem = typeof system === 'string' ? system.trim() : ''
-    if (selectedSystem && selectedSystem.toLowerCase() !== currentName.toLowerCase()) return
+    applyCurrentSystemSelection({ force: true })
 
     if (lastAutoRefreshSystem.current === currentName) return
 
     lastAutoRefreshSystem.current = currentName
     refreshRoutes(currentName)
-  }, [currentSystem, system, systemSelection, refreshRoutes])
+  }, [currentSystem?.name, applyCurrentSystemSelection, refreshRoutes])
 
   const renderRoutesTable = () => (
     <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
