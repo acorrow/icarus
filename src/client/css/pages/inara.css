@@ -47,6 +47,12 @@
   font-size: 0.85rem;
 }
 
+.inara__data-source {
+  color: #bbb;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
 @keyframes inara-spinner-rotate {
   to {
     transform: rotate(360deg);
