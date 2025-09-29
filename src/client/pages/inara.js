@@ -1903,7 +1903,6 @@ function TradeRoutesPanel () {
             type='submit'
             className='button--active button--secondary'
             style={{ ...FILTER_SUBMIT_BUTTON_STYLE }}
-            disabled={isSearchDisabled}
           >
             {status === 'loading' ? 'Refreshing…' : 'Refresh Trade Routes'}
           </button>
