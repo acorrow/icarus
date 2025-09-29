@@ -42,18 +42,20 @@ function validateBuildTools() {
   // Check for code signing cert (if signing is enabled)
   const { SIGN_BUILD } = require('./lib/build-options')
   if (SIGN_BUILD) {
+    const { execSync } = require('child_process');
     try {
-      // Try to list certs with signtool (use verify command for a harmless check)
-      const { execSync } = require('child_process')
-      execSync(`"${PATH_TO_SIGNTOOL}" verify /n "${SIGN_CERT_NAME}" /pa nul`, { stdio: 'pipe' })
+      // Use PowerShell to check for the cert in the user's store
+      const psCmd = `powershell -Command "Get-ChildItem Cert:\\CurrentUser\\My | Where-Object { $_.Subject -like '*${SIGN_CERT_NAME}*' }"`;
+      const certResult = execSync(psCmd, { stdio: 'pipe' }).toString();
+      if (!certResult || !certResult.includes('Subject')) {
+        throw new Error('No code signing certificate found matching: ' + SIGN_CERT_NAME);
+      }
     } catch (e) {
-      const msg = e && e.message ? e.message : String(e)
-      if (msg.includes('No certificates were found')) {
-        throw new Error('No code signing certificate found matching: ' + SIGN_CERT_NAME)
-      } else if (msg.includes('cannot find the file')) {
-        throw new Error('signtool.exe not found: ' + PATH_TO_SIGNTOOL)
+      const msg = e && e.message ? e.message : String(e);
+      if (msg.includes('No code signing certificate found')) {
+        throw new Error('No code signing certificate found matching: ' + SIGN_CERT_NAME);
       } else {
-        throw new Error('Error checking code signing certificate: ' + msg)
+        throw new Error('Error checking code signing certificate: ' + msg);
       }
     }
   }
