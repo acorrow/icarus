@@ -1,91 +1,79 @@
-# ICARUS INARA Integration
+# ICARUS INARA Integration Technical Documentation
 
-This document describes the INARA ship search integration in ICARUS, including the purpose and function of each new or modified file.
+This document explains how the ICARUS Terminal retrieves, enriches, and displays INARA data for the `/inara` page. It focuses on the technical approach we use to access INARA without requiring an API key, the server-side routes involved, and how data is merged with ICARUS's local datasets before reaching the UI.
 
-## Overview
+## Feature Overview
 
-The INARA integration allows users to search for ships for sale at stations near a selected system, using INARA as the source for which stations have a ship for sale, but displaying all station/system details from ICARUS's local data. The UI is accessible from the `/inara` page in the ICARUS Terminal.
+The INARA page aggregates several tools that rely on data sourced from INARA's publicly accessible pages:
 
-## How It Works
+* **Ship availability search** – locate stations selling a selected ship and augment the results with canonical ICARUS station metadata.
+* **Trade route explorer** – mirror INARA's public trade route search and render the returned profit, supply, and demand metrics inside the navigation-themed panel.
+* **Mining mission leads** – list factions within range that currently offer mining missions.
+* **Pristine ring finder** – highlight nearby bodies with pristine reserves suitable for mining expeditions.
 
-- The user selects a ship and a system in the UI.
-- The backend proxies a request to INARA to get a list of stations that have the selected ship for sale, along with the last updated timestamp for each station.
-- For each station returned by INARA, the backend looks up all canonical details (distance, station distance, pad size, market, outfitting, etc.) from ICARUS's local data.
-- The frontend displays the results in a table styled like the navigation panel. Clicking a row expands it to show more details about the station, all sourced from local data except for the INARA last updated time.
+These panels live in `src/client/pages/inara.js`, which orchestrates the UI state, tab navigation, and data labelling for values sourced from INARA versus ICARUS's local databases.
 
-## File Descriptions
+## Accessing INARA Without an API Key
 
-### `src/client/pages/inara.js`
-- **Purpose:** Main frontend page for the INARA ship search UI.
-- **What it does:**
-  - Renders the left navigation panel and the right pane for ship search and results.
-  - Provides dropdowns for ship and system selection.
-  - Displays results in a table styled like the navigation panel.
-  - Allows expanding a row to show more station details from local data.
-- **Why it's here:** Provides a user-friendly, integrated UI for INARA ship search within ICARUS.
+All network calls to INARA are made from server-side API routes under `src/client/pages/api`. We deliberately avoid using INARA's authenticated API so that commanders can benefit from the integration without providing credentials or API keys. The shared strategy across the routes is:
+
+1. **Use `node-fetch` with browser-like headers.** Each request sets a modern desktop `User-Agent`, `Accept` headers, and the `inarasite=1` cookie when necessary so responses resemble those sent to logged-out browser sessions. 【F:src/client/pages/api/inara-missions.js†L1-L18】【F:src/client/pages/api/inara-pristine-mining.js†L1-L18】
+2. **Force IPv4 when needed.** Some endpoints are sensitive to DNS setups; we attach an IPv4-only HTTPS agent to stabilise connections from desktop environments. 【F:src/client/pages/api/inara-missions.js†L1-L12】【F:src/client/pages/api/inara-pristine-mining.js†L1-L12】
+3. **Fetch HTML payloads from public pages.** We call INARA's public search pages (nearest outfitting, trade routes, missions, and bodies) and receive fully rendered HTML tables. 【F:src/client/pages/api/inara-websearch.js†L312-L331】【F:src/client/pages/api/inara-trade-routes.js†L1-L69】【F:src/client/pages/api/inara-missions.js†L32-L60】【F:src/client/pages/api/inara-pristine-mining.js†L34-L62】
+4. **Parse responses with Cheerio or manual DOM helpers.** We extract table rows, clean up text, and normalise numeric values without executing client-side scripts. 【F:src/client/pages/api/inara-websearch.js†L332-L386】【F:src/client/pages/api/inara-trade-routes.js†L70-L173】【F:src/client/pages/api/inara-missions.js†L61-L102】【F:src/client/pages/api/inara-pristine-mining.js†L63-L117】
+5. **Blend INARA signals with ICARUS data.** For ship results and trade routes we reconcile station/system names against local datasets to supply pad sizes, economies, and distance calculations. 【F:src/client/pages/api/inara-websearch.js†L48-L204】【F:src/client/pages/api/inara-trade-routes.js†L1-L133】
+6. **Log every request server-side.** Shared helpers in `inara-log-utils.js` append timestamped entries so that any scraping changes or connectivity issues can be debugged quickly. 【F:src/client/pages/api/inara-log-utils.js†L1-L55】
+
+Because all requests happen server-side, no INARA cookies or request headers are exposed to browsers. The frontend simply calls our local API endpoints, and the backend returns structured JSON derived from the scraped HTML.
+
+## Server-Side Integration Points
 
 ### `src/client/pages/api/inara-websearch.js`
-- **Purpose:** Backend API route for INARA ship search.
-- **What it does:**
-  - Receives ship and system selection from the frontend.
-  - Proxies a request to INARA to get stations with the selected ship for sale.
-  - For each station, looks up all canonical details from ICARUS's local data (using system and station name as keys).
-  - Returns a list of stations with all details for display in the frontend.
-- **Why it's here:** Handles all backend logic for INARA ship search, ensuring only the for-sale status and last updated time come from INARA, and all other data is local and accurate.
 
-### `src/service/data/edcd/fdevids/shipyard.json`
-- **Purpose:** Ship list and mapping for ship selection and INARA code lookup.
-- **What it does:**
-  - Provides the list of ships for the dropdown in the UI.
-  - Maps ship names to INARA's internal codes for backend requests.
-- **Why it's here:** Ensures accurate ship selection and correct INARA search parameters.
+*Proxies the "Nearest Outfitting" search to list stations selling a specific ship.*
 
-### `src/client/pages/api/current-system.js`
-- **Purpose:** API route to get the user's current system and nearby systems.
-- **What it does:**
-  - Returns the current system and a list of nearby systems with distances for the system dropdown.
-- **Why it's here:** Improves user experience by making system selection fast and relevant.
+1. Accepts `shipId` and `system` from the frontend and resolves each ship to INARA's `xshipXX` codes using ICARUS's shipyard dataset.
+2. Requests `https://inara.cz/elite/nearest-outfitting/` with a condensed (`formbrief=1`) query so the response is lightweight. 【F:src/client/pages/api/inara-websearch.js†L252-L337】
+3. Parses the returned table manually, strips markup, and normalises station/system names to ensure safe matching.
+4. Enriches each row with system coordinates, pad sizes, services, and market data pulled from ICARUS caches before returning JSON to the client. 【F:src/client/pages/api/inara-websearch.js†L48-L204】【F:src/client/pages/api/inara-websearch.js†L332-L386】
 
-### `src/client/css/panels/navigation-panel.css`
-- **Purpose:** Styling for the navigation panel and results table.
-- **What it does:**
-  - Ensures the results table matches the look and feel of the navigation panel.
-- **Why it's here:** Provides a consistent, readable, and visually integrated UI.
+### `src/client/pages/api/inara-trade-routes.js`
 
-### Logging: `inara-websearch.log`
-- **Purpose:** Logs all INARA search requests and responses for debugging and auditing.
-- **What it does:**
-  - Appends a log entry for every search, error, and backend event.
-- **Why it's here:** Ensures traceability and helps with debugging backend issues.
+*Mirrors INARA's trade route search to reveal profitable buy/sell loops.*
 
-### Trade Routes Panel
+* Issues a GET to `https://inara.cz/elite/market-traderoutes-search/?formbrief=1` while mirroring the user's chosen filters. 【F:src/client/pages/api/inara-trade-routes.js†L1-L133】
+* Parses the complex HTML blocks with Cheerio to extract commodities, prices, supply/demand indicators, profit per trip/hour, and supporting metadata. 【F:src/client/pages/api/inara-trade-routes.js†L70-L230】
+* Calculates local distance information using ICARUS's system cache so users immediately see how far each leg is from their current position. 【F:src/client/pages/api/inara-trade-routes.js†L1-L133】
+* Supports a "Trade Route Layout Sandbox" mock mode controlled by `window.localStorage` (`inaraUseMockData`) so designers can iterate without hitting INARA. The frontend toggles live vs mock data, and the backend honours the flag. 【F:src/client/pages/inara.js†L1585-L1595】
 
-- **Purpose:** Surface INARA's "Trade routes search" results directly in the terminal so commanders can quickly inspect profitable round trips without leaving ICARUS.
-- **Primary request:** A GET against `https://inara.cz/elite/market-traderoutes-search/?formbrief=1` with the search form fields mirrored in the panel. Key parameters include:
-  - `ps1` – origin station (defaults to Daedalus [Sol] on INARA and is typically replaced with the user's current station/system when available).
-  - `ps2` – optional destination station/system to constrain the search (empty by default).
-  - `ps3` – optional minor faction filter.
-  - `pi1` – maximum route distance in ly (defaults to 40 ly).
-  - `pi2`/`pi13` – minimum supply and demand thresholds (default 1,000 units supply, any demand).
-  - `pi3` – maximum market price age (default 168 hours / 7 days).
-  - `pi4`/`pi6` – minimum pad size and maximum station distance (default small pads allowed, any station distance).
-  - `pi5`/`pi7` – toggles for surface settlements and fleet carriers (defaults include both).
-  - `pi10` – cargo capacity used for profit-per-trip/hour calculations (default 720t, matching INARA's sample cargo hold).
-  - `pi8` – optional "favourites only" limiter (left disabled/off by default).
-- **Response handling:** The panel parses the returned HTML blocks for each trade route (origin/destination, commodity, supply/demand, distance, and profit metrics) and renders them inside the navigation-themed list. Values such as average profit, profit per unit/trip/hour, and station distances are displayed exactly as provided by INARA; no additional local reconciliation is performed yet.
-- **Data origin:** All trade route rows and profit calculations come straight from INARA's public trade route search. Unlike the ship tab, we currently do not enrich these rows with ICARUS's local system or station metadata.
+### `src/client/pages/api/inara-missions.js`
 
-#### Trade Route Layout Sandbox
+*Surfaces nearby mining missions and their factions.*
 
-- **Feature name:** Trade Route Layout Sandbox.
-- **What it does:** When enabled from **Settings → INARA**, the "Enable Trade Route Layout Sandbox (use mock data)" checkbox tells the trade route panel to bypass live INARA requests and instead render five deterministic mock rows. This allows designers to iterate on layout and styling changes without waiting for the network round-trip or relying on volatile live data.
-- **How it works:** The checkbox persists its value to `window.localStorage` using the key `inaraUseMockData`. The trade route panel reads that flag during every search. If the flag is set to `true`, the panel short-circuits the fetch, never issues the INARA request, and hydrates the table with structured mock data that mirrors the shape of real responses (including supply/demand indicators and profit metrics).
-- **For engineers:** Additional INARA tooling that needs a mock mode should reuse the same `inaraUseMockData` flag so a single toggle controls all mock behaviours.
+* Builds a nearest-misc search URL constrained to the mining mission type and fetches the resulting table. 【F:src/client/pages/api/inara-missions.js†L32-L60】
+* Uses Cheerio to parse rows into system/faction pairs, capturing distance and last updated timestamps exposed in INARA's markup. 【F:src/client/pages/api/inara-missions.js†L61-L102】
+* Returns JSON with normalised distances and ISO timestamps where available for consistent display in the missions tab. 【F:src/client/pages/api/inara-missions.js†L87-L117】
 
-## Notes
-- All station/system details (except for-sale status and last updated) are always sourced from ICARUS's local data, never from INARA.
-- The integration is robust to INARA HTML changes and logs all backend activity for troubleshooting.
-- The UI is designed to match the navigation panel for a seamless user experience.
+### `src/client/pages/api/inara-pristine-mining.js`
 
----
-For further details or troubleshooting, see the code comments in each file or check the `inara-websearch.log` for backend activity.
+*Finds planetary bodies with pristine reserves near a target system.*
+
+* Calls INARA's `nearest-bodies` search with fixed defaults and the user-selected origin system. 【F:src/client/pages/api/inara-pristine-mining.js†L34-L62】
+* Parses tooltip content to capture ring type, reserve level, and body type in addition to distance metrics. 【F:src/client/pages/api/inara-pristine-mining.js†L63-L117】
+* Flags bodies that reside in the player's target system so the UI can highlight them. 【F:src/client/pages/api/inara-pristine-mining.js†L94-L117】
+
+### Shared Logging Helpers (`src/client/pages/api/inara-log-utils.js`)
+
+The logging utility centralises append-only log writing and honours environment flags (`ICARUS_ENABLE_INARA_LOGS` and `ICARUS_DISABLE_INARA_LOGS`) so operators can toggle verbosity without code changes. Each API route calls `appendInaraLogEntry` with structured strings when requests are sent, parsed, or error out. 【F:src/client/pages/api/inara-log-utils.js†L1-L55】
+
+## Frontend Considerations
+
+The INARA page (`src/client/pages/inara.js`) keeps all INARA-derived fields clearly annotated. Tooltips, banner messages, and callouts reiterate when data originates from INARA community submissions so that commanders can judge its freshness. The settings drawer also exposes INARA-specific toggles—such as enabling the trade route mock mode and quick links to support INARA on Patreon. 【F:src/client/pages/inara.js†L1146-L1160】【F:src/client/pages/inara.js†L1585-L1595】【F:src/client/components/settings.js†L27-L102】
+
+## Operational Notes
+
+* The scraping approach depends on INARA's HTML structure. Logs should be reviewed after INARA site updates to confirm selectors still match.
+* Rate limiting is handled manually; avoid excessive polling from the UI and prefer user-triggered searches.
+* Because no credentials are stored, the integration is safe to distribute to all ICARUS users, but we should continue to honour INARA's terms of use and support the site.
+
+For further adjustments or troubleshooting, consult the relevant API route, review the associated log file, and update selectors as INARA evolves.
