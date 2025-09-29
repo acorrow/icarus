@@ -608,7 +608,6 @@ const FILTER_TOGGLE_BUTTON_STYLE = {
 const FILTER_SUMMARY_STYLE = {
   flex: '1 1 220px',
   minWidth: 200,
-  marginLeft: 'auto',
   display: 'flex',
   alignItems: 'center',
   gap: '.5rem'
@@ -621,16 +620,17 @@ const FILTER_SUMMARY_TEXT_STYLE = {
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-  flexGrow: 1
+  flexGrow: 0,
+  flexShrink: 1
 }
 
 const FILTER_SUMMARY_REFRESH_BUTTON_STYLE = {
   width: '2.1rem',
   height: '2.1rem',
   borderRadius: '999px',
-  border: '1px solid #ff7c22',
-  background: 'rgba(255, 124, 34, 0.18)',
-  color: '#ff7c22',
+  border: '1px solid #338bff',
+  background: 'rgba(51, 139, 255, 0.2)',
+  color: '#5aa2ff',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -642,23 +642,6 @@ const FILTER_SUMMARY_REFRESH_ICON_STYLE = {
   width: '1.05rem',
   height: '1.05rem',
   display: 'block'
-}
-
-const FILTER_SUBMIT_BUTTON_STYLE = {
-  padding: '0 1.4rem',
-  fontSize: '0.9rem',
-  borderRadius: '.35rem',
-  height: '2.35rem',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center'
-}
-
-const FILTERS_ACTION_ROW_STYLE = {
-  gridColumn: '1 / -1',
-  display: 'flex',
-  justifyContent: 'flex-end',
-  paddingTop: '.5rem'
 }
 
 const DEFAULT_SORT_DIRECTION = {
@@ -2079,15 +2062,6 @@ function TradeRoutesPanel () {
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
-            </div>
-            <div style={FILTERS_ACTION_ROW_STYLE}>
-              <button
-                type='submit'
-                className='button--active button--secondary'
-                style={FILTER_SUBMIT_BUTTON_STYLE}
-              >
-                {status === 'loading' || isRefreshing ? 'Refreshing…' : 'Refresh Trade Routes'}
-              </button>
             </div>
           </div>
         )}
