@@ -24,10 +24,14 @@ const gameStateChangeHandler = () => _eventHandlers.gameStateChangeHandler()
 
 // Extend game logic related event handlers with app logic related handlers
 eventHandlers.hostInfo = () => {
-  const urls = Object.values(os.networkInterfaces())
+  const interfaces = Object.values(os.networkInterfaces())
+    .filter(Boolean)
     .flat()
+  const interfaceUrls = interfaces
     .filter(({ family, internal }) => family === 'IPv4' && !internal)
     .map(({ address }) => `http://${address}:${PORT}`)
+  const fallbackUrls = [`http://localhost:${PORT}`, `http://127.0.0.1:${PORT}`]
+  const urls = [...new Set([...interfaceUrls, ...fallbackUrls])]
   return { urls }
 }
 eventHandlers.getLoadingStatus = () => getLoadingStatus()
