@@ -917,44 +917,6 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   }
 }
 
-function SystemSelect ({
-  label = 'System',
-  systemSelection,
-  systemOptions,
-  onSystemChange,
-  systemInput,
-  onManualSystemChange,
-  placeholder = 'Enter system name...'
-}) {
-  const containerStyle = { ...FILTER_FIELD_STYLE }
-
-  return (
-    <div style={containerStyle}>
-      <label style={FILTER_LABEL_STYLE}>{label}</label>
-      <select value={systemSelection} onChange={onSystemChange} style={{ ...FILTER_CONTROL_STYLE }}>
-        <option value=''>Select a system...</option>
-        {systemOptions.map(opt => (
-          <option key={opt.name} value={opt.name}>
-            {opt.name} {opt.distance > 0 ? `(${opt.distance} ly)` : '(current)'}
-          </option>
-        ))}
-        <option value='' disabled>------------</option>
-        <option value='__manual'>Other (type manually)</option>
-      </select>
-      {systemSelection === '__manual' && (
-        <input
-          type='text'
-          autoFocus
-          value={systemInput}
-          onChange={onManualSystemChange}
-          placeholder={placeholder}
-          style={{ ...FILTER_CONTROL_STYLE }}
-        />
-      )}
-    </div>
-  )
-}
-
 function MissionsPanel () {
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [missions, setMissions] = useState([])
@@ -1289,16 +1251,7 @@ function MissionsPanel () {
 
 function TradeRoutesPanel () {
   const { connected, ready } = useSocket()
-  const {
-    currentSystem,
-    system,
-    systemSelection,
-    systemInput,
-    systemOptions,
-    handleSystemChange,
-    handleManualSystemChange,
-    applyCurrentSystemSelection
-  } = useSystemSelector({ autoSelectCurrent: true })
+  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [cargoCapacity, setCargoCapacity] = useState('')
   const [initialShipInfoLoaded, setInitialShipInfoLoaded] = useState(false)
   const [routeDistance, setRouteDistance] = useState('30')
@@ -1355,19 +1308,10 @@ function TradeRoutesPanel () {
   }, [connected, ready, initialShipInfoLoaded])
 
   const selectedSystemName = useMemo(() => {
-    const trimmedSystem = typeof system === 'string' ? system.trim() : ''
-    if (trimmedSystem) return trimmedSystem
-
-    const selectedOption = systemSelection && systemSelection !== '__manual'
-      ? systemSelection.trim()
-      : ''
-    if (selectedOption) return selectedOption
-
-    const currentName = typeof currentSystem?.name === 'string' ? currentSystem.name.trim() : ''
-    if (currentName) return currentName
-
-    return ''
-  }, [system, systemSelection, currentSystem?.name])
+    if (typeof currentSystem?.name !== 'string') return ''
+    const trimmed = currentSystem.name.trim()
+    return trimmed || ''
+  }, [currentSystem?.name])
 
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
@@ -1578,7 +1522,7 @@ function TradeRoutesPanel () {
     const trimmedTargetSystem = typeof targetSystem === 'string' ? targetSystem.trim() : ''
 
     if (!trimmedTargetSystem) {
-      setError('Please choose a system before searching for trade routes.')
+      setError('Current system unknown. Unable to load trade routes.')
       setMessage('')
       setRoutes([])
       setRawRoutes([])
@@ -1700,13 +1644,11 @@ function TradeRoutesPanel () {
       return
     }
 
-    applyCurrentSystemSelection({ force: true })
-
     if (lastAutoRefreshSystem.current === currentName) return
 
     lastAutoRefreshSystem.current = currentName
     refreshRoutes(currentName)
-  }, [currentSystem?.name, applyCurrentSystemSelection, refreshRoutes])
+  }, [currentSystem?.name, refreshRoutes])
 
   const renderRoutesTable = () => (
     <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
@@ -2021,14 +1963,6 @@ function TradeRoutesPanel () {
 
         {!filtersCollapsed && (
           <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
-            <SystemSelect
-              label='System'
-              systemSelection={systemSelection}
-              systemOptions={systemOptions}
-              onSystemChange={handleSystemChange}
-              systemInput={systemInput}
-              onManualSystemChange={handleManualSystemChange}
-            />
             <div style={{ ...FILTER_FIELD_STYLE }}>
               <label style={FILTER_LABEL_STYLE}>Max Route Distance</label>
               <select
