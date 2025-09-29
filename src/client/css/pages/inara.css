@@ -49,7 +49,6 @@
   color: #888;
   font-size: 0.85rem;
 }
-
 .trade-routes__refresh-timestamp {
   margin-left: auto;
   color: #b7c4d8;
@@ -67,7 +66,7 @@
   display: flex;
   align-items: stretch;
   gap: 0;
-  padding: 1.25rem;
+  padding: 0;
   border-radius: 0;
   box-sizing: border-box;
   border: 1px solid #333;
@@ -101,6 +100,7 @@
   align-items: stretch;
   justify-content: flex-end;
   min-width: 0;
+  align-self: stretch;
 }
 
 .pristine-mining__inspector--reserved {
@@ -119,6 +119,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
   border: 1px solid #1f2430;
   border-radius: 0.75rem;
   background: rgba(8, 10, 16, 0.94) var(--linear-gradient-background);
@@ -182,10 +183,13 @@
   bottom: auto;
   width: 100%;
   max-width: none;
+  display: flex;
+  flex-direction: column;
 }
 
 .pristine-mining__inspector .navigation-panel__inspector .scrollable {
   max-height: calc(100vh - 360px);
+  flex: 1 1 auto;
 }
 
 .pristine-mining__detail {
@@ -279,36 +283,32 @@
 
 @media (max-width: 1200px) {
   .pristine-mining__container {
-    flex-direction: column;
-    gap: 1.25rem;
-    padding: 1rem;
+    gap: 1rem;
+    padding: 0;
   }
 
   .pristine-mining__container--inspector {
-    gap: 1.25rem;
+    gap: 1rem;
   }
 
   .pristine-mining__results,
   .pristine-mining__results--inspector {
-    padding-right: 0;
+    padding-right: 0.5rem;
   }
 
   .pristine-mining__container--inspector .pristine-mining__inspector {
-    width: 100%;
-    flex-basis: auto;
+    flex: 0 0 min(23rem, 45vw);
+    width: min(23rem, 45vw);
     padding: 0;
   }
 
   .pristine-mining__inspector .navigation-panel__inspector {
     max-width: none;
+    height: 100%;
   }
 
   .pristine-mining__inspector .navigation-panel__inspector .scrollable {
     max-height: none;
-  }
-
-  .pristine-mining__inspector .inspector {
-    border-left: none;
   }
 }
 

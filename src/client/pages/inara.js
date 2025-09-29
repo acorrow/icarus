@@ -1145,7 +1145,7 @@ function MissionsPanel () {
           <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
-          <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }} className='text-secondary'>
+          <div className='inara__data-source'>
             Data sourced from INARA community submissions
           </div>
         )}
@@ -2321,7 +2321,7 @@ function PristineMiningPanel () {
           <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
-          <div style={{ marginBottom: '.75rem', fontSize: '0.95rem', color: '#bbb' }}>
+          <div className='inara__data-source'>
             Data sourced from INARA community submissions
           </div>
         )}
