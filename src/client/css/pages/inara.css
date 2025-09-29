@@ -1,3 +1,58 @@
+.inara-spinner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #aaa;
+}
+
+.inara-spinner--block {
+  justify-content: center;
+  padding: 2rem;
+}
+
+.inara-spinner--inline {
+  justify-content: flex-start;
+  padding: 0;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.inara-spinner__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-top-color: var(--color-primary);
+  animation: inara-spinner-rotate 0.85s linear infinite;
+}
+
+.inara-spinner__label {
+  font-size: 0.95rem;
+}
+
+.trade-routes__refresh-indicator {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.75rem 1.25rem;
+  background: rgba(16, 16, 16, 0.92);
+  border-bottom: 1px solid #222;
+}
+
+.trade-routes__refresh-indicator .inara-spinner__label {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+@keyframes inara-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .pristine-mining__container {
   position: relative;
   display: flex;
