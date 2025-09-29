@@ -970,15 +970,7 @@ function ShipsPanel () {
 }
 
 function MissionsPanel () {
-  const {
-    currentSystem,
-    system,
-    systemSelection,
-    systemInput,
-    systemOptions,
-    handleSystemChange,
-    handleManualSystemChange
-  } = useSystemSelector({ autoSelectCurrent: true })
+  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [missions, setMissions] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
@@ -1043,20 +1035,18 @@ function MissionsPanel () {
   }, [])
 
   const trimmedSystem = useMemo(() => {
-    if (typeof system === 'string') {
-      const value = system.trim()
+    if (typeof currentSystem?.name === 'string') {
+      const value = currentSystem.name.trim()
       if (value) return value
     }
     return ''
-  }, [system])
+  }, [currentSystem?.name])
 
   const displaySystemName = useMemo(() => {
     if (trimmedSystem) return trimmedSystem
-    if (systemSelection && systemSelection !== '__manual') return systemSelection
-    if (systemInput && systemInput.trim()) return systemInput.trim()
     if (currentSystem?.name) return currentSystem.name
     return ''
-  }, [trimmedSystem, systemSelection, systemInput, currentSystem])
+  }, [trimmedSystem, currentSystem])
 
   useEffect(() => {
     if (!trimmedSystem) {
@@ -1123,16 +1113,11 @@ function MissionsPanel () {
   return (
     <div>
       <h2>Mining Missions</h2>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
-        <SystemSelect
-          label='System'
-          systemSelection={systemSelection}
-          systemOptions={systemOptions}
-          onSystemChange={handleSystemChange}
-          systemInput={systemInput}
-          onManualSystemChange={handleManualSystemChange}
-          placeholder='Enter system name...'
-        />
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+        <div>
+          <div style={{ color: '#ff7c22', fontSize: '0.75rem', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.35rem' }}>Current System</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{displaySystemName || 'Unknown'}</div>
+        </div>
         {sourceUrl && (
           <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }} className='text-secondary'>
             Data sourced from INARA community submissions
@@ -1152,7 +1137,7 @@ function MissionsPanel () {
           )}
           {status === 'idle' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>
-              Select a system to view nearby mining mission factions.
+              Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
@@ -1163,7 +1148,7 @@ function MissionsPanel () {
           )}
           {status === 'empty' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>
-              No mining missions found near {displaySystemName || 'the selected system'}.
+              No mining missions found near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && missions.length > 0 && (
