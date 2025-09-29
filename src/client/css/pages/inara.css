@@ -22,6 +22,7 @@
   opacity: 0;
   transition: opacity 0.3s ease;
   display: flex;
+  align-items: flex-start;
 }
 
 .pristine-mining__inspector--reserved {
@@ -100,28 +101,32 @@
 }
 
 .pristine-mining__detail-artwork {
-  flex: 0 0 auto;
-  min-width: 180px;
+  flex: 0 1 220px;
+  min-width: 0;
 }
 
 .pristine-mining__artwork {
-  width: 240px;
-  height: 240px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 200px;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  margin: 0 auto;
 }
 
 .pristine-mining__artwork-svg,
 .pristine-mining__artwork-svg--belt {
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 .pristine-mining__artwork--belt {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 260px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 5 / 3;
 }
 
 .pristine-mining__artwork-svg--belt {
