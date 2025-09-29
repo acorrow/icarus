@@ -50,8 +50,19 @@ The self-contained installer is around 20 MB and has no dependancies. If you are
 The web interface relies on advanced browser functionality for rendering and works best on native Google Chrome browsers (e.g. Google Chrome for Windows, Mac, ChromeOS, Android). Other browsers (e.g. Safari, Firefox, Chromium) may use fallback rendering and/or lack required features for full compatbility / optimal user experience.
 
 ## Developer Documentation
- 
+
 Code contributions, pull requests and bug reports are not currently being accepted for this repository. See [CONTRIB.md](CONTRIB.md) for more information. For developer documentation see [BUILD.md](BUILD.md).
+
+## INARA Page
+
+ICARUS Terminal ships with a dedicated INARA page that pulls together trade, ship, mission and resource intel submitted by the INARA community. The page is accessible from the left-hand navigation inside the app (or directly at `/inara` when running the web client) and currently provides:
+
+* **Ship availability search** – find stations selling a selected ship and view enriched details (distance, services, landing pads) from ICARUS's canonical data sets.
+* **Trade route scouting** – mirror INARA's public trade route search, including profit-per-trip and per-hour metrics, with an optional sandbox mode for layout testing.
+* **Mining mission leads** – surface nearby mining missions and factions that have recently posted them.
+* **Pristine ring finder** – highlight bodies with pristine reserves within jump range for mining expeditions.
+
+All INARA-sourced insights are clearly labelled inside the UI so that commanders can distinguish between local ICARUS data and community-reported values. For a deep dive into how the integration works under the hood—including details on the HTTP requests, parsers and logging used to access INARA without an API key—see [INARA-README.md](INARA-README.md).
 
 ### Developer Quickstart
 
