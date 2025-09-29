@@ -1,28 +1,42 @@
 .pristine-mining__container {
   position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  box-sizing: border-box;
+  border: 1px solid #333;
+  background: #101010;
+  margin-top: 1.5rem;
+}
+
+.pristine-mining__container--inspector {
+  gap: 1.75rem;
 }
 
 .pristine-mining__results {
-  transition: margin-right 0.35s ease;
+  flex: 1 1 auto;
+  min-width: 0;
+  transition: flex-basis 0.35s ease, padding-right 0.35s ease;
 }
 
 .pristine-mining__results--inspector {
-  margin-right: 23rem;
+  padding-right: 0.75rem;
 }
 
 .pristine-mining__inspector {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 21.5rem;
-  padding: 1rem 1rem 1rem 0;
+  flex: 0 0 0;
+  width: 0;
+  padding: 0;
   box-sizing: border-box;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, flex-basis 0.35s ease, width 0.35s ease, padding 0.35s ease;
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .pristine-mining__inspector--reserved {
@@ -30,12 +44,61 @@
   opacity: 1;
 }
 
+.pristine-mining__container--inspector .pristine-mining__inspector {
+  flex: 0 0 23rem;
+  width: 23rem;
+  padding: 0;
+}
+
+.pristine-mining__inspector .inspector {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid #1f2430;
+  border-radius: 0.75rem;
+  background: rgba(8, 10, 16, 0.94) var(--linear-gradient-background);
+  overflow: hidden;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.pristine-mining__inspector .inspector__title {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  height: auto;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  background: rgba(30, 20, 14, 0.9);
+  color: var(--color-primary);
+  border-bottom: 1px solid rgba(255, 124, 34, 0.25);
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.pristine-mining__inspector .inspector__close-button {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.pristine-mining__inspector .inspector__close-button .icon {
+  transform: none;
+}
+
+.pristine-mining__inspector .inspector__contents {
+  position: static;
+  flex: 1 1 auto;
+  padding: 1rem 1.25rem 1.5rem;
+  overflow-y: auto;
+}
+
 .pristine-mining__inspector-status {
   align-self: flex-start;
   width: 100%;
   background: rgba(12, 15, 24, 0.92);
   border: 1px solid #1f2430;
-  border-radius: 0.65rem;
+  border-radius: 0.75rem;
   padding: 1rem 1.25rem;
   color: #bbb;
   font-size: 0.95rem;
@@ -54,7 +117,7 @@
   top: auto;
   bottom: auto;
   width: 100%;
-  max-width: 21.5rem;
+  max-width: none;
 }
 
 .pristine-mining__inspector .navigation-panel__inspector .scrollable {
@@ -101,13 +164,17 @@
 }
 
 .pristine-mining__detail-artwork {
-  flex: 0 1 220px;
-  min-width: 0;
+  flex: 0 0 220px;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0;
 }
 
 .pristine-mining__artwork {
   width: 100%;
-  max-width: 200px;
+  max-width: 220px;
   aspect-ratio: 1 / 1;
   height: auto;
   margin: 0 auto;
@@ -118,6 +185,7 @@
   display: block;
   width: 100%;
   height: auto;
+  overflow: visible;
 }
 
 .pristine-mining__artwork--belt {
@@ -146,19 +214,42 @@
 }
 
 @media (max-width: 1200px) {
-  .pristine-mining__results--inspector {
-    margin-right: 0;
+  .pristine-mining__container {
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1rem;
   }
 
-  .pristine-mining__inspector {
-    position: static;
+  .pristine-mining__container--inspector {
+    gap: 1.25rem;
+  }
+
+  .pristine-mining__results,
+  .pristine-mining__results--inspector {
+    padding-right: 0;
+  }
+
+  .pristine-mining__container--inspector .pristine-mining__inspector {
     width: 100%;
-    padding: 1.5rem 1.25rem 0;
-    opacity: 1;
-    pointer-events: auto;
+    flex-basis: auto;
+    padding: 0;
   }
 
   .pristine-mining__inspector .navigation-panel__inspector {
     max-width: none;
+  }
+
+  .pristine-mining__inspector .navigation-panel__inspector .scrollable {
+    max-height: none;
+  }
+
+  .pristine-mining__inspector .inspector {
+    border-left: none;
+  }
+}
+
+@media only screen and (orientation: portrait) {
+  .pristine-mining__inspector .inspector__close-button .icon {
+    transform: rotate(90deg);
   }
 }

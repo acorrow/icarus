@@ -424,7 +424,12 @@ function PristineMiningArtwork ({ systemObject }) {
   if (isBelt) {
     return (
       <div className='pristine-mining__artwork pristine-mining__artwork--belt' aria-hidden='true'>
-        <svg viewBox='0 0 1000 600' className='pristine-mining__artwork-svg pristine-mining__artwork-svg--belt' focusable='false'>
+      <svg
+        viewBox='0 0 1000 600'
+        className='pristine-mining__artwork-svg pristine-mining__artwork-svg--belt'
+        focusable='false'
+        preserveAspectRatio='xMidYMid meet'
+      >
           <g className='pristine-mining__belt'>
             <ellipse className='pristine-mining__belt-ring pristine-mining__belt-ring--outer' cx='500' cy='300' rx='420' ry='160' />
             <ellipse className='pristine-mining__belt-ring pristine-mining__belt-ring--inner' cx='500' cy='300' rx='340' ry='120' />
@@ -446,7 +451,12 @@ function PristineMiningArtwork ({ systemObject }) {
 
   return (
     <div className='pristine-mining__artwork' aria-hidden='true'>
-      <svg viewBox='0 0 1000 1000' className='pristine-mining__artwork-svg' focusable='false'>
+      <svg
+        viewBox='0 0 1000 1000'
+        className='pristine-mining__artwork-svg'
+        focusable='false'
+        preserveAspectRatio='xMidYMid meet'
+      >
         <g className='system-map__system-object pristine-mining__artwork-object' {...dataAttributes}>
           {hasAtmosphere && (
             <g className='system-map__body'>
@@ -2438,8 +2448,7 @@ function PristineMiningPanel () {
       </p>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div
-        className='pristine-mining__container'
-        style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden', position: 'relative' }}
+        className={`pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
       >
         <div
           className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
