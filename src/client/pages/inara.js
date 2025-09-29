@@ -404,6 +404,101 @@ const FILTER_FORM_STYLE = {
   margin: '1.4rem 0 1.25rem'
 }
 
+const ACTIVE_ROUTE_CONTAINER_STYLE = {
+  margin: '1rem 0 1.5rem',
+  padding: '1.1rem 1.3rem',
+  borderRadius: '8px',
+  border: '1px solid #2f3440',
+  background: '#0f131c'
+}
+
+const ACTIVE_ROUTE_HEADER_ROW_STYLE = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '0.75rem',
+  flexWrap: 'wrap'
+}
+
+const ACTIVE_ROUTE_HEADER_STYLE = {
+  color: '#ff7c22',
+  fontSize: '0.8rem',
+  letterSpacing: '.08em',
+  textTransform: 'uppercase'
+}
+
+const ACTIVE_ROUTE_CLEAR_BUTTON_STYLE = {
+  background: 'transparent',
+  border: '1px solid #39404f',
+  color: '#d0d4e0',
+  padding: '.4rem .85rem',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  fontSize: '.85rem',
+  fontWeight: 600
+}
+
+const ACTIVE_ROUTE_CONTENT_STYLE = {
+  marginTop: '1.1rem',
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+  gap: '1rem 1.5rem',
+  alignItems: 'stretch'
+}
+
+const ACTIVE_ROUTE_SECTION_STYLE = {
+  borderRadius: '6px',
+  border: '1px solid #232836',
+  background: '#141924',
+  padding: '.95rem 1.05rem'
+}
+
+const ACTIVE_ROUTE_SECTION_LABEL_STYLE = {
+  color: '#9da4b3',
+  fontSize: '.78rem',
+  letterSpacing: '.08em',
+  textTransform: 'uppercase',
+  marginBottom: '.5rem'
+}
+
+const ACTIVE_ROUTE_STATION_STYLE = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '.75rem'
+}
+
+const ACTIVE_ROUTE_ACTION_LIST_STYLE = {
+  marginTop: '.9rem',
+  color: '#d0d4e0',
+  fontSize: '.9rem',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '.35rem'
+}
+
+const ACTIVE_ROUTE_STATUS_STYLE = {
+  marginTop: '.95rem',
+  fontSize: '.78rem',
+  letterSpacing: '.02em'
+}
+
+const ACTIVE_ROUTE_BUTTON_STYLE = {
+  padding: '.45rem .8rem',
+  borderRadius: '4px',
+  border: '1px solid #ff7c22',
+  background: 'transparent',
+  color: '#ff7c22',
+  cursor: 'pointer',
+  fontSize: '.85rem',
+  fontWeight: 600
+}
+
+const ACTIVE_ROUTE_BUTTON_ACTIVE_STYLE = {
+  ...ACTIVE_ROUTE_BUTTON_STYLE,
+  background: '#ff7c22',
+  color: '#0b0d12'
+}
+
 const FILTERS_GRID_STYLE = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -1270,7 +1365,143 @@ function TradeRoutesPanel () {
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [expandedRouteKey, setExpandedRouteKey] = useState(null)
+  const [activeRouteKey, setActiveRouteKey] = useState(null)
+  const [activeRouteDisplay, setActiveRouteDisplay] = useState(null)
   const factionStandings = useFactionStandings()
+
+  const computeRouteKey = useCallback(route => {
+    if (!route || typeof route !== 'object') return ''
+
+    const idCandidates = [
+      route?.id,
+      route?.routeId,
+      route?.route_id,
+      route?.uniqueId,
+      route?.uniqueID,
+      route?.identifier,
+      route?.marketId,
+      route?.market_id
+    ]
+
+    for (const candidate of idCandidates) {
+      if (typeof candidate === 'string' && candidate.trim()) return candidate.trim()
+      if (typeof candidate === 'number' && Number.isFinite(candidate)) return String(candidate)
+    }
+
+    const originLocal = route?.origin?.local
+    const destinationLocal = route?.destination?.local
+    const originStation = originLocal?.station || route?.origin?.stationName || route?.originStation || route?.sourceStation || route?.startStation || route?.fromStation || route?.station
+    const originSystemName = originLocal?.system || route?.origin?.systemName || route?.originSystem || route?.sourceSystem || route?.startSystem || route?.fromSystem || route?.system
+    const destinationStation = destinationLocal?.station || route?.destination?.stationName || route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation
+    const destinationSystemName = destinationLocal?.system || route?.destination?.systemName || route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem
+    const outboundCommodity = route?.origin?.buy?.commodity || route?.destination?.sell?.commodity || route?.commodity
+    const returnCommodity = route?.destination?.buyReturn?.commodity || route?.origin?.sellReturn?.commodity
+
+    const parts = [
+      normaliseName(originStation),
+      normaliseName(originSystemName),
+      normaliseName(destinationStation),
+      normaliseName(destinationSystemName),
+      normaliseName(outboundCommodity),
+      normaliseName(returnCommodity)
+    ].filter(Boolean)
+
+    return parts.length > 0 ? parts.join('|') : ''
+  }, [])
+
+  const buildRouteKey = useCallback((route, index = 0) => {
+    const base = computeRouteKey(route)
+    return base || `route-${index}`
+  }, [computeRouteKey])
+
+  const getRouteDisplayData = useCallback(route => {
+    if (!route || typeof route !== 'object') return null
+
+    const originLocal = route?.origin?.local
+    const destinationLocal = route?.destination?.local
+
+    const originStation = originLocal?.station || route?.origin?.stationName || route?.originStation || route?.sourceStation || route?.startStation || route?.fromStation || route?.station || '--'
+    const originSystemName = originLocal?.system || route?.origin?.systemName || route?.originSystem || route?.sourceSystem || route?.startSystem || route?.fromSystem || route?.system || ''
+    const destinationStation = destinationLocal?.station || route?.destination?.stationName || route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || '--'
+    const destinationSystemName = destinationLocal?.system || route?.destination?.systemName || route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || ''
+
+    const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
+    const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
+    const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
+    const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
+
+    const outboundBuy = route?.origin?.buy || null
+    const outboundSell = route?.destination?.sell || null
+    const returnBuy = route?.destination?.buyReturn || null
+    const returnSell = route?.origin?.sellReturn || null
+
+    const outboundCommodity = outboundBuy?.commodity || outboundSell?.commodity || route?.commodity || '--'
+    const returnCommodity = returnBuy?.commodity || returnSell?.commodity || '--'
+
+    const originIconName = getStationIconName(originLocal, route?.origin)
+    const destinationIconName = getStationIconName(destinationLocal, route?.destination)
+
+    return {
+      originStation,
+      originSystemName,
+      destinationStation,
+      destinationSystemName,
+      originFactionName,
+      destinationFactionName,
+      originStationClassName: originStandingDisplay.className || undefined,
+      originStationTitle: originStandingDisplay.title,
+      destinationStationClassName: destinationStandingDisplay.className || undefined,
+      destinationStationTitle: destinationStandingDisplay.title,
+      originStandingStatusText: originStandingDisplay.statusDescription || null,
+      destinationStandingStatusText: destinationStandingDisplay.statusDescription || null,
+      originIconName,
+      destinationIconName,
+      outboundCommodity,
+      returnCommodity,
+      outboundBuy,
+      outboundSell,
+      returnBuy,
+      returnSell
+    }
+  }, [factionStandings])
+
+  const getLocationIndicator = useCallback((systemName, stationName) => {
+    const currentSystemName = normaliseName(currentSystem?.name)
+    const currentStationName = normaliseName(currentSystem?.station)
+    const targetSystemName = normaliseName(systemName)
+    const targetStationName = normaliseName(stationName)
+
+    if (!currentSystemName) {
+      return { text: 'Current location unavailable', color: '#7f8697' }
+    }
+
+    if (targetStationName && currentStationName && currentStationName === targetStationName) {
+      const docked = currentSystem?.docked === undefined ? true : !!currentSystem.docked
+      return { text: docked ? 'Docked here now' : 'At this station', color: '#5bd1a5' }
+    }
+
+    if (targetSystemName && currentSystemName === targetSystemName) {
+      return { text: 'In this system', color: '#ffb347' }
+    }
+
+    return { text: 'Not present', color: '#7f8697' }
+  }, [currentSystem])
+
+  const clearActiveRoute = useCallback(() => {
+    setActiveRouteKey(null)
+    setActiveRouteDisplay(null)
+  }, [])
+
+  const handleSetActiveRoute = useCallback((route, key) => {
+    setActiveRouteKey(prevKey => {
+      if (prevKey === key) {
+        setActiveRouteDisplay(null)
+        return null
+      }
+      setActiveRouteDisplay(getRouteDisplayData(route))
+      return key
+    })
+  }, [getRouteDisplayData])
 
   useEffect(() => {
     if (!connected || initialShipInfoLoaded) return
@@ -1506,6 +1737,29 @@ function TradeRoutesPanel () {
     setExpandedRouteKey(null)
   }, [rawRoutes])
 
+  useEffect(() => {
+    if (!activeRouteKey) return
+
+    let matchedRoute = null
+
+    for (let index = 0; index < routes.length; index++) {
+      const candidate = routes[index]
+      const key = buildRouteKey(candidate, index)
+      if (key === activeRouteKey) {
+        matchedRoute = candidate
+        break
+      }
+    }
+
+    if (!matchedRoute) {
+      setActiveRouteKey(null)
+      setActiveRouteDisplay(null)
+      return
+    }
+
+    setActiveRouteDisplay(getRouteDisplayData(matchedRoute))
+  }, [routes, activeRouteKey, buildRouteKey, getRouteDisplayData])
+
   const handleRowToggle = useCallback(rowId => {
     setExpandedRouteKey(prev => (prev === rowId ? null : rowId))
   }, [])
@@ -1682,31 +1936,30 @@ function TradeRoutesPanel () {
       </thead>
       <tbody>
         {routes.map((route, index) => {
-          const originLocal = route?.origin?.local
-          const destinationLocal = route?.destination?.local
-          const originStation = originLocal?.station || route?.origin?.stationName || route?.originStation || route?.sourceStation || route?.startStation || route?.fromStation || route?.station || '--'
-          const originSystemName = originLocal?.system || route?.origin?.systemName || route?.originSystem || route?.sourceSystem || route?.startSystem || route?.fromSystem || route?.system || ''
-          const destinationStation = destinationLocal?.station || route?.destination?.stationName || route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || '--'
-          const destinationSystemName = destinationLocal?.system || route?.destination?.systemName || route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || ''
-
-          const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
-          const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
-          const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
-          const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
-          const originStationClassName = originStandingDisplay.className || undefined
-          const destinationStationClassName = destinationStandingDisplay.className || undefined
-          const originStationTitle = originStandingDisplay.title
-          const destinationStationTitle = destinationStandingDisplay.title
-          const originStandingStatusText = originStandingDisplay.statusDescription || null
-          const destinationStandingStatusText = destinationStandingDisplay.statusDescription || null
-
-          const outboundBuy = route?.origin?.buy || null
-          const outboundSell = route?.destination?.sell || null
-          const returnBuy = route?.destination?.buyReturn || null
-          const returnSell = route?.origin?.sellReturn || null
-
-          const outboundCommodity = outboundBuy?.commodity || outboundSell?.commodity || route?.commodity || '--'
-          const returnCommodity = returnBuy?.commodity || returnSell?.commodity || '--'
+          const rowKey = buildRouteKey(route, index)
+          const displayData = getRouteDisplayData(route) || {}
+          const {
+            originStation = '--',
+            originSystemName = '',
+            destinationStation = '--',
+            destinationSystemName = '',
+            originFactionName,
+            destinationFactionName,
+            originStationClassName,
+            originStationTitle,
+            destinationStationClassName,
+            destinationStationTitle,
+            originStandingStatusText,
+            destinationStandingStatusText,
+            originIconName,
+            destinationIconName,
+            outboundCommodity = '--',
+            returnCommodity = '--',
+            outboundBuy,
+            outboundSell,
+            returnBuy,
+            returnSell
+          } = displayData
 
           const outboundSupplyIndicator = renderQuantityIndicator(outboundBuy, 'supply')
           const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand')
@@ -1721,17 +1974,24 @@ function TradeRoutesPanel () {
           const systemDistanceDisplay = formatSystemDistance(route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.distanceText || route?.distanceDisplay)
           const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
 
-          const rowKey = `route-${index}`
-          const detailsId = `${rowKey}-details`
+          const safeRowKey = typeof rowKey === 'string' ? rowKey.replace(/[^a-z0-9-_.:]/gi, '_') : `route-${index}`
+          const detailsId = `${safeRowKey}-details`
           const isExpanded = expandedRouteKey === rowKey
-          const originIconName = getStationIconName(originLocal, route?.origin)
-          const destinationIconName = getStationIconName(destinationLocal, route?.destination)
+          const isActiveRoute = activeRouteKey === rowKey
           const expansionSymbol = isExpanded ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
 
           return (
             <React.Fragment key={rowKey}>
               <tr
-                style={{ fontSize: '0.95rem', cursor: 'pointer', background: isExpanded ? 'rgba(255, 124, 34, 0.06)' : 'transparent' }}
+                style={{
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  background: isExpanded
+                    ? 'rgba(255, 124, 34, 0.06)'
+                    : isActiveRoute
+                      ? 'rgba(255, 124, 34, 0.03)'
+                      : 'transparent'
+                }}
                 onClick={() => handleRowToggle(rowKey)}
                 onKeyDown={event => handleRowKeyDown(event, rowKey)}
                 role='button'
@@ -1740,7 +2000,10 @@ function TradeRoutesPanel () {
                 aria-controls={isExpanded ? detailsId : undefined}
               >
                 <td style={{ padding: '.6rem .35rem', textAlign: 'center', verticalAlign: 'top', color: '#ffb347', fontSize: '1.1rem', lineHeight: 1 }} aria-hidden='true'>
-                  {expansionSymbol}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.15rem' }}>
+                    <span>{expansionSymbol}</span>
+                    {isActiveRoute && <span style={{ fontSize: '.75rem', color: '#ffb347', letterSpacing: '.05em' }}>★</span>}
+                  </div>
                 </td>
                 <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
@@ -1825,6 +2088,16 @@ function TradeRoutesPanel () {
                       <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
                       <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
                     </div>
+                    <div style={{ marginTop: '.9rem' }}>
+                      <button
+                        type='button'
+                        onClick={() => handleSetActiveRoute(route, rowKey)}
+                        style={isActiveRoute ? ACTIVE_ROUTE_BUTTON_ACTIVE_STYLE : ACTIVE_ROUTE_BUTTON_STYLE}
+                        aria-pressed={isActiveRoute}
+                      >
+                        {isActiveRoute ? 'Active Route' : 'Set Active Route'}
+                      </button>
+                    </div>
                   </td>
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
@@ -1894,9 +2167,112 @@ function TradeRoutesPanel () {
     </table>
   )
 
+  const activeRouteStartStatus = activeRouteDisplay
+    ? getLocationIndicator(activeRouteDisplay.originSystemName, activeRouteDisplay.originStation)
+    : null
+  const activeRouteDestinationStatus = activeRouteDisplay
+    ? getLocationIndicator(activeRouteDisplay.destinationSystemName, activeRouteDisplay.destinationStation)
+    : null
+
   return (
     <div>
       <h2>Find Trade Routes</h2>
+      {activeRouteDisplay && (
+        <div style={ACTIVE_ROUTE_CONTAINER_STYLE}>
+          <div style={ACTIVE_ROUTE_HEADER_ROW_STYLE}>
+            <div style={ACTIVE_ROUTE_HEADER_STYLE}>Active Trade Route</div>
+            <button
+              type='button'
+              onClick={clearActiveRoute}
+              style={ACTIVE_ROUTE_CLEAR_BUTTON_STYLE}
+            >
+              Clear Active Route
+            </button>
+          </div>
+          <div style={ACTIVE_ROUTE_CONTENT_STYLE}>
+            <div style={ACTIVE_ROUTE_SECTION_STYLE}>
+              <div style={ACTIVE_ROUTE_SECTION_LABEL_STYLE}>Start</div>
+              <div style={ACTIVE_ROUTE_STATION_STYLE}>
+                {activeRouteDisplay.originIconName && <StationIcon icon={activeRouteDisplay.originIconName} />}
+                <div>
+                  <div
+                    style={{ fontWeight: 600 }}
+                    className={activeRouteDisplay.originStationClassName}
+                    title={activeRouteDisplay.originStationTitle}
+                  >
+                    {activeRouteDisplay.originStation}
+                  </div>
+                  <div style={{ color: '#9da4b3', fontSize: '.9rem' }}>
+                    {activeRouteDisplay.originSystemName || 'Unknown system'}
+                  </div>
+                  {activeRouteDisplay.originStandingStatusText && (
+                    <div style={{ color: '#7f8697', fontSize: '.78rem', marginTop: '.2rem' }}>
+                      {activeRouteDisplay.originStandingStatusText}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {(activeRouteDisplay.outboundCommodity && activeRouteDisplay.outboundCommodity !== '--') || (activeRouteDisplay.returnCommodity && activeRouteDisplay.returnCommodity !== '--')
+                ? (
+                  <div style={ACTIVE_ROUTE_ACTION_LIST_STYLE}>
+                    {activeRouteDisplay.outboundCommodity && activeRouteDisplay.outboundCommodity !== '--' && (
+                      <div>Buy <strong>{activeRouteDisplay.outboundCommodity}</strong></div>
+                    )}
+                    {activeRouteDisplay.returnCommodity && activeRouteDisplay.returnCommodity !== '--' && (
+                      <div>Sell <strong>{activeRouteDisplay.returnCommodity}</strong></div>
+                    )}
+                  </div>
+                  )
+                : null}
+              {activeRouteStartStatus && (
+                <div style={{ ...ACTIVE_ROUTE_STATUS_STYLE, color: activeRouteStartStatus.color }}>
+                  {activeRouteStartStatus.text}
+                </div>
+              )}
+            </div>
+            <div style={ACTIVE_ROUTE_SECTION_STYLE}>
+              <div style={ACTIVE_ROUTE_SECTION_LABEL_STYLE}>Destination</div>
+              <div style={ACTIVE_ROUTE_STATION_STYLE}>
+                {activeRouteDisplay.destinationIconName && <StationIcon icon={activeRouteDisplay.destinationIconName} />}
+                <div>
+                  <div
+                    style={{ fontWeight: 600 }}
+                    className={activeRouteDisplay.destinationStationClassName}
+                    title={activeRouteDisplay.destinationStationTitle}
+                  >
+                    {activeRouteDisplay.destinationStation}
+                  </div>
+                  <div style={{ color: '#9da4b3', fontSize: '.9rem' }}>
+                    {activeRouteDisplay.destinationSystemName || 'Unknown system'}
+                  </div>
+                  {activeRouteDisplay.destinationStandingStatusText && (
+                    <div style={{ color: '#7f8697', fontSize: '.78rem', marginTop: '.2rem' }}>
+                      {activeRouteDisplay.destinationStandingStatusText}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {(activeRouteDisplay.outboundCommodity && activeRouteDisplay.outboundCommodity !== '--') || (activeRouteDisplay.returnCommodity && activeRouteDisplay.returnCommodity !== '--')
+                ? (
+                  <div style={ACTIVE_ROUTE_ACTION_LIST_STYLE}>
+                    {activeRouteDisplay.outboundCommodity && activeRouteDisplay.outboundCommodity !== '--' && (
+                      <div>Sell <strong>{activeRouteDisplay.outboundCommodity}</strong></div>
+                    )}
+                    {activeRouteDisplay.returnCommodity && activeRouteDisplay.returnCommodity !== '--' && (
+                      <div>Buy <strong>{activeRouteDisplay.returnCommodity}</strong></div>
+                    )}
+                  </div>
+                  )
+                : null}
+              {activeRouteDestinationStatus && (
+                <div style={{ ...ACTIVE_ROUTE_STATUS_STYLE, color: activeRouteDestinationStatus.color }}>
+                  {activeRouteDestinationStatus.text}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
           <button
