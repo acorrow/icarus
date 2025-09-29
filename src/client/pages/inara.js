@@ -528,6 +528,27 @@ const FILTER_FORM_STYLE = {
   margin: '1.4rem 0 1.25rem'
 }
 
+const CURRENT_SYSTEM_CONTAINER_STYLE = {
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'flex-end',
+  justifyContent: 'space-between',
+  gap: '2rem',
+  margin: '2rem 0 1.5rem 0'
+}
+
+const CURRENT_SYSTEM_LABEL_STYLE = {
+  color: '#ff7c22',
+  fontSize: '0.75rem',
+  letterSpacing: '.08em',
+  textTransform: 'uppercase',
+  marginBottom: '.35rem'
+}
+
+const CURRENT_SYSTEM_NAME_STYLE = {
+  fontSize: '1.1rem'
+}
+
 const FILTERS_GRID_STYLE = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -1140,10 +1161,10 @@ function MissionsPanel () {
   return (
     <div>
       <h2>Mining Missions</h2>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+      <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
-          <div style={{ color: '#ff7c22', fontSize: '0.75rem', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.35rem' }}>Current System</div>
-          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{displaySystemName || 'Unknown'}</div>
+          <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+          <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
           <div style={{ marginBottom: '.75rem', fontSize: '0.95rem' }} className='text-secondary'>
@@ -1333,6 +1354,21 @@ function TradeRoutesPanel () {
     return () => { cancelled = true }
   }, [connected, ready, initialShipInfoLoaded])
 
+  const selectedSystemName = useMemo(() => {
+    const trimmedSystem = typeof system === 'string' ? system.trim() : ''
+    if (trimmedSystem) return trimmedSystem
+
+    const selectedOption = systemSelection && systemSelection !== '__manual'
+      ? systemSelection.trim()
+      : ''
+    if (selectedOption) return selectedOption
+
+    const currentName = typeof currentSystem?.name === 'string' ? currentSystem.name.trim() : ''
+    if (currentName) return currentName
+
+    return ''
+  }, [system, systemSelection, currentSystem?.name])
+
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
     { value: '20', label: '20 Ly' },
@@ -1425,10 +1461,7 @@ function TradeRoutesPanel () {
   }, [cargoCapacity, initialShipInfoLoaded])
 
   const filtersSummary = useMemo(() => {
-    const selectedSystem = (system && system.trim()) ||
-      ((systemSelection && systemSelection !== '__manual') ? systemSelection : '') ||
-      currentSystem?.name ||
-      'Unknown System'
+    const selectedSystem = selectedSystemName || 'Unknown System'
 
     const padLabelRaw = initialShipInfoLoaded
       ? pickOptionLabel(padSizeOptions, padSize, 'Unknown')
@@ -1447,7 +1480,7 @@ function TradeRoutesPanel () {
       `Min Supply: ${supplyLabel}`,
       `Min Demand: ${demandLabel}`
     ].join(' | ')
-  }, [system, systemSelection, currentSystem, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
+  }, [selectedSystemName, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
 
   const filterRoutes = useCallback((list = []) => {
     return Array.isArray(list) ? [...list] : []
@@ -1656,7 +1689,7 @@ function TradeRoutesPanel () {
 
   const handleSubmit = event => {
     event.preventDefault()
-    const targetSystem = system && system.trim() ? system.trim() : currentSystem?.name
+    const targetSystem = selectedSystemName || currentSystem?.name
     refreshRoutes(targetSystem)
   }
 
@@ -1951,6 +1984,14 @@ function TradeRoutesPanel () {
   return (
     <div>
       <h2>Find Trade Routes</h2>
+      <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
+        <div>
+          <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+          <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>
+            {selectedSystemName || 'Unknown'}
+          </div>
+        </div>
+      </div>
       <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', flexGrow: 1 }}>
@@ -2083,7 +2124,7 @@ function TradeRoutesPanel () {
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>{error || 'Unable to fetch trade routes.'}</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>No trade routes found near {system || currentSystem?.name || systemSelection || 'Unknown System'}.</div>
+            <div style={{ color: '#aaa', padding: '2rem' }}>No trade routes found near {selectedSystemName || 'Unknown System'}.</div>
           )}
           {status === 'populated' && renderRoutesTable()}
         </div>
@@ -2302,10 +2343,10 @@ function PristineMiningPanel () {
   return (
     <div>
       <h2>Pristine Mining Locations</h2>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
+      <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
-          <div style={{ color: '#ff7c22', fontSize: '0.75rem', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.35rem' }}>Current System</div>
-          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{displaySystemName || 'Unknown'}</div>
+          <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+          <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
           <div style={{ marginBottom: '.75rem', fontSize: '0.95rem', color: '#bbb' }}>
