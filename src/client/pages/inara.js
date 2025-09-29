@@ -1997,7 +1997,7 @@ function TradeRoutesPanel () {
         {!filtersCollapsed && (
           <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
             <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Max Route Distance</label>
+              <label style={FILTER_LABEL_STYLE}>Route Distance</label>
               <select
                 value={routeDistance}
                 onChange={event => setRouteDistance(event.target.value)}
@@ -2045,7 +2045,7 @@ function TradeRoutesPanel () {
               </select>
             </div>
             <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Use Surface Stations</label>
+              <label style={FILTER_LABEL_STYLE}>Surface Stations</label>
               <select
                 value={surfacePreference}
                 onChange={event => setSurfacePreference(event.target.value)}
@@ -2057,7 +2057,7 @@ function TradeRoutesPanel () {
               </select>
             </div>
             <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Max Station Distance</label>
+              <label style={FILTER_LABEL_STYLE}>Station Distance</label>
               <select
                 value={stationDistance}
                 onChange={event => setStationDistance(event.target.value)}
