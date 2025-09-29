@@ -923,176 +923,6 @@ function SystemSelect ({
   )
 }
 
-function ShipsPanel () {
-  const [ships, setShips] = useState([])
-  const [selectedShip, setSelectedShip] = useState('')
-  const {
-    system,
-    systemSelection,
-    systemInput,
-    systemOptions,
-    handleSystemChange,
-    handleManualSystemChange
-  } = useSystemSelector()
-  const [results, setResults] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [expandedRow, setExpandedRow] = useState(null)
-  const [hasSearched, setHasSearched] = useState(false)
-
-  useEffect(() => {
-    fetch('/api/shipyard-list')
-      .then(res => res.json())
-      .then(data => setShips(data))
-      .catch(() => setShips([]))
-  }, [])
-
-  useEffect(() => {
-    if (!selectedShip || !system || !system.trim()) return
-    setLoading(true)
-    setError('')
-    setHasSearched(true)
-    setExpandedRow(null)
-    setResults([])
-    fetch('/api/inara-websearch', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shipId: selectedShip, system })
-    })
-      .then(res => res.json())
-      .then(data => {
-        setResults(Array.isArray(data.results) ? data.results : [])
-        if (data.message) setError(data.message)
-      })
-      .catch(err => {
-        setError(err.message)
-        setResults([])
-      })
-      .finally(() => setLoading(false))
-  }, [selectedShip, system])
-
-  const showResults = hasSearched || loading
-
-  return (
-    <div>
-      <h2>Find Ships for Sale</h2>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '2rem', margin: '2rem 0 1.5rem 0' }}>
-        <div style={{ flex: 1, minWidth: 200 }}>
-          <label style={{ display: 'block', marginBottom: '.5rem', color: '#ff7c22' }}>Ship</label>
-          <select value={selectedShip} onChange={e => setSelectedShip(e.target.value)} style={{ width: '100%', padding: '.5rem', fontSize: '1.1rem', borderRadius: '.5rem', border: '1px solid #444', background: '#222', color: '#fff' }}>
-            <option value=''>Select a ship...</option>
-            {ships.map(ship => (
-              <option key={ship.id} value={ship.id}>{ship.name}</option>
-            ))}
-          </select>
-        </div>
-        <SystemSelect
-          label='System'
-          systemSelection={systemSelection}
-          systemOptions={systemOptions}
-          onSystemChange={handleSystemChange}
-          systemInput={systemInput}
-          onManualSystemChange={handleManualSystemChange}
-        />
-      </div>
-      {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      {showResults && (
-        <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
-          <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
-            {loading && (
-              <div style={{ color: '#aaa', padding: '2rem' }}>Searching...</div>
-            )}
-            {!loading && results.length === 0 && (
-              <div style={{ color: '#aaa', padding: '2rem' }}>No stations found with this ship for sale near {system || systemSelection || 'the selected system'}.</div>
-            )}
-            {!loading && results.length > 0 && (
-              <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Station</th>
-                    <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>System</th>
-                    <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Distance</th>
-                    <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Station Distance</th>
-                    <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((row, i) => {
-                    const icon = row.icon || stationIconFromType(row.type || row.stationType || '')
-                    const systemDistance = formatSystemDistance(row.systemDistanceLy, row.systemDistance)
-                    const stationDistance = formatStationDistance(row.stationDistanceLs, row.stationDistance)
-                    const updatedDisplay = formatRelativeTime(row.updatedAt || row.updated)
-                    const isCurrentSystem = row.isCurrentSystem
-                    const isExpanded = expandedRow === i
-                    const isMissing = row.missing
-
-                    return [
-                      <tr
-                        key={i}
-                        data-system-object-name={row.station}
-                        tabIndex={2}
-                        className={`--shown${isExpanded ? ' expanded-row' : ''}${isMissing ? ' missing-row' : ''}`}
-                        style={{ animationDelay: `${i * 0.03}s`, cursor: isMissing ? 'default' : 'pointer', background: isExpanded ? '#ff980033' : undefined, opacity: isMissing ? 0.6 : 1 }}
-                        onClick={() => { if (!isMissing) setExpandedRow(isExpanded ? null : i) }}
-                      >
-                        <td>
-                          <div className='text-no-wrap' style={{ paddingLeft: '2.2rem', paddingRight: '.75rem', position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <i className={`icon system-object-icon icarus-terminal-${icon}`} style={{ position: 'absolute', left: 0, fontSize: '1.5rem', display: 'inline-block' }} />
-                            <span style={{ marginLeft: '2.2rem', display: 'flex', flexDirection: 'column' }}>
-                              <span className='visible-medium'>{row.station}</span>
-                              <span className='hidden-medium'>{row.station}</span>
-                              {isMissing && <span style={{ color: '#ff4d4f', fontWeight: 500, fontSize: '0.95em' }}>Local data unavailable</span>}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <div className='text-no-wrap' style={{ paddingLeft: '0.5rem', paddingRight: '.75rem' }}>
-                            {isCurrentSystem
-                              ? (
-                                <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
-                                )
-                              : (
-                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
-                                )}
-                            <span className='visible-medium'>{row.system || 'Unknown'}</span>
-                            <span className='hidden-medium'>{row.system || 'Unknown'}</span>
-                          </div>
-                        </td>
-                        <td className='hidden-small text-right text-no-transform text-no-wrap'>{systemDistance || '--'}</td>
-                        <td className='hidden-small text-right text-no-transform text-no-wrap'>{stationDistance || '--'}</td>
-                        <td className='hidden-small text-right text-no-transform text-no-wrap'>{updatedDisplay || '--'}</td>
-                      </tr>,
-                      !isMissing && isExpanded && (
-                        <tr key={i + '-expanded'} className='expanded-details-row'>
-                          <td colSpan={5} style={{ background: '#222', color: '#fff', borderTop: '1px solid #444', padding: '1.5rem 2.5rem' }}>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2.5rem', fontSize: '1.08rem' }}>
-                              <div><b>Pad Size:</b> {row.padSize || 'Unknown'}</div>
-                              <div><b>Type:</b> {row.type || row.stationType || 'Unknown'}</div>
-                              <div><b>Market:</b> {row.market ? 'Yes' : 'No'}</div>
-                              <div><b>Outfitting:</b> {row.outfitting ? 'Yes' : 'No'}</div>
-                              <div><b>Shipyard:</b> {row.shipyard ? 'Yes' : 'No'}</div>
-                              <div><b>Faction:</b> {row.faction || 'Unknown'}</div>
-                              <div><b>Government:</b> {row.government || 'Unknown'}</div>
-                              <div><b>Allegiance:</b> {row.allegiance || 'Unknown'}</div>
-                              <div><b>Services:</b> {row.services && row.services.length ? row.services.join(', ') : 'None'}</div>
-                              <div><b>Economies:</b> {row.economies && row.economies.length ? row.economies.map(e => e.name || e).join(', ') : 'Unknown'}</div>
-                              {row.updatedAt && <div><b>Last Updated:</b> {formatRelativeTime(row.updatedAt)}</div>}
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    ]
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 function MissionsPanel () {
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [missions, setMissions] = useState([])
@@ -2665,8 +2495,7 @@ export default function InaraPage() {
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
-    { name: 'Search', icon: 'search', type: 'SEARCH', active: false },
-    { name: 'Ships', icon: 'ship', active: activeTab === 'ships', onClick: () => setActiveTab('ships') }
+    { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
 
   ]), [activeTab])
 
@@ -2682,9 +2511,6 @@ export default function InaraPage() {
           </div>
           <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
             <PristineMiningPanel />
-          </div>
-          <div style={{ display: activeTab === 'ships' ? 'block' : 'none' }}>
-            <ShipsPanel />
           </div>
         </div>
       </Panel>
