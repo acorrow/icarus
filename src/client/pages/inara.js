@@ -2239,6 +2239,7 @@ function PristineMiningPanel () {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
   const [expandedLocationKey, setExpandedLocationKey] = useState(null)
   const [expandedSystemData, setExpandedSystemData] = useState(null)
   const [expandedSystemObject, setExpandedSystemObject] = useState(null)
@@ -2280,6 +2281,7 @@ function PristineMiningPanel () {
     setStatus('loading')
     setError('')
     setMessage('')
+    setLastUpdatedAt(null)
 
     fetch('/api/inara-pristine-mining', {
       method: 'POST',
@@ -2304,6 +2306,7 @@ function PristineMiningPanel () {
         setError(nextError)
         setMessage(nextMessage)
         setSourceUrl(nextSourceUrl)
+        setLastUpdatedAt(Date.now())
 
         if (nextError && nextLocations.length === 0) {
           setStatus('error')
@@ -2320,10 +2323,17 @@ function PristineMiningPanel () {
         setMessage('')
         setSourceUrl('')
         setStatus('error')
+        setLastUpdatedAt(null)
       })
 
     return () => { cancelled = true }
   }, [trimmedSystem])
+
+  const displayMessage = useMemo(() => {
+    if (!message) return ''
+    if (/^Showing pristine mining locations within /i.test(message)) return ''
+    return message
+  }, [message])
 
   const resetExpandedState = useCallback(() => {
     setExpandedLocationKey(null)
@@ -2454,9 +2464,27 @@ function PristineMiningPanel () {
           className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
           style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}
         >
-          {message && status !== 'idle' && status !== 'loading' && (
+          {(status === 'populated' || status === 'empty') && lastUpdatedAt && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '.75rem',
+                color: '#888',
+                padding: '.75rem 1rem',
+                borderBottom: '1px solid #222',
+                fontSize: '.9rem',
+                background: '#0b0b0b'
+              }}
+            >
+              <span style={{ marginLeft: 'auto', fontSize: '.85rem' }}>
+                Updated {formatRelativeTime(lastUpdatedAt)}
+              </span>
+            </div>
+          )}
+          {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
-              {message}
+              {displayMessage}
             </div>
           )}
           {status === 'idle' && (
