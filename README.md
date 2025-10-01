@@ -88,7 +88,7 @@ This will run in debug mode which is not quite the same as a production build (i
 
 ICARUS Terminal is free, open-source software released under the ISC License.
 
-ICARUS Terminal does not record Personally Identifiable Information (PII). ICARUS Terminal includes integrations with services like [EDSM](https://www.edsm.net), [EDDB](https://eddb.io/) and [GHOSTNET](https://ghostnet.cz/). Data such as your current in-game location, cargo, etc. may be sent to them order to render information in the interface. ICARUS Terminal does not expose or send information about you or your in game character (e.g. your name, user name, commander name or ship name) but any requests made to a third party will include your IP address.
+ICARUS Terminal does not record Personally Identifiable Information (PII). ICARUS Terminal includes integrations with services like [EDSM](https://www.edsm.net), [EDDB](https://eddb.io/) and [GHOSTNET](https://inara.cz/). Data such as your current in-game location, cargo, etc. may be sent to them order to render information in the interface. ICARUS Terminal does not expose or send information about you or your in game character (e.g. your name, user name, commander name or ship name) but any requests made to a third party will include your IP address.
 
 Elite Dangerous is copyright Frontier Developments plc. This software is not endorsed by nor reflects the views or opinions of Frontier Developments and no employee of Frontier Developments was involved in the making of it.
 
@@ -122,15 +122,15 @@ People have asked if I take donations for the project - I don't donations, but
 I do appreciate the offer.
 
 If you want to support development of ICARUS Terminal, the best way is to visit 
-the [Ardent Pioneer (V9G-G7Z)](https://ghostnet.cz/elite/station/490914/).
+the [Ardent Pioneer (V9G-G7Z)](https://inara.cz/elite/station/490914/).
 
 Selling Tritium to the carrier directly supports development as it means I can 
 spend more time adding features to ICARUS Terminal and travelling the galaxy to 
 test them out!
 
-You can use Ghostnet to [find out which system the Ardent Pioneer is currently in](https://ghostnet.cz/elite/station/490914/) and see if it's anywhere near you.
+You can use Ghostnet to [find out which system the Ardent Pioneer is currently in](https://inara.cz/elite/station/490914/) and see if it's anywhere near you.
 
 Before you visit you might want to [check out what commodities are currently 
-being traded](https://ghostnet.cz/elite/station-market/490914/). You might also 
+being traded](https://inara.cz/elite/station-market/490914/). You might also
 want to chat to the bartender to see what they are looking for!
 

@@ -320,7 +320,7 @@ export default async function handler(req, res) {
   params.append('pi19', '0')
   params.append('pi17', '0')
   params.append('pi14', '0')
-  const url = `https://ghostnet.cz/elite/nearest-outfitting/?${params.toString()}`
+  const url = `https://inara.cz/elite/nearest-outfitting/?${params.toString()}`
   logGhostnetSearch(`REQUEST: shipId=${shipId} system=${system} url=${url}`)
 
   try {

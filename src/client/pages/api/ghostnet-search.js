@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   // GHOSTNET API endpoint
-  const url = 'https://ghostnet.cz/inapi/v1/'
+  const url = 'https://inara.cz/inapi/v1/'
 
   // Build GHOSTNET API request body
   const requestBody = {

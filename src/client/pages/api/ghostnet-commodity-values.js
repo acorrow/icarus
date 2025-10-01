@@ -5,7 +5,7 @@ import https from 'https'
 import fetch from 'node-fetch'
 import { load } from 'cheerio'
 
-const GHOSTNET_BASE_URL = 'https://ghostnet.cz'
+const GHOSTNET_BASE_URL = 'https://inara.cz'
 const GHOSTNET_COMMODITY_SEARCH_URL = `${GHOSTNET_BASE_URL}/elite/commodities/`
 const GHOSTNET_SEARCH_DEFAULT_PARAMS = Object.freeze({
   formbrief: '1',

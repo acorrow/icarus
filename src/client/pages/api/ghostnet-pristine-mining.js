@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 import https from 'https'
 import { load } from 'cheerio'
 
-const BASE_URL = 'https://ghostnet.cz'
+const BASE_URL = 'https://inara.cz'
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
 
 const GHOSTNET_REQUEST_HEADERS = {
@@ -11,7 +11,7 @@ const GHOSTNET_REQUEST_HEADERS = {
   'Accept-Language': 'en-US,en;q=0.9',
   'Cache-Control': 'no-cache',
   Pragma: 'no-cache',
-  Referer: 'https://ghostnet.cz/elite/',
+  Referer: 'https://inara.cz/elite/',
   Cookie: 'ghostnetsite=1'
 }
 

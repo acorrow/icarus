@@ -110,7 +110,7 @@ function parseStationLink($, container) {
     stationName,
     systemName,
     stationId: idMatch ? Number(idMatch[1]) : null,
-    stationUrl: href ? `https://ghostnet.cz${href}` : null
+    stationUrl: href ? `https://inara.cz${href}` : null
   }
 }
 
@@ -189,7 +189,7 @@ function parseTradeBlock($, block, action) {
     action,
     commodity: commodityName || null,
     commodityId: commodityIdMatch ? Number(commodityIdMatch[1]) : null,
-    commodityUrl: commodityHref ? `https://ghostnet.cz${commodityHref}` : null,
+    commodityUrl: commodityHref ? `https://inara.cz${commodityHref}` : null,
     price: priceParts.price,
     priceText: priceParts.priceText || null,
     priceDiff: priceParts.diff,
@@ -466,7 +466,7 @@ export default async function handler(req, res) {
     params.append('pi11', '1')
   }
 
-  const url = `https://ghostnet.cz/elite/market-traderoutes/?${params.toString()}`
+  const url = `https://inara.cz/elite/market-traderoutes/?${params.toString()}`
   logGhostnetTrade(`REQUEST: system=${system} url=${url}`)
 
   try {

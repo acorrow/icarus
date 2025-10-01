@@ -33,7 +33,7 @@ Because all requests happen server-side, no GHOSTNET cookies or request headers 
 *Proxies the "Nearest Outfitting" search to list stations selling a specific ship.*
 
 1. Accepts `shipId` and `system` from the frontend and resolves each ship to GHOSTNET's `xshipXX` codes using ICARUS's shipyard dataset.
-2. Requests `https://ghostnet.cz/elite/nearest-outfitting/` with a condensed (`formbrief=1`) query so the response is lightweight (see `src/client/pages/api/ghostnet-websearch.js`, lines 252-337).
+2. Requests `https://inara.cz/elite/nearest-outfitting/` with a condensed (`formbrief=1`) query so the response is lightweight (see `src/client/pages/api/ghostnet-websearch.js`, lines 252-337).
 3. Parses the returned table manually, strips markup, and normalises station/system names to ensure safe matching.
 4. Enriches each row with system coordinates, pad sizes, services, and market data pulled from ICARUS caches before returning JSON to the client (see `src/client/pages/api/ghostnet-websearch.js`, lines 48-204 and 332-386).
 
@@ -41,7 +41,7 @@ Because all requests happen server-side, no GHOSTNET cookies or request headers 
 
 *Mirrors GHOSTNET's trade route search to reveal profitable buy/sell loops.*
 
-* Issues a GET to `https://ghostnet.cz/elite/market-traderoutes-search/?formbrief=1` while mirroring the user's chosen filters (see `src/client/pages/api/ghostnet-trade-routes.js`, lines 1-133).
+* Issues a GET to `https://inara.cz/elite/market-traderoutes-search/?formbrief=1` while mirroring the user's chosen filters (see `src/client/pages/api/ghostnet-trade-routes.js`, lines 1-133).
 * Parses the complex HTML blocks with Cheerio to extract commodities, prices, supply/demand indicators, profit per trip/hour, and supporting metadata (see `src/client/pages/api/ghostnet-trade-routes.js`, lines 70-230).
 * Calculates local distance information using ICARUS's system cache so users immediately see how far each leg is from their current position (see `src/client/pages/api/ghostnet-trade-routes.js`, lines 1-133).
 * Supports a "Trade Route Layout Sandbox" mock mode controlled by `window.localStorage` (`ghostnetUseMockData`) so designers can iterate without hitting GHOSTNET. The frontend toggles live vs mock data, and the backend honours the flag (see `src/client/pages/ghostnet.js`, lines 1585-1595).
