@@ -18,6 +18,7 @@ const defaultloadingStats = {
 export default function IndexPage () {
   const { connected } = useSocket()
   const [hostInfo, setHostInfo] = useState()
+  const [hostInfoStatus, setHostInfoStatus] = useState('initializing')
   const [update, setUpdate] = useState()
   const [downloadingUpdate, setDownloadingUpdate] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(defaultloadingStats)
@@ -25,19 +26,50 @@ export default function IndexPage () {
   // Display URL (IP address/port) to connect from a browser
   useEffect(() => {
     let isActive = true
+    let retryTimer
 
     async function loadHostInfo () {
+      if (retryTimer) {
+        clearTimeout(retryTimer)
+        retryTimer = undefined
+      }
+
       try {
         const info = await sendEvent('hostInfo')
-        if (isActive) setHostInfo(info)
+        if (!isActive) return
+
+        setHostInfo(info)
+
+        const urls = info?.urls ?? []
+        const hasNetworkAddress = urls.some(url => !/localhost|127\.0\.0\.1/i.test(url))
+
+        if (hasNetworkAddress) {
+          setHostInfoStatus('ready')
+          return
+        }
+
+        if (urls.length > 0) {
+          setHostInfoStatus('fallback')
+        } else {
+          setHostInfoStatus('initializing')
+        }
+
+        retryTimer = setTimeout(loadHostInfo, 2000)
       } catch {
-        if (isActive) setHostInfo(null)
+        if (!isActive) return
+
+        setHostInfo(undefined)
+        setHostInfoStatus('initializing')
+        retryTimer = setTimeout(loadHostInfo, 2000)
       }
     }
 
     loadHostInfo()
 
-    return () => { isActive = false }
+    return () => {
+      isActive = false
+      if (retryTimer) clearTimeout(retryTimer)
+    }
   }, [])
 
   useEffect(async () => {
@@ -70,12 +102,12 @@ export default function IndexPage () {
       return { label: browserAccessUrl, interactive: true }
     }
 
-    if (hostInfo?.urls?.length) {
+    if (hostInfoStatus === 'fallback') {
       return { label: 'Not available on current network', interactive: false }
     }
 
-    return { label: 'Detecting network…', interactive: false }
-  }, [browserAccessUrl, hostInfo])
+    return { label: 'HTTP ACCESS INITIALIZED', interactive: false }
+  }, [browserAccessUrl, hostInfoStatus])
 
   return (
     <>
@@ -137,6 +169,7 @@ export default function IndexPage () {
             {loadingProgress.loadingComplete === true && <p>Completed in {(loadingProgress.loadingTime / 1000).toFixed(2)} seconds</p>}
             {loadingProgress.loadingComplete === true && loadingProgress.numberOfLogLines > 0 && <p>Last activity {eliteDateTime(loadingProgress.lastActivity).dateTime}</p>}
             {loadingProgress.loadingComplete === true && loadingProgress.numberOfLogLines === 0 && <p>No recent activity found</p>}
+            <p className='text-muted'>Connect from a browser on</p>
             <p>
               <span className='text-muted'>HTTP ACCESS AVAILABLE AT:&nbsp;</span>
               <span
