@@ -17,13 +17,24 @@ const defaultloadingStats = {
 
 export default function IndexPage () {
   const { connected } = useSocket()
-  const [hostInfo, setHostInfo] = useState()
+  const [hostInfo, setHostInfo] = useState({ urls: [] })
   const [update, setUpdate] = useState()
   const [downloadingUpdate, setDownloadingUpdate] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(defaultloadingStats)
 
   // Display URL (IP address/port) to connect from a browser
-  useEffect(async () => setHostInfo(await sendEvent('hostInfo')), [])
+  useEffect(() => {
+    let isMounted = true
+    ;(async () => {
+      try {
+        const info = await sendEvent('hostInfo')
+        if (isMounted && info) setHostInfo(info)
+      } catch (error) {
+        console.error('Failed to load host info', error)
+      }
+    })()
+    return () => { isMounted = false }
+  }, [])
 
   useEffect(async () => {
     const message = await sendEvent('getLoadingStatus')
@@ -85,15 +96,6 @@ export default function IndexPage () {
               <i style={{ position: 'relative', top: '.2rem', marginRight: '.2rem' }} className='icon icarus-terminal-download' /> Downloading update...
             </p>}
           </div>}
-        <div style={{ position: 'absolute', bottom: '.5rem', left: '1rem' }}>
-          <p className='text-muted'>Connect from a browser on</p>
-          {hostInfo?.urls?.[0] &&
-            <p>
-              <span className='text-info' onClick={() => openTerminalInBrowser()}>
-                {hostInfo.urls[0]}
-              </span>
-            </p>}
-        </div>
         <div
           className='scrollable text-right text-uppercase' style={{
             position: 'absolute',
@@ -123,6 +125,14 @@ export default function IndexPage () {
           </div>
         </div>
         <div style={{ position: 'absolute', bottom: '1rem', right: '1rem' }}>
+          <div style={{ marginBottom: '.75rem', textAlign: 'right' }}>
+            <p className='text-muted' style={{ marginBottom: '.2rem' }}>Connect from a browser on</p>
+            <p style={{ margin: 0 }}>
+              <span className='text-info' onClick={() => openTerminalInBrowser()}>
+                {hostInfo?.urls?.[0] || 'http://localhost:3300'}
+              </span>
+            </p>
+          </div>
           <button style={{ width: '20rem' }} onClick={newWindow}>New Terminal</button>
           <button
             style={{ width: '20rem', marginTop: '.5rem' }}
