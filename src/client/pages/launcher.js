@@ -23,7 +23,22 @@ export default function IndexPage () {
   const [loadingProgress, setLoadingProgress] = useState(defaultloadingStats)
 
   // Display URL (IP address/port) to connect from a browser
-  useEffect(async () => setHostInfo(await sendEvent('hostInfo')), [])
+  useEffect(() => {
+    let isActive = true
+
+    async function loadHostInfo () {
+      try {
+        const info = await sendEvent('hostInfo')
+        if (isActive) setHostInfo(info)
+      } catch {
+        if (isActive) setHostInfo(null)
+      }
+    }
+
+    loadHostInfo()
+
+    return () => { isActive = false }
+  }, [])
 
   useEffect(async () => {
     const message = await sendEvent('getLoadingStatus')
@@ -47,9 +62,20 @@ export default function IndexPage () {
 
   const browserAccessUrl = useMemo(() => {
     if (!hostInfo?.urls?.length) return undefined
-    const preferredUrl = hostInfo.urls.find(url => !/localhost|127\.0\.0\.1/i.test(url))
-    return preferredUrl || hostInfo.urls[0]
+    return hostInfo.urls.find(url => !/localhost|127\.0\.0\.1/i.test(url))
   }, [hostInfo])
+
+  const browserAccessDisplay = useMemo(() => {
+    if (browserAccessUrl) {
+      return { label: browserAccessUrl, interactive: true }
+    }
+
+    if (hostInfo?.urls?.length) {
+      return { label: 'Not available on current network', interactive: false }
+    }
+
+    return { label: 'Detecting network…', interactive: false }
+  }, [browserAccessUrl, hostInfo])
 
   return (
     <>
@@ -111,18 +137,16 @@ export default function IndexPage () {
             {loadingProgress.loadingComplete === true && <p>Completed in {(loadingProgress.loadingTime / 1000).toFixed(2)} seconds</p>}
             {loadingProgress.loadingComplete === true && loadingProgress.numberOfLogLines > 0 && <p>Last activity {eliteDateTime(loadingProgress.lastActivity).dateTime}</p>}
             {loadingProgress.loadingComplete === true && loadingProgress.numberOfLogLines === 0 && <p>No recent activity found</p>}
-            {browserAccessUrl && (
-              <p>
-                <span className='text-muted'>HTTP ACCESS AVAILABLE AT:&nbsp;</span>
-                <span
-                  className='text-info text-link-text'
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => openTerminalInBrowser()}
-                >
-                  {browserAccessUrl}
-                </span>
-              </p>
-            )}
+            <p>
+              <span className='text-muted'>HTTP ACCESS AVAILABLE AT:&nbsp;</span>
+              <span
+                className={browserAccessDisplay.interactive ? 'text-info text-link-text' : 'text-muted'}
+                style={browserAccessDisplay.interactive ? { cursor: 'pointer' } : undefined}
+                onClick={browserAccessDisplay.interactive ? () => openTerminalInBrowser() : undefined}
+              >
+                {browserAccessDisplay.label}
+              </span>
+            </p>
           </div>
           {loadingProgress.loadingComplete === true
             ? <p>Ready <span className='text-blink-slow'>_</span></p>
