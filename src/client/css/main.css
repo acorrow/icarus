@@ -454,37 +454,70 @@ hr.bold {
   opacity: 1;
 }
 
-body.ghostnet-theme #primaryNavigation {
-  --color-primary-r: 216;
-  --color-primary-g: 180;
-  --color-primary-b: 254;
-  --color-primary-dark-r: 44;
-  --color-primary-dark-g: 18;
-  --color-primary-dark-b: 68;
-  --color-primary: rgb(216, 180, 254);
-  --color-primary-dark: rgb(44, 18, 68);
-  background: linear-gradient(90deg, rgba(28, 11, 43, 0.95), rgba(81, 27, 128, 0.85));
-  border-radius: 0.65rem;
-  padding: 0.35rem;
-  box-shadow: 0 1.5rem 3rem rgba(10, 5, 20, 0.65);
+body.ghostnet-theme #secondaryNavigation {
+  --ghostnet-nav-primary: rgb(216, 180, 254);
+  --ghostnet-nav-primary-dark: rgb(44, 18, 68);
+  background: linear-gradient(180deg, rgba(28, 11, 43, 0.96), rgba(81, 27, 128, 0.85));
+  border-right: 1px solid rgba(216, 180, 254, 0.25);
+  box-shadow: 1.5rem 0 3rem rgba(10, 5, 20, 0.65);
 }
 
-body.ghostnet-theme #primaryNavigation button {
+body.ghostnet-theme #secondaryNavigation .button--icon {
   border-radius: 0.45rem;
   border: 1px solid rgba(216, 180, 254, 0.32);
   background: rgba(27, 11, 43, 0.6);
-  box-shadow: 0 0 1.5rem 0.4rem rgba(73, 27, 115, 0.35) inset;
+  box-shadow: inset 0 0 1.5rem 0.4rem rgba(73, 27, 115, 0.35);
+  color: rgb(216, 180, 254);
+  text-shadow: 0 0 0.85rem rgba(216, 180, 254, 0.45);
 }
 
-body.ghostnet-theme #primaryNavigation button.button--active {
+body.ghostnet-theme #secondaryNavigation .button--icon.button--active {
   background: rgba(216, 180, 254, 0.25);
   color: rgb(44, 18, 68);
   text-shadow: 0 0 1rem rgba(44, 18, 68, 0.65);
-  box-shadow: 0 0 1.35rem rgba(216, 180, 254, 0.6), 0 0 0.35rem rgba(216, 180, 254, 0.85) inset;
+  box-shadow: 0 0 1.35rem rgba(216, 180, 254, 0.6), inset 0 0 0.35rem rgba(216, 180, 254, 0.85);
+  border-right: 0;
 }
 
-body.ghostnet-theme #primaryNavigation button:hover:not([disabled]):not(.button--active),
-body.ghostnet-theme #primaryNavigation button:focus:not([disabled]):not(.button--active) {
+body.ghostnet-theme #secondaryNavigation .button--icon:hover:not([disabled]):not(.button--active),
+body.ghostnet-theme #secondaryNavigation .button--icon:focus:not([disabled]):not(.button--active) {
   background: rgba(216, 180, 254, 0.12);
-  box-shadow: 0 0 1.25rem rgba(216, 180, 254, 0.4), 0 0 0.35rem rgba(216, 180, 254, 0.6) inset;
+  box-shadow: 0 0 1.25rem rgba(216, 180, 254, 0.4), inset 0 0 0.35rem rgba(216, 180, 254, 0.6);
+  color: rgb(216, 180, 254);
+}
+
+body.ghostnet-theme #secondaryNavigation .button--icon.button--selected,
+body.ghostnet-theme #secondaryNavigation .button--icon.button--secondary {
+  background: rgba(216, 180, 254, 0.2);
+  color: rgb(44, 18, 68);
+  border-color: rgba(216, 180, 254, 0.55);
+  box-shadow: 0 0 1.35rem rgba(216, 180, 254, 0.5), inset 0 0 0.45rem rgba(216, 180, 254, 0.65);
+  border-right: 0;
+}
+
+#primaryNavigation .ghostnet-nav-button {
+  background: linear-gradient(180deg, rgba(44, 18, 68, 0.95), rgba(81, 27, 128, 0.85));
+  border: 1px solid rgba(216, 180, 254, 0.3);
+  box-shadow: inset 0 0 1.5rem rgba(73, 27, 115, 0.35);
+  color: rgb(216, 180, 254);
+  text-shadow: 0 0 1.2rem rgba(216, 180, 254, 0.6);
+}
+
+#primaryNavigation .ghostnet-nav-button .visible-small,
+#primaryNavigation .ghostnet-nav-button .hidden-small {
+  text-shadow: 0 0 1.2rem rgba(216, 180, 254, 0.6);
+}
+
+#primaryNavigation .ghostnet-nav-button.button--active {
+  background: rgba(216, 180, 254, 0.3);
+  color: rgb(44, 18, 68);
+  text-shadow: 0 0 1rem rgba(44, 18, 68, 0.65);
+  box-shadow: 0 0 1.35rem rgba(216, 180, 254, 0.65), inset 0 0 0.4rem rgba(216, 180, 254, 0.85);
+}
+
+#primaryNavigation .ghostnet-nav-button:hover:not([disabled]):not(.button--active),
+#primaryNavigation .ghostnet-nav-button:focus:not([disabled]):not(.button--active) {
+  background: rgba(216, 180, 254, 0.18);
+  box-shadow: 0 0 1.25rem rgba(216, 180, 254, 0.45), inset 0 0 0.35rem rgba(216, 180, 254, 0.6);
+  color: rgb(216, 180, 254);
 }

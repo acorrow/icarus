@@ -155,20 +155,27 @@ export default function Header ({ connected, active }) {
       </div>
       <hr />
       <div id='primaryNavigation' className='button-group'>
-        {NAV_BUTTONS.filter(button => button).map((button, i) =>
-          <button
-            key={button.name}
-            data-primary-navigation={i+1}
-            tabIndex='1'
-            disabled={button.path === currentPath}
-            className={button.path === currentPath ? 'button--active' : ''}
-            onClick={() => router.push(button.path)}
-            style={{ fontSize: '1.5rem' }}
-          >
-            <span className='visible-small'>{button.abbr}</span>
-            <span className='hidden-small'>{button.name}</span>
-          </button>
-        )}
+        {NAV_BUTTONS.filter(button => button).map((button, i) => {
+          const isActive = button.path === currentPath
+          const isGhostNet = button.path === '/inara'
+          return (
+            <button
+              key={button.name}
+              data-primary-navigation={i + 1}
+              tabIndex='1'
+              disabled={isActive}
+              className={[
+                isActive ? 'button--active' : '',
+                isGhostNet ? 'ghostnet-nav-button' : ''
+              ].filter(Boolean).join(' ')}
+              onClick={() => router.push(button.path)}
+              style={{ fontSize: '1.5rem' }}
+            >
+              <span className='visible-small'>{button.abbr}</span>
+              <span className='hidden-small'>{button.name}</span>
+            </button>
+          )
+        })}
       </div>
       <hr className='bold' />
       <Settings visible={settingsVisible} toggleVisible={() => setSettingsVisible(!settingsVisible)} />
