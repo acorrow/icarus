@@ -63,7 +63,9 @@ class InputListener extends EventEmitter {
     if (this.deviceHandles.has(deviceId)) return
 
     try {
-      const handle = new HID.HID(deviceInfo.path || deviceInfo.vendorId, deviceInfo.productId)
+      const handle = deviceInfo.path
+        ? new HID.HID(deviceInfo.path)
+        : new HID.HID(deviceInfo.vendorId, deviceInfo.productId)
       handle.on('data', data => this.handleData(deviceInfo, data))
       handle.on('error', error => this.handleError(deviceInfo, error))
       this.deviceHandles.set(deviceId, { deviceInfo, handle })
