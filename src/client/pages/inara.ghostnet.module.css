@@ -2,19 +2,19 @@
   position: relative;
   min-height: 100%;
   padding: 2.5rem 3rem 3.5rem;
-  background: radial-gradient(circle at 20% 15%, rgba(124, 223, 255, 0.12), transparent 55%),
-    radial-gradient(circle at 85% 10%, rgba(108, 119, 255, 0.18), transparent 60%),
+  background: radial-gradient(circle at 20% 15%, rgba(216, 180, 254, 0.14), transparent 55%),
+    radial-gradient(circle at 85% 10%, rgba(167, 139, 250, 0.22), transparent 60%),
     #05080d;
   color: var(--ghostnet-ink);
   overflow: hidden;
   --ghostnet-bg: #05080d;
   --ghostnet-panel: rgba(10, 15, 22, 0.88);
-  --ghostnet-panel-border: rgba(124, 223, 255, 0.25);
+  --ghostnet-panel-border: rgba(216, 180, 254, 0.28);
   --ghostnet-ink: #d8e9ff;
   --ghostnet-muted: #8da2bf;
   --ghostnet-subdued: #6c7c92;
-  --ghostnet-accent: #7fe9ff;
-  --ghostnet-highlight: rgba(127, 233, 255, 0.08);
+  --ghostnet-accent: #d8b4fe;
+  --ghostnet-highlight: rgba(216, 180, 254, 0.12);
 }
 
 .ghostnet::before {
@@ -79,7 +79,7 @@
 }
 
 .statusCard {
-  background: linear-gradient(160deg, rgba(127, 233, 255, 0.1), rgba(5, 8, 13, 0.65));
+  background: linear-gradient(160deg, rgba(216, 180, 254, 0.14), rgba(5, 8, 13, 0.65));
   border: 1px solid var(--ghostnet-panel-border);
   border-radius: 1rem;
   padding: 1.25rem 1.5rem;
@@ -93,7 +93,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 15% 20%, rgba(127, 233, 255, 0.25), transparent 55%);
+  background: radial-gradient(circle at 15% 20%, rgba(216, 180, 254, 0.26), transparent 55%);
   opacity: 0.75;
   pointer-events: none;
 }
@@ -155,7 +155,7 @@
 .sectionFrameElevated {
   border-radius: 1.5rem;
   background: var(--ghostnet-panel);
-  border: 1px solid rgba(127, 233, 255, 0.3);
+  border: 1px solid rgba(216, 180, 254, 0.32);
   box-shadow: 0 1.75rem 4rem rgba(4, 9, 14, 0.85);
   backdrop-filter: blur(14px);
 }
@@ -184,8 +184,8 @@
   text-transform: uppercase;
   letter-spacing: 0.18em;
   border-radius: 999px;
-  border: 1px solid rgba(127, 233, 255, 0.45);
-  background: rgba(127, 233, 255, 0.08);
+  border: 1px solid rgba(216, 180, 254, 0.42);
+  background: rgba(216, 180, 254, 0.12);
   color: var(--ghostnet-accent);
 }
 
@@ -253,20 +253,20 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table table thead tr th) {
-  border-bottom: 1px solid rgba(127, 233, 255, 0.15);
+  border-bottom: 1px solid rgba(216, 180, 254, 0.2);
 }
 
 .ghostnet :global(.ghostnet-panel-table tbody tr:nth-child(even)) {
-  background: rgba(127, 233, 255, 0.04);
+  background: rgba(216, 180, 254, 0.06);
 }
 
 .ghostnet :global(.ghostnet-panel-table tbody tr:hover) {
-  background: rgba(127, 233, 255, 0.1) !important;
+  background: rgba(216, 180, 254, 0.14) !important;
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__detail) {
   background: rgba(4, 8, 13, 0.85);
-  border: 1px solid rgba(127, 233, 255, 0.18);
+  border: 1px solid rgba(216, 180, 254, 0.22);
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-status) {
@@ -286,7 +286,7 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table .text-secondary) {
-  color: #a8b3ff;
+  color: #e0c8ff;
 }
 
 .ghostnet :global(.ghostnet-panel-table .text-muted) {
@@ -303,12 +303,12 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--active) {
-  background: rgba(127, 233, 255, 0.15);
-  border-color: rgba(127, 233, 255, 0.4);
+  background: rgba(216, 180, 254, 0.18);
+  border-color: rgba(216, 180, 254, 0.45);
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--active:hover) {
-  background: rgba(127, 233, 255, 0.2);
+  background: rgba(216, 180, 254, 0.24);
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--icon) {
@@ -316,7 +316,7 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--icon:hover) {
-  background: rgba(127, 233, 255, 0.12);
+  background: rgba(216, 180, 254, 0.16);
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--secondary) {
@@ -324,11 +324,11 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--secondary:hover) {
-  background: rgba(127, 233, 255, 0.12);
+  background: rgba(216, 180, 254, 0.16);
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__inspector) {
-  border-left: 1px solid rgba(127, 233, 255, 0.18);
+  border-left: 1px solid rgba(216, 180, 254, 0.22);
 }
 
 @media (max-width: 640px) {
