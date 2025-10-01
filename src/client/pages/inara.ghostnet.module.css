@@ -31,6 +31,11 @@
   animation: loader-fade-in 280ms ease-out;
 }
 
+.loaderOverlayHidden {
+  pointer-events: none;
+  animation: loader-fade-out 320ms ease forwards;
+}
+
 .loaderCore {
   position: relative;
   width: min(360px, 85vw);
@@ -125,6 +130,15 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes loader-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 

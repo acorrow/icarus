@@ -57,9 +57,13 @@ LoadingSpinner.defaultProps = {
   inline: false
 }
 
-function GhostNetLoader () {
+function GhostNetLoader ({ hidden }) {
   return (
-    <div className={styles.loaderOverlay} role='status' aria-live='polite'>
+    <div
+      className={`${styles.loaderOverlay}${hidden ? ` ${styles.loaderOverlayHidden}` : ''}`}
+      role='status'
+      aria-live='polite'
+    >
       <div className={styles.loaderCore}>
         <div className={styles.loaderDial} aria-hidden='true'>
           <span className={styles.loaderGlow} />
@@ -73,6 +77,10 @@ function GhostNetLoader () {
       </div>
     </div>
   )
+}
+
+GhostNetLoader.defaultProps = {
+  hidden: false
 }
 
 function normaliseName (value) {
@@ -3113,7 +3121,10 @@ function PristineMiningPanel () {
 
 export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
-  const [showGhostNetLoader, setShowGhostNetLoader] = useState(() => process.env.NODE_ENV !== 'test')
+  const loaderEnabled = process.env.NODE_ENV !== 'test'
+  const [ghostNetLoaderMounted, setGhostNetLoaderMounted] = useState(loaderEnabled)
+  const [ghostNetLoaderVisible, setGhostNetLoaderVisible] = useState(loaderEnabled)
+  const [ghostNetContentRevealed, setGhostNetContentRevealed] = useState(!loaderEnabled)
   const { connected, ready, active: socketActive } = useSocket()
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
@@ -3125,10 +3136,23 @@ export default function InaraPage() {
     }
   }, [])
   useEffect(() => {
-    if (process.env.NODE_ENV === 'test') return undefined
-    const timer = setTimeout(() => setShowGhostNetLoader(false), 3000)
-    return () => clearTimeout(timer)
-  }, [])
+    if (!loaderEnabled) return undefined
+
+    const revealTimer = setTimeout(() => {
+      setGhostNetLoaderVisible(false)
+      setGhostNetContentRevealed(true)
+    }, 3000)
+
+    return () => clearTimeout(revealTimer)
+  }, [loaderEnabled])
+
+  useEffect(() => {
+    if (!loaderEnabled) return undefined
+    if (ghostNetLoaderVisible) return undefined
+
+    const cleanupTimer = setTimeout(() => setGhostNetLoaderMounted(false), 360)
+    return () => clearTimeout(cleanupTimer)
+  }, [ghostNetLoaderVisible, loaderEnabled])
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Commodity Trade', icon: 'cargo', active: activeTab === 'commodityTrade', onClick: () => setActiveTab('commodityTrade') },
@@ -3153,16 +3177,24 @@ export default function InaraPage() {
     <Layout connected active ready loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div className={styles.ghostnet}>
-          {showGhostNetLoader ? <GhostNetLoader /> : null}
-          <div className={styles.shell} aria-hidden={showGhostNetLoader} aria-busy={showGhostNetLoader}>
+          {ghostNetLoaderMounted ? <GhostNetLoader hidden={!ghostNetLoaderVisible} /> : null}
+          <div
+            className={`${styles.shell}${ghostNetContentRevealed ? ' fx-fade-in' : ''}`}
+            aria-hidden={ghostNetLoaderMounted && ghostNetLoaderVisible}
+            aria-busy={ghostNetLoaderMounted && ghostNetLoaderVisible}
+          >
             <section className={styles.header} aria-labelledby='ghostnet-heading'>
               <div>
-                <span className={styles.kicker}>Underground Intelligence Mesh</span>
-                <h1 id='ghostnet-heading' className={styles.title}>Ghost Net</h1>
-                <p className={styles.subtitle}>
+                <span className={`${styles.kicker}${ghostNetContentRevealed ? ' fx-fade-in' : ''}`}>
+                  Underground Intelligence Mesh
+                </span>
+                <h1 id='ghostnet-heading' className={`${styles.title}${ghostNetContentRevealed ? ' fx-fade-in' : ''}`}>
+                  Ghost Net
+                </h1>
+                <p className={`${styles.subtitle}${ghostNetContentRevealed ? ' fx-fade-in' : ''}`}>
                   Ghost Net stitches INARA intercepts into a clandestine command surface, revealing trade corridors, syndicate missions, and pristine deposits hidden from official channels.
                 </p>
-                <div className={styles.ghostnetScroller} aria-hidden='true'>
+                <div className={`${styles.ghostnetScroller}${ghostNetContentRevealed ? ' fx-fade-in' : ''}`} aria-hidden='true'>
                   <div className={styles.ghostnetTicker}>
                     {tickerMessages.concat(tickerMessages).map((message, index) => (
                       <span key={`${message}-${index}`} className='ghostnet-inline-accent'>{message}</span>
@@ -3171,13 +3203,15 @@ export default function InaraPage() {
                 </div>
               </div>
               <aside
-                className={styles.statusCard}
+                className={`${styles.statusCard}${ghostNetContentRevealed ? ' fx-fade-in' : ''}`}
                 role='complementary'
                 aria-label='Signal Brief'
                 aria-labelledby='ghostnet-status-heading'
               >
-                <h2 id='ghostnet-status-heading' className={styles.statusHeading}>Signal Brief</h2>
-                <ul className={styles.metaList} aria-live='polite'>
+                <h2 id='ghostnet-status-heading' className={`${styles.statusHeading}${ghostNetContentRevealed ? ' fx-fade-in' : ''}`}>
+                  Signal Brief
+                </h2>
+                <ul className={`${styles.metaList}${ghostNetContentRevealed ? ' fx-fade-in' : ''}`} aria-live='polite'>
                   <li className={styles.metaItem}>
                     <span className={styles.metaLabel}>Uplink</span>
                     <span className={styles.metaValue}>{uplinkStatus}</span>
@@ -3197,7 +3231,7 @@ export default function InaraPage() {
                 </ul>
               </aside>
             </section>
-            <div className={styles.tabPanels}>
+            <div className={`${styles.tabPanels}${ghostNetContentRevealed ? ' fx-fade-in' : ''}`}>
               <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
                 <TradeRoutesPanel />
               </div>
