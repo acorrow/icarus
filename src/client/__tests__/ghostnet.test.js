@@ -1,10 +1,10 @@
 import React from 'react'
 import { render, screen, within, act } from '@testing-library/react'
-import InaraPage from '../pages/inara'
+import GhostnetPage from '../pages/ghostnet'
 
 jest.mock('next/router', () => ({
   useRouter: () => ({
-    pathname: '/inara',
+    pathname: '/ghostnet',
     push: jest.fn()
   })
 }))
@@ -29,7 +29,7 @@ describe('Ghost Net page', () => {
   })
 
   it('renders the Ghost Net hero and status summary', async () => {
-    await act(async () => { render(<InaraPage />) })
+    await act(async () => { render(<GhostnetPage />) })
 
     expect(await screen.findByRole('heading', { level: 1, name: /ghost net/i })).toBeInTheDocument()
 
@@ -41,11 +41,11 @@ describe('Ghost Net page', () => {
   })
 
   it('exposes key Ghost Net panels for missions and mining', async () => {
-    await act(async () => { render(<InaraPage />) })
+    await act(async () => { render(<GhostnetPage />) })
 
     expect(await screen.findByRole('heading', { name: /find trade routes/i })).toBeInTheDocument()
-    expect(screen.getByText(/cross-reference inara freight whispers/i)).toBeInTheDocument()
+    expect(screen.getByText(/cross-reference ghostnet freight whispers/i)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /mining missions/i, hidden: true })).toBeInTheDocument()
-    expect(screen.getByText(/ghost net decrypts volunteer inara manifests/i)).toBeInTheDocument()
+    expect(screen.getByText(/ghost net decrypts volunteer ghostnet manifests/i)).toBeInTheDocument()
   })
 })

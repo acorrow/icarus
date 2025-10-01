@@ -5,9 +5,9 @@ import https from 'https'
 import fetch from 'node-fetch'
 import { load } from 'cheerio'
 
-const INARA_BASE_URL = 'https://inara.cz'
-const INARA_COMMODITY_SEARCH_URL = `${INARA_BASE_URL}/elite/commodities/`
-const INARA_SEARCH_DEFAULT_PARAMS = Object.freeze({
+const GHOSTNET_BASE_URL = 'https://inara.cz'
+const GHOSTNET_COMMODITY_SEARCH_URL = `${GHOSTNET_BASE_URL}/elite/commodities/`
+const GHOSTNET_SEARCH_DEFAULT_PARAMS = Object.freeze({
   formbrief: '1',
   pi1: '2',
   pi3: '1',
@@ -23,11 +23,11 @@ const INARA_SEARCH_DEFAULT_PARAMS = Object.freeze({
   pi14: '0'
 })
 
-const INARA_MARKET_CACHE_DIR = path.join(process.cwd(), 'resources', 'cache')
-const INARA_MARKET_CACHE_FILE = path.join(INARA_MARKET_CACHE_DIR, 'inara-market-cache.json')
-const INARA_MARKET_CACHE_VERSION = 1
-const DEFAULT_INARA_CACHE_TTL_MS = 2 * 60 * 60 * 1000
-const INARA_CACHE_TTL_MS = Number(process.env.ICARUS_INARA_SEARCH_TTL_MS || DEFAULT_INARA_CACHE_TTL_MS)
+const GHOSTNET_MARKET_CACHE_DIR = path.join(process.cwd(), 'resources', 'cache')
+const GHOSTNET_MARKET_CACHE_FILE = path.join(GHOSTNET_MARKET_CACHE_DIR, 'ghostnet-market-cache.json')
+const GHOSTNET_MARKET_CACHE_VERSION = 1
+const DEFAULT_GHOSTNET_CACHE_TTL_MS = 2 * 60 * 60 * 1000
+const GHOSTNET_CACHE_TTL_MS = Number(process.env.ICARUS_GHOSTNET_SEARCH_TTL_MS || DEFAULT_GHOSTNET_CACHE_TTL_MS)
 
 const commodityDataPath = path.join(process.cwd(), 'src', 'service', 'data', 'all-commodites.json')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -79,41 +79,41 @@ function loadCommoditySynonyms () {
   }
 }
 
-function loadInaraMarketCache () {
+function loadGhostnetMarketCache () {
   if (cachedMarketCache) return cachedMarketCache
   try {
-    if (!fs.existsSync(INARA_MARKET_CACHE_FILE)) {
-      cachedMarketCache = { version: INARA_MARKET_CACHE_VERSION, commodities: {} }
+    if (!fs.existsSync(GHOSTNET_MARKET_CACHE_FILE)) {
+      cachedMarketCache = { version: GHOSTNET_MARKET_CACHE_VERSION, commodities: {} }
       return cachedMarketCache
     }
-    const raw = fs.readFileSync(INARA_MARKET_CACHE_FILE, 'utf8')
+    const raw = fs.readFileSync(GHOSTNET_MARKET_CACHE_FILE, 'utf8')
     const parsed = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object') {
-      cachedMarketCache = { version: INARA_MARKET_CACHE_VERSION, commodities: {} }
+      cachedMarketCache = { version: GHOSTNET_MARKET_CACHE_VERSION, commodities: {} }
       return cachedMarketCache
     }
-    if (parsed.version !== INARA_MARKET_CACHE_VERSION || typeof parsed.commodities !== 'object') {
-      cachedMarketCache = { version: INARA_MARKET_CACHE_VERSION, commodities: {} }
+    if (parsed.version !== GHOSTNET_MARKET_CACHE_VERSION || typeof parsed.commodities !== 'object') {
+      cachedMarketCache = { version: GHOSTNET_MARKET_CACHE_VERSION, commodities: {} }
       return cachedMarketCache
     }
     cachedMarketCache = parsed
     return cachedMarketCache
   } catch (err) {
-    cachedMarketCache = { version: INARA_MARKET_CACHE_VERSION, commodities: {} }
+    cachedMarketCache = { version: GHOSTNET_MARKET_CACHE_VERSION, commodities: {} }
     return cachedMarketCache
   }
 }
 
-function saveInaraMarketCache (cache) {
+function saveGhostnetMarketCache (cache) {
   if (!cache || typeof cache !== 'object') return
   try {
-    ensureDirectoryExists(INARA_MARKET_CACHE_DIR)
-    fs.writeFileSync(INARA_MARKET_CACHE_FILE, JSON.stringify(cache, null, 2), 'utf8')
+    ensureDirectoryExists(GHOSTNET_MARKET_CACHE_DIR)
+    fs.writeFileSync(GHOSTNET_MARKET_CACHE_FILE, JSON.stringify(cache, null, 2), 'utf8')
     cachedMarketCache = cache
   } catch (err) {}
 }
 
-function getCachedCommoditySearch (cache, commodityKey, systemName, { ttlMs = INARA_CACHE_TTL_MS } = {}) {
+function getCachedCommoditySearch (cache, commodityKey, systemName, { ttlMs = GHOSTNET_CACHE_TTL_MS } = {}) {
   if (!cache || typeof cache !== 'object') return null
   if (!commodityKey) return null
   const byCommodity = cache.commodities?.[commodityKey]
@@ -191,7 +191,7 @@ async function loadCommodityOptions () {
   if (cachedCommodityOptionsPromise) return cachedCommodityOptionsPromise
 
   cachedCommodityOptionsPromise = (async () => {
-    const url = new URL(INARA_COMMODITY_SEARCH_URL)
+    const url = new URL(GHOSTNET_COMMODITY_SEARCH_URL)
     url.searchParams.set('formbrief', '1')
     const response = await fetch(url.toString(), {
       agent: ipv4HttpsAgent,
@@ -200,7 +200,7 @@ async function loadCommodityOptions () {
       }
     })
     if (!response.ok) {
-      throw new Error(`INARA commodity list request failed with status ${response.status}`)
+      throw new Error(`GHOSTNET commodity list request failed with status ${response.status}`)
     }
     const html = await response.text()
     const $ = load(html)
@@ -283,7 +283,7 @@ function parseCommoditySearchResults (html) {
     const locationCell = $(cells[0])
     const stationLink = locationCell.find('a[href*="/elite/station-market/"]').first()
     const stationHref = stationLink.attr('href') || ''
-    const stationUrl = stationHref ? `${INARA_BASE_URL}${stationHref}` : null
+    const stationUrl = stationHref ? `${GHOSTNET_BASE_URL}${stationHref}` : null
     const stationName = cleanText(stationLink.find('.standardcase').text().replace(/\|$/, '')) || null
     const systemName = cleanText(stationLink.find('.uppercase').text()) || null
 
@@ -321,7 +321,7 @@ function parseCommoditySearchResults (html) {
       updatedText,
       updatedAt: parseEpochSecondsToIso(updatedAttr),
       fetchedAt: new Date().toISOString(),
-      source: 'inara-search'
+      source: 'ghostnet-search'
     }
 
     listings.push(listing)
@@ -338,11 +338,11 @@ function parseCommoditySearchResults (html) {
 }
 
 async function fetchCommoditySearchListings ({ commodityId, commodityName, nearSystem }) {
-  if (!commodityId) throw new Error(`Unknown INARA commodity id for ${commodityName || 'commodity'}`)
-  const params = new URLSearchParams({ ...INARA_SEARCH_DEFAULT_PARAMS })
+  if (!commodityId) throw new Error(`Unknown GHOSTNET commodity id for ${commodityName || 'commodity'}`)
+  const params = new URLSearchParams({ ...GHOSTNET_SEARCH_DEFAULT_PARAMS })
   params.append('pa1[]', commodityId)
   if (nearSystem) params.set('ps1', nearSystem)
-  const url = `${INARA_COMMODITY_SEARCH_URL}?${params.toString()}`
+  const url = `${GHOSTNET_COMMODITY_SEARCH_URL}?${params.toString()}`
   const response = await fetch(url, {
     agent: ipv4HttpsAgent,
     headers: {
@@ -350,7 +350,7 @@ async function fetchCommoditySearchListings ({ commodityId, commodityName, nearS
     }
   })
   if (!response.ok) {
-    throw new Error(`INARA commodity search failed with status ${response.status}`)
+    throw new Error(`GHOSTNET commodity search failed with status ${response.status}`)
   }
   const html = await response.text()
   return parseCommoditySearchResults(html)
@@ -677,7 +677,7 @@ export default async function handler (req, res) {
     .filter(item => item.name)
 
   if (requestedCommodities.length === 0) {
-    return res.status(200).json({ results: [], metadata: { inaraStatus: 'empty', marketStatus: 'empty' } })
+    return res.status(200).json({ results: [], metadata: { ghostnetStatus: 'empty', marketStatus: 'empty' } })
   }
 
   const logDir = resolveLogDir()
@@ -685,15 +685,15 @@ export default async function handler (req, res) {
   const marketStatus = marketData ? 'ok' : 'missing'
   const { history: localHistory, status: historyStatus } = buildLocalMarketHistory(logDir, marketData?.marketId || null)
 
-  const inaraSearchCache = loadInaraMarketCache()
-  let inaraCacheDirty = false
-  const inaraResults = new Map()
+  const ghostnetSearchCache = loadGhostnetMarketCache()
+  let ghostnetCacheDirty = false
+  const ghostnetResults = new Map()
   const results = []
-  let inaraStatus = 'ok'
+  let ghostnetStatus = 'ok'
 
   for (const commodity of requestedCommodities) {
     const commodityKey = commodity.key || normaliseCommodityKey(commodity.name)
-    if (!commodityKey || inaraResults.has(commodityKey)) continue
+    if (!commodityKey || ghostnetResults.has(commodityKey)) continue
 
     let option = null
     let searchError = null
@@ -706,14 +706,14 @@ export default async function handler (req, res) {
         option = await resolveCommodityId(commodity.symbol)
       }
     } catch (err) {
-      searchError = err.message || 'Failed to resolve INARA commodity id'
+      searchError = err.message || 'Failed to resolve GHOSTNET commodity id'
       hardFailure = true
     }
 
     const nearSystem = marketData?.systemName || null
 
     if (!searchError && option) {
-      const cached = getCachedCommoditySearch(inaraSearchCache, commodityKey, nearSystem)
+      const cached = getCachedCommoditySearch(ghostnetSearchCache, commodityKey, nearSystem)
       if (cached) {
         listings = Array.isArray(cached.listings) ? cached.listings : []
       } else {
@@ -724,46 +724,46 @@ export default async function handler (req, res) {
             nearSystem
           })
           if (Array.isArray(listings) && listings.length > 0) {
-            const didUpdate = setCachedCommoditySearch(inaraSearchCache, commodityKey, nearSystem, listings)
-            if (didUpdate) inaraCacheDirty = true
+            const didUpdate = setCachedCommoditySearch(ghostnetSearchCache, commodityKey, nearSystem, listings)
+            if (didUpdate) ghostnetCacheDirty = true
           }
         } catch (err) {
-          searchError = err.message || 'Failed to retrieve INARA listings'
+          searchError = err.message || 'Failed to retrieve GHOSTNET listings'
           hardFailure = true
         }
       }
     } else if (!option && !searchError) {
-      searchError = 'Commodity not recognized by INARA search'
+      searchError = 'Commodity not recognized by GHOSTNET search'
     }
 
     if (!searchError && Array.isArray(listings) && listings.length === 0) {
-      searchError = 'No INARA listings found'
+      searchError = 'No GHOSTNET listings found'
     }
 
     if (searchError) {
       if (hardFailure) {
-        inaraStatus = 'error'
-      } else if (inaraStatus === 'ok') {
-        inaraStatus = 'partial'
+        ghostnetStatus = 'error'
+      } else if (ghostnetStatus === 'ok') {
+        ghostnetStatus = 'partial'
       }
     }
 
-    inaraResults.set(commodityKey, {
+    ghostnetResults.set(commodityKey, {
       listings: Array.isArray(listings) ? listings : [],
       error: searchError || null
     })
   }
 
-  if (inaraCacheDirty) {
-    saveInaraMarketCache(inaraSearchCache)
+  if (ghostnetCacheDirty) {
+    saveGhostnetMarketCache(ghostnetSearchCache)
   }
 
   requestedCommodities.forEach(commodity => {
     const commodityKey = commodity.key || normaliseCommodityKey(commodity.name)
-    const cacheEntry = commodityKey ? inaraResults.get(commodityKey) : null
-    const resolvedEntry = cacheEntry || { listings: [], error: 'No INARA data available' }
-    if (resolvedEntry.error && resolvedEntry.listings.length === 0 && inaraStatus === 'ok') {
-      inaraStatus = 'partial'
+    const cacheEntry = commodityKey ? ghostnetResults.get(commodityKey) : null
+    const resolvedEntry = cacheEntry || { listings: [], error: 'No GHOSTNET data available' }
+    if (resolvedEntry.error && resolvedEntry.listings.length === 0 && ghostnetStatus === 'ok') {
+      ghostnetStatus = 'partial'
     }
 
     let marketEntry = null
@@ -788,7 +788,7 @@ export default async function handler (req, res) {
       }
     }
 
-    const bestInaraListing = resolvedEntry.listings.find(entry => typeof entry.price === 'number') || null
+    const bestGhostnetListing = resolvedEntry.listings.find(entry => typeof entry.price === 'number') || null
 
     let historyEntries = []
     let historyBestEntry = null
@@ -814,14 +814,14 @@ export default async function handler (req, res) {
       name: commodity.name,
       count: commodity.count,
       market: marketEntry,
-      inara: bestInaraListing,
+      ghostnet: bestGhostnetListing,
       localHistory: {
         best: historyBestEntry,
         entries: historyEntries
       },
       errors: {
         market: !marketEntry && marketStatus !== 'missing' ? 'Commodity not found in latest market data.' : null,
-        inara: resolvedEntry.error || null
+        ghostnet: resolvedEntry.error || null
       }
     })
   })
@@ -829,7 +829,7 @@ export default async function handler (req, res) {
   res.status(200).json({
     results,
     metadata: {
-      inaraStatus,
+      ghostnetStatus,
       marketStatus,
       historyStatus
     }

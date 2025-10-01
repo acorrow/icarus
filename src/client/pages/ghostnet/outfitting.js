@@ -6,18 +6,18 @@ const navItems = [
   {
     name: 'Search',
     icon: 'search',
-    url: '/inara/search',
+    url: '/ghostnet/search',
     active: false
   },
   {
     name: 'Outfitting',
     icon: 'wrench',
-    url: '/inara/outfitting',
+    url: '/ghostnet/outfitting',
     active: true
   }
 ]
 
-export default function InaraOutfittingPage () {
+export default function GhostnetOutfittingPage () {
   return (
     <Layout>
       <PanelNavigation items={navItems} />

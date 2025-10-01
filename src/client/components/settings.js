@@ -24,11 +24,11 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
               </button>
             </Fragment>
           )}
-          <Fragment key='INARA'>
+          <Fragment key='GHOSTNET'>
             <button
               tabIndex='2'
-              className={`button--icon ${activeSettingsPanel === 'INARA' ? 'button--active' : ''}`}
-              onClick={() => setActiveSettingsPanel('INARA')}
+              className={`button--icon ${activeSettingsPanel === 'GHOSTNET' ? 'button--active' : ''}`}
+              onClick={() => setActiveSettingsPanel('GHOSTNET')}
             >
               <i className='icon icarus-terminal-info' />
             </button>
@@ -36,7 +36,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         </div>
         {activeSettingsPanel === 'Theme' && <ThemeSettings visible={visible} />}
         {activeSettingsPanel === 'Sounds' && <SoundSettings visible={visible} />}
-        {activeSettingsPanel === 'INARA' && <InaraSettings />}
+        {activeSettingsPanel === 'GHOSTNET' && <GhostnetSettings />}
         <div className='modal-dialog__footer'>
           <hr style={{ margin: '1rem 0 .5rem 0' }} />
           <button className='float-right' onClick={toggleVisible}>
@@ -48,22 +48,22 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
   )
 }
 
-function InaraSettings () {
-  const patreonUrl = 'https://www.patreon.com/artieinara'
+function GhostnetSettings () {
+  const patreonUrl = 'https://www.patreon.com/artieghostnet'
   const patreonWindowFeatures = 'noopener,noreferrer'
   const [useMockData, setUseMockData] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setUseMockData(window.localStorage.getItem('inaraUseMockData') === 'true')
+      setUseMockData(window.localStorage.getItem('ghostnetUseMockData') === 'true')
     }
   }, [])
 
   function handleSave(e) {
     e.preventDefault()
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('inaraUseMockData', useMockData ? 'true' : 'false')
+      window.localStorage.setItem('ghostnetUseMockData', useMockData ? 'true' : 'false')
       setSaved(true)
       setTimeout(() => setSaved(false), 1500)
     }
@@ -71,7 +71,7 @@ function InaraSettings () {
 
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
-      <h3 className='text-primary'>INARA Integration Settings</h3>
+      <h3 className='text-primary'>GHOSTNET Integration Settings</h3>
       <p>Enable or disable the Trade Route Layout Sandbox using mock data.</p>
       <form onSubmit={handleSave} style={{ maxWidth: 400 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', fontSize: '1rem' }}>
@@ -89,9 +89,9 @@ function InaraSettings () {
       </form>
       <hr style={{ margin: '2rem 0 1rem 0' }} />
       <section>
-        <h4 className='text-primary' style={{ marginBottom: '0.5rem' }}>Support INARA</h4>
+        <h4 className='text-primary' style={{ marginBottom: '0.5rem' }}>Support GHOSTNET</h4>
         <p className='text-muted' style={{ fontSize: '0.95rem', marginBottom: '1rem' }}>
-          Show your support for INARA and access exclusive updates on Patreon.
+          Show your support for GHOSTNET and access exclusive updates on Patreon.
         </p>
         <button
           type='button'
@@ -99,7 +99,7 @@ function InaraSettings () {
           onClick={() => typeof window !== 'undefined' && window.open(patreonUrl, '_blank', patreonWindowFeatures)}
           style={{ fontSize: '1.05rem' }}
         >
-          Visit INARA on Patreon
+          Visit GHOSTNET on Patreon
         </button>
       </section>
     </div>

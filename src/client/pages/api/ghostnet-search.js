@@ -8,10 +8,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' })
   }
 
-  // INARA API endpoint
+  // GHOSTNET API endpoint
   const url = 'https://inara.cz/inapi/v1/'
 
-  // Build INARA API request body
+  // Build GHOSTNET API request body
   const requestBody = {
     header: {
       appName,
@@ -43,6 +43,6 @@ export default async function handler(req, res) {
     // Return the relevant results
     res.status(200).json(data)
   } catch (err) {
-    res.status(500).json({ error: 'INARA API request failed', details: err.message })
+    res.status(500).json({ error: 'GHOSTNET API request failed', details: err.message })
   }
 }

@@ -5,14 +5,14 @@ import { load } from 'cheerio'
 const BASE_URL = 'https://inara.cz'
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
 
-const INARA_REQUEST_HEADERS = {
+const GHOSTNET_REQUEST_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
   Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
   'Accept-Language': 'en-US,en;q=0.9',
   'Cache-Control': 'no-cache',
   Pragma: 'no-cache',
   Referer: 'https://inara.cz/elite/',
-  Cookie: 'inarasite=1'
+  Cookie: 'ghostnetsite=1'
 }
 
 const SEARCH_DEFAULTS = {
@@ -64,7 +64,7 @@ function parseTooltipDetails (html) {
   return details
 }
 
-function buildInaraUrl (system) {
+function buildGhostnetUrl (system) {
   const params = new URLSearchParams({ ...SEARCH_DEFAULTS, ps1: system })
   return `${BASE_URL}/elite/nearest-bodies/?${params.toString()}`
 }
@@ -140,14 +140,14 @@ export default async function handler (req, res) {
   try {
     const system = typeof req.body?.system === 'string' ? req.body.system.trim() : ''
     const targetSystem = system || 'Sol'
-    const url = buildInaraUrl(targetSystem)
+    const url = buildGhostnetUrl(targetSystem)
 
     const response = await fetch(url, {
       agent: ipv4HttpsAgent,
-      headers: INARA_REQUEST_HEADERS
+      headers: GHOSTNET_REQUEST_HEADERS
     })
     if (!response.ok) {
-      throw new Error(`INARA request failed with status ${response.status}`)
+      throw new Error(`GHOSTNET request failed with status ${response.status}`)
     }
 
     const html = await response.text()

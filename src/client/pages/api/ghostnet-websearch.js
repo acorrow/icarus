@@ -1,4 +1,4 @@
-// Backend API: Proxies INARA nearest-outfitting for ships only
+// Backend API: Proxies GHOSTNET nearest-outfitting for ships only
 // Only supports ship search (not modules or other outfitting)
 
 import fetch from 'node-fetch'
@@ -8,11 +8,11 @@ import os from 'os'
 import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
-import { appendInaraLogEntry } from './inara-log-utils.js'
+import { appendGhostnetLogEntry } from './ghostnet-log-utils.js'
 
-const logPath = path.join(process.cwd(), 'inara-websearch.log')
-function logInaraSearch(entry) {
-  appendInaraLogEntry(logPath, entry)
+const logPath = path.join(process.cwd(), 'ghostnet-websearch.log')
+function logGhostnetSearch(entry) {
+  appendGhostnetLogEntry(logPath, entry)
 }
 
 function resolveLogDir() {
@@ -51,14 +51,14 @@ async function ensureSystemInstance() {
           if (typeof eliteLog.watch === 'function') eliteLog.watch()
           global.ICARUS_ELITE_LOG = eliteLog
         } catch (err) {
-          logInaraSearch(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
+          logGhostnetSearch(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
           eliteLog = null
         }
       }
     }
 
     if (!eliteLog) {
-      logInaraSearch('ELITE_LOG_FALLBACK: using stub eliteLog')
+      logGhostnetSearch('ELITE_LOG_FALLBACK: using stub eliteLog')
       eliteLog = {
         getEvent: async () => null,
         getEventsFromTimestamp: async () => [],
@@ -79,14 +79,14 @@ async function ensureSystemInstance() {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    logInaraSearch(`INVALID_METHOD: ${req.method} ${req.url}`)
+    logGhostnetSearch(`INVALID_METHOD: ${req.method} ${req.url}`)
     res.status(405).json({ error: 'Method not allowed' })
     return
   }
 
   const { shipId, system } = req.body || {}
   if (!shipId || !system) {
-    logInaraSearch(`MISSING_PARAMS: shipId=${shipId} system=${system}`)
+    logGhostnetSearch(`MISSING_PARAMS: shipId=${shipId} system=${system}`)
     res.status(400).json({ error: 'Missing ship selection or system. Please select a ship and system before searching.' })
     return
   }
@@ -107,7 +107,7 @@ export default async function handler(req, res) {
         return data
       }
     } catch (err) {
-      logInaraSearch(`SYSTEM_LOOKUP_ERROR: system=${systemName} error=${err}`)
+      logGhostnetSearch(`SYSTEM_LOOKUP_ERROR: system=${systemName} error=${err}`)
     }
     return null
   }
@@ -247,7 +247,7 @@ export default async function handler(req, res) {
       }
     }
 
-    logInaraSearch(`LOCAL_LOOKUP_MISS: station=${stationName}`)
+    logGhostnetSearch(`LOCAL_LOOKUP_MISS: station=${stationName}`)
     return {
       station: stationName,
       system: searchOrder[0] || '',
@@ -261,7 +261,7 @@ export default async function handler(req, res) {
     const ships = JSON.parse(fs.readFileSync(filePath, 'utf8'))
     const ship = ships.find(s => s.id === shipId || s.symbol === shipId || s.name === shipId)
     if (ship) {
-      const inaraShipMap = {
+      const ghostnetShipMap = {
         'Sidewinder': 'xship1',
         'Eagle': 'xship2',
         'Hauler': 'xship3',
@@ -301,14 +301,14 @@ export default async function handler(req, res) {
         'Alliance Crusader': 'xship39',
         'Alliance Challenger': 'xship40'
       }
-      xshipCode = inaraShipMap[ship.name] || null
+      xshipCode = ghostnetShipMap[ship.name] || null
     }
   } catch (e) {
-    logInaraSearch(`SHIP_LOOKUP_ERROR: ${e}`)
+    logGhostnetSearch(`SHIP_LOOKUP_ERROR: ${e}`)
   }
   if (!xshipCode) {
-    logInaraSearch(`SHIP_CODE_NOT_FOUND: shipId=${shipId} system=${system}`)
-    res.status(400).json({ error: 'Could not map the selected ship to an INARA search code. Please choose a valid ship.' })
+    logGhostnetSearch(`SHIP_CODE_NOT_FOUND: shipId=${shipId} system=${system}`)
+    res.status(400).json({ error: 'Could not map the selected ship to an GHOSTNET search code. Please choose a valid ship.' })
     return
   }
 
@@ -321,7 +321,7 @@ export default async function handler(req, res) {
   params.append('pi17', '0')
   params.append('pi14', '0')
   const url = `https://inara.cz/elite/nearest-outfitting/?${params.toString()}`
-  logInaraSearch(`REQUEST: shipId=${shipId} system=${system} url=${url}`)
+  logGhostnetSearch(`REQUEST: shipId=${shipId} system=${system} url=${url}`)
 
   try {
     const response = await fetch(url, {
@@ -330,12 +330,12 @@ export default async function handler(req, res) {
         'Accept-Language': 'en-US,en;q=0.9'
       }
     })
-    if (!response.ok) throw new Error('INARA request failed')
+    if (!response.ok) throw new Error('GHOSTNET request failed')
     const html = await response.text()
 
     if (/No station within [\d,]+ Ly range found/i.test(html)) {
-      logInaraSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} NO_RESULTS`)
-      res.status(200).json({ results: [], message: 'No station within range found on INARA.' })
+      logGhostnetSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} NO_RESULTS`)
+      res.status(200).json({ results: [], message: 'No station within range found on GHOSTNET.' })
       return
     }
 
@@ -400,10 +400,10 @@ export default async function handler(req, res) {
     const detailResults = await Promise.all(detailPromises)
     const results = detailResults.filter(Boolean)
 
-    logInaraSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} results=${results.length}`)
+    logGhostnetSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} results=${results.length}`)
     res.status(200).json({ results })
   } catch (err) {
-    logInaraSearch(`ERROR: shipId=${shipId} system=${system} url=${url} error=${err}`)
-    res.status(500).json({ error: 'Failed to fetch or parse INARA results', details: err.message })
+    logGhostnetSearch(`ERROR: shipId=${shipId} system=${system} url=${url} error=${err}`)
+    res.status(500).json({ error: 'Failed to fetch or parse GHOSTNET results', details: err.message })
   }
 }

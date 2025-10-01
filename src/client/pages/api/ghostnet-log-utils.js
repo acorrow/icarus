@@ -12,18 +12,18 @@ function readEnvFlag (name) {
   return null
 }
 
-export function shouldLogInaraActivity () {
-  const explicitEnable = readEnvFlag('ICARUS_ENABLE_INARA_LOGS')
+export function shouldLogGhostnetActivity () {
+  const explicitEnable = readEnvFlag('ICARUS_ENABLE_GHOSTNET_LOGS')
   if (explicitEnable !== null) return explicitEnable
 
-  const explicitDisable = readEnvFlag('ICARUS_DISABLE_INARA_LOGS')
+  const explicitDisable = readEnvFlag('ICARUS_DISABLE_GHOSTNET_LOGS')
   if (explicitDisable === true) return false
 
   return (process.env.NODE_ENV || '').toLowerCase() === 'development'
 }
 
-export function appendInaraLogEntry (logPath, entry) {
-  if (!shouldLogInaraActivity()) return
+export function appendGhostnetLogEntry (logPath, entry) {
+  if (!shouldLogGhostnetActivity()) return
   try {
     fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${entry}\n`)
   } catch (e) {}

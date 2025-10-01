@@ -7,12 +7,12 @@ import https from 'https'
 import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
-import { appendInaraLogEntry } from './inara-log-utils.js'
+import { appendGhostnetLogEntry } from './ghostnet-log-utils.js'
 
-const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
+const logPath = path.join(process.cwd(), 'ghostnet-trade-routes.log')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
-function logInaraTrade(entry) {
-  appendInaraLogEntry(logPath, entry)
+function logGhostnetTrade(entry) {
+  appendGhostnetLogEntry(logPath, entry)
 }
 
 function resolveLogDir() {
@@ -52,18 +52,18 @@ async function ensureSystemInstance() {
           await eliteLog.load({ reload: true })
           if (typeof eliteLog.watch === 'function') eliteLog.watch()
           global.ICARUS_ELITE_LOG = eliteLog
-          logInaraTrade(`ELITE_LOG_LOADED: dir=${logDir}`)
+          logGhostnetTrade(`ELITE_LOG_LOADED: dir=${logDir}`)
         } catch (err) {
-          logInaraTrade(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
+          logGhostnetTrade(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
           eliteLog = null
         }
       } else {
-        logInaraTrade('ELITE_LOG_DIR_MISSING')
+        logGhostnetTrade('ELITE_LOG_DIR_MISSING')
       }
     }
 
     if (!eliteLog) {
-      logInaraTrade('ELITE_LOG_FALLBACK: using stub eliteLog')
+      logGhostnetTrade('ELITE_LOG_FALLBACK: using stub eliteLog')
       eliteLog = {
         getEvent: async () => null,
         getEventsFromTimestamp: async () => [],
@@ -322,7 +322,7 @@ const allowedOrder = new Set(['0', '1', '2', '3', '4'])
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    logInaraTrade(`INVALID_METHOD: ${req.method} ${req.url}`)
+    logGhostnetTrade(`INVALID_METHOD: ${req.method} ${req.url}`)
     res.status(405).json({ error: 'Method not allowed' })
     return
   }
@@ -332,7 +332,7 @@ export default async function handler(req, res) {
   const system = typeof body.system === 'string' && body.system.trim() ? body.system : (typeof filters.system === 'string' ? filters.system : null)
 
   if (!system || typeof system !== 'string' || !system.trim()) {
-    logInaraTrade(`MISSING_SYSTEM: system=${system}`)
+    logGhostnetTrade(`MISSING_SYSTEM: system=${system}`)
     res.status(400).json({ error: 'Missing origin system. Please provide a star system to search from.' })
     return
   }
@@ -467,7 +467,7 @@ export default async function handler(req, res) {
   }
 
   const url = `https://inara.cz/elite/market-traderoutes/?${params.toString()}`
-  logInaraTrade(`REQUEST: system=${system} url=${url}`)
+  logGhostnetTrade(`REQUEST: system=${system} url=${url}`)
 
   try {
     const response = await fetch(url, {
@@ -477,13 +477,13 @@ export default async function handler(req, res) {
       },
       agent: ipv4HttpsAgent
     })
-    if (!response.ok) throw new Error('INARA request failed')
+    if (!response.ok) throw new Error('GHOSTNET request failed')
     const html = await response.text()
 
     const routes = parseTradeRoutes(html)
     if (!routes.length) {
-      logInaraTrade(`RESPONSE: system=${system} url=${url} NO_RESULTS`)
-      res.status(200).json({ results: [], message: 'No trade routes found on INARA.' })
+      logGhostnetTrade(`RESPONSE: system=${system} url=${url} NO_RESULTS`)
+      res.status(200).json({ results: [], message: 'No trade routes found on GHOSTNET.' })
       return
     }
 
@@ -520,12 +520,12 @@ export default async function handler(req, res) {
         }
         const [entry] = await eliteLogInstance._query(query, 1, { timestamp: -1 })
         if (entry) {
-          logInaraTrade(`JOURNAL_LOOKUP_MATCH: station=${stationName} event=${entry.event || ''} timestamp=${entry.timestamp || ''}`)
+          logGhostnetTrade(`JOURNAL_LOOKUP_MATCH: station=${stationName} event=${entry.event || ''} timestamp=${entry.timestamp || ''}`)
           return entry
         }
-        logInaraTrade(`JOURNAL_LOOKUP_MISS: station=${stationName}`)
+        logGhostnetTrade(`JOURNAL_LOOKUP_MISS: station=${stationName}`)
       } catch (err) {
-        logInaraTrade(`JOURNAL_LOOKUP_ERROR: station=${stationName} error=${err}`)
+        logGhostnetTrade(`JOURNAL_LOOKUP_ERROR: station=${stationName} error=${err}`)
       }
 
       return null
@@ -575,11 +575,11 @@ export default async function handler(req, res) {
           systemCache.set(key, data)
           addSystemToStationIndex(data)
           const stationCount = collectStations(data).length
-          logInaraTrade(`SYSTEM_LOOKUP_RESULT: source=service query=${systemName} resolved=${data.name} stations=${stationCount}`)
+          logGhostnetTrade(`SYSTEM_LOOKUP_RESULT: source=service query=${systemName} resolved=${data.name} stations=${stationCount}`)
           return data
         }
       } catch (err) {
-        logInaraTrade(`SYSTEM_LOOKUP_ERROR: system=${systemName} error=${err}`)
+        logGhostnetTrade(`SYSTEM_LOOKUP_ERROR: system=${systemName} error=${err}`)
       }
       if (global.CACHE?.SYSTEMS) {
         const cached = global.CACHE.SYSTEMS[key]
@@ -587,11 +587,11 @@ export default async function handler(req, res) {
           systemCache.set(key, cached)
           addSystemToStationIndex(cached)
           const stationCount = collectStations(cached).length
-          logInaraTrade(`SYSTEM_LOOKUP_RESULT: source=cache query=${systemName} resolved=${cached.name || systemName} stations=${stationCount}`)
+          logGhostnetTrade(`SYSTEM_LOOKUP_RESULT: source=cache query=${systemName} resolved=${cached.name || systemName} stations=${stationCount}`)
           return cached
         }
       }
-      logInaraTrade(`SYSTEM_LOOKUP_MISS: system=${systemName}`)
+      logGhostnetTrade(`SYSTEM_LOOKUP_MISS: system=${systemName}`)
       return null
     }
 
@@ -845,7 +845,7 @@ export default async function handler(req, res) {
             `allegiance=${result.allegiance || ''}`,
             `factionSource=${result.factionSource || ''}`
           ]
-          logInaraTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
+          logGhostnetTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
           return result
         }
       }
@@ -868,7 +868,7 @@ export default async function handler(req, res) {
           `allegiance=${result.allegiance || ''}`,
           `factionSource=${result.factionSource || ''}`
         ]
-        logInaraTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
+        logGhostnetTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
         return result
       }
 
@@ -884,12 +884,12 @@ export default async function handler(req, res) {
           `allegiance=${journalResult.allegiance || ''}`,
           'factionSource=journal-only'
         ]
-        logInaraTrade(`LOCAL_LOOKUP_JOURNAL_ONLY: ${logParts.join(' ')}`)
+        logGhostnetTrade(`LOCAL_LOOKUP_JOURNAL_ONLY: ${logParts.join(' ')}`)
         return journalResult
       }
 
       localStationCache.set(normalizedStation, null)
-      logInaraTrade(`LOCAL_LOOKUP_MISS: station=${stationName} systems=${searchOrder.join('|')}`)
+      logGhostnetTrade(`LOCAL_LOOKUP_MISS: station=${stationName} systems=${searchOrder.join('|')}`)
       return null
     }
 
@@ -914,14 +914,14 @@ export default async function handler(req, res) {
         `destinationSystem=${route.destination.systemName || ''}`,
         `destinationFaction=${destinationFaction}`
       ]
-      logInaraTrade(`ROUTE_FACTION_DATA: ${routeLogParts.join(' ')}`)
+      logGhostnetTrade(`ROUTE_FACTION_DATA: ${routeLogParts.join(' ')}`)
       return enrichedRoute
     }))
 
-    logInaraTrade(`RESPONSE: system=${system} url=${url} results=${enrichedResults.length}`)
+    logGhostnetTrade(`RESPONSE: system=${system} url=${url} results=${enrichedResults.length}`)
     res.status(200).json({ results: enrichedResults })
   } catch (err) {
-    logInaraTrade(`ERROR: system=${system} url=${url} error=${err}`)
-    res.status(500).json({ error: 'Failed to fetch or parse INARA results', details: err.message })
+    logGhostnetTrade(`ERROR: system=${system} url=${url} error=${err}`)
+    res.status(500).json({ error: 'Failed to fetch or parse GHOSTNET results', details: err.message })
   }
 }

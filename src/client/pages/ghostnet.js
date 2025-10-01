@@ -6,7 +6,7 @@ import NavigationInspectorPanel from '../components/panels/nav/navigation-inspec
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
-import styles from './inara.ghostnet.module.css'
+import styles from './ghostnet.module.css'
 
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
   'Loadout',
@@ -42,12 +42,12 @@ function formatStationDistance (value, fallback) {
 function LoadingSpinner ({ label, inline = false }) {
   return (
     <div
-      className={`inara-spinner${inline ? ' inara-spinner--inline' : ' inara-spinner--block'}`}
+      className={`ghostnet-spinner${inline ? ' ghostnet-spinner--inline' : ' ghostnet-spinner--block'}`}
       role='status'
       aria-live='polite'
     >
-      <span className='inara-spinner__icon' aria-hidden='true' />
-      {label ? <span className='inara-spinner__label'>{label}</span> : null}
+      <span className='ghostnet-spinner__icon' aria-hidden='true' />
+      {label ? <span className='ghostnet-spinner__label'>{label}</span> : null}
     </div>
   )
 }
@@ -61,7 +61,7 @@ function normaliseName (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
 
-const MISSIONS_CACHE_KEY = 'icarus.inaraMiningMissions.v1'
+const MISSIONS_CACHE_KEY = 'icarus.ghostnetMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
 
 function getMissionsCacheStorage () {
@@ -211,7 +211,7 @@ function formatReputationPercent(value) {
 function shouldDebugFactionStandings () {
   if (typeof window === 'undefined') return false
   try {
-    return window.localStorage.getItem('inaraDebugFactions') === 'true'
+    return window.localStorage.getItem('ghostnetDebugFactions') === 'true'
   } catch (err) {
     return false
   }
@@ -1104,7 +1104,7 @@ function MissionsPanel () {
 
     const loadMissions = async () => {
       try {
-        const response = await fetch('/api/inara-missions', {
+        const response = await fetch('/api/ghostnet-missions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ system: trimmedSystem }),
@@ -1181,20 +1181,20 @@ function MissionsPanel () {
   return (
     <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
       <h2>Mining Missions</h2>
-      <p className={styles.sectionHint}>Ghost Net decrypts volunteer INARA manifests to shortlist mining opportunities aligned to your current system.</p>
+      <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
           <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
-          <div className='inara__data-source ghostnet-muted'>
-            Ghost Net intercept feed compiled from INARA community relays.
+          <div className='ghostnet__data-source ghostnet-muted'>
+            Ghost Net intercept feed compiled from GHOSTNET community relays.
           </div>
         )}
       </div>
       <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-        Availability signals originate from INARA contributors and may trail live mission boards.
+        Availability signals originate from GHOSTNET contributors and may trail live mission boards.
       </p>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
@@ -1319,7 +1319,7 @@ function CommodityTradePanel () {
   const [cargo, setCargo] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
-  const [valuation, setValuation] = useState({ results: [], metadata: { inaraStatus: 'idle', marketStatus: 'idle' } })
+  const [valuation, setValuation] = useState({ results: [], metadata: { ghostnetStatus: 'idle', marketStatus: 'idle' } })
 
   const cargoKey = useMemo(() => {
     if (!Array.isArray(cargo) || cargo.length === 0) return ''
@@ -1384,7 +1384,7 @@ function CommodityTradePanel () {
       }))
     }
 
-    fetch('/api/inara-commodity-values', {
+    fetch('/api/ghostnet-commodity-values', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -1395,7 +1395,7 @@ function CommodityTradePanel () {
         const results = Array.isArray(data?.results) ? data.results : []
         const metadata = data?.metadata && typeof data.metadata === 'object'
           ? data.metadata
-          : { inaraStatus: 'idle', marketStatus: 'idle', historyStatus: 'idle' }
+          : { ghostnetStatus: 'idle', marketStatus: 'idle', historyStatus: 'idle' }
         setValuation({ results, metadata })
         setStatus(results.length > 0 ? 'ready' : 'empty')
       })
@@ -1423,7 +1423,7 @@ function CommodityTradePanel () {
   }, [valuation?.results])
 
   const totals = useMemo(() => {
-    const summary = { best: 0, inara: 0, local: 0 }
+    const summary = { best: 0, ghostnet: 0, local: 0 }
     if (!Array.isArray(cargo)) return summary
 
     cargo.forEach(item => {
@@ -1431,12 +1431,12 @@ function CommodityTradePanel () {
       if (!key) return
       const entry = valuationMap.get(key)
       const quantity = Number(item?.count) || 0
-      const inaraPrice = typeof entry?.inara?.price === 'number' ? entry.inara.price : null
+      const ghostnetPrice = typeof entry?.ghostnet?.price === 'number' ? entry.ghostnet.price : null
       const marketPrice = typeof entry?.market?.sellPrice === 'number' ? entry.market.sellPrice : null
       const historyPrice = typeof entry?.localHistory?.best?.sellPrice === 'number' ? entry.localHistory.best.sellPrice : null
 
-      if (typeof inaraPrice === 'number') {
-        summary.inara += inaraPrice * quantity
+      if (typeof ghostnetPrice === 'number') {
+        summary.ghostnet += ghostnetPrice * quantity
       }
 
       let localBestPrice = null
@@ -1452,8 +1452,8 @@ function CommodityTradePanel () {
       }
 
       let bestPrice = localBestPrice
-      if (typeof inaraPrice === 'number' && (bestPrice === null || inaraPrice > bestPrice)) {
-        bestPrice = inaraPrice
+      if (typeof ghostnetPrice === 'number' && (bestPrice === null || ghostnetPrice > bestPrice)) {
+        bestPrice = ghostnetPrice
       }
 
       if (typeof bestPrice === 'number') {
@@ -1472,7 +1472,7 @@ function CommodityTradePanel () {
       const quantity = Number(item?.count) || 0
 
       const marketEntry = entry?.market && typeof entry.market === 'object' ? entry.market : null
-      const inaraEntry = entry?.inara && typeof entry.inara === 'object' ? entry.inara : null
+      const ghostnetEntry = entry?.ghostnet && typeof entry.ghostnet === 'object' ? entry.ghostnet : null
       const historyRaw = Array.isArray(entry?.localHistory?.entries) ? entry.localHistory.entries : []
       const historyEntries = historyRaw
         .filter(candidate => candidate && typeof candidate === 'object' && typeof candidate.sellPrice === 'number')
@@ -1487,7 +1487,7 @@ function CommodityTradePanel () {
         ? entry.localHistory.best
         : (historyEntries[0] || null)
 
-      const inaraPrice = typeof inaraEntry?.price === 'number' ? inaraEntry.price : null
+      const ghostnetPrice = typeof ghostnetEntry?.price === 'number' ? ghostnetEntry.price : null
 
       let localBestEntry = (marketEntry && typeof marketEntry.sellPrice === 'number') ? marketEntry : null
       let localBestPrice = localBestEntry ? localBestEntry.sellPrice : null
@@ -1514,13 +1514,13 @@ function CommodityTradePanel () {
       }
 
       const localValue = typeof localBestPrice === 'number' ? localBestPrice * quantity : null
-      const inaraValue = typeof inaraPrice === 'number' ? inaraPrice * quantity : null
+      const ghostnetValue = typeof ghostnetPrice === 'number' ? ghostnetPrice * quantity : null
 
       let bestPrice = localBestPrice
       let bestSource = localBestSource
-      if (typeof inaraPrice === 'number' && (bestPrice === null || inaraPrice > bestPrice)) {
-        bestPrice = inaraPrice
-        bestSource = 'inara'
+      if (typeof ghostnetPrice === 'number' && (bestPrice === null || ghostnetPrice > bestPrice)) {
+        bestPrice = ghostnetPrice
+        bestSource = 'ghostnet'
       }
 
       const bestValue = typeof bestPrice === 'number' ? bestPrice * quantity : null
@@ -1538,8 +1538,8 @@ function CommodityTradePanel () {
         localBestSource,
         historyEntries,
         marketEntry,
-        inaraPrice,
-        inaraValue,
+        ghostnetPrice,
+        ghostnetValue,
         localValue
       }
     })
@@ -1549,8 +1549,8 @@ function CommodityTradePanel () {
   const hasRows = rows.some(row => typeof row.bestPrice === 'number')
 
   const renderSourceBadge = source => {
-    if (source === 'inara') {
-      return <span style={{ color: '#ff7c22', fontSize: '.75rem', marginLeft: '.4rem' }}>INARA</span>
+    if (source === 'ghostnet') {
+      return <span style={{ color: '#ff7c22', fontSize: '.75rem', marginLeft: '.4rem' }}>GHOSTNET</span>
     }
     if (source === 'local-station') {
       return <span style={{ color: '#5bd1a5', fontSize: '.75rem', marginLeft: '.4rem' }}>Local Station</span>
@@ -1626,7 +1626,7 @@ function CommodityTradePanel () {
   const cargoCount = Number(ship?.cargo?.count) || 0
   const cargoCapacity = Number(ship?.cargo?.capacity) || 0
 
-  const inaraStatus = valuation?.metadata?.inaraStatus || 'idle'
+  const ghostnetStatus = valuation?.metadata?.ghostnetStatus || 'idle'
   const marketStatus = valuation?.metadata?.marketStatus || 'idle'
   const historyStatus = valuation?.metadata?.historyStatus || 'idle'
 
@@ -1647,8 +1647,8 @@ function CommodityTradePanel () {
           <div className='text-primary' style={{ fontSize: '1.1rem' }}>{formatCredits(totals.best, '--')}</div>
         </div>
         <div>
-          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (INARA)</div>
-          <div style={{ color: '#ff7c22', fontSize: '1.1rem' }}>{formatCredits(totals.inara, '--')}</div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (GHOSTNET)</div>
+          <div style={{ color: '#ff7c22', fontSize: '1.1rem' }}>{formatCredits(totals.ghostnet, '--')}</div>
         </div>
         <div>
           <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (Local Data)</div>
@@ -1656,11 +1656,11 @@ function CommodityTradePanel () {
         </div>
       </div>
 
-      {(inaraStatus === 'error' || inaraStatus === 'partial') && (
+      {(ghostnetStatus === 'error' || ghostnetStatus === 'partial') && (
         <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
-          {inaraStatus === 'error'
-            ? 'Unable to retrieve INARA price data at this time.'
-            : 'Some commodities are missing INARA price data. Displayed values use local market prices where available.'}
+          {ghostnetStatus === 'error'
+            ? 'Unable to retrieve GHOSTNET price data at this time.'
+            : 'Some commodities are missing GHOSTNET price data. Displayed values use local market prices where available.'}
         </div>
       )}
 
@@ -1704,7 +1704,7 @@ function CommodityTradePanel () {
               <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Commodity</th>
               <th className='text-right' style={{ padding: '.6rem .65rem' }}>Qty</th>
               <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Local Data</th>
-              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>INARA Max</th>
+              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>GHOSTNET Max</th>
               <th className='text-right' style={{ padding: '.6rem .65rem' }}>Value</th>
             </tr>
           </thead>
@@ -1714,22 +1714,22 @@ function CommodityTradePanel () {
                 item,
                 entry,
                 quantity,
-                inaraPrice,
+                ghostnetPrice,
                 localBestEntry,
                 localBestSource,
                 historyEntries,
                 marketEntry,
                 bestValue,
                 bestSource,
-                inaraValue,
+                ghostnetValue,
                 localValue
               } = row
 
-              const inaraStation = entry?.inara?.stationName
-              const inaraSystem = entry?.inara?.systemName
-              const inaraDemand = entry?.inara?.demandText
-              const inaraUpdated = entry?.inara?.updatedText
-              const inaraPriceDisplay = typeof inaraPrice === 'number' ? formatCredits(inaraPrice, '--') : '--'
+              const ghostnetStation = entry?.ghostnet?.stationName
+              const ghostnetSystem = entry?.ghostnet?.systemName
+              const ghostnetDemand = entry?.ghostnet?.demandText
+              const ghostnetUpdated = entry?.ghostnet?.updatedText
+              const ghostnetPriceDisplay = typeof ghostnetPrice === 'number' ? formatCredits(ghostnetPrice, '--') : '--'
               const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
 
               const localEntriesForDisplay = []
@@ -1775,8 +1775,8 @@ function CommodityTradePanel () {
                     {item?.symbol && item?.symbol !== item?.name && (
                       <div style={{ color: '#888', fontSize: '.82rem' }}>{item.symbol}</div>
                     )}
-                    {entry?.errors?.inara && !entry?.inara && (
-                      <div style={{ color: '#ffb347', fontSize: '.78rem', marginTop: '.35rem' }}>{entry.errors.inara}</div>
+                    {entry?.errors?.ghostnet && !entry?.ghostnet && (
+                      <div style={{ color: '#ffb347', fontSize: '.78rem', marginTop: '.35rem' }}>{entry.errors.ghostnet}</div>
                     )}
                     {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
                       <div style={{ color: '#ffb347', fontSize: '.78rem', marginTop: '.35rem' }}>{entry.errors.market}</div>
@@ -1796,24 +1796,24 @@ function CommodityTradePanel () {
                     )}
                   </td>
                   <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
-                    <div>{inaraPriceDisplay}</div>
-                    {inaraStation && (
+                    <div>{ghostnetPriceDisplay}</div>
+                    {ghostnetStation && (
                       <div style={{ color: '#888', fontSize: '.8rem', marginTop: '.25rem' }}>
-                        {inaraStation}{inaraSystem ? ` · ${inaraSystem}` : ''}
+                        {ghostnetStation}{ghostnetSystem ? ` · ${ghostnetSystem}` : ''}
                       </div>
                     )}
-                    {inaraDemand && (
-                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Demand: {inaraDemand}</div>
+                    {ghostnetDemand && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Demand: {ghostnetDemand}</div>
                     )}
-                    {inaraUpdated && (
-                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Updated {inaraUpdated}</div>
+                    {ghostnetUpdated && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Updated {ghostnetUpdated}</div>
                     )}
                   </td>
                   <td className='text-right' style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
                     <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
-                    {typeof localValue === 'number' && typeof inaraValue === 'number' && Math.abs(localValue - inaraValue) > 0.01 && (
+                    {typeof localValue === 'number' && typeof ghostnetValue === 'number' && Math.abs(localValue - ghostnetValue) > 0.01 && (
                       <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>
-                        INARA {formatCredits(inaraValue, '--')} · Local {formatCredits(localValue, '--')}
+                        GHOSTNET {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
                       </div>
                     )}
                   </td>
@@ -1825,7 +1825,7 @@ function CommodityTradePanel () {
       )}
 
       <div style={{ color: '#666', fontSize: '.8rem', marginTop: '1.5rem' }}>
-        In-game prices are sourced from your latest Market data when available. INARA prices are community submitted and may not reflect real-time market conditions.
+        In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
       </div>
     </div>
   )
@@ -2173,7 +2173,7 @@ function TradeRoutesPanel () {
       filters
     }
 
-    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('inaraUseMockData') === 'true'
+    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('ghostnetUseMockData') === 'true'
     if (shouldUseMockData) {
       const mockRoutes = generateMockTradeRoutes({
         systemName: trimmedTargetSystem,
@@ -2181,13 +2181,13 @@ function TradeRoutesPanel () {
       })
 
       applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (INARA) settings to restore live results.'
+        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (GHOSTNET) settings to restore live results.'
       })
       setIsRefreshing(false)
       return
     }
 
-    fetch('/api/inara-trade-routes', {
+    fetch('/api/ghostnet-trade-routes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -2542,7 +2542,7 @@ function TradeRoutesPanel () {
   return (
     <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
       <h2>Find Trade Routes</h2>
-      <p className={styles.sectionHint}>Cross-reference INARA freight whispers to surface lucrative corridors suited to your ship profile.</p>
+      <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -2751,7 +2751,7 @@ function PristineMiningPanel () {
     setMessage('')
     setLastUpdatedAt(null)
 
-    fetch('/api/inara-pristine-mining', {
+    fetch('/api/ghostnet-pristine-mining', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: trimmedSystem })
@@ -2910,20 +2910,20 @@ function PristineMiningPanel () {
   return (
     <div className={`${styles.sectionFrameElevated} ${styles.sectionPadding}`}>
       <h2>Pristine Mining Locations</h2>
-      <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across INARA to pinpoint high-value extraction sites.</p>
+      <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
           <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
-          <div className='inara__data-source ghostnet-muted'>
-            Ghost Net prospecting relays aligned with INARA survey intel.
+          <div className='ghostnet__data-source ghostnet-muted'>
+            Ghost Net prospecting relays aligned with GHOSTNET survey intel.
           </div>
         )}
       </div>
       <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-        Geological echoes are sourced from volunteer INARA submissions and may lag in-system discoveries.
+        Geological echoes are sourced from volunteer GHOSTNET submissions and may lag in-system discoveries.
       </p>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div
@@ -3044,10 +3044,10 @@ function PristineMiningPanel () {
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
                                     {location.systemUrl && (
-                                      <span>Ghost Net linked INARA system dossier</span>
+                                      <span>Ghost Net linked GHOSTNET system dossier</span>
                                     )}
                                     {location.bodyUrl && (
-                                      <span>Ghost Net linked INARA body dossier</span>
+                                      <span>Ghost Net linked GHOSTNET body dossier</span>
                                     )}
                                   </div>
                                 )}
@@ -3093,7 +3093,7 @@ function PristineMiningPanel () {
   )
 }
 
-export default function InaraPage() {
+export default function GhostnetPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const { connected, ready, active: socketActive } = useSocket()
   useEffect(() => {
@@ -3119,7 +3119,7 @@ export default function InaraPage() {
   )
   const tickerMessages = useMemo(() => ([
     'Intercept feed authenticated',
-    'INARA mesh handshake complete',
+    'GHOSTNET mesh handshake complete',
     'Signal hygiene nominal'
   ]), [])
   const uplinkStatus = connected && ready ? 'Stable' : 'Linking…'
@@ -3135,7 +3135,7 @@ export default function InaraPage() {
                 <span className={styles.kicker}>Underground Intelligence Mesh</span>
                 <h1 id='ghostnet-heading' className={styles.title}>Ghost Net</h1>
                 <p className={styles.subtitle}>
-                  Ghost Net stitches INARA intercepts into a clandestine command surface, revealing trade corridors, syndicate missions, and pristine deposits hidden from official channels.
+                  Ghost Net stitches GHOSTNET intercepts into a clandestine command surface, revealing trade corridors, syndicate missions, and pristine deposits hidden from official channels.
                 </p>
                 <div className={styles.ghostnetScroller} aria-hidden='true'>
                   <div className={styles.ghostnetTicker}>
@@ -3167,7 +3167,7 @@ export default function InaraPage() {
                   </li>
                   <li className={styles.metaItem}>
                     <span className={styles.metaLabel}>Source</span>
-                    <span className={styles.metaValue}>INARA Mesh</span>
+                    <span className={styles.metaValue}>GHOSTNET Mesh</span>
                   </li>
                 </ul>
               </aside>
