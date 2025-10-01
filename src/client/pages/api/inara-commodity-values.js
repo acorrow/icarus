@@ -8,6 +8,11 @@ import { load } from 'cheerio'
 const INARA_BASE_URL = 'https://inara.cz'
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
 
+const MAX_JOURNAL_HISTORY_DAYS = Number(process.env.ICARUS_MARKET_HISTORY_DAYS || 30)
+const MAX_JOURNAL_HISTORY_FILES = Number(process.env.ICARUS_MARKET_HISTORY_FILES || 40)
+const MAX_JOURNAL_HISTORY_EVENTS = Number(process.env.ICARUS_MARKET_HISTORY_EVENTS || 8000)
+const JOURNAL_MARKET_EVENT_TYPES = new Set(['Market', 'MarketUpdate', 'CommodityPrices'])
+
 function cleanText (value) {
   if (!value) return ''
   return String(value).replace(/\s+/g, ' ').trim()
@@ -142,9 +147,9 @@ function resolveLogDir () {
   return null
 }
 
-function loadMarketFile () {
+function loadMarketFile (logDirOverride = null) {
   try {
-    const logDir = resolveLogDir()
+    const logDir = logDirOverride || resolveLogDir()
     if (!logDir) return null
     const marketPath = path.join(logDir, 'Market.json')
     if (!fs.existsSync(marketPath)) return null
@@ -182,6 +187,214 @@ function buildMarketLookup (marketData) {
     marketId: marketData?.MarketID || null,
     timestamp: marketData?.timestamp || null
   }
+}
+
+function isFiniteNumber (value) {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function parseTimestampValue (value) {
+  if (!value) return null
+  const parsed = Date.parse(value)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
+function normaliseMarketKey ({ marketId, stationName, systemName }) {
+  if (marketId) return `market:${marketId}`
+  const station = normalise(stationName)
+  const system = normalise(systemName)
+  if (station && system) return `station:${station}__${system}`
+  if (station) return `station:${station}`
+  if (system) return `system:${system}`
+  return null
+}
+
+function ingestJournalMarketEvent (event, commodityMarketsMap, maxAgeMs) {
+  if (!event || typeof event !== 'object') return false
+
+  const eventName = cleanText(event.event)
+  if (!JOURNAL_MARKET_EVENT_TYPES.has(eventName)) return false
+
+  const timestamp = typeof event.timestamp === 'string' ? event.timestamp : null
+  if (maxAgeMs > 0 && timestamp) {
+    const parsedTimestamp = parseTimestampValue(timestamp)
+    if (parsedTimestamp !== null && (Date.now() - parsedTimestamp) > maxAgeMs) {
+      return false
+    }
+  }
+
+  const items = Array.isArray(event.Items) ? event.Items : []
+  if (items.length === 0) return false
+
+  const marketId = event.MarketID || event.StationMarketID || null
+  const stationName = cleanText(event.StationName || event.Station)
+  const systemName = cleanText(event.StarSystem || event.System || event.SystemName)
+  const stationType = cleanText(event.StationType)
+  const distanceValue = [event.DistFromStarLS, event.DistanceFromArrivalLS, event.StationDistanceLS]
+    .map(value => Number(value))
+    .find(isFiniteNumber)
+  const distanceLs = isFiniteNumber(distanceValue) ? distanceValue : null
+
+  let ingested = false
+
+  items.forEach(item => {
+    const symbol = cleanText(item?.Name)
+    const commodityName = cleanText(item?.Name_Localised || item?.Name)
+    const commodityKey = normalise(commodityName) || normalise(symbol)
+    if (!commodityKey) return
+
+    const sellPrice = isFiniteNumber(item?.SellPrice) ? item.SellPrice : null
+    const buyPrice = isFiniteNumber(item?.BuyPrice) ? item.BuyPrice : null
+    const meanPrice = isFiniteNumber(item?.MeanPrice) ? item.MeanPrice : null
+    const stock = isFiniteNumber(item?.Stock) ? item.Stock : null
+    const demand = isFiniteNumber(item?.Demand) ? item.Demand : null
+
+    if (sellPrice === null && buyPrice === null) return
+
+    const marketKey = normaliseMarketKey({ marketId, stationName, systemName })
+    if (!marketKey) return
+
+    const entry = {
+      symbol: item?.Name || null,
+      name: item?.Name_Localised || item?.Name || null,
+      sellPrice,
+      buyPrice,
+      meanPrice,
+      stock,
+      demand,
+      stationName: stationName || null,
+      systemName: systemName || null,
+      stationType: stationType || null,
+      marketId: marketId || null,
+      distanceLs,
+      timestamp,
+      source: 'journal'
+    }
+
+    let marketMap = commodityMarketsMap.get(commodityKey)
+    if (!marketMap) {
+      marketMap = new Map()
+      commodityMarketsMap.set(commodityKey, marketMap)
+    }
+
+    const existing = marketMap.get(marketKey)
+    if (!existing) {
+      marketMap.set(marketKey, entry)
+      ingested = true
+      return
+    }
+
+    const existingPrice = isFiniteNumber(existing.sellPrice) ? existing.sellPrice : -Infinity
+    const newPrice = isFiniteNumber(entry.sellPrice) ? entry.sellPrice : -Infinity
+    const existingTimestamp = parseTimestampValue(existing.timestamp) || 0
+    const newTimestamp = parseTimestampValue(entry.timestamp) || 0
+
+    if (newPrice > existingPrice || (newPrice === existingPrice && newTimestamp > existingTimestamp)) {
+      marketMap.set(marketKey, { ...existing, ...entry })
+      ingested = true
+    } else if (newTimestamp > existingTimestamp) {
+      marketMap.set(marketKey, { ...existing, ...entry })
+      ingested = true
+    }
+  })
+
+  return ingested
+}
+
+function buildLocalMarketHistory (logDir, currentMarketId) {
+  const commodityMarketsMap = new Map()
+
+  if (!logDir || !fs.existsSync(logDir)) {
+    return { history: new Map(), status: 'missing' }
+  }
+
+  let status = 'empty'
+
+  try {
+    const files = fs.readdirSync(logDir)
+      .filter(name => /^Journal\..*\.log$/i.test(name))
+      .map(name => {
+        const filePath = path.join(logDir, name)
+        let mtimeMs = 0
+        try {
+          const stats = fs.statSync(filePath)
+          mtimeMs = stats.mtimeMs || stats.mtime?.getTime?.() || 0
+        } catch (err) {}
+        return { name, path: filePath, mtimeMs }
+      })
+      .sort((a, b) => b.mtimeMs - a.mtimeMs)
+      .slice(0, Math.max(1, MAX_JOURNAL_HISTORY_FILES))
+
+    const maxAgeMs = Math.max(0, MAX_JOURNAL_HISTORY_DAYS) * 24 * 60 * 60 * 1000
+    let processedEvents = 0
+
+    for (const file of files) {
+      if (processedEvents >= Math.max(100, MAX_JOURNAL_HISTORY_EVENTS)) break
+      if (!file || !file.path) continue
+
+      let raw = ''
+      try {
+        raw = fs.readFileSync(file.path, 'utf8')
+      } catch (err) {
+        continue
+      }
+
+      const lines = raw.split(/\r?\n/).filter(Boolean)
+      for (let index = lines.length - 1; index >= 0; index--) {
+        if (processedEvents >= Math.max(100, MAX_JOURNAL_HISTORY_EVENTS)) break
+        const line = lines[index]
+        if (!line) continue
+        let parsed = null
+        try {
+          parsed = JSON.parse(line)
+        } catch (err) {
+          continue
+        }
+
+        if (!parsed || typeof parsed !== 'object') continue
+        if (!parsed.event || !JOURNAL_MARKET_EVENT_TYPES.has(parsed.event)) continue
+
+        processedEvents += 1
+
+        const ingested = ingestJournalMarketEvent(parsed, commodityMarketsMap, maxAgeMs)
+        if (ingested && status === 'empty') status = 'ok'
+      }
+    }
+  } catch (err) {
+    return { history: new Map(), status: 'error' }
+  }
+
+  const history = new Map()
+
+  commodityMarketsMap.forEach((marketMap, commodityKey) => {
+    if (!marketMap || marketMap.size === 0) return
+
+    const entries = Array.from(marketMap.values())
+      .filter(entry => entry && (isFiniteNumber(entry.sellPrice) || isFiniteNumber(entry.buyPrice)))
+      .sort((a, b) => {
+        const aPrice = isFiniteNumber(a.sellPrice) ? a.sellPrice : -Infinity
+        const bPrice = isFiniteNumber(b.sellPrice) ? b.sellPrice : -Infinity
+        if (bPrice !== aPrice) return bPrice - aPrice
+        const aTimestamp = parseTimestampValue(a.timestamp) || 0
+        const bTimestamp = parseTimestampValue(b.timestamp) || 0
+        return bTimestamp - aTimestamp
+      })
+
+    if (entries.length === 0) return
+
+    const normalisedEntries = entries.map(entry => ({
+      ...entry,
+      isCurrentMarket: Boolean(entry.marketId && currentMarketId && entry.marketId === currentMarketId)
+    }))
+
+    history.set(commodityKey, normalisedEntries.slice(0, 16))
+  })
+
+  if (history.size === 0 && status === 'ok') {
+    status = 'empty'
+  }
+
+  return { history, status }
 }
 
 async function fetchCommodityListings (commodityName) {
@@ -223,8 +436,10 @@ export default async function handler (req, res) {
     return res.status(200).json({ results: [], metadata: { inaraStatus: 'empty', marketStatus: 'empty' } })
   }
 
-  const marketData = buildMarketLookup(loadMarketFile())
+  const logDir = resolveLogDir()
+  const marketData = buildMarketLookup(loadMarketFile(logDir))
   const marketStatus = marketData ? 'ok' : 'missing'
+  const { history: localHistory, status: historyStatus } = buildLocalMarketHistory(logDir, marketData?.marketId || null)
 
   const inaraCache = new Map()
   const results = []
@@ -261,16 +476,37 @@ export default async function handler (req, res) {
           sellPriceText: `${Math.round(candidate.sellPrice).toLocaleString()} Cr`,
           stationName: marketData.stationName || null,
           systemName: marketData.systemName || null,
+          marketId: marketData.marketId || null,
           timestamp: marketData.timestamp || null,
           stock: candidate.stock,
           demand: candidate.demand,
           meanPrice: candidate.meanPrice,
-          buyPrice: candidate.buyPrice
+          buyPrice: candidate.buyPrice,
+          source: 'market'
         }
       }
     }
 
     const bestInaraListing = cacheEntry.listings.find(entry => typeof entry.price === 'number') || null
+
+    let historyEntries = []
+    let historyBestEntry = null
+    if (localHistory && typeof localHistory.get === 'function') {
+      const historyKeys = []
+      const nameKey = normalise(commodity.name)
+      const symbolKey = normalise(commodity.symbol)
+      if (nameKey) historyKeys.push(nameKey)
+      if (symbolKey && symbolKey !== nameKey) historyKeys.push(symbolKey)
+
+      for (const historyKey of historyKeys) {
+        const rawEntries = localHistory.get(historyKey)
+        if (Array.isArray(rawEntries) && rawEntries.length > 0) {
+          historyEntries = rawEntries
+          historyBestEntry = rawEntries.find(entry => typeof entry?.sellPrice === 'number') || null
+          break
+        }
+      }
+    }
 
     results.push({
       symbol: commodity.symbol,
@@ -278,6 +514,10 @@ export default async function handler (req, res) {
       count: commodity.count,
       market: marketEntry,
       inara: bestInaraListing,
+      localHistory: {
+        best: historyBestEntry,
+        entries: historyEntries
+      },
       errors: {
         market: !marketEntry && marketStatus !== 'missing' ? 'Commodity not found in latest market data.' : null,
         inara: cacheEntry.error || null
@@ -289,7 +529,8 @@ export default async function handler (req, res) {
     results,
     metadata: {
       inaraStatus,
-      marketStatus
+      marketStatus,
+      historyStatus
     }
   })
 }

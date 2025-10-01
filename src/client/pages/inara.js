@@ -172,6 +172,30 @@ function formatRelativeTime (value) {
   return date.toLocaleDateString()
 }
 
+function getTimestampValue (value) {
+  if (!value) return null
+  const parsed = Date.parse(value)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
+function isSameMarketEntry (a, b) {
+  if (!a || !b) return false
+  if (a.marketId && b.marketId) {
+    return a.marketId === b.marketId
+  }
+  const stationA = normaliseName(a.stationName)
+  const stationB = normaliseName(b.stationName)
+  const systemA = normaliseName(a.systemName)
+  const systemB = normaliseName(b.systemName)
+  if (stationA && stationB && systemA && systemB) {
+    return stationA === stationB && systemA === systemB
+  }
+  if (stationA && stationB && !systemA && !systemB) {
+    return stationA === stationB
+  }
+  return false
+}
+
 function normaliseFactionKey(value) {
   return typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : ''
 }
@@ -1369,7 +1393,7 @@ function CommodityTradePanel () {
         const results = Array.isArray(data?.results) ? data.results : []
         const metadata = data?.metadata && typeof data.metadata === 'object'
           ? data.metadata
-          : { inaraStatus: 'idle', marketStatus: 'idle' }
+          : { inaraStatus: 'idle', marketStatus: 'idle', historyStatus: 'idle' }
         setValuation({ results, metadata })
         setStatus(results.length > 0 ? 'ready' : 'empty')
       })
@@ -1397,7 +1421,7 @@ function CommodityTradePanel () {
   }, [valuation?.results])
 
   const totals = useMemo(() => {
-    const summary = { best: 0, inara: 0, market: 0 }
+    const summary = { best: 0, inara: 0, local: 0 }
     if (!Array.isArray(cargo)) return summary
 
     cargo.forEach(item => {
@@ -1407,21 +1431,27 @@ function CommodityTradePanel () {
       const quantity = Number(item?.count) || 0
       const inaraPrice = typeof entry?.inara?.price === 'number' ? entry.inara.price : null
       const marketPrice = typeof entry?.market?.sellPrice === 'number' ? entry.market.sellPrice : null
+      const historyPrice = typeof entry?.localHistory?.best?.sellPrice === 'number' ? entry.localHistory.best.sellPrice : null
 
       if (typeof inaraPrice === 'number') {
         summary.inara += inaraPrice * quantity
       }
+
+      let localBestPrice = null
       if (typeof marketPrice === 'number') {
-        summary.market += marketPrice * quantity
+        localBestPrice = marketPrice
+      }
+      if (typeof historyPrice === 'number' && (localBestPrice === null || historyPrice > localBestPrice)) {
+        localBestPrice = historyPrice
       }
 
-      let bestPrice = null
-      if (typeof inaraPrice === 'number' && typeof marketPrice === 'number') {
-        bestPrice = inaraPrice >= marketPrice ? inaraPrice : marketPrice
-      } else if (typeof inaraPrice === 'number') {
+      if (typeof localBestPrice === 'number') {
+        summary.local += localBestPrice * quantity
+      }
+
+      let bestPrice = localBestPrice
+      if (typeof inaraPrice === 'number' && (bestPrice === null || inaraPrice > bestPrice)) {
         bestPrice = inaraPrice
-      } else if (typeof marketPrice === 'number') {
-        bestPrice = marketPrice
       }
 
       if (typeof bestPrice === 'number') {
@@ -1438,30 +1468,60 @@ function CommodityTradePanel () {
       const key = normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)
       const entry = key ? valuationMap.get(key) : null
       const quantity = Number(item?.count) || 0
-      const marketPrice = typeof entry?.market?.sellPrice === 'number' ? entry.market.sellPrice : null
-      const inaraPrice = typeof entry?.inara?.price === 'number' ? entry.inara.price : null
-      let bestPrice = null
-      let bestSource = null
 
-      if (typeof inaraPrice === 'number' && typeof marketPrice === 'number') {
-        if (inaraPrice >= marketPrice) {
-          bestPrice = inaraPrice
-          bestSource = 'inara'
-        } else {
-          bestPrice = marketPrice
-          bestSource = 'market'
+      const marketEntry = entry?.market && typeof entry.market === 'object' ? entry.market : null
+      const inaraEntry = entry?.inara && typeof entry.inara === 'object' ? entry.inara : null
+      const historyRaw = Array.isArray(entry?.localHistory?.entries) ? entry.localHistory.entries : []
+      const historyEntries = historyRaw
+        .filter(candidate => candidate && typeof candidate === 'object' && typeof candidate.sellPrice === 'number')
+        .map(candidate => ({ ...candidate }))
+        .sort((a, b) => {
+          const priceDiff = (b.sellPrice || 0) - (a.sellPrice || 0)
+          if (priceDiff !== 0) return priceDiff
+          return (getTimestampValue(b.timestamp) || 0) - (getTimestampValue(a.timestamp) || 0)
+        })
+
+      const historyBestEntry = entry?.localHistory?.best && typeof entry.localHistory.best === 'object'
+        ? entry.localHistory.best
+        : (historyEntries[0] || null)
+
+      const inaraPrice = typeof inaraEntry?.price === 'number' ? inaraEntry.price : null
+
+      let localBestEntry = (marketEntry && typeof marketEntry.sellPrice === 'number') ? marketEntry : null
+      let localBestPrice = localBestEntry ? localBestEntry.sellPrice : null
+      let localBestSource = localBestEntry ? 'local-station' : null
+
+      if (historyBestEntry && typeof historyBestEntry.sellPrice === 'number') {
+        const historyPrice = historyBestEntry.sellPrice
+        const shouldUseHistory = localBestEntry
+          ? (historyPrice > localBestPrice) || (historyPrice === localBestPrice && (getTimestampValue(historyBestEntry.timestamp) || 0) > (getTimestampValue(localBestEntry.timestamp) || 0))
+          : true
+
+        if (shouldUseHistory) {
+          localBestEntry = historyBestEntry
+          localBestPrice = historyPrice
+          localBestSource = isSameMarketEntry(historyBestEntry, marketEntry) ? 'local-station' : 'local-history'
         }
-      } else if (typeof inaraPrice === 'number') {
+      }
+
+      const bestHistoryEntry = historyEntries.length > 0 ? historyEntries[0] : null
+      if (!localBestEntry && bestHistoryEntry && typeof bestHistoryEntry.sellPrice === 'number') {
+        localBestEntry = bestHistoryEntry
+        localBestPrice = bestHistoryEntry.sellPrice
+        localBestSource = isSameMarketEntry(bestHistoryEntry, marketEntry) ? 'local-station' : 'local-history'
+      }
+
+      const localValue = typeof localBestPrice === 'number' ? localBestPrice * quantity : null
+      const inaraValue = typeof inaraPrice === 'number' ? inaraPrice * quantity : null
+
+      let bestPrice = localBestPrice
+      let bestSource = localBestSource
+      if (typeof inaraPrice === 'number' && (bestPrice === null || inaraPrice > bestPrice)) {
         bestPrice = inaraPrice
         bestSource = 'inara'
-      } else if (typeof marketPrice === 'number') {
-        bestPrice = marketPrice
-        bestSource = 'market'
       }
 
       const bestValue = typeof bestPrice === 'number' ? bestPrice * quantity : null
-      const inaraValue = typeof inaraPrice === 'number' ? inaraPrice * quantity : null
-      const marketValue = typeof marketPrice === 'number' ? marketPrice * quantity : null
 
       return {
         key: `${key || 'unknown'}-${quantity}`,
@@ -1471,10 +1531,14 @@ function CommodityTradePanel () {
         bestPrice,
         bestSource,
         bestValue,
-        marketPrice,
-        marketValue,
+        localBestEntry,
+        localBestPrice,
+        localBestSource,
+        historyEntries,
+        marketEntry,
         inaraPrice,
-        inaraValue
+        inaraValue,
+        localValue
       }
     })
   }, [cargo, valuationMap])
@@ -1486,10 +1550,50 @@ function CommodityTradePanel () {
     if (source === 'inara') {
       return <span style={{ color: '#ff7c22', fontSize: '.75rem', marginLeft: '.4rem' }}>INARA</span>
     }
-    if (source === 'market') {
-      return <span style={{ color: '#5bd1a5', fontSize: '.75rem', marginLeft: '.4rem' }}>Local Market</span>
+    if (source === 'local-station') {
+      return <span style={{ color: '#5bd1a5', fontSize: '.75rem', marginLeft: '.4rem' }}>Local Station</span>
+    }
+    if (source === 'local-history') {
+      return <span style={{ color: '#5bd1a5', fontSize: '.75rem', marginLeft: '.4rem' }}>Local Data</span>
     }
     return null
+  }
+
+  const renderLocalEntry = (label, entryData, { highlight = false, source = 'history', index = 0 } = {}) => {
+    if (!entryData) return null
+
+    const priceDisplay = typeof entryData.sellPrice === 'number' ? formatCredits(entryData.sellPrice, '--') : '--'
+    const resolvedSource = source === 'station'
+      ? (entryData?.source === 'journal' ? 'Station Snapshot' : 'Station')
+      : 'History'
+    const stationLine = entryData.stationName
+      ? `${entryData.stationName}${entryData.systemName ? ` · ${entryData.systemName}` : ''}`
+      : ''
+    const distanceDisplay = typeof entryData.distanceLs === 'number' && !Number.isNaN(entryData.distanceLs)
+      ? formatStationDistance(entryData.distanceLs)
+      : ''
+    const timestampDisplay = entryData.timestamp ? formatRelativeTime(entryData.timestamp) : ''
+
+    return (
+      <div key={`${label || resolvedSource}-${index}`} style={{ marginTop: index === 0 ? 0 : '.55rem' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '.4rem', fontSize: '.95rem', color: highlight ? '#fff' : '#ddd' }}>
+          <span>{priceDisplay}</span>
+          <span style={{ color: '#5bd1a5', fontSize: '.72rem' }}>{resolvedSource}</span>
+        </div>
+        {label ? (
+          <div style={{ color: '#666', fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.05em', marginTop: '.2rem' }}>{label}</div>
+        ) : null}
+        {stationLine ? (
+          <div style={{ color: '#888', fontSize: '.8rem', marginTop: '.25rem' }}>{stationLine}</div>
+        ) : null}
+        {distanceDisplay ? (
+          <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Distance: {distanceDisplay}</div>
+        ) : null}
+        {timestampDisplay ? (
+          <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>As of {timestampDisplay}</div>
+        ) : null}
+      </div>
+    )
   }
 
   const renderStatusBanner = () => {
@@ -1522,6 +1626,7 @@ function CommodityTradePanel () {
 
   const inaraStatus = valuation?.metadata?.inaraStatus || 'idle'
   const marketStatus = valuation?.metadata?.marketStatus || 'idle'
+  const historyStatus = valuation?.metadata?.historyStatus || 'idle'
 
   return (
     <div>
@@ -1544,8 +1649,8 @@ function CommodityTradePanel () {
           <div style={{ color: '#ff7c22', fontSize: '1.1rem' }}>{formatCredits(totals.inara, '--')}</div>
         </div>
         <div>
-          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (Local)</div>
-          <div style={{ color: '#5bd1a5', fontSize: '1.1rem' }}>{formatCredits(totals.market, '--')}</div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (Local Data)</div>
+          <div style={{ color: '#5bd1a5', fontSize: '1.1rem' }}>{formatCredits(totals.local, '--')}</div>
         </div>
       </div>
 
@@ -1560,6 +1665,24 @@ function CommodityTradePanel () {
       {marketStatus === 'missing' && (
         <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
           Local market prices are unavailable. Dock at a station and reopen this panel to import in-game price data.
+        </div>
+      )}
+
+      {historyStatus === 'missing' && (
+        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          Unable to locate Elite Dangerous journal logs to build local market history. Confirm your log directory settings and reopen this panel.
+        </div>
+      )}
+
+      {historyStatus === 'error' && (
+        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          Local market history could not be parsed. Try reopening the commodities market in-game to refresh the data.
+        </div>
+      )}
+
+      {historyStatus === 'empty' && (
+        <div style={{ color: '#aaa', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          No nearby market history has been recorded yet. Visit commodity markets to capture additional local price data.
         </div>
       )}
 
@@ -1578,23 +1701,70 @@ function CommodityTradePanel () {
             <tr style={{ fontSize: '.95rem' }}>
               <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Commodity</th>
               <th className='text-right' style={{ padding: '.6rem .65rem' }}>Qty</th>
-              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Local Market</th>
+              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Local Data</th>
               <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>INARA Max</th>
               <th className='text-right' style={{ padding: '.6rem .65rem' }}>Value</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row, index) => {
-              const { item, entry, quantity, marketPrice, inaraPrice, bestValue, bestSource } = row
-              const marketStation = entry?.market?.stationName
-              const marketSystem = entry?.market?.systemName
+              const {
+                item,
+                entry,
+                quantity,
+                inaraPrice,
+                localBestEntry,
+                localBestSource,
+                historyEntries,
+                marketEntry,
+                bestValue,
+                bestSource,
+                inaraValue,
+                localValue
+              } = row
+
               const inaraStation = entry?.inara?.stationName
               const inaraSystem = entry?.inara?.systemName
               const inaraDemand = entry?.inara?.demandText
               const inaraUpdated = entry?.inara?.updatedText
-              const marketPriceDisplay = typeof marketPrice === 'number' ? formatCredits(marketPrice, '--') : '--'
               const inaraPriceDisplay = typeof inaraPrice === 'number' ? formatCredits(inaraPrice, '--') : '--'
               const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
+
+              const localEntriesForDisplay = []
+              if (localBestEntry) {
+                localEntriesForDisplay.push({
+                  label: localBestSource === 'local-history' ? 'Best local' : 'Current station',
+                  entry: localBestEntry,
+                  highlight: true,
+                  source: localBestSource === 'local-history' ? 'history' : 'station'
+                })
+              }
+
+              if (marketEntry && (!localBestEntry || !isSameMarketEntry(marketEntry, localBestEntry))) {
+                localEntriesForDisplay.push({
+                  label: 'Current station',
+                  entry: marketEntry,
+                  source: 'station'
+                })
+              }
+
+              const remainingHistoryEntries = historyEntries.filter(historyEntry => {
+                if (!historyEntry) return false
+                if (localBestEntry && isSameMarketEntry(historyEntry, localBestEntry)) return false
+                if (marketEntry && isSameMarketEntry(historyEntry, marketEntry)) return false
+                return true
+              })
+
+              const displayedHistoryEntries = remainingHistoryEntries.slice(0, 2)
+              displayedHistoryEntries.forEach(entryData => {
+                localEntriesForDisplay.push({
+                  label: 'Nearby data',
+                  entry: entryData,
+                  source: 'history'
+                })
+              })
+
+              const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
 
               return (
                 <tr key={`${row.key}-${index}`} style={{ animationDelay: `${index * 0.03}s` }}>
@@ -1612,14 +1782,15 @@ function CommodityTradePanel () {
                   </td>
                   <td className='text-right' style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>{quantity.toLocaleString()}</td>
                   <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
-                    <div>{marketPriceDisplay}</div>
-                    {marketStation && (
-                      <div style={{ color: '#888', fontSize: '.8rem', marginTop: '.25rem' }}>
-                        {marketStation}{marketSystem ? ` · ${marketSystem}` : ''}
-                      </div>
-                    )}
-                    {typeof entry?.market?.timestamp === 'string' && (
-                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>As of {formatRelativeTime(entry.market.timestamp)}</div>
+                    {localEntriesForDisplay.length > 0
+                      ? localEntriesForDisplay.map((entryInfo, entryIndex) => renderLocalEntry(entryInfo.label, entryInfo.entry, {
+                          highlight: entryInfo.highlight,
+                          source: entryInfo.source,
+                          index: entryIndex
+                        }))
+                      : <div>--</div>}
+                    {remainingCount > 0 && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.45rem' }}>+ {remainingCount} more recorded markets</div>
                     )}
                   </td>
                   <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
@@ -1637,13 +1808,10 @@ function CommodityTradePanel () {
                     )}
                   </td>
                   <td className='text-right' style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
-                    <div>
-                      {bestValueDisplay}
-                      {renderSourceBadge(bestSource)}
-                    </div>
-                    {typeof row.marketValue === 'number' && typeof row.inaraValue === 'number' && Math.abs(row.marketValue - row.inaraValue) > 0.01 && (
+                    <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
+                    {typeof localValue === 'number' && typeof inaraValue === 'number' && Math.abs(localValue - inaraValue) > 0.01 && (
                       <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>
-                        INARA {formatCredits(row.inaraValue, '--')} · Local {formatCredits(row.marketValue, '--')}
+                        INARA {formatCredits(inaraValue, '--')} · Local {formatCredits(localValue, '--')}
                       </div>
                     )}
                   </td>
