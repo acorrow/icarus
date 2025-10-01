@@ -6,6 +6,8 @@ const UPX = require('upx')({ brute: false }) // Brute on service seems to hang
 const yargs = require('yargs')
 const commandLineArgs = yargs.argv
 
+const { ensureNodeHidBinary, TARGET_NODE_VERSION, TARGET_ARCH } = require('./lib/ensure-node-hid')
+
 const {
   DEVELOPMENT_BUILD: DEVELOPMENT_BUILD_DEFAULT,
   DEBUG_CONSOLE: DEBUG_CONSOLE_DEFAULT,
@@ -37,6 +39,7 @@ function clean () {
 }
 
 async function build () {
+  ensureNodeHidBinary({ nodeVersion: TARGET_NODE_VERSION, arch: TARGET_ARCH })
   await compile({
     name: 'ICARUS Service',
     ico: SERVICE_ICON,

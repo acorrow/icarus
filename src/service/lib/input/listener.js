@@ -1,10 +1,12 @@
 const EventEmitter = require('events')
 
 let HID
+let hidLoadError = null
 try {
   HID = require('node-hid')
 } catch (error) {
   HID = null
+  hidLoadError = error
   console.warn('HID support disabled – node-hid not available.', error?.message || error)
 }
 
@@ -15,10 +17,15 @@ class InputListener extends EventEmitter {
     this.pendingCapture = null
     this.available = Boolean(HID)
     this.scanInterval = null
+    this.unavailableReason = hidLoadError ? this.formatError(hidLoadError) : null
   }
 
   isAvailable () {
     return this.available
+  }
+
+  getUnavailableReason () {
+    return this.available ? null : this.unavailableReason
   }
 
   start () {
@@ -82,6 +89,9 @@ class InputListener extends EventEmitter {
   handleError (deviceInfo, error) {
     console.error('HID_DEVICE_ERROR', deviceInfo?.product, error?.message || error)
     this.unregisterDevice(deviceInfo)
+    if (!this.unavailableReason) {
+      this.unavailableReason = this.formatError(error)
+    }
   }
 
   handleData (deviceInfo, data) {
@@ -157,6 +167,21 @@ class InputListener extends EventEmitter {
   getDeviceId (device) {
     if (!device) return null
     return device.path || `${device.vendorId}:${device.productId}`
+  }
+
+  formatError (error) {
+    if (!error) return null
+    if (typeof error === 'string') return error
+    if (error?.message) {
+      if (error.message.includes('NODE_MODULE_VERSION')) {
+        return 'node-hid binary is incompatible with embedded Node runtime'
+      }
+      return error.message
+    }
+    if (error?.code && error?.errno) {
+      return `${error.code} (${error.errno})`
+    }
+    return JSON.stringify(error)
   }
 }
 

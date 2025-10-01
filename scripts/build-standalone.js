@@ -18,6 +18,8 @@ const {
   SERVICE_ICON
 } = require('./lib/build-options')
 
+const { ensureNodeHidBinary, TARGET_NODE_VERSION, TARGET_ARCH } = require('./lib/ensure-node-hid')
+
 const DEBUG_CONSOLE = commandLineArgs.debug || DEBUG_CONSOLE_DEFAULT
 const ENTRY_POINT = path.join(__dirname, '..', 'src', 'service', 'main.js')
 
@@ -33,6 +35,7 @@ function clean () {
 }
 
 async function build () {
+  ensureNodeHidBinary({ nodeVersion: TARGET_NODE_VERSION, arch: TARGET_ARCH })
   await compile({
     name: 'ICARUS Service',
     ico: SERVICE_ICON,

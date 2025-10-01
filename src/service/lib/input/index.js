@@ -28,7 +28,8 @@ class InputManager extends EventEmitter {
       devices: this.listener.getDevices(),
       mappings: this.mappingStore.getMappings(),
       actions: INPUT_ACTIONS,
-      groups: INPUT_GROUPS
+      groups: INPUT_GROUPS,
+      reason: this.listener.getUnavailableReason()
     }
   }
 

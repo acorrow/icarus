@@ -2,6 +2,8 @@
 
 This document walks through the steps required to run the experimental Human Interface Device (HID) listener locally and map buttons from a joystick/HOTAS to the native panel navigation actions. Follow these instructions if you see the `HID support disabled – node-hid not available.` warning in the service logs or if the Input Mapping UI reports that HID is unavailable.
 
+> **Packaged builds:** Running `npm run build` (or the individual build steps) now automatically recompiles `node-hid` against the Node 14 runtime used inside the Windows service executable. A fresh installer generated after this change includes the working HID listener without requiring any manual setup.
+
 ## Prerequisites
 
 1. **Windows 10 or newer** – the listener currently targets the native Windows build of ICARUS.
@@ -28,7 +30,7 @@ notepad .env   # change LOG_DIR if the default is wrong
 
 > **Tip:** The Elite Dangerous journals normally live in `C:\Users\<you>\Saved Games\Frontier Developments\Elite Dangerous`. Leave `LOG_DIR` blank to accept that default.
 
-If you previously installed dependencies before adding the build tools and now see the HID warning, rebuild the module:
+If you previously installed dependencies before adding the build tools and now see the HID warning while developing locally, rebuild the module:
 
 ```powershell
 npm rebuild node-hid

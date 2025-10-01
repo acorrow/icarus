@@ -11,7 +11,8 @@ const defaultStatus = {
   devices: [],
   mappings: {},
   actions: INPUT_ACTIONS,
-  groups: INPUT_GROUPS
+  groups: INPUT_GROUPS,
+  reason: null
 }
 
 export default function InputMappingPage () {
@@ -131,7 +132,7 @@ export default function InputMappingPage () {
           <p className='text-muted'>
             {supported
               ? 'Press “Listen” for an action, then press a button on your controller to capture the binding.'
-              : 'HID listening is not currently available. Ensure ICARUS is running on Windows with node-hid installed.'}
+              : `HID listening is not currently available${status?.reason ? ` (${status.reason})` : ''}.`}
           </p>
           {status?.listening && <p className='text-info text-blink-slow'>Listening for input…</p>}
           {groups.map(group => (
