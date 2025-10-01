@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { formatBytes, eliteDateTime } from 'lib/format'
 import { newWindow, checkForUpdate, installUpdate, openReleaseNotes, openTerminalInBrowser } from 'lib/window'
 import { useSocket, eventListener, sendEvent } from 'lib/socket'
@@ -45,6 +45,12 @@ export default function IndexPage () {
     }
   }), [])
 
+  const browserAccessUrl = useMemo(() => {
+    if (!hostInfo?.urls?.length) return undefined
+    const preferredUrl = hostInfo.urls.find(url => !/localhost|127\.0\.0\.1/i.test(url))
+    return preferredUrl || hostInfo.urls[0]
+  }, [hostInfo])
+
   return (
     <>
       <Loader visible={!connected} />
@@ -85,15 +91,6 @@ export default function IndexPage () {
               <i style={{position: 'relative', top: '.2rem', marginRight: '.2rem'}} className='icon icarus-terminal-download' /> Downloading update...
             </p>}
           </div>}
-        <div style={{ position: 'absolute', bottom: '.5rem', left: '1rem' }}>
-          <p className='text-muted'>Connect from a browser on</p>
-          {hostInfo?.urls?.[0] &&
-            <p>
-              <span className='text-info' onClick={() => openTerminalInBrowser()}>
-                {hostInfo.urls[0]}
-              </span>
-            </p>}
-        </div>
         <div
           className='scrollable text-right text-uppercase' style={{
             position: 'absolute',
@@ -114,6 +111,18 @@ export default function IndexPage () {
             {loadingProgress.loadingComplete === true && <p>Completed in {(loadingProgress.loadingTime / 1000).toFixed(2)} seconds</p>}
             {loadingProgress.loadingComplete === true && loadingProgress.numberOfLogLines > 0 && <p>Last activity {eliteDateTime(loadingProgress.lastActivity).dateTime}</p>}
             {loadingProgress.loadingComplete === true && loadingProgress.numberOfLogLines === 0 && <p>No recent activity found</p>}
+            {browserAccessUrl && (
+              <p>
+                <span className='text-muted'>HTTP ACCESS AVAILABLE AT:&nbsp;</span>
+                <span
+                  className='text-info text-link-text'
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => openTerminalInBrowser()}
+                >
+                  {browserAccessUrl}
+                </span>
+              </p>
+            )}
           </div>
           {loadingProgress.loadingComplete === true
             ? <p>Ready <span className='text-blink-slow'>_</span></p>
@@ -122,8 +131,10 @@ export default function IndexPage () {
             <progress id='loadingProgressBar' value={loadingProgress.numberOfEventsImported} max={loadingProgress.numberOfLogLines} />
           </div>
         </div>
-        <div style={{ position: 'absolute', bottom: '1rem', right: '1rem' }}>
-          <button style={{ width: '20rem' }} onClick={newWindow}>New Terminal</button>
+        <div style={{ position: 'absolute', bottom: '1rem', left: '1rem', right: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', width: '100%', alignItems: 'stretch' }}>
+            <button style={{ flex: 1 }} onClick={newWindow}>New Terminal</button>
+          </div>
         </div>
       </div>
     </>
