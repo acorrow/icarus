@@ -4,6 +4,7 @@ const path = require('path')
 const Package = require('../../../package.json')
 
 const PREFERENCES_FILE = 'Preferences.json'
+const INPUT_MAPPINGS_FILE = 'InputMappings.json'
 
 class Preferences {
   getPreferences () {
@@ -27,4 +28,14 @@ class Preferences {
   }
 }
 
-module.exports = new Preferences()
+const preferencesInstance = new Preferences()
+
+function ensurePreferencesDir () {
+  const preferences = preferencesInstance.preferencesDir()
+  if (!fs.existsSync(preferences)) fs.mkdirSync(preferences, { recursive: true })
+  return preferences
+}
+
+module.exports = preferencesInstance
+module.exports.ensurePreferencesDir = ensurePreferencesDir
+module.exports.INPUT_MAPPINGS_FILE = INPUT_MAPPINGS_FILE

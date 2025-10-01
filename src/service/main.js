@@ -106,10 +106,11 @@ global.CACHE = {
   SYSTEMS: {}
 }
 
+let httpServer
+let webSocketServer
+
 // Don't load events till globals are set
 const { eventHandlers, init } = require('./lib/events')
-
-let httpServer
 if (DEVELOPMENT) {
   // If DEVELOPMENT is specified then HTTP requests other than web socket
   // requests will be forwarded to a web server which is started on localhost
@@ -124,7 +125,7 @@ if (DEVELOPMENT) {
   httpServer = http.createServer(webServer)
 }
 
-const webSocketServer = new WebSocket.Server({ server: httpServer })
+webSocketServer = new WebSocket.Server({ server: httpServer })
 
 function webSocketDebugMessage () { /* console.log(...arguments) */ }
 

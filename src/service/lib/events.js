@@ -3,12 +3,15 @@ const os = require('os')
 const EliteLog = require('./elite-log')
 const EliteJson = require('./elite-json')
 const EventHandlers = require('./event-handlers')
+const InputManager = require('./input')
 
 const {
   PORT,
   LOG_DIR,
   BROADCAST_EVENT: broadcastEvent
 } = global
+
+const inputManager = new InputManager({ broadcast: broadcastEvent })
 
 // eliteLog and eliteJson handle all log events and game state changes and
 // are shared with event handlers who can respond to and query them
@@ -33,6 +36,25 @@ eventHandlers.hostInfo = () => {
   const fallbackUrls = [`http://localhost:${PORT}`, `http://127.0.0.1:${PORT}`]
   const urls = [...new Set([...interfaceUrls, ...fallbackUrls])]
   return { urls }
+}
+eventHandlers.inputGetStatus = () => inputManager.getStatus()
+eventHandlers.inputGetMappings = () => inputManager.getMappings()
+eventHandlers.inputGetActions = () => inputManager.getActions()
+eventHandlers.inputListen = async ({ action, timeoutMs }) => {
+  try {
+    const mapping = await inputManager.listenForAction(action, { timeoutMs })
+    return { action, mapping }
+  } catch (error) {
+    return { action, error: error.message }
+  }
+}
+eventHandlers.inputClear = ({ action }) => {
+  try {
+    inputManager.clearMapping(action)
+    return { action, mapping: null }
+  } catch (error) {
+    return { action, error: error.message }
+  }
 }
 eventHandlers.getLoadingStatus = () => getLoadingStatus()
 eventHandlers.syncMessage = (message) => broadcastEvent('syncMessage', message)

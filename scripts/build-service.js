@@ -6,6 +6,8 @@ const UPX = require('upx')({ brute: false }) // Brute on service seems to hang
 const yargs = require('yargs')
 const commandLineArgs = yargs.argv
 
+const ensureNodeHid = require('./lib/ensure-node-hid')
+
 const {
   DEVELOPMENT_BUILD: DEVELOPMENT_BUILD_DEFAULT,
   DEBUG_CONSOLE: DEBUG_CONSOLE_DEFAULT,
@@ -22,6 +24,8 @@ const DEVELOPMENT_BUILD = commandLineArgs.debug || DEVELOPMENT_BUILD_DEFAULT
 const DEBUG_CONSOLE = commandLineArgs.debug || DEBUG_CONSOLE_DEFAULT
 const ENTRY_POINT = path.join(__dirname, '..', 'src', 'service', 'main.js')
 const COMPRESS_FINAL_BUILD = false
+
+ensureNodeHid()
 
 ;(async () => {
   clean()

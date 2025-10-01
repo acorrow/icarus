@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/router'
 import { formatBytes, eliteDateTime } from 'lib/format'
 import { newWindow, checkForUpdate, installUpdate, openReleaseNotes, openTerminalInBrowser } from 'lib/window'
 import { useSocket, eventListener, sendEvent } from 'lib/socket'
@@ -22,7 +23,8 @@ function resolveNetworkAddress (urls = []) {
     try {
       const { hostname } = new URL(url)
       if (!hostname || !/^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)) continue
-      return `${hostname}:3300`
+      const protocol = url.startsWith('https://') ? 'https://' : 'http://'
+      return `${protocol}${hostname}:3300`
     } catch {}
   }
 
@@ -30,6 +32,7 @@ function resolveNetworkAddress (urls = []) {
 }
 
 export default function IndexPage () {
+  const router = useRouter()
   const { connected } = useSocket()
   const [hostInfo, setHostInfo] = useState()
   const [update, setUpdate] = useState()
@@ -95,17 +98,19 @@ export default function IndexPage () {
   }), [])
 
   const browserAccessUrl = useMemo(() => {
-    if (!hostInfo?.urls?.length) return undefined
-    return resolveNetworkAddress(hostInfo.urls)
+    if (hostInfo?.urls?.length) {
+      const resolved = resolveNetworkAddress(hostInfo.urls)
+      if (resolved) return resolved
+      const fallback = hostInfo.urls.find((url) => /^https?:\/\//i.test(url))
+      if (fallback) return fallback
+    }
+    return 'http://localhost:3300'
   }, [hostInfo])
 
-  const browserAccessDisplay = useMemo(() => {
-    if (browserAccessUrl) {
-      return { label: browserAccessUrl, interactive: true }
-    }
-
-    return { label: 'HTTP ACCESS INITIALIZED', interactive: false }
-  }, [browserAccessUrl])
+  const browserAccessDisplay = useMemo(() => ({
+    label: browserAccessUrl,
+    interactive: !!hostInfo?.urls?.length
+  }), [browserAccessUrl, hostInfo])
 
   return (
     <>
@@ -167,17 +172,6 @@ export default function IndexPage () {
             {loadingProgress.loadingComplete === true && <p>Completed in {(loadingProgress.loadingTime / 1000).toFixed(2)} seconds</p>}
             {loadingProgress.loadingComplete === true && loadingProgress.numberOfLogLines > 0 && <p>Last activity {eliteDateTime(loadingProgress.lastActivity).dateTime}</p>}
             {loadingProgress.loadingComplete === true && loadingProgress.numberOfLogLines === 0 && <p>No recent activity found</p>}
-            <p className='text-muted'>Connect from a browser on</p>
-            <p>
-              <span className='text-muted'>HTTP ACCESS AVAILABLE AT:&nbsp;</span>
-              <span
-                className={browserAccessDisplay.interactive ? 'text-info text-link-text' : 'text-muted'}
-                style={browserAccessDisplay.interactive ? { cursor: 'pointer' } : undefined}
-                onClick={browserAccessDisplay.interactive ? () => openTerminalInBrowser() : undefined}
-              >
-                {browserAccessDisplay.label}
-              </span>
-            </p>
           </div>
           {loadingProgress.loadingComplete === true
             ? <p>Ready <span className='text-blink-slow'>_</span></p>
@@ -187,8 +181,25 @@ export default function IndexPage () {
           </div>
         </div>
         <div style={{ position: 'absolute', bottom: '1rem', left: '1rem', right: '1rem' }}>
+          <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+            <p className='text-muted text-uppercase' style={{ marginBottom: '.25rem' }}>HTTP access available at</p>
+            <span
+              className={browserAccessDisplay.interactive ? 'text-info text-link-text' : 'text-muted'}
+              style={browserAccessDisplay.interactive ? { cursor: 'pointer' } : undefined}
+              onClick={browserAccessDisplay.interactive ? () => openTerminalInBrowser() : undefined}
+            >
+              {browserAccessDisplay.label}
+            </span>
+          </div>
           <div style={{ display: 'flex', gap: '1rem', width: '100%', alignItems: 'stretch' }}>
             <button style={{ flex: 1 }} onClick={newWindow}>New Terminal</button>
+            <button
+              className='button--secondary'
+              style={{ flex: 1 }}
+              onClick={() => router.push('/native/input-mapping')}
+            >
+              Configure HID Input
+            </button>
           </div>
         </div>
       </div>
