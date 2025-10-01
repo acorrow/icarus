@@ -6,6 +6,7 @@ import NavigationInspectorPanel from '../components/panels/nav/navigation-inspec
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
+import styles from './inara.ghostnet.module.css'
 
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
   'Loadout',
@@ -283,7 +284,7 @@ function getFactionStandingDisplay(factionName, standings) {
 
   if (!key || !standings) {
     if (debug && factionName) {
-      console.debug('[INARA] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
+      console.debug('[Ghost Net] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
     }
     return defaultResult
   }
@@ -291,7 +292,7 @@ function getFactionStandingDisplay(factionName, standings) {
   const info = standings[key]
   if (!info) {
     if (debug) {
-      console.debug('[INARA] Faction standing missing', {
+      console.debug('[Ghost Net] Faction standing missing', {
         factionName,
         key,
         availableCount: Object.keys(standings || {}).length
@@ -301,7 +302,7 @@ function getFactionStandingDisplay(factionName, standings) {
   }
 
   if (debug) {
-    console.debug('[INARA] Faction standing resolved', {
+    console.debug('[Ghost Net] Faction standing resolved', {
       factionName,
       key,
       standing: info.standing,
@@ -555,7 +556,7 @@ const CURRENT_SYSTEM_CONTAINER_STYLE = {
 }
 
 const CURRENT_SYSTEM_LABEL_STYLE = {
-  color: '#ff7c22',
+  color: 'var(--ghostnet-accent)',
   fontSize: '0.75rem',
   letterSpacing: '.08em',
   textTransform: 'uppercase',
@@ -587,7 +588,7 @@ const FILTER_FIELD_STYLE = {
 const FILTER_LABEL_STYLE = {
   display: 'block',
   marginBottom: 0,
-  color: '#ff7c22',
+  color: 'var(--ghostnet-accent)',
   fontSize: '0.75rem',
   textTransform: 'uppercase',
   letterSpacing: '.08em'
@@ -600,17 +601,17 @@ const FILTER_CONTROL_STYLE = {
   padding: '.35rem .7rem',
   fontSize: '0.9rem',
   borderRadius: '.35rem',
-  border: '1px solid #2f3442',
-  background: 'rgba(10, 14, 23, 0.95)',
-  color: '#f5f7ff',
+  border: '1px solid rgba(127, 233, 255, 0.35)',
+  background: 'rgba(5, 8, 13, 0.75)',
+  color: 'var(--ghostnet-ink)',
   lineHeight: '1.2',
   boxSizing: 'border-box'
 }
 
 const FILTER_TOGGLE_BUTTON_STYLE = {
-  background: 'rgba(255, 124, 34, 0.1)',
-  border: '1px solid #ff7c22',
-  color: '#ff7c22',
+  background: 'rgba(127, 233, 255, 0.12)',
+  border: '1px solid rgba(127, 233, 255, 0.4)',
+  color: 'var(--ghostnet-accent)',
   borderRadius: '.35rem',
   padding: '0 1rem',
   fontSize: '0.85rem',
@@ -1154,48 +1155,49 @@ function MissionsPanel () {
   }, [status, missions])
 
   return (
-    <div>
+    <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
       <h2>Mining Missions</h2>
+      <p className={styles.sectionHint}>Ghost Net decrypts volunteer INARA manifests to shortlist mining opportunities aligned to your current system.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
           <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
-          <div className='inara__data-source'>
-            Data sourced from INARA community submissions
+          <div className='inara__data-source ghostnet-muted'>
+            Ghost Net intercept feed compiled from INARA community relays.
           </div>
         )}
       </div>
-      <p style={{ color: '#aaa', marginTop: '-0.5rem' }}>
-        Mission availability is sourced from INARA player submissions and may not reflect in-game boards in real time.
+      <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+        Availability signals originate from INARA contributors and may trail live mission boards.
       </p>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
+      <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid rgba(127, 233, 255, 0.18)' : 'none' }}>
               {displayMessage}
             </div>
           )}
           {status === 'idle' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
               Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Loading missions...</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>Linking mission beacons…</div>
           )}
           {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '.75rem',
-              color: '#888',
+              color: 'var(--ghostnet-subdued)',
               padding: '.75rem 1rem',
-              borderBottom: '1px solid #222',
+              borderBottom: '1px solid rgba(127, 233, 255, 0.18)',
               fontSize: '.9rem',
-              background: '#0b0b0b'
+              background: 'rgba(5, 8, 13, 0.6)'
             }}
             >
               {isRefreshing && <span>Refreshing missions...</span>}
@@ -1210,8 +1212,8 @@ function MissionsPanel () {
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load missions.</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>
-              No mining missions found near {displaySystemName || 'your current system'}.
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
+              No mining missions located near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && missions.length > 0 && (
@@ -1263,7 +1265,7 @@ function MissionsPanel () {
                               <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
                               )
                             : (
-                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
+                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
                               )}
                           {mission.system || '--'}
                         </div>
@@ -1550,7 +1552,7 @@ function TradeRoutesPanel () {
     if (sortField !== field) return null
     const arrow = sortDirection === 'asc' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
     return (
-      <span style={{ color: '#ff7c22', marginLeft: '0.35rem', fontSize: '0.8rem' }}>{arrow}</span>
+      <span style={{ color: 'var(--ghostnet-accent)', marginLeft: '0.35rem', fontSize: '0.8rem' }}>{arrow}</span>
     )
   }
 
@@ -1632,7 +1634,7 @@ function TradeRoutesPanel () {
       })
 
       applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in INARA settings to restore live results.'
+        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (INARA) settings to restore live results.'
       })
       setIsRefreshing(false)
       return
@@ -1827,7 +1829,7 @@ function TradeRoutesPanel () {
           return (
             <React.Fragment key={rowKey}>
               <tr
-                style={{ fontSize: '0.95rem', cursor: 'pointer', background: isExpanded ? 'rgba(255, 124, 34, 0.06)' : 'transparent' }}
+                style={{ fontSize: '0.95rem', cursor: 'pointer', background: isExpanded ? 'rgba(127, 233, 255, 0.1)' : 'transparent' }}
                 onClick={() => handleRowToggle(rowKey)}
                 onKeyDown={event => handleRowKeyDown(event, rowKey)}
                 role='button'
@@ -1878,29 +1880,29 @@ function TradeRoutesPanel () {
               {isExpanded && (
                 <tr
                   id={detailsId}
-                  style={{ background: 'rgba(255, 124, 34, 0.06)' }}
+                  style={{ background: 'rgba(127, 233, 255, 0.1)' }}
                 >
-                  <td style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
+                  <td style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                       <span
-                        style={originStationClassName ? undefined : { color: '#9da4b3' }}
+                        style={originStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
                         className={originStationClassName}
                         title={originStationTitle}
                       >
                         {originSystemName || 'Unknown system'}
                       </span>
-                      <span style={{ color: '#9da4b3' }}>
+                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
                         Faction:&nbsp;
                         <span
                           className={originFactionName ? originStationClassName : undefined}
-                          style={originFactionName ? { fontWeight: 600, color: originStationColor } : { fontWeight: 600, color: '#7f8697' }}
+                          style={originFactionName ? { fontWeight: 600, color: originStationColor } : { fontWeight: 600, color: 'var(--ghostnet-subdued)' }}
                           title={originStationTitle}
                         >
                           {originFactionName || 'Unknown faction'}
                         </span>
                       </span>
-                      <span style={{ color: '#9da4b3' }}>
+                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
                         Standing:&nbsp;
                         {originStandingStatusText
                           ? (
@@ -1913,35 +1915,35 @@ function TradeRoutesPanel () {
                             </span>
                             )
                           : (
-                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                            <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>
                               {originFactionName ? 'No local standing data' : 'Not available'}
                             </span>
-                            )}
+                          )}
                       </span>
                       <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
                       <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
+                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                       <span
-                        style={destinationStationClassName ? undefined : { color: '#9da4b3' }}
+                        style={destinationStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
                         className={destinationStationClassName}
                         title={destinationStationTitle}
                       >
                         {destinationSystemName || 'Unknown system'}
                       </span>
-                      <span style={{ color: '#9da4b3' }}>
+                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
                         Faction:&nbsp;
                         <span
                           className={destinationFactionName ? destinationStationClassName : undefined}
-                          style={destinationFactionName ? { fontWeight: 600, color: destinationStationColor } : { fontWeight: 600, color: '#7f8697' }}
+                          style={destinationFactionName ? { fontWeight: 600, color: destinationStationColor } : { fontWeight: 600, color: 'var(--ghostnet-subdued)' }}
                           title={destinationStationTitle}
                         >
                           {destinationFactionName || 'Unknown faction'}
                         </span>
                       </span>
-                      <span style={{ color: '#9da4b3' }}>
+                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
                         Standing:&nbsp;
                         {destinationStandingStatusText
                           ? (
@@ -1954,33 +1956,33 @@ function TradeRoutesPanel () {
                             </span>
                             )
                           : (
-                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                            <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>
                               {destinationFactionName ? 'No local standing data' : 'Not available'}
                             </span>
-                            )}
+                          )}
                       </span>
                       <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
                       <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
                     </div>
                   </td>
-                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top', fontSize: '0.82rem', color: '#8f96a3' }}>
+                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                       <span>Buy: {outboundBuy?.priceText || '--'}</span>
                       <span>Sell: {outboundSell?.priceText || '--'}</span>
                     </div>
                   </td>
-                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top', fontSize: '0.82rem', color: '#8f96a3' }}>
+                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                       <span>Buy: {returnBuy?.priceText || '--'}</span>
                       <span>Sell: {returnSell?.priceText || '--'}</span>
                     </div>
                   </td>
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
                 </tr>
               )}
             </React.Fragment>
@@ -1991,8 +1993,9 @@ function TradeRoutesPanel () {
   )
 
   return (
-    <div>
+    <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
       <h2>Find Trade Routes</h2>
+      <p className={styles.sectionHint}>Cross-reference INARA freight whispers to surface lucrative corridors suited to your ship profile.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -2116,13 +2119,13 @@ function TradeRoutesPanel () {
           </div>
         )}
       </form>
-      <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
+      <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
           {message && status !== 'idle' && status !== 'loading' && (
-            <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>{message}</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid rgba(127, 233, 255, 0.18)' : 'none' }}>{message}</div>
           )}
           {status === 'idle' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Choose your filters and refresh to see profitable trade routes.</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>Tune the filters and pulse refresh to surface profitable corridors.</div>
           )}
           {status === 'loading' && (
             <LoadingSpinner label='Loading trade routes…' />
@@ -2141,7 +2144,7 @@ function TradeRoutesPanel () {
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>{error || 'Unable to fetch trade routes.'}</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>No trade routes found near {selectedSystemName || 'Unknown System'}.</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>No profitable routes detected near {selectedSystemName || 'Unknown System'}.</div>
           )}
           {status === 'populated' && renderRoutesTable()}
         </div>
@@ -2358,21 +2361,22 @@ function PristineMiningPanel () {
   }, [handleLocationToggle])
 
   return (
-    <div>
+    <div className={`${styles.sectionFrameElevated} ${styles.sectionPadding}`}>
       <h2>Pristine Mining Locations</h2>
+      <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across INARA to pinpoint high-value extraction sites.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
           <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
-          <div className='inara__data-source'>
-            Data sourced from INARA community submissions
+          <div className='inara__data-source ghostnet-muted'>
+            Ghost Net prospecting relays aligned with INARA survey intel.
           </div>
         )}
       </div>
-      <p style={{ color: '#aaa', marginTop: '-0.5rem' }}>
-        Location data is provided by INARA community submissions.
+      <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+        Geological echoes are sourced from volunteer INARA submissions and may lag in-system discoveries.
       </p>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div
@@ -2388,11 +2392,11 @@ function PristineMiningPanel () {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '.75rem',
-                color: '#888',
+                color: 'var(--ghostnet-subdued)',
                 padding: '.75rem 1rem',
-                borderBottom: '1px solid #222',
+                borderBottom: '1px solid rgba(127, 233, 255, 0.18)',
                 fontSize: '.9rem',
-                background: '#0b0b0b'
+                background: 'rgba(5, 8, 13, 0.6)'
               }}
             >
               <span style={{ marginLeft: 'auto', fontSize: '.85rem' }}>
@@ -2401,24 +2405,24 @@ function PristineMiningPanel () {
             </div>
           )}
           {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid rgba(127, 233, 255, 0.18)' : 'none' }}>
               {displayMessage}
             </div>
           )}
           {status === 'idle' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
               Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Searching for pristine mining locations...</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>Triangulating pristine reserves…</div>
           )}
           {status === 'error' && !error && (
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load pristine mining locations.</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>
-              No pristine mining locations found near {displaySystemName || 'your current system'}.
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
+              No pristine signatures detected near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
@@ -2448,7 +2452,7 @@ function PristineMiningPanel () {
                       <tr
                         style={{
                           animationDelay: `${index * 0.03}s`,
-                          background: isExpanded ? 'rgba(255, 124, 34, 0.08)' : undefined,
+                          background: isExpanded ? 'rgba(127, 233, 255, 0.12)' : undefined,
                           cursor: 'pointer'
                         }}
                         role='button'
@@ -2461,7 +2465,7 @@ function PristineMiningPanel () {
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span className='text-primary'>{location.body || '--'}</span>
                             {detailText && (
-                              <span style={{ color: '#aaa', fontSize: '0.95rem', marginTop: '.25rem' }}>{detailText}</span>
+                              <span style={{ color: 'var(--ghostnet-muted)', fontSize: '0.95rem', marginTop: '.25rem' }}>{detailText}</span>
                             )}
                           </div>
                         </td>
@@ -2472,7 +2476,7 @@ function PristineMiningPanel () {
                                 <i className='icon system-object-icon icarus-terminal-location-filled text-primary' style={{ marginRight: '.5rem' }} />
                                 )
                               : (
-                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
+                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
                                 )}
                             <span className='text-primary'>{location.system || '--'}</span>
                           </div>
@@ -2482,7 +2486,7 @@ function PristineMiningPanel () {
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: '#080808', borderTop: '1px solid #222' }}>
+                          <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
                                 <div className='pristine-mining__detail-summary'>
@@ -2493,10 +2497,10 @@ function PristineMiningPanel () {
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
                                     {location.systemUrl && (
-                                      <span>INARA system entry available</span>
+                                      <span>Ghost Net linked INARA system dossier</span>
                                     )}
                                     {location.bodyUrl && (
-                                      <span>INARA body entry available</span>
+                                      <span>Ghost Net linked INARA body dossier</span>
                                     )}
                                   </div>
                                 )}
@@ -2544,6 +2548,7 @@ function PristineMiningPanel () {
 
 export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
+  const { connected, ready, active: socketActive } = useSocket()
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
@@ -2551,19 +2556,76 @@ export default function InaraPage() {
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
 
   ]), [activeTab])
+  const activeNavigationLabel = useMemo(
+    () => navigationItems.find(item => item.active)?.name || 'Trade Routes',
+    [navigationItems]
+  )
+  const tickerMessages = useMemo(() => ([
+    'Intercept feed authenticated',
+    'INARA mesh handshake complete',
+    'Signal hygiene nominal'
+  ]), [])
+  const uplinkStatus = connected && ready ? 'Stable' : 'Linking…'
+  const relayStatus = socketActive ? 'Streaming' : 'Idle'
 
   return (
     <Layout connected active ready loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
-        <div>
-          <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
-            <TradeRoutesPanel />
-          </div>
-          <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
-            <MissionsPanel />
-          </div>
-          <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
-            <PristineMiningPanel />
+        <div className={styles.ghostnet}>
+          <div className={styles.shell}>
+            <section className={styles.header} aria-labelledby='ghostnet-heading'>
+              <div>
+                <span className={styles.kicker}>Underground Intelligence Mesh</span>
+                <h1 id='ghostnet-heading' className={styles.title}>Ghost Net</h1>
+                <p className={styles.subtitle}>
+                  Ghost Net stitches INARA intercepts into a clandestine command surface, revealing trade corridors, syndicate missions, and pristine deposits hidden from official channels.
+                </p>
+                <div className={styles.ghostnetScroller} aria-hidden='true'>
+                  <div className={styles.ghostnetTicker}>
+                    {tickerMessages.concat(tickerMessages).map((message, index) => (
+                      <span key={`${message}-${index}`} className='ghostnet-inline-accent'>{message}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <aside
+                className={styles.statusCard}
+                role='complementary'
+                aria-label='Signal Brief'
+                aria-labelledby='ghostnet-status-heading'
+              >
+                <h2 id='ghostnet-status-heading' className={styles.statusHeading}>Signal Brief</h2>
+                <ul className={styles.metaList} aria-live='polite'>
+                  <li className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Uplink</span>
+                    <span className={styles.metaValue}>{uplinkStatus}</span>
+                  </li>
+                  <li className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Relays</span>
+                    <span className={styles.metaValue}>{relayStatus}</span>
+                  </li>
+                  <li className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Focus</span>
+                    <span className={styles.metaValue}>{activeNavigationLabel}</span>
+                  </li>
+                  <li className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Source</span>
+                    <span className={styles.metaValue}>INARA Mesh</span>
+                  </li>
+                </ul>
+              </aside>
+            </section>
+            <div className={styles.tabPanels}>
+              <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+                <TradeRoutesPanel />
+              </div>
+              <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
+                <MissionsPanel />
+              </div>
+              <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
+                <PristineMiningPanel />
+              </div>
+            </div>
           </div>
         </div>
       </Panel>
