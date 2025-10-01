@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1000 1000"
+  fill="none"
+>
+  <defs>
+    <radialGradient id="ghostnet-burst" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#E9D5FF" stop-opacity="0.95" />
+      <stop offset="52%" stop-color="#C084FC" stop-opacity="0.98" />
+      <stop offset="100%" stop-color="#2C1244" />
+    </radialGradient>
+    <linearGradient id="ghostnet-glow" x1="330" y1="220" x2="650" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F5EBFF" stop-opacity="0.9" />
+      <stop offset="60%" stop-color="#D8B4FE" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#6D28D9" stop-opacity="0.55" />
+    </linearGradient>
+    <linearGradient id="ghostnet-link" x1="720" y1="340" x2="830" y2="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F1E8FF" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="500" cy="500" r="430" fill="url(#ghostnet-burst)" />
+  <circle cx="500" cy="500" r="430" fill="#0F0A1F" fill-opacity="0.18" />
+  <circle cx="500" cy="500" r="360" fill="#0F0A1F" fill-opacity="0.1" />
+
+  <path
+    d="M500 240C364 240 256 348 256 484V620C256 661 239 709 233 756C228 792 251 826 286 834C317 841 344 829 368 809L430 757L500 809L570 757L632 809C656 829 683 841 714 834C749 826 772 792 767 756C761 709 744 661 744 620V484C744 348 636 240 500 240Z"
+    fill="url(#ghostnet-glow)"
+  />
+  <path
+    d="M500 240C364 240 256 348 256 484V620C256 661 239 709 233 756C228 792 251 826 286 834C317 841 344 829 368 809L430 757L500 809L570 757L632 809C656 829 683 841 714 834C749 826 772 792 767 756C761 709 744 661 744 620V484C744 348 636 240 500 240Z"
+    stroke="#4C1D95"
+    stroke-width="24"
+    stroke-linejoin="round"
+    fill="none"
+  />
+
+  <circle cx="430" cy="480" r="48" fill="#1F0A33" />
+  <circle cx="570" cy="480" r="48" fill="#1F0A33" />
+  <circle cx="430" cy="480" r="20" fill="#D9C3FF" />
+  <circle cx="570" cy="480" r="20" fill="#D9C3FF" />
+
+  <path
+    d="M360 380C388 324 440 290 500 290C560 290 612 324 640 380"
+    stroke="#F5EBFF"
+    stroke-width="28"
+    stroke-linecap="round"
+    stroke-opacity="0.45"
+  />
+
+  <path
+    d="M708 348L828 456"
+    stroke="url(#ghostnet-link)"
+    stroke-width="36"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.85"
+  />
+  <path
+    d="M828 456L750 612"
+    stroke="url(#ghostnet-link)"
+    stroke-width="32"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.85"
+  />
+  <path
+    d="M708 348L750 612"
+    stroke="url(#ghostnet-link)"
+    stroke-width="20"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.65"
+  />
+  <circle cx="708" cy="348" r="54" fill="#1B0B2B" stroke="#C4A1FF" stroke-width="18" />
+  <circle cx="828" cy="456" r="54" fill="#1B0B2B" stroke="#C4A1FF" stroke-width="18" />
+  <circle cx="750" cy="612" r="54" fill="#1B0B2B" stroke="#C4A1FF" stroke-width="18" />
+  <circle cx="708" cy="348" r="22" fill="#D9C3FF" />
+  <circle cx="828" cy="456" r="22" fill="#D9C3FF" />
+  <circle cx="750" cy="612" r="22" fill="#D9C3FF" />
+
+  <path
+    d="M310 630C312 690 354 738 412 750"
+    stroke="#F5EBFF"
+    stroke-width="28"
+    stroke-linecap="round"
+    stroke-opacity="0.4"
+  />
+</svg>
