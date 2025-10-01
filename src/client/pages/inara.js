@@ -3096,6 +3096,15 @@ function PristineMiningPanel () {
 export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const { connected, ready, active: socketActive } = useSocket()
+  useEffect(() => {
+    if (typeof document === 'undefined' || !document.body) return undefined
+
+    document.body.classList.add('ghostnet-theme')
+
+    return () => {
+      document.body.classList.remove('ghostnet-theme')
+    }
+  }, [])
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Commodity Trade', icon: 'cargo', active: activeTab === 'commodityTrade', onClick: () => setActiveTab('commodityTrade') },

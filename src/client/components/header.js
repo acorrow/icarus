@@ -23,8 +23,8 @@ const NAV_BUTTONS = [
     path: '/eng'
   },
   {
-    name: 'INARA',
-    abbr: 'INARA',
+    name: 'GhostNet',
+    abbr: 'GNet',
     path: '/inara'
   },
   {
