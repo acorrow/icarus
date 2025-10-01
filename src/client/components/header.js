@@ -25,7 +25,7 @@ const NAV_BUTTONS = [
   {
     name: 'GhostNet',
     abbr: 'GNet',
-    path: '/inara'
+    path: '/ghostnet'
   },
   {
     name: 'Log',
@@ -157,7 +157,7 @@ export default function Header ({ connected, active }) {
       <div id='primaryNavigation' className='button-group'>
         {NAV_BUTTONS.filter(button => button).map((button, i) => {
           const isActive = button.path === currentPath
-          const isGhostNet = button.path === '/inara'
+          const isGhostNet = button.path === '/ghostnet'
           return (
             <button
               key={button.name}

@@ -293,11 +293,11 @@
   color: var(--ghostnet-muted);
 }
 
-.ghostnet :global(.ghostnet-panel-table .inara-spinner__label) {
+.ghostnet :global(.ghostnet-panel-table .ghostnet-spinner__label) {
   color: var(--ghostnet-muted);
 }
 
-.ghostnet :global(.ghostnet-panel-table .inara-spinner__icon) {
+.ghostnet :global(.ghostnet-panel-table .ghostnet-spinner__icon) {
   border-color: var(--ghostnet-accent);
   border-right-color: transparent;
 }

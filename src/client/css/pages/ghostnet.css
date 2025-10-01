@@ -1,32 +1,32 @@
-.inara-spinner {
+.ghostnet-spinner {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   color: #aaa;
 }
 
-.inara-spinner--block {
+.ghostnet-spinner--block {
   justify-content: center;
   padding: 2rem;
 }
 
-.inara-spinner--inline {
+.ghostnet-spinner--inline {
   justify-content: flex-start;
   padding: 0;
   font-size: 0.9rem;
   color: #888;
 }
 
-.inara-spinner__icon {
+.ghostnet-spinner__icon {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.15);
   border-top-color: var(--color-primary);
-  animation: inara-spinner-rotate 0.85s linear infinite;
+  animation: ghostnet-spinner-rotate 0.85s linear infinite;
 }
 
-.inara-spinner__label {
+.ghostnet-spinner__label {
   font-size: 0.95rem;
 }
 
@@ -45,7 +45,7 @@
   font-size: 0.85rem;
 }
 
-.trade-routes__refresh-indicator .inara-spinner__label {
+.trade-routes__refresh-indicator .ghostnet-spinner__label {
   color: #888;
   font-size: 0.85rem;
 }
@@ -55,7 +55,7 @@
   font-size: 0.82rem;
 }
 
-@keyframes inara-spinner-rotate {
+@keyframes ghostnet-spinner-rotate {
   to {
     transform: rotate(360deg);
   }

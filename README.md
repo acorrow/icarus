@@ -53,16 +53,16 @@ The web interface relies on advanced browser functionality for rendering and wor
 
 Code contributions, pull requests and bug reports are not currently being accepted for this repository. See [CONTRIB.md](CONTRIB.md) for more information. For developer documentation see [BUILD.md](BUILD.md).
 
-## INARA Page
+## GHOSTNET Page
 
-ICARUS Terminal ships with a dedicated INARA page that pulls together trade, ship, mission and resource intel submitted by the INARA community. The page is accessible from the left-hand navigation inside the app (or directly at `/inara` when running the web client) and currently provides:
+ICARUS Terminal ships with a dedicated GHOSTNET page that pulls together trade, ship, mission and resource intel submitted by the GHOSTNET community. The page is accessible from the left-hand navigation inside the app (or directly at `/ghostnet` when running the web client) and currently provides:
 
 * **Ship availability search** – find stations selling a selected ship and view enriched details (distance, services, landing pads) from ICARUS's canonical data sets.
-* **Trade route scouting** – mirror INARA's public trade route search, including profit-per-trip and per-hour metrics, with an optional sandbox mode for layout testing.
+* **Trade route scouting** – mirror GHOSTNET's public trade route search, including profit-per-trip and per-hour metrics, with an optional sandbox mode for layout testing.
 * **Mining mission leads** – surface nearby mining missions and factions that have recently posted them.
 * **Pristine ring finder** – highlight bodies with pristine reserves within jump range for mining expeditions.
 
-All INARA-sourced insights are clearly labelled inside the UI so that commanders can distinguish between local ICARUS data and community-reported values. For a deep dive into how the integration works under the hood—including details on the HTTP requests, parsers and logging used to access INARA without an API key—see [INARA-README.md](INARA-README.md).
+All GHOSTNET-sourced insights are clearly labelled inside the UI so that commanders can distinguish between local ICARUS data and community-reported values. For a deep dive into how the integration works under the hood—including details on the HTTP requests, parsers and logging used to access GHOSTNET without an API key—see [GHOSTNET-README.md](GHOSTNET-README.md).
 
 ### Developer Quickstart
 
@@ -88,7 +88,7 @@ This will run in debug mode which is not quite the same as a production build (i
 
 ICARUS Terminal is free, open-source software released under the ISC License.
 
-ICARUS Terminal does not record Personally Identifiable Information (PII). ICARUS Terminal includes integrations with services like [EDSM](https://www.edsm.net), [EDDB](https://eddb.io/) and [INARA](https://inara.cz/). Data such as your current in-game location, cargo, etc. may be sent to them order to render information in the interface. ICARUS Terminal does not expose or send information about you or your in game character (e.g. your name, user name, commander name or ship name) but any requests made to a third party will include your IP address.
+ICARUS Terminal does not record Personally Identifiable Information (PII). ICARUS Terminal includes integrations with services like [EDSM](https://www.edsm.net), [EDDB](https://eddb.io/) and [GHOSTNET](https://ghostnet.cz/). Data such as your current in-game location, cargo, etc. may be sent to them order to render information in the interface. ICARUS Terminal does not expose or send information about you or your in game character (e.g. your name, user name, commander name or ship name) but any requests made to a third party will include your IP address.
 
 Elite Dangerous is copyright Frontier Developments plc. This software is not endorsed by nor reflects the views or opinions of Frontier Developments and no employee of Frontier Developments was involved in the making of it.
 
@@ -122,15 +122,15 @@ People have asked if I take donations for the project - I don't donations, but
 I do appreciate the offer.
 
 If you want to support development of ICARUS Terminal, the best way is to visit 
-the [Ardent Pioneer (V9G-G7Z)](https://inara.cz/elite/station/490914/).
+the [Ardent Pioneer (V9G-G7Z)](https://ghostnet.cz/elite/station/490914/).
 
 Selling Tritium to the carrier directly supports development as it means I can 
 spend more time adding features to ICARUS Terminal and travelling the galaxy to 
 test them out!
 
-You can use Inara to [find out which system the Ardent Pioneer is currently in](https://inara.cz/elite/station/490914/) and see if it's anywhere near you.
+You can use Ghostnet to [find out which system the Ardent Pioneer is currently in](https://ghostnet.cz/elite/station/490914/) and see if it's anywhere near you.
 
 Before you visit you might want to [check out what commodities are currently 
-being traded](https://inara.cz/elite/station-market/490914/). You might also 
+being traded](https://ghostnet.cz/elite/station-market/490914/). You might also 
 want to chat to the bartender to see what they are looking for!
 

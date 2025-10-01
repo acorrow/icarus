@@ -2,12 +2,12 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 import EliteLog from '../../../service/lib/elite-log.js'
-import { appendInaraLogEntry } from './inara-log-utils.js'
+import { appendGhostnetLogEntry } from './ghostnet-log-utils.js'
 
-const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
+const logPath = path.join(process.cwd(), 'ghostnet-trade-routes.log')
 
 function logFactionStandings (entry) {
-  appendInaraLogEntry(logPath, entry)
+  appendGhostnetLogEntry(logPath, entry)
 }
 
 function resolveLogDir () {
