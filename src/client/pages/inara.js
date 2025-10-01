@@ -2588,7 +2588,12 @@ export default function InaraPage() {
                   </div>
                 </div>
               </div>
-              <aside className={styles.statusCard} aria-labelledby='ghostnet-status-heading'>
+              <aside
+                className={styles.statusCard}
+                role='complementary'
+                aria-label='Signal Brief'
+                aria-labelledby='ghostnet-status-heading'
+              >
                 <h2 id='ghostnet-status-heading' className={styles.statusHeading}>Signal Brief</h2>
                 <ul className={styles.metaList} aria-live='polite'>
                   <li className={styles.metaItem}>
