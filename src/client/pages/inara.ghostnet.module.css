@@ -199,19 +199,19 @@
   color: var(--ghostnet-ink);
 }
 
-:global(.ghostnet-surface) {
+.ghostnet :global(.ghostnet-surface) {
   background: transparent;
 }
 
-:global(.ghostnet-panel) {
+.ghostnet :global(.ghostnet-panel) {
   background: transparent;
 }
 
-:global(.ghostnet-prompt) {
+.ghostnet :global(.ghostnet-prompt) {
   color: var(--ghostnet-muted);
 }
 
-:global(.ghostnet-highlight) {
+.ghostnet :global(.ghostnet-highlight) {
   color: var(--ghostnet-accent);
 }
 
@@ -239,7 +239,7 @@
   }
 }
 
-:global(.ghostnet-panel-table) {
+.ghostnet :global(.ghostnet-panel-table) {
   background: var(--ghostnet-panel);
   border: 1px solid var(--ghostnet-panel-border);
   border-radius: 1.25rem;
@@ -248,86 +248,86 @@
   backdrop-filter: blur(10px);
 }
 
-:global(.ghostnet-panel-table > .scrollable) {
+.ghostnet :global(.ghostnet-panel-table > .scrollable) {
   background: rgba(5, 8, 13, 0.4);
 }
 
-:global(.ghostnet-panel-table table thead tr th) {
+.ghostnet :global(.ghostnet-panel-table table thead tr th) {
   border-bottom: 1px solid rgba(127, 233, 255, 0.15);
 }
 
-:global(.ghostnet-panel-table tbody tr:nth-child(even)) {
+.ghostnet :global(.ghostnet-panel-table tbody tr:nth-child(even)) {
   background: rgba(127, 233, 255, 0.04);
 }
 
-:global(.ghostnet-panel-table tbody tr:hover) {
+.ghostnet :global(.ghostnet-panel-table tbody tr:hover) {
   background: rgba(127, 233, 255, 0.1) !important;
 }
 
-:global(.ghostnet-panel-table .pristine-mining__detail) {
+.ghostnet :global(.ghostnet-panel-table .pristine-mining__detail) {
   background: rgba(4, 8, 13, 0.85);
   border: 1px solid rgba(127, 233, 255, 0.18);
 }
 
-:global(.ghostnet-panel-table .pristine-mining__detail-status) {
+.ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-status) {
   color: var(--ghostnet-muted);
 }
 
-:global(.ghostnet-panel-table .pristine-mining__detail-links span) {
+.ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-links span) {
   color: var(--ghostnet-ink);
 }
 
-:global(.ghostnet-panel-table .pristine-mining__detail-status--error) {
+.ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-status--error) {
   color: #ff7b7b;
 }
 
-:global(.ghostnet-panel-table .text-primary) {
+.ghostnet :global(.ghostnet-panel-table .text-primary) {
   color: var(--ghostnet-accent);
 }
 
-:global(.ghostnet-panel-table .text-secondary) {
+.ghostnet :global(.ghostnet-panel-table .text-secondary) {
   color: #a8b3ff;
 }
 
-:global(.ghostnet-panel-table .text-muted) {
+.ghostnet :global(.ghostnet-panel-table .text-muted) {
   color: var(--ghostnet-muted);
 }
 
-:global(.ghostnet-panel-table .inara-spinner__label) {
+.ghostnet :global(.ghostnet-panel-table .inara-spinner__label) {
   color: var(--ghostnet-muted);
 }
 
-:global(.ghostnet-panel-table .inara-spinner__icon) {
+.ghostnet :global(.ghostnet-panel-table .inara-spinner__icon) {
   border-color: var(--ghostnet-accent);
   border-right-color: transparent;
 }
 
-:global(.ghostnet-panel-table .button--active) {
+.ghostnet :global(.ghostnet-panel-table .button--active) {
   background: rgba(127, 233, 255, 0.15);
   border-color: rgba(127, 233, 255, 0.4);
 }
 
-:global(.ghostnet-panel-table .button--active:hover) {
+.ghostnet :global(.ghostnet-panel-table .button--active:hover) {
   background: rgba(127, 233, 255, 0.2);
 }
 
-:global(.ghostnet-panel-table .button--icon) {
+.ghostnet :global(.ghostnet-panel-table .button--icon) {
   color: var(--ghostnet-ink);
 }
 
-:global(.ghostnet-panel-table .button--icon:hover) {
+.ghostnet :global(.ghostnet-panel-table .button--icon:hover) {
   background: rgba(127, 233, 255, 0.12);
 }
 
-:global(.ghostnet-panel-table .button--secondary) {
+.ghostnet :global(.ghostnet-panel-table .button--secondary) {
   color: var(--ghostnet-accent);
 }
 
-:global(.ghostnet-panel-table .button--secondary:hover) {
+.ghostnet :global(.ghostnet-panel-table .button--secondary:hover) {
   background: rgba(127, 233, 255, 0.12);
 }
 
-:global(.ghostnet-panel-table .pristine-mining__inspector) {
+.ghostnet :global(.ghostnet-panel-table .pristine-mining__inspector) {
   border-left: 1px solid rgba(127, 233, 255, 0.18);
 }
 
@@ -345,19 +345,19 @@
   }
 }
 
-:global(.ghostnet-muted) {
+.ghostnet :global(.ghostnet-muted) {
   color: var(--ghostnet-muted);
 }
 
-:global(.ghostnet-accent) {
+.ghostnet :global(.ghostnet-accent) {
   color: var(--ghostnet-accent);
 }
 
-:global(.ghostnet-panel-border) {
+.ghostnet :global(.ghostnet-panel-border) {
   border-color: var(--ghostnet-panel-border);
 }
 
-:global(.ghostnet-inline-accent) {
+.ghostnet :global(.ghostnet-inline-accent) {
   color: var(--ghostnet-accent);
   font-weight: 500;
 }
