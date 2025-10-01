@@ -17,6 +17,166 @@
   --ghostnet-highlight: rgba(216, 180, 254, 0.12);
 }
 
+.loaderOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 20% 25%, rgba(216, 180, 254, 0.2), transparent 55%),
+    radial-gradient(circle at 80% 15%, rgba(120, 160, 255, 0.24), transparent 60%),
+    rgba(5, 8, 13, 0.94);
+  backdrop-filter: blur(14px) saturate(120%);
+  animation: loader-fade-in 280ms ease-out;
+}
+
+.loaderCore {
+  position: relative;
+  width: min(360px, 85vw);
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  color: var(--ghostnet-ink);
+}
+
+.loaderDial {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+}
+
+.loaderGlow,
+.loaderRing,
+.loaderRingSecondary,
+.loaderScan,
+.loaderNode {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.loaderGlow {
+  background: radial-gradient(circle, rgba(216, 180, 254, 0.35), rgba(5, 8, 13, 0));
+  filter: blur(22px);
+  transform: scale(1.15);
+  opacity: 0.75;
+  animation: loader-glow 2400ms ease-in-out infinite;
+}
+
+.loaderRing {
+  border: 2px solid rgba(216, 180, 254, 0.4);
+  box-shadow: 0 0 35px rgba(103, 143, 255, 0.35);
+  animation: loader-rotate 9s linear infinite;
+}
+
+.loaderRingSecondary {
+  inset: 12%;
+  border: 1px solid rgba(120, 160, 255, 0.4);
+  box-shadow: 0 0 28px rgba(120, 160, 255, 0.25);
+  animation: loader-rotate-reverse 7s linear infinite;
+}
+
+.loaderScan {
+  inset: 22%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(216, 180, 254, 0.55), rgba(216, 180, 254, 0) 60%);
+  mask: radial-gradient(circle, rgba(0, 0, 0, 0) 54%, rgba(0, 0, 0, 1) 55%);
+  -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 54%, rgba(0, 0, 0, 1) 55%);
+  animation: loader-sweep 3200ms linear infinite;
+}
+
+.loaderNode {
+  inset: auto;
+  width: 18%;
+  height: 18%;
+  background: radial-gradient(circle at 30% 30%, rgba(120, 160, 255, 0.9), rgba(5, 8, 13, 0.3));
+  border-radius: 50%;
+  box-shadow: 0 0 25px rgba(120, 160, 255, 0.55), 0 0 45px rgba(216, 180, 254, 0.55);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  animation: loader-pulse 1800ms ease-in-out infinite;
+}
+
+.loaderLabel {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-size: 0.75rem;
+  color: var(--ghostnet-accent);
+}
+
+.loaderMeta {
+  margin: 0;
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  font-size: 0.95rem;
+  color: rgba(216, 233, 255, 0.78);
+  text-shadow: 0 0 18px rgba(120, 160, 255, 0.55);
+}
+
+@keyframes loader-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes loader-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-rotate-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes loader-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(0.92);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes loader-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
 .ghostnet::before {
   content: '';
   position: absolute;

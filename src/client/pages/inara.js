@@ -57,6 +57,24 @@ LoadingSpinner.defaultProps = {
   inline: false
 }
 
+function GhostNetLoader () {
+  return (
+    <div className={styles.loaderOverlay} role='status' aria-live='polite'>
+      <div className={styles.loaderCore}>
+        <div className={styles.loaderDial} aria-hidden='true'>
+          <span className={styles.loaderGlow} />
+          <span className={styles.loaderRing} />
+          <span className={styles.loaderRingSecondary} />
+          <span className={styles.loaderScan} />
+          <span className={styles.loaderNode} />
+        </div>
+        <p className={styles.loaderLabel}>GhostNet uplink engaged</p>
+        <p className={styles.loaderMeta}>Decrypting intercept stream…</p>
+      </div>
+    </div>
+  )
+}
+
 function normaliseName (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
@@ -3095,6 +3113,7 @@ function PristineMiningPanel () {
 
 export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
+  const [showGhostNetLoader, setShowGhostNetLoader] = useState(() => process.env.NODE_ENV !== 'test')
   const { connected, ready, active: socketActive } = useSocket()
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
@@ -3104,6 +3123,11 @@ export default function InaraPage() {
     return () => {
       document.body.classList.remove('ghostnet-theme')
     }
+  }, [])
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'test') return undefined
+    const timer = setTimeout(() => setShowGhostNetLoader(false), 3000)
+    return () => clearTimeout(timer)
   }, [])
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
@@ -3129,7 +3153,8 @@ export default function InaraPage() {
     <Layout connected active ready loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div className={styles.ghostnet}>
-          <div className={styles.shell}>
+          {showGhostNetLoader ? <GhostNetLoader /> : null}
+          <div className={styles.shell} aria-hidden={showGhostNetLoader} aria-busy={showGhostNetLoader}>
             <section className={styles.header} aria-labelledby='ghostnet-heading'>
               <div>
                 <span className={styles.kicker}>Underground Intelligence Mesh</span>
