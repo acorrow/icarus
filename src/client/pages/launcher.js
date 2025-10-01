@@ -15,10 +15,23 @@ const defaultloadingStats = {
   loadingTime: 0
 }
 
+function resolveNetworkAddress (urls = []) {
+  for (const url of urls) {
+    if (/localhost|127\.0\.0\.1/i.test(url)) continue
+
+    try {
+      const { hostname } = new URL(url)
+      if (!hostname || !/^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)) continue
+      return `${hostname}:3300`
+    } catch {}
+  }
+
+  return undefined
+}
+
 export default function IndexPage () {
   const { connected } = useSocket()
   const [hostInfo, setHostInfo] = useState()
-  const [hostInfoStatus, setHostInfoStatus] = useState('initializing')
   const [update, setUpdate] = useState()
   const [downloadingUpdate, setDownloadingUpdate] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(defaultloadingStats)
@@ -40,18 +53,8 @@ export default function IndexPage () {
 
         setHostInfo(info)
 
-        const urls = info?.urls ?? []
-        const hasNetworkAddress = urls.some(url => !/localhost|127\.0\.0\.1/i.test(url))
-
-        if (hasNetworkAddress) {
-          setHostInfoStatus('ready')
+        if (resolveNetworkAddress(info?.urls)) {
           return
-        }
-
-        if (urls.length > 0) {
-          setHostInfoStatus('fallback')
-        } else {
-          setHostInfoStatus('initializing')
         }
 
         retryTimer = setTimeout(loadHostInfo, 2000)
@@ -59,7 +62,6 @@ export default function IndexPage () {
         if (!isActive) return
 
         setHostInfo(undefined)
-        setHostInfoStatus('initializing')
         retryTimer = setTimeout(loadHostInfo, 2000)
       }
     }
@@ -94,7 +96,7 @@ export default function IndexPage () {
 
   const browserAccessUrl = useMemo(() => {
     if (!hostInfo?.urls?.length) return undefined
-    return hostInfo.urls.find(url => !/localhost|127\.0\.0\.1/i.test(url))
+    return resolveNetworkAddress(hostInfo.urls)
   }, [hostInfo])
 
   const browserAccessDisplay = useMemo(() => {
@@ -102,12 +104,8 @@ export default function IndexPage () {
       return { label: browserAccessUrl, interactive: true }
     }
 
-    if (hostInfoStatus === 'fallback') {
-      return { label: 'Not available on current network', interactive: false }
-    }
-
     return { label: 'HTTP ACCESS INITIALIZED', interactive: false }
-  }, [browserAccessUrl, hostInfoStatus])
+  }, [browserAccessUrl])
 
   return (
     <>
