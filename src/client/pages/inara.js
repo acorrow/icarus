@@ -607,6 +607,29 @@ const FILTER_CONTROL_STYLE = {
   boxSizing: 'border-box'
 }
 
+const RESERVES_LEVEL_OPTIONS = [
+  { value: '50', label: 'Pristine' },
+  { value: '40', label: 'Major' },
+  { value: '30', label: 'Common' },
+  { value: '20', label: 'Low' },
+  { value: '10', label: 'Depleted' },
+  { value: '0', label: 'Any' }
+]
+
+function describeReserves (option, { capitalized = false } = {}) {
+  if (!option || !option.value) {
+    return capitalized ? 'Mining locations' : 'mining locations'
+  }
+
+  if (option.value === '0') {
+    return capitalized ? 'Mining locations' : 'mining locations'
+  }
+
+  return capitalized
+    ? `${option.label} mining locations`
+    : `${option.label.toLowerCase()} mining locations`
+}
+
 const FILTER_TOGGLE_BUTTON_STYLE = {
   background: 'rgba(255, 124, 34, 0.1)',
   border: '1px solid #ff7c22',
@@ -2164,11 +2187,21 @@ function PristineMiningPanel () {
   const [detailLoadingKey, setDetailLoadingKey] = useState(null)
   const [detailError, setDetailError] = useState('')
   const [systemDataCache, setSystemDataCache] = useState({})
+  const [reservesLevel, setReservesLevel] = useState('50')
   const detailRequestRef = useRef({ id: 0, key: null })
   const inspectorReserved = Boolean(expandedLocationKey)
   const inspectorVisible = inspectorReserved && !detailError && !!expandedSystemObject
 
   useEffect(() => animateTableEffect(), [locations, expandedLocationKey])
+
+  const selectedReservesOption = useMemo(() => (
+    RESERVES_LEVEL_OPTIONS.find(option => option.value === reservesLevel) || RESERVES_LEVEL_OPTIONS[0]
+  ), [reservesLevel])
+
+  const reservesDescription = useMemo(
+    () => describeReserves(selectedReservesOption),
+    [selectedReservesOption]
+  )
 
   const trimmedSystem = useMemo(() => {
     if (typeof currentSystem?.name === 'string') {
@@ -2204,7 +2237,7 @@ function PristineMiningPanel () {
     fetch('/api/inara-pristine-mining', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ system: trimmedSystem })
+      body: JSON.stringify({ system: trimmedSystem, reservesLevel })
     })
       .then(res => res.json())
       .then(data => {
@@ -2237,7 +2270,7 @@ function PristineMiningPanel () {
       .catch(err => {
         if (cancelled) return
         setLocations([])
-        setError(err.message || 'Unable to fetch pristine mining locations.')
+        setError(err.message || 'Unable to fetch mining locations.')
         setMessage('')
         setSourceUrl('')
         setStatus('error')
@@ -2245,11 +2278,11 @@ function PristineMiningPanel () {
       })
 
     return () => { cancelled = true }
-  }, [trimmedSystem])
+  }, [trimmedSystem, reservesLevel])
 
   const displayMessage = useMemo(() => {
     if (!message) return ''
-    if (/^Showing pristine mining locations within /i.test(message)) return ''
+    if (/^Showing (?:[a-z\s]+ )?mining locations within /i.test(message)) return ''
     return message
   }, [message])
 
@@ -2261,6 +2294,10 @@ function PristineMiningPanel () {
     setDetailLoadingKey(null)
     detailRequestRef.current = { id: 0, key: null }
   }, [])
+
+  useEffect(() => {
+    resetExpandedState()
+  }, [trimmedSystem, reservesLevel, resetExpandedState])
 
   const showSystemObject = useCallback((systemData, bodyName) => {
     if (!systemData) {
@@ -2359,7 +2396,7 @@ function PristineMiningPanel () {
 
   return (
     <div>
-      <h2>Pristine Mining Locations</h2>
+      <h2>Mining Site Finder</h2>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -2370,6 +2407,21 @@ function PristineMiningPanel () {
             Data sourced from INARA community submissions
           </div>
         )}
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: '1rem', margin: '0 0 1.5rem 0' }}>
+        <div style={{ ...FILTER_FIELD_STYLE, margin: 0, width: '12rem' }}>
+          <label htmlFor='reserves-level-select' style={FILTER_LABEL_STYLE}>Reserves Quality</label>
+          <select
+            id='reserves-level-select'
+            value={reservesLevel}
+            onChange={event => setReservesLevel(event.target.value)}
+            style={FILTER_CONTROL_STYLE}
+          >
+            {RESERVES_LEVEL_OPTIONS.map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
       <p style={{ color: '#aaa', marginTop: '-0.5rem' }}>
         Location data is provided by INARA community submissions.
@@ -2411,14 +2463,14 @@ function PristineMiningPanel () {
             </div>
           )}
           {status === 'loading' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Searching for pristine mining locations...</div>
+            <div style={{ color: '#aaa', padding: '2rem' }}>Searching for {reservesDescription}...</div>
           )}
           {status === 'error' && !error && (
-            <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load pristine mining locations.</div>
+            <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load {reservesDescription}.</div>
           )}
           {status === 'empty' && (
             <div style={{ color: '#aaa', padding: '2rem' }}>
-              No pristine mining locations found near {displaySystemName || 'your current system'}.
+              No {reservesDescription} found near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
@@ -2547,7 +2599,7 @@ export default function InaraPage() {
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
-    { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
+    { name: 'Mining Site Finder', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
 
   ]), [activeTab])

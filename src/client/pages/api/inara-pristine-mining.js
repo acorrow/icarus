@@ -30,6 +30,17 @@ const SEARCH_DEFAULTS = {
 
 const MAX_DISTANCE_LY = Number(SEARCH_DEFAULTS.pi41)
 
+const RESERVES_LABELS = {
+  0: 'Any',
+  10: 'Depleted',
+  20: 'Low',
+  30: 'Common',
+  40: 'Major',
+  50: 'Pristine'
+}
+
+const VALID_RESERVE_LEVELS = new Set(Object.keys(RESERVES_LABELS).map(key => String(key)))
+
 function cleanText (value) {
   return (value || '').replace(/\s+/g, ' ').trim()
 }
@@ -64,8 +75,15 @@ function parseTooltipDetails (html) {
   return details
 }
 
-function buildInaraUrl (system) {
-  const params = new URLSearchParams({ ...SEARCH_DEFAULTS, ps1: system })
+function normalizeReservesLevel (value) {
+  if (value === null || value === undefined) return SEARCH_DEFAULTS.pi41
+  const normalized = String(value).trim()
+  if (VALID_RESERVE_LEVELS.has(normalized)) return normalized
+  return SEARCH_DEFAULTS.pi41
+}
+
+function buildInaraUrl (system, reservesLevel) {
+  const params = new URLSearchParams({ ...SEARCH_DEFAULTS, pi41: reservesLevel, ps1: system })
   return `${BASE_URL}/elite/nearest-bodies/?${params.toString()}`
 }
 
@@ -140,7 +158,8 @@ export default async function handler (req, res) {
   try {
     const system = typeof req.body?.system === 'string' ? req.body.system.trim() : ''
     const targetSystem = system || 'Sol'
-    const url = buildInaraUrl(targetSystem)
+    const reservesLevel = normalizeReservesLevel(req.body?.reservesLevel)
+    const url = buildInaraUrl(targetSystem, reservesLevel)
 
     const response = await fetch(url, {
       agent: ipv4HttpsAgent,
@@ -153,15 +172,23 @@ export default async function handler (req, res) {
     const html = await response.text()
     const locations = parseBodies(html, targetSystem)
 
+    const reservesLabel = RESERVES_LABELS[reservesLevel] || RESERVES_LABELS[SEARCH_DEFAULTS.pi41]
+    const descriptor = reservesLevel === '0'
+      ? 'mining locations'
+      : `${reservesLabel.toLowerCase()} mining locations`
+
     res.status(200).json({
       locations,
       targetSystem,
       sourceUrl: url,
-      message: `Showing pristine mining locations within ${MAX_DISTANCE_LY} Ly of ${targetSystem}.`
+      message: `Showing ${reservesLevel === '0' ? '' : `${reservesLabel} `}mining locations within ${MAX_DISTANCE_LY} Ly of ${targetSystem}.`,
+      reservesLevel,
+      reservesLabel,
+      descriptor
     })
   } catch (error) {
     res.status(500).json({
-      error: error.message || 'Failed to fetch pristine mining locations.'
+      error: error.message || 'Failed to fetch mining locations.'
     })
   }
 }
