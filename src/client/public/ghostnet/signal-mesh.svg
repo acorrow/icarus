@@ -1,0 +1,31 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="meshGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d8b4fe" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#6d4aff" stop-opacity="0.08" />
+    </linearGradient>
+    <radialGradient id="meshPulse" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#d8b4fe" stop-opacity="0.38" />
+      <stop offset="100%" stop-color="#d8b4fe" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="none" />
+  <g stroke="url(#meshGlow)" stroke-width="1">
+    <path d="M0 80 Q300 40 600 80 T1200 80" opacity="0.35" />
+    <path d="M0 200 Q300 140 600 200 T1200 200" opacity="0.3" />
+    <path d="M0 320 Q320 260 600 320 T1200 320" opacity="0.25" />
+    <path d="M0 440 Q360 380 600 440 T1200 440" opacity="0.22" />
+    <path d="M0 560 Q340 500 600 560 T1200 560" opacity="0.18" />
+    <path d="M0 680 Q280 620 600 680 T1200 680" opacity="0.14" />
+  </g>
+  <g stroke="url(#meshGlow)" stroke-width="1">
+    <path d="M120 0 Q160 200 120 400 T120 800" opacity="0.3" />
+    <path d="M360 0 Q420 200 360 400 T360 800" opacity="0.26" />
+    <path d="M600 0 Q660 200 600 400 T600 800" opacity="0.22" />
+    <path d="M840 0 Q900 200 840 400 T840 800" opacity="0.18" />
+    <path d="M1080 0 Q1140 200 1080 400 T1080 800" opacity="0.14" />
+  </g>
+  <circle cx="380" cy="180" r="220" fill="url(#meshPulse)" opacity="0.4" />
+  <circle cx="870" cy="520" r="260" fill="url(#meshPulse)" opacity="0.35" />
+  <circle cx="1020" cy="220" r="160" fill="url(#meshPulse)" opacity="0.25" />
+</svg>

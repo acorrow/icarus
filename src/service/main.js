@@ -42,6 +42,7 @@ const MOCK_DATA_DIR = path.join(__dirname, '..', '..', 'resources', 'mock-game-d
 
 let LOG_DIR = DEFAULT_LOG_DIR
 let USING_MOCK_DATA = false
+let webSocketServer = null
 
 if (!fs.existsSync(LOG_DIR)) {
   if (fs.existsSync(MOCK_DATA_DIR)) {
@@ -124,9 +125,9 @@ if (DEVELOPMENT) {
   httpServer = http.createServer(webServer)
 }
 
-const webSocketServer = new WebSocket.Server({ server: httpServer })
-
 function webSocketDebugMessage () { /* console.log(...arguments) */ }
+
+webSocketServer = new WebSocket.Server({ server: httpServer })
 
 // Bind message event handler to WebSocket server before starting server
 webSocketServer.on('connection', socket => {
