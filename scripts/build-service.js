@@ -4,6 +4,8 @@ const { compile } = require('nexe')
 const changeExe = require('changeexe')
 const UPX = require('upx')({ brute: false }) // Brute on service seems to hang
 const yargs = require('yargs')
+
+const ensureNodeHid = require('./lib/ensure-node-hid')
 const commandLineArgs = yargs.argv
 
 const {
@@ -22,6 +24,8 @@ const DEVELOPMENT_BUILD = commandLineArgs.debug || DEVELOPMENT_BUILD_DEFAULT
 const DEBUG_CONSOLE = commandLineArgs.debug || DEBUG_CONSOLE_DEFAULT
 const ENTRY_POINT = path.join(__dirname, '..', 'src', 'service', 'main.js')
 const COMPRESS_FINAL_BUILD = false
+
+ensureNodeHid()
 
 ;(async () => {
   clean()

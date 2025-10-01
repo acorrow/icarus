@@ -121,8 +121,28 @@ export default class MyApp extends App {
         }
       })
 
+      eventListener('inputAction', (event) => {
+        if (!event?.action) return
+        let key
+        switch (event.action) {
+          case 'nativePanel.navigateUp':
+            key = 'ArrowUp'
+            break
+          case 'nativePanel.navigateDown':
+            key = 'ArrowDown'
+            break
+          default:
+            return
+        }
+
+        handleKeyPress({
+          key,
+          getModifierState: () => false
+        })
+      })
+
       document.addEventListener('keydown', handleKeyPress)
-    } 
+    }
   }
 
   render () {

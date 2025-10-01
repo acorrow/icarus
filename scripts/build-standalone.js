@@ -9,6 +9,8 @@ const { compile } = require('nexe')
 const yargs = require('yargs')
 const commandLineArgs = yargs.argv
 
+const ensureNodeHid = require('./lib/ensure-node-hid')
+
 const {
   DEBUG_CONSOLE: DEBUG_CONSOLE_DEFAULT,
   BUILD_DIR,
@@ -20,6 +22,8 @@ const {
 
 const DEBUG_CONSOLE = commandLineArgs.debug || DEBUG_CONSOLE_DEFAULT
 const ENTRY_POINT = path.join(__dirname, '..', 'src', 'service', 'main.js')
+
+ensureNodeHid()
 
 ;(async () => {
   clean()

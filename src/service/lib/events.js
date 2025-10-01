@@ -3,6 +3,7 @@ const os = require('os')
 const EliteLog = require('./elite-log')
 const EliteJson = require('./elite-json')
 const EventHandlers = require('./event-handlers')
+const InputManager = require('./input')
 
 const {
   PORT,
@@ -14,6 +15,7 @@ const {
 // are shared with event handlers who can respond to and query them
 const eliteLog = new EliteLog(LOG_DIR)
 const eliteJson = new EliteJson(LOG_DIR)
+const inputManager = new InputManager({ broadcast: broadcastEvent })
 
 const _eventHandlers = new EventHandlers({ eliteLog, eliteJson })
 // Define handlers for events trigged by the client
@@ -36,6 +38,23 @@ eventHandlers.hostInfo = () => {
 }
 eventHandlers.getLoadingStatus = () => getLoadingStatus()
 eventHandlers.syncMessage = (message) => broadcastEvent('syncMessage', message)
+eventHandlers.inputGetStatus = () => inputManager.getStatus()
+eventHandlers.inputGetMappings = () => inputManager.getMappings()
+eventHandlers.inputGetActions = () => inputManager.getActions()
+eventHandlers.inputListen = async ({ action, timeoutMs }) => {
+  try {
+    return await inputManager.listenForAction(action, { timeoutMs })
+  } catch (error) {
+    return { error: error.message }
+  }
+}
+eventHandlers.inputClear = async ({ action }) => {
+  try {
+    return await inputManager.clearMapping(action)
+  } catch (error) {
+    return { error: error.message }
+  }
+}
 
 // TODO Define these in another file / merge with eventHandlers before porting
 // over existing event handlers from the internal build

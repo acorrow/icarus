@@ -55,6 +55,7 @@
     "dotenv": "^10.0.0",
     "glob": "^7.1.7",
     "http-proxy": "^1.18.1",
+    "node-hid": "^2.1.2",
     "nedb-promises": "^5.0.2",
     "one-time": "^0.0.4",
     "say": "^0.16.0",
