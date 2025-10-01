@@ -1282,6 +1282,385 @@ function MissionsPanel () {
   )
 }
 
+function normaliseCommodityKey (value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : ''
+}
+
+function CommodityTradePanel () {
+  const { connected, ready } = useSocket()
+  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
+  const [ship, setShip] = useState(null)
+  const [cargo, setCargo] = useState([])
+  const [status, setStatus] = useState('idle')
+  const [error, setError] = useState('')
+  const [valuation, setValuation] = useState({ results: [], metadata: { inaraStatus: 'idle', marketStatus: 'idle' } })
+
+  const cargoKey = useMemo(() => {
+    if (!Array.isArray(cargo) || cargo.length === 0) return ''
+    return cargo
+      .map(item => `${normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)}:${Number(item?.count) || 0}`)
+      .join('|')
+  }, [cargo])
+
+  useEffect(() => {
+    animateTableEffect()
+  }, [cargoKey, valuation?.results?.length])
+
+  useEffect(() => {
+    if (!connected) return
+    (async () => {
+      try {
+        const shipStatus = await sendEvent('getShipStatus')
+        setShip(shipStatus)
+        setCargo(shipStatus?.cargo?.inventory ?? [])
+      } catch (err) {
+        console.error('Failed to load ship status for commodity trade panel', err)
+      }
+    })()
+  }, [connected, ready])
+
+  useEffect(() => eventListener('gameStateChange', async () => {
+    try {
+      const shipStatus = await sendEvent('getShipStatus')
+      setShip(shipStatus)
+      setCargo(shipStatus?.cargo?.inventory ?? [])
+    } catch (err) {
+      console.error('Failed to refresh ship status after game state change', err)
+    }
+  }), [])
+
+  useEffect(() => eventListener('newLogEntry', async () => {
+    try {
+      const shipStatus = await sendEvent('getShipStatus')
+      setShip(shipStatus)
+      setCargo(shipStatus?.cargo?.inventory ?? [])
+    } catch (err) {
+      console.error('Failed to refresh ship status after new log entry', err)
+    }
+  }), [])
+
+  useEffect(() => {
+    if (!cargo || cargo.length === 0) {
+      setStatus(ship ? 'empty' : 'idle')
+      setValuation(prev => ({ ...prev, results: [] }))
+      return
+    }
+
+    let cancelled = false
+    setStatus('loading')
+    setError('')
+
+    const payload = {
+      commodities: cargo.map(item => ({
+        name: item?.name || item?.symbol,
+        symbol: item?.symbol || item?.name,
+        count: item?.count || 0
+      }))
+    }
+
+    fetch('/api/inara-commodity-values', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (cancelled) return
+        const results = Array.isArray(data?.results) ? data.results : []
+        const metadata = data?.metadata && typeof data.metadata === 'object'
+          ? data.metadata
+          : { inaraStatus: 'idle', marketStatus: 'idle' }
+        setValuation({ results, metadata })
+        setStatus(results.length > 0 ? 'ready' : 'empty')
+      })
+      .catch(err => {
+        if (cancelled) return
+        setError(err?.message || 'Unable to load commodity valuations.')
+        setStatus('error')
+        setValuation(prev => ({ ...prev, results: [] }))
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [cargoKey])
+
+  const valuationMap = useMemo(() => {
+    const map = new Map()
+    if (!Array.isArray(valuation?.results)) return map
+    valuation.results.forEach(entry => {
+      const key = normaliseCommodityKey(entry?.symbol) || normaliseCommodityKey(entry?.name)
+      if (!key) return
+      map.set(key, entry)
+    })
+    return map
+  }, [valuation?.results])
+
+  const totals = useMemo(() => {
+    const summary = { best: 0, inara: 0, market: 0 }
+    if (!Array.isArray(cargo)) return summary
+
+    cargo.forEach(item => {
+      const key = normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)
+      if (!key) return
+      const entry = valuationMap.get(key)
+      const quantity = Number(item?.count) || 0
+      const inaraPrice = typeof entry?.inara?.price === 'number' ? entry.inara.price : null
+      const marketPrice = typeof entry?.market?.sellPrice === 'number' ? entry.market.sellPrice : null
+
+      if (typeof inaraPrice === 'number') {
+        summary.inara += inaraPrice * quantity
+      }
+      if (typeof marketPrice === 'number') {
+        summary.market += marketPrice * quantity
+      }
+
+      let bestPrice = null
+      if (typeof inaraPrice === 'number' && typeof marketPrice === 'number') {
+        bestPrice = inaraPrice >= marketPrice ? inaraPrice : marketPrice
+      } else if (typeof inaraPrice === 'number') {
+        bestPrice = inaraPrice
+      } else if (typeof marketPrice === 'number') {
+        bestPrice = marketPrice
+      }
+
+      if (typeof bestPrice === 'number') {
+        summary.best += bestPrice * quantity
+      }
+    })
+
+    return summary
+  }, [cargo, valuationMap])
+
+  const rows = useMemo(() => {
+    if (!Array.isArray(cargo)) return []
+    return cargo.map(item => {
+      const key = normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)
+      const entry = key ? valuationMap.get(key) : null
+      const quantity = Number(item?.count) || 0
+      const marketPrice = typeof entry?.market?.sellPrice === 'number' ? entry.market.sellPrice : null
+      const inaraPrice = typeof entry?.inara?.price === 'number' ? entry.inara.price : null
+      let bestPrice = null
+      let bestSource = null
+
+      if (typeof inaraPrice === 'number' && typeof marketPrice === 'number') {
+        if (inaraPrice >= marketPrice) {
+          bestPrice = inaraPrice
+          bestSource = 'inara'
+        } else {
+          bestPrice = marketPrice
+          bestSource = 'market'
+        }
+      } else if (typeof inaraPrice === 'number') {
+        bestPrice = inaraPrice
+        bestSource = 'inara'
+      } else if (typeof marketPrice === 'number') {
+        bestPrice = marketPrice
+        bestSource = 'market'
+      }
+
+      const bestValue = typeof bestPrice === 'number' ? bestPrice * quantity : null
+      const inaraValue = typeof inaraPrice === 'number' ? inaraPrice * quantity : null
+      const marketValue = typeof marketPrice === 'number' ? marketPrice * quantity : null
+
+      return {
+        key: `${key || 'unknown'}-${quantity}`,
+        item,
+        entry,
+        quantity,
+        bestPrice,
+        bestSource,
+        bestValue,
+        marketPrice,
+        marketValue,
+        inaraPrice,
+        inaraValue
+      }
+    })
+  }, [cargo, valuationMap])
+
+  const hasCargo = Array.isArray(cargo) && cargo.length > 0
+  const hasRows = rows.some(row => typeof row.bestPrice === 'number')
+
+  const renderSourceBadge = source => {
+    if (source === 'inara') {
+      return <span style={{ color: '#ff7c22', fontSize: '.75rem', marginLeft: '.4rem' }}>INARA</span>
+    }
+    if (source === 'market') {
+      return <span style={{ color: '#5bd1a5', fontSize: '.75rem', marginLeft: '.4rem' }}>Local Market</span>
+    }
+    return null
+  }
+
+  const renderStatusBanner = () => {
+    if (status === 'loading') {
+      return <LoadingSpinner label='Loading commodity valuations…' />
+    }
+    if (status === 'error') {
+      return <div style={{ color: '#ff4d4f', padding: '1rem 0' }}>{error || 'Unable to load commodity valuations.'}</div>
+    }
+    if ((status === 'empty' || (status === 'ready' && !hasRows)) && hasCargo) {
+      return (
+        <div style={{ color: '#aaa', padding: '1rem 0' }}>
+          No price data available for your current cargo.
+        </div>
+      )
+    }
+    if (!hasCargo) {
+      return (
+        <div style={{ color: '#aaa', padding: '1rem 0' }}>
+          Cargo hold is empty.
+        </div>
+      )
+    }
+    return null
+  }
+
+  const currentSystemName = currentSystem?.name || 'Unknown'
+  const cargoCount = Number(ship?.cargo?.count) || 0
+  const cargoCapacity = Number(ship?.cargo?.capacity) || 0
+
+  const inaraStatus = valuation?.metadata?.inaraStatus || 'idle'
+  const marketStatus = valuation?.metadata?.marketStatus || 'idle'
+
+  return (
+    <div>
+      <h2>Commodity Trade</h2>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Current System</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{currentSystemName}</div>
+        </div>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Cargo</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{cargoCount.toLocaleString()} / {cargoCapacity.toLocaleString()} t</div>
+        </div>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (Best)</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{formatCredits(totals.best, '--')}</div>
+        </div>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (INARA)</div>
+          <div style={{ color: '#ff7c22', fontSize: '1.1rem' }}>{formatCredits(totals.inara, '--')}</div>
+        </div>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (Local)</div>
+          <div style={{ color: '#5bd1a5', fontSize: '1.1rem' }}>{formatCredits(totals.market, '--')}</div>
+        </div>
+      </div>
+
+      {(inaraStatus === 'error' || inaraStatus === 'partial') && (
+        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          {inaraStatus === 'error'
+            ? 'Unable to retrieve INARA price data at this time.'
+            : 'Some commodities are missing INARA price data. Displayed values use local market prices where available.'}
+        </div>
+      )}
+
+      {marketStatus === 'missing' && (
+        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          Local market prices are unavailable. Dock at a station and reopen this panel to import in-game price data.
+        </div>
+      )}
+
+      {renderStatusBanner()}
+
+      {status === 'ready' && hasCargo && hasRows && (
+        <table className='table--animated fx-fade-in' style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
+          <colgroup>
+            <col style={{ width: '32%' }} />
+            <col style={{ width: '8%' }} />
+            <col style={{ width: '20%' }} />
+            <col style={{ width: '24%' }} />
+            <col style={{ width: '16%' }} />
+          </colgroup>
+          <thead>
+            <tr style={{ fontSize: '.95rem' }}>
+              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Commodity</th>
+              <th className='text-right' style={{ padding: '.6rem .65rem' }}>Qty</th>
+              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Local Market</th>
+              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>INARA Max</th>
+              <th className='text-right' style={{ padding: '.6rem .65rem' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => {
+              const { item, entry, quantity, marketPrice, inaraPrice, bestValue, bestSource } = row
+              const marketStation = entry?.market?.stationName
+              const marketSystem = entry?.market?.systemName
+              const inaraStation = entry?.inara?.stationName
+              const inaraSystem = entry?.inara?.systemName
+              const inaraDemand = entry?.inara?.demandText
+              const inaraUpdated = entry?.inara?.updatedText
+              const marketPriceDisplay = typeof marketPrice === 'number' ? formatCredits(marketPrice, '--') : '--'
+              const inaraPriceDisplay = typeof inaraPrice === 'number' ? formatCredits(inaraPrice, '--') : '--'
+              const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
+
+              return (
+                <tr key={`${row.key}-${index}`} style={{ animationDelay: `${index * 0.03}s` }}>
+                  <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                    <div style={{ fontSize: '1rem' }}>{item?.name || item?.symbol || 'Unknown'}</div>
+                    {item?.symbol && item?.symbol !== item?.name && (
+                      <div style={{ color: '#888', fontSize: '.82rem' }}>{item.symbol}</div>
+                    )}
+                    {entry?.errors?.inara && !entry?.inara && (
+                      <div style={{ color: '#ffb347', fontSize: '.78rem', marginTop: '.35rem' }}>{entry.errors.inara}</div>
+                    )}
+                    {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
+                      <div style={{ color: '#ffb347', fontSize: '.78rem', marginTop: '.35rem' }}>{entry.errors.market}</div>
+                    )}
+                  </td>
+                  <td className='text-right' style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>{quantity.toLocaleString()}</td>
+                  <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                    <div>{marketPriceDisplay}</div>
+                    {marketStation && (
+                      <div style={{ color: '#888', fontSize: '.8rem', marginTop: '.25rem' }}>
+                        {marketStation}{marketSystem ? ` · ${marketSystem}` : ''}
+                      </div>
+                    )}
+                    {typeof entry?.market?.timestamp === 'string' && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>As of {formatRelativeTime(entry.market.timestamp)}</div>
+                    )}
+                  </td>
+                  <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                    <div>{inaraPriceDisplay}</div>
+                    {inaraStation && (
+                      <div style={{ color: '#888', fontSize: '.8rem', marginTop: '.25rem' }}>
+                        {inaraStation}{inaraSystem ? ` · ${inaraSystem}` : ''}
+                      </div>
+                    )}
+                    {inaraDemand && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Demand: {inaraDemand}</div>
+                    )}
+                    {inaraUpdated && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Updated {inaraUpdated}</div>
+                    )}
+                  </td>
+                  <td className='text-right' style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                    <div>
+                      {bestValueDisplay}
+                      {renderSourceBadge(bestSource)}
+                    </div>
+                    {typeof row.marketValue === 'number' && typeof row.inaraValue === 'number' && Math.abs(row.marketValue - row.inaraValue) > 0.01 && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>
+                        INARA {formatCredits(row.inaraValue, '--')} · Local {formatCredits(row.marketValue, '--')}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      )}
+
+      <div style={{ color: '#666', fontSize: '.8rem', marginTop: '1.5rem' }}>
+        In-game prices are sourced from your latest Market data when available. INARA prices are community submitted and may not reflect real-time market conditions.
+      </div>
+    </div>
+  )
+}
+
 function TradeRoutesPanel () {
   const { connected, ready } = useSocket()
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
@@ -2546,6 +2925,7 @@ export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
+    { name: 'Commodity Trade', icon: 'cargo', active: activeTab === 'commodityTrade', onClick: () => setActiveTab('commodityTrade') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
@@ -2558,6 +2938,9 @@ export default function InaraPage() {
         <div>
           <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
             <TradeRoutesPanel />
+          </div>
+          <div style={{ display: activeTab === 'commodityTrade' ? 'block' : 'none' }}>
+            <CommodityTradePanel />
           </div>
           <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
             <MissionsPanel />
