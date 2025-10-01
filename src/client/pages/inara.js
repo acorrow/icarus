@@ -6,6 +6,7 @@ import NavigationInspectorPanel from '../components/panels/nav/navigation-inspec
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
+import styles from './inara.ghostnet.module.css'
 
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
   'Loadout',
@@ -172,6 +173,30 @@ function formatRelativeTime (value) {
   return date.toLocaleDateString()
 }
 
+function getTimestampValue (value) {
+  if (!value) return null
+  const parsed = Date.parse(value)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
+function isSameMarketEntry (a, b) {
+  if (!a || !b) return false
+  if (a.marketId && b.marketId) {
+    return a.marketId === b.marketId
+  }
+  const stationA = normaliseName(a.stationName)
+  const stationB = normaliseName(b.stationName)
+  const systemA = normaliseName(a.systemName)
+  const systemB = normaliseName(b.systemName)
+  if (stationA && stationB && systemA && systemB) {
+    return stationA === stationB && systemA === systemB
+  }
+  if (stationA && stationB && !systemA && !systemB) {
+    return stationA === stationB
+  }
+  return false
+}
+
 function normaliseFactionKey(value) {
   return typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : ''
 }
@@ -283,7 +308,7 @@ function getFactionStandingDisplay(factionName, standings) {
 
   if (!key || !standings) {
     if (debug && factionName) {
-      console.debug('[INARA] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
+      console.debug('[Ghost Net] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
     }
     return defaultResult
   }
@@ -291,7 +316,7 @@ function getFactionStandingDisplay(factionName, standings) {
   const info = standings[key]
   if (!info) {
     if (debug) {
-      console.debug('[INARA] Faction standing missing', {
+      console.debug('[Ghost Net] Faction standing missing', {
         factionName,
         key,
         availableCount: Object.keys(standings || {}).length
@@ -301,7 +326,7 @@ function getFactionStandingDisplay(factionName, standings) {
   }
 
   if (debug) {
-    console.debug('[INARA] Faction standing resolved', {
+    console.debug('[Ghost Net] Faction standing resolved', {
       factionName,
       key,
       standing: info.standing,
@@ -555,7 +580,7 @@ const CURRENT_SYSTEM_CONTAINER_STYLE = {
 }
 
 const CURRENT_SYSTEM_LABEL_STYLE = {
-  color: '#ff7c22',
+  color: 'var(--ghostnet-accent)',
   fontSize: '0.75rem',
   letterSpacing: '.08em',
   textTransform: 'uppercase',
@@ -587,7 +612,7 @@ const FILTER_FIELD_STYLE = {
 const FILTER_LABEL_STYLE = {
   display: 'block',
   marginBottom: 0,
-  color: '#ff7c22',
+  color: 'var(--ghostnet-accent)',
   fontSize: '0.75rem',
   textTransform: 'uppercase',
   letterSpacing: '.08em'
@@ -600,17 +625,17 @@ const FILTER_CONTROL_STYLE = {
   padding: '.35rem .7rem',
   fontSize: '0.9rem',
   borderRadius: '.35rem',
-  border: '1px solid #2f3442',
-  background: 'rgba(10, 14, 23, 0.95)',
-  color: '#f5f7ff',
+  border: '1px solid rgba(127, 233, 255, 0.35)',
+  background: 'rgba(5, 8, 13, 0.75)',
+  color: 'var(--ghostnet-ink)',
   lineHeight: '1.2',
   boxSizing: 'border-box'
 }
 
 const FILTER_TOGGLE_BUTTON_STYLE = {
-  background: 'rgba(255, 124, 34, 0.1)',
-  border: '1px solid #ff7c22',
-  color: '#ff7c22',
+  background: 'rgba(127, 233, 255, 0.12)',
+  border: '1px solid rgba(127, 233, 255, 0.4)',
+  color: 'var(--ghostnet-accent)',
   borderRadius: '.35rem',
   padding: '0 1rem',
   fontSize: '0.85rem',
@@ -1154,48 +1179,49 @@ function MissionsPanel () {
   }, [status, missions])
 
   return (
-    <div>
+    <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
       <h2>Mining Missions</h2>
+      <p className={styles.sectionHint}>Ghost Net decrypts volunteer INARA manifests to shortlist mining opportunities aligned to your current system.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
           <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
-          <div className='inara__data-source'>
-            Data sourced from INARA community submissions
+          <div className='inara__data-source ghostnet-muted'>
+            Ghost Net intercept feed compiled from INARA community relays.
           </div>
         )}
       </div>
-      <p style={{ color: '#aaa', marginTop: '-0.5rem' }}>
-        Mission availability is sourced from INARA player submissions and may not reflect in-game boards in real time.
+      <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+        Availability signals originate from INARA contributors and may trail live mission boards.
       </p>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
+      <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid rgba(127, 233, 255, 0.18)' : 'none' }}>
               {displayMessage}
             </div>
           )}
           {status === 'idle' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
               Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Loading missions...</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>Linking mission beacons…</div>
           )}
           {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '.75rem',
-              color: '#888',
+              color: 'var(--ghostnet-subdued)',
               padding: '.75rem 1rem',
-              borderBottom: '1px solid #222',
+              borderBottom: '1px solid rgba(127, 233, 255, 0.18)',
               fontSize: '.9rem',
-              background: '#0b0b0b'
+              background: 'rgba(5, 8, 13, 0.6)'
             }}
             >
               {isRefreshing && <span>Refreshing missions...</span>}
@@ -1210,8 +1236,8 @@ function MissionsPanel () {
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load missions.</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>
-              No mining missions found near {displaySystemName || 'your current system'}.
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
+              No mining missions located near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && missions.length > 0 && (
@@ -1263,7 +1289,7 @@ function MissionsPanel () {
                               <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
                               )
                             : (
-                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
+                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
                               )}
                           {mission.system || '--'}
                         </div>
@@ -1277,6 +1303,529 @@ function MissionsPanel () {
             </table>
           )}
         </div>
+      </div>
+    </div>
+  )
+}
+
+function normaliseCommodityKey (value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : ''
+}
+
+function CommodityTradePanel () {
+  const { connected, ready } = useSocket()
+  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
+  const [ship, setShip] = useState(null)
+  const [cargo, setCargo] = useState([])
+  const [status, setStatus] = useState('idle')
+  const [error, setError] = useState('')
+  const [valuation, setValuation] = useState({ results: [], metadata: { inaraStatus: 'idle', marketStatus: 'idle' } })
+
+  const cargoKey = useMemo(() => {
+    if (!Array.isArray(cargo) || cargo.length === 0) return ''
+    return cargo
+      .map(item => `${normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)}:${Number(item?.count) || 0}`)
+      .join('|')
+  }, [cargo])
+
+  useEffect(() => {
+    animateTableEffect()
+  }, [cargoKey, valuation?.results?.length])
+
+  useEffect(() => {
+    if (!connected) return
+    (async () => {
+      try {
+        const shipStatus = await sendEvent('getShipStatus')
+        setShip(shipStatus)
+        setCargo(shipStatus?.cargo?.inventory ?? [])
+      } catch (err) {
+        console.error('Failed to load ship status for commodity trade panel', err)
+      }
+    })()
+  }, [connected, ready])
+
+  useEffect(() => eventListener('gameStateChange', async () => {
+    try {
+      const shipStatus = await sendEvent('getShipStatus')
+      setShip(shipStatus)
+      setCargo(shipStatus?.cargo?.inventory ?? [])
+    } catch (err) {
+      console.error('Failed to refresh ship status after game state change', err)
+    }
+  }), [])
+
+  useEffect(() => eventListener('newLogEntry', async () => {
+    try {
+      const shipStatus = await sendEvent('getShipStatus')
+      setShip(shipStatus)
+      setCargo(shipStatus?.cargo?.inventory ?? [])
+    } catch (err) {
+      console.error('Failed to refresh ship status after new log entry', err)
+    }
+  }), [])
+
+  useEffect(() => {
+    if (!cargo || cargo.length === 0) {
+      setStatus(ship ? 'empty' : 'idle')
+      setValuation(prev => ({ ...prev, results: [] }))
+      return
+    }
+
+    let cancelled = false
+    setStatus('loading')
+    setError('')
+
+    const payload = {
+      commodities: cargo.map(item => ({
+        name: item?.name || item?.symbol,
+        symbol: item?.symbol || item?.name,
+        count: item?.count || 0
+      }))
+    }
+
+    fetch('/api/inara-commodity-values', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (cancelled) return
+        const results = Array.isArray(data?.results) ? data.results : []
+        const metadata = data?.metadata && typeof data.metadata === 'object'
+          ? data.metadata
+          : { inaraStatus: 'idle', marketStatus: 'idle', historyStatus: 'idle' }
+        setValuation({ results, metadata })
+        setStatus(results.length > 0 ? 'ready' : 'empty')
+      })
+      .catch(err => {
+        if (cancelled) return
+        setError(err?.message || 'Unable to load commodity valuations.')
+        setStatus('error')
+        setValuation(prev => ({ ...prev, results: [] }))
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [cargoKey])
+
+  const valuationMap = useMemo(() => {
+    const map = new Map()
+    if (!Array.isArray(valuation?.results)) return map
+    valuation.results.forEach(entry => {
+      const key = normaliseCommodityKey(entry?.symbol) || normaliseCommodityKey(entry?.name)
+      if (!key) return
+      map.set(key, entry)
+    })
+    return map
+  }, [valuation?.results])
+
+  const totals = useMemo(() => {
+    const summary = { best: 0, inara: 0, local: 0 }
+    if (!Array.isArray(cargo)) return summary
+
+    cargo.forEach(item => {
+      const key = normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)
+      if (!key) return
+      const entry = valuationMap.get(key)
+      const quantity = Number(item?.count) || 0
+      const inaraPrice = typeof entry?.inara?.price === 'number' ? entry.inara.price : null
+      const marketPrice = typeof entry?.market?.sellPrice === 'number' ? entry.market.sellPrice : null
+      const historyPrice = typeof entry?.localHistory?.best?.sellPrice === 'number' ? entry.localHistory.best.sellPrice : null
+
+      if (typeof inaraPrice === 'number') {
+        summary.inara += inaraPrice * quantity
+      }
+
+      let localBestPrice = null
+      if (typeof marketPrice === 'number') {
+        localBestPrice = marketPrice
+      }
+      if (typeof historyPrice === 'number' && (localBestPrice === null || historyPrice > localBestPrice)) {
+        localBestPrice = historyPrice
+      }
+
+      if (typeof localBestPrice === 'number') {
+        summary.local += localBestPrice * quantity
+      }
+
+      let bestPrice = localBestPrice
+      if (typeof inaraPrice === 'number' && (bestPrice === null || inaraPrice > bestPrice)) {
+        bestPrice = inaraPrice
+      }
+
+      if (typeof bestPrice === 'number') {
+        summary.best += bestPrice * quantity
+      }
+    })
+
+    return summary
+  }, [cargo, valuationMap])
+
+  const rows = useMemo(() => {
+    if (!Array.isArray(cargo)) return []
+    return cargo.map(item => {
+      const key = normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)
+      const entry = key ? valuationMap.get(key) : null
+      const quantity = Number(item?.count) || 0
+
+      const marketEntry = entry?.market && typeof entry.market === 'object' ? entry.market : null
+      const inaraEntry = entry?.inara && typeof entry.inara === 'object' ? entry.inara : null
+      const historyRaw = Array.isArray(entry?.localHistory?.entries) ? entry.localHistory.entries : []
+      const historyEntries = historyRaw
+        .filter(candidate => candidate && typeof candidate === 'object' && typeof candidate.sellPrice === 'number')
+        .map(candidate => ({ ...candidate }))
+        .sort((a, b) => {
+          const priceDiff = (b.sellPrice || 0) - (a.sellPrice || 0)
+          if (priceDiff !== 0) return priceDiff
+          return (getTimestampValue(b.timestamp) || 0) - (getTimestampValue(a.timestamp) || 0)
+        })
+
+      const historyBestEntry = entry?.localHistory?.best && typeof entry.localHistory.best === 'object'
+        ? entry.localHistory.best
+        : (historyEntries[0] || null)
+
+      const inaraPrice = typeof inaraEntry?.price === 'number' ? inaraEntry.price : null
+
+      let localBestEntry = (marketEntry && typeof marketEntry.sellPrice === 'number') ? marketEntry : null
+      let localBestPrice = localBestEntry ? localBestEntry.sellPrice : null
+      let localBestSource = localBestEntry ? 'local-station' : null
+
+      if (historyBestEntry && typeof historyBestEntry.sellPrice === 'number') {
+        const historyPrice = historyBestEntry.sellPrice
+        const shouldUseHistory = localBestEntry
+          ? (historyPrice > localBestPrice) || (historyPrice === localBestPrice && (getTimestampValue(historyBestEntry.timestamp) || 0) > (getTimestampValue(localBestEntry.timestamp) || 0))
+          : true
+
+        if (shouldUseHistory) {
+          localBestEntry = historyBestEntry
+          localBestPrice = historyPrice
+          localBestSource = isSameMarketEntry(historyBestEntry, marketEntry) ? 'local-station' : 'local-history'
+        }
+      }
+
+      const bestHistoryEntry = historyEntries.length > 0 ? historyEntries[0] : null
+      if (!localBestEntry && bestHistoryEntry && typeof bestHistoryEntry.sellPrice === 'number') {
+        localBestEntry = bestHistoryEntry
+        localBestPrice = bestHistoryEntry.sellPrice
+        localBestSource = isSameMarketEntry(bestHistoryEntry, marketEntry) ? 'local-station' : 'local-history'
+      }
+
+      const localValue = typeof localBestPrice === 'number' ? localBestPrice * quantity : null
+      const inaraValue = typeof inaraPrice === 'number' ? inaraPrice * quantity : null
+
+      let bestPrice = localBestPrice
+      let bestSource = localBestSource
+      if (typeof inaraPrice === 'number' && (bestPrice === null || inaraPrice > bestPrice)) {
+        bestPrice = inaraPrice
+        bestSource = 'inara'
+      }
+
+      const bestValue = typeof bestPrice === 'number' ? bestPrice * quantity : null
+
+      return {
+        key: `${key || 'unknown'}-${quantity}`,
+        item,
+        entry,
+        quantity,
+        bestPrice,
+        bestSource,
+        bestValue,
+        localBestEntry,
+        localBestPrice,
+        localBestSource,
+        historyEntries,
+        marketEntry,
+        inaraPrice,
+        inaraValue,
+        localValue
+      }
+    })
+  }, [cargo, valuationMap])
+
+  const hasCargo = Array.isArray(cargo) && cargo.length > 0
+  const hasRows = rows.some(row => typeof row.bestPrice === 'number')
+
+  const renderSourceBadge = source => {
+    if (source === 'inara') {
+      return <span style={{ color: '#ff7c22', fontSize: '.75rem', marginLeft: '.4rem' }}>INARA</span>
+    }
+    if (source === 'local-station') {
+      return <span style={{ color: '#5bd1a5', fontSize: '.75rem', marginLeft: '.4rem' }}>Local Station</span>
+    }
+    if (source === 'local-history') {
+      return <span style={{ color: '#5bd1a5', fontSize: '.75rem', marginLeft: '.4rem' }}>Local Data</span>
+    }
+    return null
+  }
+
+  const renderLocalEntry = (label, entryData, { highlight = false, source = 'history', index = 0 } = {}) => {
+    if (!entryData) return null
+
+    const priceDisplay = typeof entryData.sellPrice === 'number' ? formatCredits(entryData.sellPrice, '--') : '--'
+    const resolvedSource = source === 'station'
+      ? (entryData?.source === 'journal' ? 'Station Snapshot' : 'Station')
+      : 'History'
+    const stationLine = entryData.stationName
+      ? `${entryData.stationName}${entryData.systemName ? ` · ${entryData.systemName}` : ''}`
+      : ''
+    const distanceDisplay = typeof entryData.distanceLs === 'number' && !Number.isNaN(entryData.distanceLs)
+      ? formatStationDistance(entryData.distanceLs)
+      : ''
+    const timestampDisplay = entryData.timestamp ? formatRelativeTime(entryData.timestamp) : ''
+
+    return (
+      <div key={`${label || resolvedSource}-${index}`} style={{ marginTop: index === 0 ? 0 : '.55rem' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '.4rem', fontSize: '.95rem', color: highlight ? '#fff' : '#ddd' }}>
+          <span>{priceDisplay}</span>
+          <span style={{ color: '#5bd1a5', fontSize: '.72rem' }}>{resolvedSource}</span>
+        </div>
+        {label ? (
+          <div style={{ color: '#666', fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.05em', marginTop: '.2rem' }}>{label}</div>
+        ) : null}
+        {stationLine ? (
+          <div style={{ color: '#888', fontSize: '.8rem', marginTop: '.25rem' }}>{stationLine}</div>
+        ) : null}
+        {distanceDisplay ? (
+          <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Distance: {distanceDisplay}</div>
+        ) : null}
+        {timestampDisplay ? (
+          <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>As of {timestampDisplay}</div>
+        ) : null}
+      </div>
+    )
+  }
+
+  const renderStatusBanner = () => {
+    if (status === 'loading') {
+      return <LoadingSpinner label='Loading commodity valuations…' />
+    }
+    if (status === 'error') {
+      return <div style={{ color: '#ff4d4f', padding: '1rem 0' }}>{error || 'Unable to load commodity valuations.'}</div>
+    }
+    if ((status === 'empty' || (status === 'ready' && !hasRows)) && hasCargo) {
+      return (
+        <div style={{ color: '#aaa', padding: '1rem 0' }}>
+          No price data available for your current cargo.
+        </div>
+      )
+    }
+    if (!hasCargo) {
+      return (
+        <div style={{ color: '#aaa', padding: '1rem 0' }}>
+          Cargo hold is empty.
+        </div>
+      )
+    }
+    return null
+  }
+
+  const currentSystemName = currentSystem?.name || 'Unknown'
+  const cargoCount = Number(ship?.cargo?.count) || 0
+  const cargoCapacity = Number(ship?.cargo?.capacity) || 0
+
+  const inaraStatus = valuation?.metadata?.inaraStatus || 'idle'
+  const marketStatus = valuation?.metadata?.marketStatus || 'idle'
+  const historyStatus = valuation?.metadata?.historyStatus || 'idle'
+
+  return (
+    <div>
+      <h2>Commodity Trade</h2>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Current System</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{currentSystemName}</div>
+        </div>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Cargo</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{cargoCount.toLocaleString()} / {cargoCapacity.toLocaleString()} t</div>
+        </div>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (Best)</div>
+          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{formatCredits(totals.best, '--')}</div>
+        </div>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (INARA)</div>
+          <div style={{ color: '#ff7c22', fontSize: '1.1rem' }}>{formatCredits(totals.inara, '--')}</div>
+        </div>
+        <div>
+          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (Local Data)</div>
+          <div style={{ color: '#5bd1a5', fontSize: '1.1rem' }}>{formatCredits(totals.local, '--')}</div>
+        </div>
+      </div>
+
+      {(inaraStatus === 'error' || inaraStatus === 'partial') && (
+        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          {inaraStatus === 'error'
+            ? 'Unable to retrieve INARA price data at this time.'
+            : 'Some commodities are missing INARA price data. Displayed values use local market prices where available.'}
+        </div>
+      )}
+
+      {marketStatus === 'missing' && (
+        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          Local market prices are unavailable. Dock at a station and reopen this panel to import in-game price data.
+        </div>
+      )}
+
+      {historyStatus === 'missing' && (
+        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          Unable to locate Elite Dangerous journal logs to build local market history. Confirm your log directory settings and reopen this panel.
+        </div>
+      )}
+
+      {historyStatus === 'error' && (
+        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          Local market history could not be parsed. Try reopening the commodities market in-game to refresh the data.
+        </div>
+      )}
+
+      {historyStatus === 'empty' && (
+        <div style={{ color: '#aaa', marginBottom: '.75rem', fontSize: '.9rem' }}>
+          No nearby market history has been recorded yet. Visit commodity markets to capture additional local price data.
+        </div>
+      )}
+
+      {renderStatusBanner()}
+
+      {status === 'ready' && hasCargo && hasRows && (
+        <table className='table--animated fx-fade-in' style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
+          <colgroup>
+            <col style={{ width: '32%' }} />
+            <col style={{ width: '8%' }} />
+            <col style={{ width: '20%' }} />
+            <col style={{ width: '24%' }} />
+            <col style={{ width: '16%' }} />
+          </colgroup>
+          <thead>
+            <tr style={{ fontSize: '.95rem' }}>
+              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Commodity</th>
+              <th className='text-right' style={{ padding: '.6rem .65rem' }}>Qty</th>
+              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Local Data</th>
+              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>INARA Max</th>
+              <th className='text-right' style={{ padding: '.6rem .65rem' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => {
+              const {
+                item,
+                entry,
+                quantity,
+                inaraPrice,
+                localBestEntry,
+                localBestSource,
+                historyEntries,
+                marketEntry,
+                bestValue,
+                bestSource,
+                inaraValue,
+                localValue
+              } = row
+
+              const inaraStation = entry?.inara?.stationName
+              const inaraSystem = entry?.inara?.systemName
+              const inaraDemand = entry?.inara?.demandText
+              const inaraUpdated = entry?.inara?.updatedText
+              const inaraPriceDisplay = typeof inaraPrice === 'number' ? formatCredits(inaraPrice, '--') : '--'
+              const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
+
+              const localEntriesForDisplay = []
+              if (localBestEntry) {
+                localEntriesForDisplay.push({
+                  label: localBestSource === 'local-history' ? 'Best local' : 'Current station',
+                  entry: localBestEntry,
+                  highlight: true,
+                  source: localBestSource === 'local-history' ? 'history' : 'station'
+                })
+              }
+
+              if (marketEntry && (!localBestEntry || !isSameMarketEntry(marketEntry, localBestEntry))) {
+                localEntriesForDisplay.push({
+                  label: 'Current station',
+                  entry: marketEntry,
+                  source: 'station'
+                })
+              }
+
+              const remainingHistoryEntries = historyEntries.filter(historyEntry => {
+                if (!historyEntry) return false
+                if (localBestEntry && isSameMarketEntry(historyEntry, localBestEntry)) return false
+                if (marketEntry && isSameMarketEntry(historyEntry, marketEntry)) return false
+                return true
+              })
+
+              const displayedHistoryEntries = remainingHistoryEntries.slice(0, 2)
+              displayedHistoryEntries.forEach(entryData => {
+                localEntriesForDisplay.push({
+                  label: 'Nearby data',
+                  entry: entryData,
+                  source: 'history'
+                })
+              })
+
+              const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
+
+              return (
+                <tr key={`${row.key}-${index}`} style={{ animationDelay: `${index * 0.03}s` }}>
+                  <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                    <div style={{ fontSize: '1rem' }}>{item?.name || item?.symbol || 'Unknown'}</div>
+                    {item?.symbol && item?.symbol !== item?.name && (
+                      <div style={{ color: '#888', fontSize: '.82rem' }}>{item.symbol}</div>
+                    )}
+                    {entry?.errors?.inara && !entry?.inara && (
+                      <div style={{ color: '#ffb347', fontSize: '.78rem', marginTop: '.35rem' }}>{entry.errors.inara}</div>
+                    )}
+                    {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
+                      <div style={{ color: '#ffb347', fontSize: '.78rem', marginTop: '.35rem' }}>{entry.errors.market}</div>
+                    )}
+                  </td>
+                  <td className='text-right' style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>{quantity.toLocaleString()}</td>
+                  <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                    {localEntriesForDisplay.length > 0
+                      ? localEntriesForDisplay.map((entryInfo, entryIndex) => renderLocalEntry(entryInfo.label, entryInfo.entry, {
+                          highlight: entryInfo.highlight,
+                          source: entryInfo.source,
+                          index: entryIndex
+                        }))
+                      : <div>--</div>}
+                    {remainingCount > 0 && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.45rem' }}>+ {remainingCount} more recorded markets</div>
+                    )}
+                  </td>
+                  <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                    <div>{inaraPriceDisplay}</div>
+                    {inaraStation && (
+                      <div style={{ color: '#888', fontSize: '.8rem', marginTop: '.25rem' }}>
+                        {inaraStation}{inaraSystem ? ` · ${inaraSystem}` : ''}
+                      </div>
+                    )}
+                    {inaraDemand && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Demand: {inaraDemand}</div>
+                    )}
+                    {inaraUpdated && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Updated {inaraUpdated}</div>
+                    )}
+                  </td>
+                  <td className='text-right' style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                    <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
+                    {typeof localValue === 'number' && typeof inaraValue === 'number' && Math.abs(localValue - inaraValue) > 0.01 && (
+                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>
+                        INARA {formatCredits(inaraValue, '--')} · Local {formatCredits(localValue, '--')}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      )}
+
+      <div style={{ color: '#666', fontSize: '.8rem', marginTop: '1.5rem' }}>
+        In-game prices are sourced from your latest Market data when available. INARA prices are community submitted and may not reflect real-time market conditions.
       </div>
     </div>
   )
@@ -1550,7 +2099,7 @@ function TradeRoutesPanel () {
     if (sortField !== field) return null
     const arrow = sortDirection === 'asc' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
     return (
-      <span style={{ color: '#ff7c22', marginLeft: '0.35rem', fontSize: '0.8rem' }}>{arrow}</span>
+      <span style={{ color: 'var(--ghostnet-accent)', marginLeft: '0.35rem', fontSize: '0.8rem' }}>{arrow}</span>
     )
   }
 
@@ -1632,7 +2181,7 @@ function TradeRoutesPanel () {
       })
 
       applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in INARA settings to restore live results.'
+        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (INARA) settings to restore live results.'
       })
       setIsRefreshing(false)
       return
@@ -1827,7 +2376,7 @@ function TradeRoutesPanel () {
           return (
             <React.Fragment key={rowKey}>
               <tr
-                style={{ fontSize: '0.95rem', cursor: 'pointer', background: isExpanded ? 'rgba(255, 124, 34, 0.06)' : 'transparent' }}
+                style={{ fontSize: '0.95rem', cursor: 'pointer', background: isExpanded ? 'rgba(127, 233, 255, 0.1)' : 'transparent' }}
                 onClick={() => handleRowToggle(rowKey)}
                 onKeyDown={event => handleRowKeyDown(event, rowKey)}
                 role='button'
@@ -1878,29 +2427,29 @@ function TradeRoutesPanel () {
               {isExpanded && (
                 <tr
                   id={detailsId}
-                  style={{ background: 'rgba(255, 124, 34, 0.06)' }}
+                  style={{ background: 'rgba(127, 233, 255, 0.1)' }}
                 >
-                  <td style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
+                  <td style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                       <span
-                        style={originStationClassName ? undefined : { color: '#9da4b3' }}
+                        style={originStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
                         className={originStationClassName}
                         title={originStationTitle}
                       >
                         {originSystemName || 'Unknown system'}
                       </span>
-                      <span style={{ color: '#9da4b3' }}>
+                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
                         Faction:&nbsp;
                         <span
                           className={originFactionName ? originStationClassName : undefined}
-                          style={originFactionName ? { fontWeight: 600, color: originStationColor } : { fontWeight: 600, color: '#7f8697' }}
+                          style={originFactionName ? { fontWeight: 600, color: originStationColor } : { fontWeight: 600, color: 'var(--ghostnet-subdued)' }}
                           title={originStationTitle}
                         >
                           {originFactionName || 'Unknown faction'}
                         </span>
                       </span>
-                      <span style={{ color: '#9da4b3' }}>
+                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
                         Standing:&nbsp;
                         {originStandingStatusText
                           ? (
@@ -1913,35 +2462,35 @@ function TradeRoutesPanel () {
                             </span>
                             )
                           : (
-                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                            <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>
                               {originFactionName ? 'No local standing data' : 'Not available'}
                             </span>
-                            )}
+                          )}
                       </span>
                       <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
                       <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: '#aeb3bf' }}>
+                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                       <span
-                        style={destinationStationClassName ? undefined : { color: '#9da4b3' }}
+                        style={destinationStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
                         className={destinationStationClassName}
                         title={destinationStationTitle}
                       >
                         {destinationSystemName || 'Unknown system'}
                       </span>
-                      <span style={{ color: '#9da4b3' }}>
+                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
                         Faction:&nbsp;
                         <span
                           className={destinationFactionName ? destinationStationClassName : undefined}
-                          style={destinationFactionName ? { fontWeight: 600, color: destinationStationColor } : { fontWeight: 600, color: '#7f8697' }}
+                          style={destinationFactionName ? { fontWeight: 600, color: destinationStationColor } : { fontWeight: 600, color: 'var(--ghostnet-subdued)' }}
                           title={destinationStationTitle}
                         >
                           {destinationFactionName || 'Unknown faction'}
                         </span>
                       </span>
-                      <span style={{ color: '#9da4b3' }}>
+                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
                         Standing:&nbsp;
                         {destinationStandingStatusText
                           ? (
@@ -1954,33 +2503,33 @@ function TradeRoutesPanel () {
                             </span>
                             )
                           : (
-                            <span style={{ color: '#7f8697', fontWeight: 600 }}>
+                            <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>
                               {destinationFactionName ? 'No local standing data' : 'Not available'}
                             </span>
-                            )}
+                          )}
                       </span>
                       <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
                       <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
                     </div>
                   </td>
-                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top', fontSize: '0.82rem', color: '#8f96a3' }}>
+                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                       <span>Buy: {outboundBuy?.priceText || '--'}</span>
                       <span>Sell: {outboundSell?.priceText || '--'}</span>
                     </div>
                   </td>
-                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid #2f3440', verticalAlign: 'top', fontSize: '0.82rem', color: '#8f96a3' }}>
+                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                       <span>Buy: {returnBuy?.priceText || '--'}</span>
                       <span>Sell: {returnSell?.priceText || '--'}</span>
                     </div>
                   </td>
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid #2f3440' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
                 </tr>
               )}
             </React.Fragment>
@@ -1991,8 +2540,9 @@ function TradeRoutesPanel () {
   )
 
   return (
-    <div>
+    <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
       <h2>Find Trade Routes</h2>
+      <p className={styles.sectionHint}>Cross-reference INARA freight whispers to surface lucrative corridors suited to your ship profile.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -2116,13 +2666,13 @@ function TradeRoutesPanel () {
           </div>
         )}
       </form>
-      <div style={{ marginTop: '1.5rem', border: '1px solid #333', background: '#101010', overflow: 'hidden' }}>
+      <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
           {message && status !== 'idle' && status !== 'loading' && (
-            <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>{message}</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid rgba(127, 233, 255, 0.18)' : 'none' }}>{message}</div>
           )}
           {status === 'idle' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Choose your filters and refresh to see profitable trade routes.</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>Tune the filters and pulse refresh to surface profitable corridors.</div>
           )}
           {status === 'loading' && (
             <LoadingSpinner label='Loading trade routes…' />
@@ -2141,7 +2691,7 @@ function TradeRoutesPanel () {
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>{error || 'Unable to fetch trade routes.'}</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>No trade routes found near {selectedSystemName || 'Unknown System'}.</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>No profitable routes detected near {selectedSystemName || 'Unknown System'}.</div>
           )}
           {status === 'populated' && renderRoutesTable()}
         </div>
@@ -2358,21 +2908,22 @@ function PristineMiningPanel () {
   }, [handleLocationToggle])
 
   return (
-    <div>
+    <div className={`${styles.sectionFrameElevated} ${styles.sectionPadding}`}>
       <h2>Pristine Mining Locations</h2>
+      <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across INARA to pinpoint high-value extraction sites.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
           <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
         </div>
         {sourceUrl && (
-          <div className='inara__data-source'>
-            Data sourced from INARA community submissions
+          <div className='inara__data-source ghostnet-muted'>
+            Ghost Net prospecting relays aligned with INARA survey intel.
           </div>
         )}
       </div>
-      <p style={{ color: '#aaa', marginTop: '-0.5rem' }}>
-        Location data is provided by INARA community submissions.
+      <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+        Geological echoes are sourced from volunteer INARA submissions and may lag in-system discoveries.
       </p>
       {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div
@@ -2388,11 +2939,11 @@ function PristineMiningPanel () {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '.75rem',
-                color: '#888',
+                color: 'var(--ghostnet-subdued)',
                 padding: '.75rem 1rem',
-                borderBottom: '1px solid #222',
+                borderBottom: '1px solid rgba(127, 233, 255, 0.18)',
                 fontSize: '.9rem',
-                background: '#0b0b0b'
+                background: 'rgba(5, 8, 13, 0.6)'
               }}
             >
               <span style={{ marginLeft: 'auto', fontSize: '.85rem' }}>
@@ -2401,24 +2952,24 @@ function PristineMiningPanel () {
             </div>
           )}
           {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div style={{ color: '#aaa', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid #222' : 'none' }}>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid rgba(127, 233, 255, 0.18)' : 'none' }}>
               {displayMessage}
             </div>
           )}
           {status === 'idle' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
               Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>Searching for pristine mining locations...</div>
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>Triangulating pristine reserves…</div>
           )}
           {status === 'error' && !error && (
             <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load pristine mining locations.</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: '#aaa', padding: '2rem' }}>
-              No pristine mining locations found near {displaySystemName || 'your current system'}.
+            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
+              No pristine signatures detected near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
@@ -2448,7 +2999,7 @@ function PristineMiningPanel () {
                       <tr
                         style={{
                           animationDelay: `${index * 0.03}s`,
-                          background: isExpanded ? 'rgba(255, 124, 34, 0.08)' : undefined,
+                          background: isExpanded ? 'rgba(127, 233, 255, 0.12)' : undefined,
                           cursor: 'pointer'
                         }}
                         role='button'
@@ -2461,7 +3012,7 @@ function PristineMiningPanel () {
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span className='text-primary'>{location.body || '--'}</span>
                             {detailText && (
-                              <span style={{ color: '#aaa', fontSize: '0.95rem', marginTop: '.25rem' }}>{detailText}</span>
+                              <span style={{ color: 'var(--ghostnet-muted)', fontSize: '0.95rem', marginTop: '.25rem' }}>{detailText}</span>
                             )}
                           </div>
                         </td>
@@ -2472,7 +3023,7 @@ function PristineMiningPanel () {
                                 <i className='icon system-object-icon icarus-terminal-location-filled text-primary' style={{ marginRight: '.5rem' }} />
                                 )
                               : (
-                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: '#888' }} />
+                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
                                 )}
                             <span className='text-primary'>{location.system || '--'}</span>
                           </div>
@@ -2482,7 +3033,7 @@ function PristineMiningPanel () {
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: '#080808', borderTop: '1px solid #222' }}>
+                          <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
                                 <div className='pristine-mining__detail-summary'>
@@ -2493,10 +3044,10 @@ function PristineMiningPanel () {
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
                                     {location.systemUrl && (
-                                      <span>INARA system entry available</span>
+                                      <span>Ghost Net linked INARA system dossier</span>
                                     )}
                                     {location.bodyUrl && (
-                                      <span>INARA body entry available</span>
+                                      <span>Ghost Net linked INARA body dossier</span>
                                     )}
                                   </div>
                                 )}
@@ -2544,26 +3095,88 @@ function PristineMiningPanel () {
 
 export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
+  const { connected, ready, active: socketActive } = useSocket()
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
+    { name: 'Commodity Trade', icon: 'cargo', active: activeTab === 'commodityTrade', onClick: () => setActiveTab('commodityTrade') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
 
   ]), [activeTab])
+  const activeNavigationLabel = useMemo(
+    () => navigationItems.find(item => item.active)?.name || 'Trade Routes',
+    [navigationItems]
+  )
+  const tickerMessages = useMemo(() => ([
+    'Intercept feed authenticated',
+    'INARA mesh handshake complete',
+    'Signal hygiene nominal'
+  ]), [])
+  const uplinkStatus = connected && ready ? 'Stable' : 'Linking…'
+  const relayStatus = socketActive ? 'Streaming' : 'Idle'
 
   return (
     <Layout connected active ready loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
-        <div>
-          <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
-            <TradeRoutesPanel />
-          </div>
-          <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
-            <MissionsPanel />
-          </div>
-          <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
-            <PristineMiningPanel />
+        <div className={styles.ghostnet}>
+          <div className={styles.shell}>
+            <section className={styles.header} aria-labelledby='ghostnet-heading'>
+              <div>
+                <span className={styles.kicker}>Underground Intelligence Mesh</span>
+                <h1 id='ghostnet-heading' className={styles.title}>Ghost Net</h1>
+                <p className={styles.subtitle}>
+                  Ghost Net stitches INARA intercepts into a clandestine command surface, revealing trade corridors, syndicate missions, and pristine deposits hidden from official channels.
+                </p>
+                <div className={styles.ghostnetScroller} aria-hidden='true'>
+                  <div className={styles.ghostnetTicker}>
+                    {tickerMessages.concat(tickerMessages).map((message, index) => (
+                      <span key={`${message}-${index}`} className='ghostnet-inline-accent'>{message}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <aside
+                className={styles.statusCard}
+                role='complementary'
+                aria-label='Signal Brief'
+                aria-labelledby='ghostnet-status-heading'
+              >
+                <h2 id='ghostnet-status-heading' className={styles.statusHeading}>Signal Brief</h2>
+                <ul className={styles.metaList} aria-live='polite'>
+                  <li className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Uplink</span>
+                    <span className={styles.metaValue}>{uplinkStatus}</span>
+                  </li>
+                  <li className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Relays</span>
+                    <span className={styles.metaValue}>{relayStatus}</span>
+                  </li>
+                  <li className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Focus</span>
+                    <span className={styles.metaValue}>{activeNavigationLabel}</span>
+                  </li>
+                  <li className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Source</span>
+                    <span className={styles.metaValue}>INARA Mesh</span>
+                  </li>
+                </ul>
+              </aside>
+            </section>
+            <div className={styles.tabPanels}>
+              <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+                <TradeRoutesPanel />
+              </div>
+              <div style={{ display: activeTab === 'commodityTrade' ? 'block' : 'none' }}>
+                <CommodityTradePanel />
+              </div>
+              <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
+                <MissionsPanel />
+              </div>
+              <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
+                <PristineMiningPanel />
+              </div>
+            </div>
           </div>
         </div>
       </Panel>
