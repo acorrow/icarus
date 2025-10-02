@@ -214,6 +214,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  --handshake-duration: 7200ms;
   --handshake-accent: #fa8f2f;
   --handshake-accent-soft: rgba(250, 143, 47, 0.28);
   --handshake-trace: rgba(250, 143, 47, 0.16);
@@ -260,15 +261,26 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, rgba(5, 4, 2, 0.6), transparent 55%);
+  background:
+    conic-gradient(from 140deg at 20% 20%, rgba(93, 46, 255, 0.5), rgba(140, 92, 255, 0.28) 55%, rgba(41, 243, 195, 0.25) 85%, rgba(13, 11, 26, 0.65)),
+    linear-gradient(135deg, rgba(93, 46, 255, 0.55), rgba(13, 11, 26, 0.75));
+  mix-blend-mode: screen;
   pointer-events: none;
+  opacity: 0;
+  clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  transform: translateZ(0);
 }
 
 .startupSpinnerActive {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  animation: ghostnetStartupPalette 2.6s forwards;
+  animation: ghostnetStartupPalette var(--handshake-duration) cubic-bezier(0.68, 0, 0.32, 1) forwards;
+}
+
+.startupSpinnerActive::after {
+  animation: ghostnetStartupChunks var(--handshake-duration) cubic-bezier(0.76, 0, 0.24, 1) forwards;
+  animation-delay: 0.12s;
 }
 
 .startupSpinnerContent {
@@ -534,47 +546,47 @@
 
 .startupSpinnerActive .startupSpinnerBadge {
   animation: ghostnetStartupText 0.6s ease-out forwards;
-  animation-delay: 0.2s;
+  animation-delay: 0.35s;
 }
 
 .startupSpinnerActive .startupSpinnerHeadline {
   animation: ghostnetStartupText 0.65s ease-out forwards;
-  animation-delay: 0.55s;
+  animation-delay: 0.95s;
 }
 
 .startupSpinnerActive .startupSpinnerSubline {
   animation: ghostnetStartupText 0.65s ease-out forwards;
-  animation-delay: 0.85s;
+  animation-delay: 1.35s;
 }
 
 .startupSpinnerActive .startupSpinnerConsoleLine {
   animation: ghostnetStartupConsole 0.55s ease-out forwards;
-  animation-delay: calc(0.25s + (var(--line-index) * 0.35s));
+  animation-delay: calc(0.9s + (var(--line-index) * 0.75s));
 }
 
 .startupSpinnerActive .startupSpinnerConsoleText {
-  animation: ghostnetStartupType 0.95s steps(26, end) forwards;
-  animation-delay: calc(0.25s + (var(--line-index) * 0.35s));
+  animation: ghostnetStartupType 1.35s steps(32, end) forwards;
+  animation-delay: calc(0.9s + (var(--line-index) * 0.75s));
 }
 
 .startupSpinnerActive .startupSpinnerConsoleLine::after {
   animation: ghostnetStartupCaret 0.7s steps(2, end) infinite;
-  animation-delay: calc(0.25s + (var(--line-index) * 0.35s) + 0.95s);
+  animation-delay: calc(0.9s + (var(--line-index) * 0.75s) + 1.35s);
 }
 
 .startupSpinnerActive .startupSpinnerTelemetry li {
-  animation: ghostnetStartupTelemetry 0.65s ease-out forwards;
-  animation-delay: calc(1s + (var(--telemetry-index) * 0.3s));
+  animation: ghostnetStartupTelemetry 0.85s ease-out forwards;
+  animation-delay: calc(3.9s + (var(--telemetry-index) * 0.6s));
 }
 
 .startupSpinnerActive .startupSpinnerTelemetryIcon {
-  animation: ghostnetStartupIcon 0.85s ease-out forwards;
-  animation-delay: calc(1s + (var(--telemetry-index) * 0.3s));
+  animation: ghostnetStartupIcon 0.95s ease-out forwards;
+  animation-delay: calc(3.8s + (var(--telemetry-index) * 0.6s));
 }
 
 .startupSpinnerActive .startupSpinnerTelemetryValue {
-  animation: ghostnetStartupValue 1s ease-out forwards;
-  animation-delay: calc(1.1s + (var(--telemetry-index) * 0.3s));
+  animation: ghostnetStartupValue 1.1s ease-out forwards;
+  animation-delay: calc(4.2s + (var(--telemetry-index) * 0.6s));
 }
 
 @keyframes ghostnetStartupPalette {
@@ -594,9 +606,33 @@
     --handshake-glow: rgba(250, 143, 47, 0.45);
     --handshake-console-glow: rgba(250, 143, 47, 0.35);
   }
-  55% {
+  18% {
     --handshake-trace: rgba(250, 143, 47, 0.1);
-    --handshake-console-glow: rgba(186, 95, 255, 0.28);
+    --handshake-console-glow: rgba(250, 143, 47, 0.32);
+  }
+  38% {
+    --handshake-accent: #d671ff;
+    --handshake-accent-soft: rgba(214, 113, 255, 0.26);
+    --handshake-border: rgba(214, 113, 255, 0.42);
+    --handshake-core-highlight: rgba(214, 113, 255, 0.4);
+    --handshake-console-glow: rgba(186, 95, 255, 0.32);
+  }
+  58% {
+    --handshake-accent: #9f4bff;
+    --handshake-accent-soft: rgba(159, 75, 255, 0.3);
+    --handshake-border: rgba(159, 75, 255, 0.48);
+    --handshake-border-soft: rgba(159, 75, 255, 0.28);
+    --handshake-panel-top: rgba(23, 16, 44, 0.9);
+    --handshake-panel-bottom: rgba(12, 9, 22, 0.82);
+    --handshake-console-glow: rgba(159, 75, 255, 0.34);
+  }
+  76% {
+    --handshake-accent: #7940ff;
+    --handshake-accent-soft: rgba(121, 64, 255, 0.32);
+    --handshake-border: rgba(121, 64, 255, 0.52);
+    --handshake-border-soft: rgba(121, 64, 255, 0.3);
+    --handshake-core-highlight: rgba(121, 64, 255, 0.52);
+    --handshake-glow: rgba(121, 64, 255, 0.48);
   }
   100% {
     --handshake-accent: #5d2eff;
@@ -613,6 +649,37 @@
     --handshake-core-secondary: rgba(41, 243, 195, 0.18);
     --handshake-glow: rgba(93, 46, 255, 0.45);
     --handshake-console-glow: rgba(93, 46, 255, 0.35);
+  }
+}
+
+@keyframes ghostnetStartupChunks {
+  0% {
+    opacity: 0;
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+  18% {
+    opacity: 0.25;
+    clip-path: polygon(0 0, 18% 0, 10% 100%, 0 100%);
+  }
+  32% {
+    opacity: 0.38;
+    clip-path: polygon(0 0, 38% 0, 24% 100%, 0 100%);
+  }
+  48% {
+    opacity: 0.55;
+    clip-path: polygon(0 0, 62% 0, 42% 100%, 0 100%);
+  }
+  64% {
+    opacity: 0.72;
+    clip-path: polygon(0 0, 82% 0, 58% 100%, 12% 100%);
+  }
+  78% {
+    opacity: 0.88;
+    clip-path: polygon(0 0, 100% 0, 78% 100%, 24% 100%);
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
   }
 }
 

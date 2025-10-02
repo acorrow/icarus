@@ -59,6 +59,8 @@ LoadingSpinner.defaultProps = {
 
 const STARTUP_SPINNER_SESSION_KEY = 'ghostnet.session.startupSpinner.v1'
 const STARTUP_SPINNER_ALWAYS_SHOW_KEY = 'ghostnetAlwaysShowHandshake'
+const STARTUP_SPINNER_DURATION = 7200
+const STARTUP_SPINNER_CLEANUP_BUFFER = 900
 const STARTUP_SPINNER_TELEMETRY = [
   { icon: 'route', label: 'ATLAS vector sync', value: 'Aligned' },
   { icon: 'cargo', label: 'Protocol cipher', value: 'Authenticated' },
@@ -3196,6 +3198,7 @@ export default function GhostnetPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [startupSpinnerVisible, setStartupSpinnerVisible] = useState(false)
   const [startupSpinnerActive, setStartupSpinnerActive] = useState(false)
+  const [startupSpinnerIteration, setStartupSpinnerIteration] = useState(0)
   const startupSpinnerTimers = useRef({ frame: null, hideTimer: null, cleanupTimer: null })
   const { connected, ready, active: socketActive } = useSocket()
   const clearStartupSpinnerTimers = useCallback(() => {
@@ -3209,10 +3212,15 @@ export default function GhostnetPage() {
   const playStartupSpinner = useCallback(() => {
     if (typeof window === 'undefined') return
     clearStartupSpinnerTimers()
+    setStartupSpinnerActive(false)
+    setStartupSpinnerIteration(previous => previous + 1)
     setStartupSpinnerVisible(true)
     const frame = window.requestAnimationFrame(() => setStartupSpinnerActive(true))
-    const hideTimer = window.setTimeout(() => setStartupSpinnerActive(false), 2600)
-    const cleanupTimer = window.setTimeout(() => setStartupSpinnerVisible(false), 3200)
+    const hideTimer = window.setTimeout(() => setStartupSpinnerActive(false), STARTUP_SPINNER_DURATION)
+    const cleanupTimer = window.setTimeout(
+      () => setStartupSpinnerVisible(false),
+      STARTUP_SPINNER_DURATION + STARTUP_SPINNER_CLEANUP_BUFFER
+    )
     startupSpinnerTimers.current = { frame, hideTimer, cleanupTimer }
   }, [clearStartupSpinnerTimers])
   useEffect(() => {
@@ -3309,7 +3317,7 @@ export default function GhostnetPage() {
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div className={styles.ghostnet}>
           {startupSpinnerVisible ? (
-            <StartupSpinnerOverlay active={startupSpinnerActive} />
+            <StartupSpinnerOverlay key={startupSpinnerIteration} active={startupSpinnerActive} />
           ) : null}
           <div className={styles.shell}>
             <section className={styles.header} aria-labelledby='ghostnet-heading'>
