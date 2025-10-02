@@ -176,9 +176,18 @@ webSocketServer.on('error', function (error) {
   }
 })
 
-// Start server
-httpServer.listen(PORT)
-console.log(`Listening on port ${PORT}…`)
+async function startService () {
+  try {
+    console.log('Initializing log readers before starting web server…')
+    await init()
+  } catch (error) {
+    console.error('Failed to initialize log readers', error)
+    process.exit(1)
+  }
 
-// Initialize app - start parsing data and watching for game state changes
-setTimeout(() => init(), 500)
+  httpServer.listen(PORT, () => {
+    console.log(`Listening on port ${PORT}…`)
+  })
+}
+
+startService()
