@@ -1,6 +1,8 @@
 let assimilationInProgress = false
 let assimilationStartTime = 0
 
+export const GHOSTNET_ASSIMILATION_EVENT = 'ghostnet-assimilation-start'
+
 const ARRIVAL_FLAG_KEY = 'ghostnet.assimilationArrival'
 const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
@@ -188,6 +190,9 @@ export function initiateGhostnetAssimilation (callback) {
   }
 
   assimilationInProgress = true
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+    window.dispatchEvent(new CustomEvent(GHOSTNET_ASSIMILATION_EVENT))
+  }
   const cleanup = beginAssimilationEffect()
 
   window.setTimeout(() => {

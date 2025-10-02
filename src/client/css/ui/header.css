@@ -1,0 +1,29 @@
+.ghostnet-title-morph {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0;
+  white-space: nowrap;
+}
+
+.ghostnet-title-morph__characters {
+  display: inline-flex;
+}
+
+.ghostnet-title-morph__char {
+  display: inline-block;
+  width: 1ch;
+  max-width: 1ch;
+  text-align: center;
+  white-space: pre;
+  transition: color 0.18s ease, transform 0.06s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.1s ease, filter 0.12s ease;
+  will-change: transform, opacity, filter;
+}
+
+.ghostnet-title-morph__char--space {
+  width: 1ch;
+}
+
+.ghostnet-title-morph__char--glitch {
+  text-shadow: 0 0 0.32rem rgba(93, 46, 255, 0.55), 0 0 0.14rem rgba(41, 243, 195, 0.35);
+  filter: blur(0.038rem) contrast(1.06) saturate(1.05);
+}
