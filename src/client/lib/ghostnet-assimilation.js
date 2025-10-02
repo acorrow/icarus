@@ -7,6 +7,11 @@ const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'])
 const EFFECT_DURATION = 4000
 
+function signalBrandMode (mode) {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent('ghostnet:brand-mode', { detail: { mode } }))
+}
+
 function clearJitterTimer (element) {
   if (!element) return
   const timer = element[JITTER_TIMER_FIELD]
@@ -187,10 +192,14 @@ export function initiateGhostnetAssimilation (callback) {
     return
   }
 
+  signalBrandMode('transition')
   assimilationInProgress = true
   const cleanup = beginAssimilationEffect()
 
+  window.setTimeout(() => signalBrandMode('ghostnet'), 820)
+
   window.setTimeout(() => {
+    signalBrandMode('ghostnet')
     if (typeof callback === 'function') {
       callback()
     }

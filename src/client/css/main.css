@@ -634,7 +634,7 @@ body.ghostnet-assimilation-mode::after {
   display: inline-block;
 }
 
-.ghostnet-assimilation-char {
+.ghostnet-assimilation-char { 
   display: inline-block;
   white-space: pre;
   animation: ghostnet-assimilation-char 1.4s ease forwards;
@@ -662,5 +662,165 @@ body.ghostnet-assimilation-mode::after {
     opacity: 0;
     transform: translate3d(0, -18px, 0) scale(0.55);
     filter: blur(3px) hue-rotate(12deg);
+  }
+}
+
+.terminal-brand {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-left: 0.75rem;
+  min-height: 3.25rem;
+  letter-spacing: 0.18em;
+  position: relative;
+}
+
+.terminal-brand__icarus {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: clamp(1.85rem, 2.8vw, 2.45rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: opacity 0.26s ease, transform 0.32s ease, filter 0.32s ease;
+}
+
+.terminal-brand__word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.terminal-brand__word--terminal {
+  letter-spacing: 0.18em;
+}
+
+.terminal-brand--transition .terminal-brand__icarus {
+  animation: ghostnetBrandIcarusExit 0.62s cubic-bezier(0.32, 0.01, 0.3, 1) forwards;
+}
+
+.terminal-brand--ghostnet .terminal-brand__icarus {
+  display: none;
+}
+
+.terminal-brand__ghostnet {
+  display: none;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  text-transform: uppercase;
+  color: #5d2eff;
+}
+
+.terminal-brand--transition .terminal-brand__ghostnet,
+.terminal-brand--ghostnet .terminal-brand__ghostnet {
+  display: inline-flex;
+}
+
+.terminal-brand__ghostnetWord {
+  display: inline-flex;
+  gap: 0.25rem;
+  font-size: clamp(1.9rem, 3vw, 2.5rem);
+  line-height: 1;
+}
+
+.terminal-brand__ghostnetChar {
+  display: inline-block;
+  min-width: 0.9ch;
+  text-shadow: 0 0 1.1rem rgba(93, 46, 255, 0.55);
+  transition: color 0.18s ease, text-shadow 0.18s ease, transform 0.22s ease;
+  transform: translate3d(0, 0, 0);
+}
+
+.terminal-brand__ghostnetChar--variant-0 {
+  color: #8c5cff;
+  transform: translate3d(-0.6px, 0.75px, 0);
+}
+
+.terminal-brand__ghostnetChar--variant-1 {
+  color: #29f3c3;
+  text-shadow: 0 0 1rem rgba(41, 243, 195, 0.45);
+  transform: translate3d(0.75px, -0.5px, 0);
+}
+
+.terminal-brand__ghostnetChar--variant-2 {
+  color: #ff5fc1;
+  text-shadow: 0 0 1rem rgba(255, 95, 193, 0.45);
+  transform: translate3d(-0.9px, -0.6px, 0);
+}
+
+.terminal-brand__ghostnetChar--stable {
+  color: #5d2eff;
+  text-shadow: 0 0 1.45rem rgba(93, 46, 255, 0.75);
+  transform: translate3d(0, 0, 0);
+}
+
+.terminal-brand__logline {
+  display: inline-flex;
+  gap: 0.18rem;
+  min-height: 1.1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.16em;
+  color: rgba(93, 46, 255, 0.75);
+  line-height: 1.2;
+  text-transform: none;
+  pointer-events: none;
+}
+
+.terminal-brand__logchar {
+  display: inline-block;
+  min-width: 0.6ch;
+  transition: color 0.16s ease, text-shadow 0.16s ease, transform 0.2s ease;
+  text-shadow: 0 0 0.8rem rgba(93, 46, 255, 0.45);
+  transform: translate3d(0, 0, 0);
+}
+
+.terminal-brand__logchar--variant-0 {
+  color: #8c5cff;
+  transform: translate3d(0.35px, -0.2px, 0);
+}
+
+.terminal-brand__logchar--variant-1 {
+  color: #29f3c3;
+  text-shadow: 0 0 0.7rem rgba(41, 243, 195, 0.4);
+  transform: translate3d(-0.35px, 0.2px, 0);
+}
+
+.terminal-brand__logchar--variant-2 {
+  color: #ff5fc1;
+  text-shadow: 0 0 0.7rem rgba(255, 95, 193, 0.35);
+  transform: translate3d(0.35px, 0.35px, 0);
+}
+
+.terminal-brand__logchar--variant-3 {
+  color: rgba(245, 241, 255, 0.85);
+  transform: translate3d(-0.45px, -0.35px, 0);
+}
+
+.terminal-brand__logchar--stable {
+  color: #5d2eff;
+  text-shadow: 0 0 1.15rem rgba(93, 46, 255, 0.68);
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes ghostnetBrandIcarusExit {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: none;
+  }
+  35% {
+    opacity: 0.75;
+    transform: translate3d(-7px, 3px, 0) skewX(-2deg);
+    filter: blur(1px) hue-rotate(-12deg) saturate(1.2);
+  }
+  62% {
+    opacity: 0.4;
+    transform: translate3d(8px, -4px, 0) skewX(2.5deg);
+    filter: blur(3px) hue-rotate(18deg) saturate(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-18px, 0, 0) scale(0.94);
+    filter: blur(6px) hue-rotate(36deg) saturate(0.6);
   }
 }

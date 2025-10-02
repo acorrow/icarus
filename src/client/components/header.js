@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import { socketOptions } from 'lib/socket'
 import { isWindowFullScreen, isWindowPinned, toggleFullScreen, togglePinWindow } from 'lib/window'
@@ -6,6 +6,30 @@ import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
 import { initiateGhostnetAssimilation, isGhostnetAssimilationActive } from 'lib/ghostnet-assimilation'
+
+const BRAND_EVENT = 'ghostnet:brand-mode'
+const GHOSTNET_WORD = 'GHOSTNET'
+const WORD_GLYPHS = 'GHOSTNETΔ#%+*<>/\\|01'
+const LOG_GLYPHS = '01#ΣΩ∴≠⟡ΛΞ/\\<>%+*GHSTNET'
+const LOG_MESSAGES = [
+  'ATLAT protocol overriding ship comms...',
+  'Scanner wavelengths seized for GHOSTNET relay...',
+  'Onboard data stores transmitting across the ATLAS mesh...',
+  'Atlas handshake initiating. Stand by...'
+]
+
+function randomGlyph (pool) {
+  return pool[Math.floor(Math.random() * pool.length)] || ''
+}
+
+function createStableGlyphs (word) {
+  return word.split('').map((char, index) => ({
+    char,
+    variant: 'stable',
+    stable: true,
+    key: `${word}-${index}-stable`
+  }))
+}
 
 const NAV_BUTTONS = [
   {
@@ -44,6 +68,11 @@ export default function Header ({ connected, active }) {
   const [isPinned, setIsPinned] = useState(false)
   const [notificationsVisible, setNotificationsVisible] = useState(socketOptions.notifications)
   const [settingsVisible, setSettingsVisible] = useState(false)
+  const [brandMode, setBrandMode] = useState(() => (router?.pathname?.startsWith('/ghostnet') ? 'ghostnet' : 'icarus'))
+  const [ghostnetGlyphs, setGhostnetGlyphs] = useState(() => createStableGlyphs(GHOSTNET_WORD))
+  const [logGlyphs, setLogGlyphs] = useState([])
+  const ghostnetTimerRef = useRef({ word: null })
+  const logTimerRef = useRef(null)
 
   async function fullScreen () {
     const newFullScreenState = await toggleFullScreen()
@@ -100,6 +129,143 @@ export default function Header ({ connected, active }) {
     return () => clearInterval(dateTimeInterval)
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    function handleBrandEvent (event) {
+      const mode = event?.detail?.mode
+      if (!mode) return
+      setBrandMode(prev => {
+        if (mode === 'transition') return 'transition'
+        if (mode === 'ghostnet') return 'ghostnet'
+        if (mode === 'icarus') return 'icarus'
+        return prev
+      })
+    }
+    window.addEventListener(BRAND_EVENT, handleBrandEvent)
+    return () => {
+      window.removeEventListener(BRAND_EVENT, handleBrandEvent)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!router?.pathname) return
+    if (router.pathname.startsWith('/ghostnet')) {
+      setBrandMode(prev => (prev === 'transition' ? prev : 'ghostnet'))
+    } else {
+      setBrandMode('icarus')
+    }
+  }, [router?.pathname])
+
+  useEffect(() => {
+    if (ghostnetTimerRef.current?.word) {
+      window.clearTimeout(ghostnetTimerRef.current.word)
+      ghostnetTimerRef.current.word = null
+    }
+    if (brandMode === 'icarus') {
+      setGhostnetGlyphs(createStableGlyphs(GHOSTNET_WORD))
+      return undefined
+    }
+    if (brandMode === 'ghostnet') {
+      setGhostnetGlyphs(createStableGlyphs(GHOSTNET_WORD))
+      return undefined
+    }
+    let iteration = 0
+    let reveal = 0
+    const target = GHOSTNET_WORD.split('')
+    const total = target.length
+
+    const tick = () => {
+      iteration += 1
+      if (reveal < total) {
+        reveal += Math.max(1, Math.ceil(total / 4))
+      }
+      if (reveal > total) reveal = total
+      const glyphs = target.map((char, index) => {
+        const stable = index < reveal
+        const variant = stable ? 'stable' : `variant-${(iteration + index) % 3}`
+        return {
+          char: stable ? char : randomGlyph(WORD_GLYPHS),
+          variant,
+          stable,
+          key: `ghostnet-${index}-${iteration}`
+        }
+      })
+      setGhostnetGlyphs(glyphs)
+      if (reveal >= total && iteration > total + 3) {
+        setGhostnetGlyphs(createStableGlyphs(GHOSTNET_WORD))
+        ghostnetTimerRef.current.word = null
+        return
+      }
+      const delay = reveal >= total ? 90 : Math.max(36, 72 - iteration * 3)
+      ghostnetTimerRef.current.word = window.setTimeout(tick, delay)
+    }
+
+    ghostnetTimerRef.current.word = window.setTimeout(tick, 40)
+
+    return () => {
+      if (ghostnetTimerRef.current.word) {
+        window.clearTimeout(ghostnetTimerRef.current.word)
+        ghostnetTimerRef.current.word = null
+      }
+    }
+  }, [brandMode])
+
+  useEffect(() => {
+    if (logTimerRef.current) {
+      window.clearTimeout(logTimerRef.current)
+      logTimerRef.current = null
+    }
+    if (brandMode === 'icarus') {
+      setLogGlyphs([])
+      return undefined
+    }
+
+    let iteration = 0
+    let reveal = 0
+    let hold = 0
+    let messageIndex = 0
+
+    const tick = () => {
+      const message = LOG_MESSAGES[messageIndex]
+      iteration += 1
+      if (reveal < message.length) {
+        reveal += Math.max(1, Math.ceil(message.length / 10))
+      } else {
+        hold += 1
+        if (hold > 6) {
+          messageIndex = (messageIndex + 1) % LOG_MESSAGES.length
+          reveal = 0
+          hold = 0
+        }
+      }
+
+      const glyphs = message.split('').map((char, index) => {
+        const stable = index < reveal
+        const variant = stable ? 'stable' : `variant-${(iteration + index) % 4}`
+        const renderedChar = stable ? char : randomGlyph(LOG_GLYPHS)
+        return {
+          char: renderedChar === ' ' ? '\u00a0' : renderedChar,
+          variant,
+          stable,
+          key: `log-${messageIndex}-${index}-${iteration}`
+        }
+      })
+
+      setLogGlyphs(glyphs)
+      const delay = reveal >= message.length ? 120 : 55
+      logTimerRef.current = window.setTimeout(tick, delay)
+    }
+
+    logTimerRef.current = window.setTimeout(tick, 90)
+
+    return () => {
+      if (logTimerRef.current) {
+        window.clearTimeout(logTimerRef.current)
+        logTimerRef.current = null
+      }
+    }
+  }, [brandMode])
+
   let signalClassName = 'icon icarus-terminal-signal '
   if (!connected) {
     signalClassName += 'text-primary'
@@ -120,11 +286,47 @@ export default function Header ({ connected, active }) {
     router.push(path)
   }
 
+  const brandClassName = ['terminal-brand', `terminal-brand--${brandMode}`].filter(Boolean).join(' ')
+
   return (
     <header>
       <hr className='small' />
       <h1 className='text-info' style={{ padding: '.6rem 0 .25rem 3.75rem' }}>
-        <i className='icon icarus-terminal-logo' style={{ position: 'absolute', fontSize: '3rem', left: 0 }} />ICARUS <span className='hidden-small'>Terminal</span>
+        <i className='icon icarus-terminal-logo' style={{ position: 'absolute', fontSize: '3rem', left: 0 }} />
+        <span className={brandClassName} data-ghostnet-brand data-brand-mode={brandMode}>
+          <span className='terminal-brand__icarus'>
+            <span className='terminal-brand__word'>ICARUS</span>
+            <span className='terminal-brand__word terminal-brand__word--terminal hidden-small'>Terminal</span>
+          </span>
+          <span className='terminal-brand__ghostnet'>
+            <span className='terminal-brand__ghostnetWord' aria-hidden={brandMode === 'icarus'}>
+              {ghostnetGlyphs.map(({ char, variant, key }, index) => (
+                <span
+                  key={key || `ghostnet-${index}`}
+                  className={[
+                    'terminal-brand__ghostnetChar',
+                    `terminal-brand__ghostnetChar--${variant}`
+                  ].filter(Boolean).join(' ')}
+                >
+                  {char}
+                </span>
+              ))}
+            </span>
+            <span className='terminal-brand__logline' aria-live='polite'>
+              {logGlyphs.map(({ char, variant, key }, index) => (
+                <span
+                  key={key || `log-${index}`}
+                  className={[
+                    'terminal-brand__logchar',
+                    `terminal-brand__logchar--${variant}`
+                  ].filter(Boolean).join(' ')}
+                >
+                  {char}
+                </span>
+              ))}
+            </span>
+          </span>
+        </span>
       </h1>
       <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
         <p
