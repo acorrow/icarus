@@ -358,6 +358,28 @@ function getViewportSize () {
   return { width: 0, height: 0 }
 }
 
+function isFullViewportWidthRect (rect) {
+  if (!rect) return false
+
+  const { width: viewportWidth } = getViewportSize()
+  if (viewportWidth <= 0) return false
+
+  const tolerance = Math.max(1, viewportWidth * 0.0125)
+  const spansLeftEdge = rect.left <= tolerance
+  const spansRightEdge = rect.right >= viewportWidth - tolerance
+
+  if (!spansLeftEdge || !spansRightEdge) {
+    return false
+  }
+
+  if (rect.width >= viewportWidth - tolerance) {
+    return true
+  }
+
+  const widthDifference = Math.abs(rect.width - viewportWidth)
+  return widthDifference <= tolerance
+}
+
 function isRectVisibleOnScreen (rect) {
   if (!rect) return false
 
@@ -388,6 +410,10 @@ function isVisibilityCandidate (element, rect) {
 
   const boundingRect = rect || getElementRect(element)
   if (!boundingRect) return false
+
+  if (isFullViewportWidthRect(boundingRect)) {
+    return false
+  }
 
   if (typeof element.getClientRects === 'function') {
     const clientRects = element.getClientRects()
