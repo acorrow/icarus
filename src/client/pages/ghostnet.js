@@ -63,6 +63,7 @@ function normaliseName (value) {
 
 const MISSIONS_CACHE_KEY = 'icarus.ghostnetMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
+const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
 
 function getMissionsCacheStorage () {
   if (typeof window === 'undefined') {
@@ -1182,9 +1183,9 @@ function MissionsPanel () {
   }, [status, missions])
 
   return (
-    <div className={styles.sectionGroup}>
-      <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
-        <h2>Mining Missions</h2>
+    <section className={styles.tableSection}>
+      <div className={styles.tableSectionHeader}>
+        <h2 className={styles.tableSectionTitle}>Mining Missions</h2>
         <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
@@ -1202,8 +1203,8 @@ function MissionsPanel () {
         </p>
         {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       </div>
-      <div className='ghostnet-panel-table' style={{ overflow: 'hidden' }}>
-        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+      <div className='ghostnet-panel-table'>
+        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
@@ -1291,7 +1292,7 @@ function MissionsPanel () {
           )}
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -2521,9 +2522,9 @@ function TradeRoutesPanel () {
   )
 
   return (
-    <div className={styles.sectionGroup}>
-      <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
-        <h2>Find Trade Routes</h2>
+    <section className={styles.tableSection}>
+      <div className={styles.tableSectionHeader}>
+        <h2 className={styles.tableSectionTitle}>Find Trade Routes</h2>
         <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
@@ -2539,118 +2540,117 @@ function TradeRoutesPanel () {
               <button
                 type='button'
                 onClick={() => setFiltersCollapsed(prev => !prev)}
-              style={FILTER_TOGGLE_BUTTON_STYLE}
-              aria-expanded={!filtersCollapsed}
-              aria-controls='trade-route-filters'
-            >
-              {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
-            </button>
-            {filtersCollapsed && (
-              <div style={FILTER_SUMMARY_STYLE}>
-                <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
-                <button
-                  type='submit'
-                  style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
-                  title='Refresh trade routes'
-                  aria-label='Refresh trade routes'
-                >
-                  <svg
-                    viewBox='0 0 24 24'
-                    focusable='false'
-                    aria-hidden='true'
-                    style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
+                style={FILTER_TOGGLE_BUTTON_STYLE}
+                aria-expanded={!filtersCollapsed}
+                aria-controls='trade-route-filters'
+              >
+                {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
+              </button>
+              {filtersCollapsed && (
+                <div style={FILTER_SUMMARY_STYLE}>
+                  <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
+                  <button
+                    type='submit'
+                    style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
+                    title='Refresh trade routes'
+                    aria-label='Refresh trade routes'
                   >
-                    <path
-                      fill='currentColor'
-                      d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      viewBox='0 0 24 24'
+                      focusable='false'
+                      aria-hidden='true'
+                      style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
+                    >
+                      <path
+                        fill='currentColor'
+                        d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          {!filtersCollapsed && (
+            <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Route Distance</label>
+                <select
+                  value={routeDistance}
+                  onChange={event => setRouteDistance(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {routeDistanceOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
               </div>
-            )}
-          </div>
-        </div>
-
-        {!filtersCollapsed && (
-          <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Route Distance</label>
-              <select
-                value={routeDistance}
-                onChange={event => setRouteDistance(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {routeDistanceOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Max Price Age</label>
+                <select
+                  value={priceAge}
+                  onChange={event => setPriceAge(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {priceAgeOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Min Supply</label>
+                <select
+                  value={minSupply}
+                  onChange={event => setMinSupply(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {supplyOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Min Demand</label>
+                <select
+                  value={minDemand}
+                  onChange={event => setMinDemand(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {demandOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Surface Stations</label>
+                <select
+                  value={surfacePreference}
+                  onChange={event => setSurfacePreference(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {surfaceOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Station Distance</label>
+                <select
+                  value={stationDistance}
+                  onChange={event => setStationDistance(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {stationDistanceOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Max Price Age</label>
-              <select
-                value={priceAge}
-                onChange={event => setPriceAge(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {priceAgeOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Min Supply</label>
-              <select
-                value={minSupply}
-                onChange={event => setMinSupply(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {supplyOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Min Demand</label>
-              <select
-                value={minDemand}
-                onChange={event => setMinDemand(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {demandOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Surface Stations</label>
-              <select
-                value={surfacePreference}
-                onChange={event => setSurfacePreference(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {surfaceOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Station Distance</label>
-              <select
-                value={stationDistance}
-                onChange={event => setStationDistance(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {stationDistanceOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
+          )}
         </form>
       </div>
-      <div className='ghostnet-panel-table' style={{ overflow: 'hidden' }}>
-        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+      <div className='ghostnet-panel-table'>
+        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
           {message && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
           )}
@@ -2669,7 +2669,7 @@ function TradeRoutesPanel () {
           {status === 'populated' && renderRoutesTable()}
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -2881,9 +2881,9 @@ function PristineMiningPanel () {
   }, [handleLocationToggle])
 
   return (
-    <div className={styles.sectionGroup}>
-      <div className={`${styles.sectionFrameElevated} ${styles.sectionPadding}`}>
-        <h2>Pristine Mining Locations</h2>
+    <section className={styles.tableSection}>
+      <div className={styles.tableSectionHeader}>
+        <h2 className={styles.tableSectionTitle}>Pristine Mining Locations</h2>
         <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
@@ -2902,11 +2902,11 @@ function PristineMiningPanel () {
         {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       </div>
       <div
-        className={`pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
+        className={`ghostnet-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
       >
         <div
           className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
-          style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}
+          style={TABLE_SCROLL_AREA_STYLE}
         >
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
@@ -3045,7 +3045,7 @@ function PristineMiningPanel () {
           )}
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 
