@@ -577,11 +577,13 @@ body.ghostnet-assimilation-mode::after {
   color: rgba(245, 241, 255, 0.84) !important;
   border-color: rgba(140, 92, 255, 0.35) !important;
   background: rgba(28, 22, 51, 0.72) !important;
-  box-shadow: 0 0 1.5rem rgba(93, 46, 255, 0.45);
-  filter: saturate(1.25) hue-rotate(-6deg);
+  --ghostnet-assimilation-intensity: 1;
+  box-shadow: 0 0 var(--ghostnet-assimilation-glow-radius, 1.5rem)
+    rgba(93, 46, 255, var(--ghostnet-assimilation-glow-opacity, 0.45));
+  filter: saturate(var(--ghostnet-assimilation-saturation, 1.25)) hue-rotate(-6deg);
   transition: color 0.3s ease, background 0.4s ease, border-color 0.4s ease, opacity 0.45s ease, transform 0.4s ease,
     filter 0.45s ease;
-  animation: ghostnet-assimilation-jitter 280ms steps(2, end) infinite;
+  animation: ghostnet-assimilation-jitter var(--ghostnet-assimilation-loop, 280ms) steps(2, end) infinite;
 }
 
 .ghostnet-assimilation-target::before {
@@ -591,8 +593,8 @@ body.ghostnet-assimilation-mode::after {
   border: 1px solid rgba(93, 46, 255, 0.2);
   pointer-events: none;
   mix-blend-mode: screen;
-  opacity: 0.4;
-  animation: ghostnet-assimilation-ghost 360ms steps(2, end) infinite;
+  opacity: var(--ghostnet-assimilation-ghost-opacity, 0.4);
+  animation: ghostnet-assimilation-ghost var(--ghostnet-assimilation-ghost-loop, 360ms) steps(2, end) infinite;
 }
 
 @keyframes ghostnet-assimilation-jitter {
