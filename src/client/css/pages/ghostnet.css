@@ -1,35 +1,27 @@
 :root {
-  /* GhostNet core palette */
+  /* Base workspace backdrop for the GhostNet canvas */
   --ghostnet-color-background: #05080d;
-  --ghostnet-color-background-rgb: 5, 8, 13;
+  /* Elevated panels and cards that sit above the canvas */
   --ghostnet-color-surface: #1c1633;
-  --ghostnet-color-surface-rgb: 28, 22, 51;
+  /* Primary GhostNet accent for CTAs and key highlights */
   --ghostnet-color-primary: #5d2eff;
-  --ghostnet-color-primary-rgb: 93, 46, 255;
+  /* Shadowed accent used for depth, pressed, and terminal rails */
   --ghostnet-color-primary-dark: #2a0e82;
-  --ghostnet-color-primary-dark-rgb: 42, 14, 130;
+  /* Highlight accent for edges, glows, and lighter gradient stops */
   --ghostnet-color-primary-light: #8c5cff;
+  /* High-contrast text and icon color on dark grounds */
   --ghostnet-color-text-strong: #f5f1ff;
-  --ghostnet-color-text-strong-rgb: 245, 241, 255;
-  --ghostnet-color-text-muted: rgba(245, 241, 255, 0.84);
+  /* Success feedback for confirmations and positive states */
   --ghostnet-color-success: #29f3c3;
-  --ghostnet-color-success-rgb: 41, 243, 195;
+  /* Warning and error feedback across the GhostNet UI */
   --ghostnet-color-warning: #ff5fc1;
-  --ghostnet-color-warning-rgb: 255, 95, 193;
-  --ghostnet-color-border-soft: rgba(140, 92, 255, 0.28);
-  --ghostnet-color-border: rgba(140, 92, 255, 0.35);
-  --ghostnet-color-border-strong: rgba(140, 92, 255, 0.55);
-  --ghostnet-color-shadow: rgba(13, 11, 26, 0.55);
-  --ghostnet-color-shadow-deep: rgba(5, 8, 13, 0.68);
-  --ghostnet-color-glow: rgba(93, 46, 255, 0.36);
-  --ghostnet-color-divider: rgba(245, 241, 255, 0.16);
 }
 
 .ghostnet-spinner {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--ghostnet-color-text-muted);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
 }
 
 .ghostnet-spinner--block {
@@ -41,14 +33,14 @@
   justify-content: flex-start;
   padding: 0;
   font-size: 0.9rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.7);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
 }
 
 .ghostnet-spinner__icon {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;
-  border: 2px solid rgba(var(--ghostnet-color-text-strong-rgb), 0.18);
+  border: 2px solid color-mix(in srgb, var(--ghostnet-color-text-strong) 18%, transparent);
   border-top-color: var(--ghostnet-color-primary);
   animation: ghostnet-spinner-rotate 0.85s linear infinite;
 }
@@ -118,14 +110,14 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.28);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
   border-radius: 1rem;
   background: linear-gradient(
     180deg,
-    rgba(var(--ghostnet-color-surface-rgb), 0.95) 0%,
-    rgba(var(--ghostnet-color-background-rgb), 0.92) 100%
+    color-mix(in srgb, var(--ghostnet-color-surface) 95%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent) 100%
   );
-  box-shadow: 0 1.35rem 3rem rgba(var(--ghostnet-color-background-rgb), 0.72);
+  box-shadow: 0 1.35rem 3rem color-mix(in srgb, var(--ghostnet-color-background) 72%, transparent);
   overflow: hidden;
   padding: 0;
   box-sizing: border-box;
@@ -137,9 +129,9 @@
   width: 100%;
   height: auto;
   padding: 0.75rem 1rem 0.75rem 2.75rem;
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.25);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
   color: var(--ghostnet-ink);
-  border-bottom: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.35);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 35%, transparent);
   border-radius: 1rem 1rem 0 0;
 }
 
@@ -164,8 +156,8 @@
 .pristine-mining__inspector-status {
   align-self: flex-start;
   width: 100%;
-  background: rgba(var(--ghostnet-color-background-rgb), 0.88);
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.28);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
   border-radius: 1rem;
   padding: 1rem 1.25rem;
   color: var(--ghostnet-muted);
@@ -175,8 +167,8 @@
 
 .pristine-mining__inspector-status--error {
   color: var(--ghostnet-color-warning);
-  border-color: rgba(var(--ghostnet-color-warning-rgb), 0.45);
-  background: rgba(var(--ghostnet-color-warning-rgb), 0.12);
+  border-color: color-mix(in srgb, var(--ghostnet-color-warning) 45%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-warning) 12%, transparent);
 }
 
 .pristine-mining__inspector .navigation-panel__inspector {

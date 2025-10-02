@@ -3,24 +3,32 @@
   min-height: 100%;
   --ghostnet-terminal-height: clamp(180px, 18vh, 220px);
   --ghostnet-bg: var(--ghostnet-color-background);
-  --ghostnet-panel: rgba(var(--ghostnet-color-background-rgb), 0.88);
-  --ghostnet-panel-border: var(--ghostnet-color-border-soft);
-  --ghostnet-ink: rgba(var(--ghostnet-color-text-strong-rgb), 0.92);
-  --ghostnet-muted: rgba(var(--ghostnet-color-text-strong-rgb), 0.7);
-  --ghostnet-subdued: rgba(var(--ghostnet-color-text-strong-rgb), 0.56);
-  --ghostnet-text-soft: rgba(var(--ghostnet-color-text-strong-rgb), 0.68);
-  --ghostnet-text-faint: rgba(var(--ghostnet-color-text-strong-rgb), 0.54);
+  --ghostnet-panel: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
+  --ghostnet-border-soft: color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
+  --ghostnet-border-regular: color-mix(in srgb, var(--ghostnet-color-primary) 35%, transparent);
+  --ghostnet-border-strong: color-mix(in srgb, var(--ghostnet-color-primary) 55%, transparent);
+  --ghostnet-border-focus: color-mix(in srgb, var(--ghostnet-color-primary-light) 45%, transparent);
+  --ghostnet-panel-border: var(--ghostnet-border-soft);
+  --ghostnet-shadow: color-mix(in srgb, var(--ghostnet-color-background) 55%, transparent);
+  --ghostnet-shadow-deep: color-mix(in srgb, var(--ghostnet-color-background) 68%, transparent);
+  --ghostnet-glow: color-mix(in srgb, var(--ghostnet-color-primary-light) 36%, transparent);
+  --ghostnet-divider: color-mix(in srgb, var(--ghostnet-color-text-strong) 16%, transparent);
+  --ghostnet-ink: color-mix(in srgb, var(--ghostnet-color-text-strong) 92%, transparent);
+  --ghostnet-muted: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
+  --ghostnet-subdued: color-mix(in srgb, var(--ghostnet-color-text-strong) 56%, transparent);
+  --ghostnet-text-soft: color-mix(in srgb, var(--ghostnet-color-text-strong) 68%, transparent);
+  --ghostnet-text-faint: color-mix(in srgb, var(--ghostnet-color-text-strong) 54%, transparent);
   --ghostnet-accent: var(--ghostnet-color-primary-light);
-  --ghostnet-highlight: rgba(var(--ghostnet-color-primary-rgb), 0.12);
+  --ghostnet-highlight: color-mix(in srgb, var(--ghostnet-color-primary-light) 18%, transparent);
+  --ghostnet-highlight-strong: color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
   --ghostnet-table-header: linear-gradient(
     180deg,
-    rgba(var(--ghostnet-color-primary-rgb), 0.85) 0%,
-    rgba(var(--ghostnet-color-primary-dark-rgb), 0.8) 75%,
-    rgba(var(--ghostnet-color-primary-rgb), 0.65) 100%
+    color-mix(in srgb, var(--ghostnet-color-primary) 82%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 78%, transparent) 100%
   );
-  --ghostnet-gradient-top: rgba(var(--ghostnet-color-surface-rgb), 0.92);
-  --ghostnet-gradient-mid: rgba(var(--ghostnet-color-primary-dark-rgb), 0.6);
-  --ghostnet-gradient-bottom: rgba(var(--ghostnet-color-background-rgb), 0.88);
+  --ghostnet-gradient-top: color-mix(in srgb, var(--ghostnet-color-surface) 92%, transparent);
+  --ghostnet-gradient-mid: color-mix(in srgb, var(--ghostnet-color-primary-dark) 60%, transparent);
+  --ghostnet-gradient-bottom: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
   padding: 2.5rem 3rem calc(3.5rem + var(--ghostnet-terminal-height));
   background: linear-gradient(165deg, var(--ghostnet-gradient-top) 0%, var(--ghostnet-gradient-mid) 55%, var(--ghostnet-gradient-bottom) 100%),
     var(--ghostnet-bg);
@@ -42,7 +50,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(var(--ghostnet-color-background-rgb), 0) 0%, rgba(var(--ghostnet-color-background-rgb), 0.9) 100%);
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent) 100%);
   pointer-events: none;
 }
 
@@ -113,13 +121,13 @@
 .terminalShell {
   width: 100%;
   max-width: none;
-  background: linear-gradient(180deg, rgba(var(--ghostnet-color-surface-rgb), 0.92) 0%, rgba(var(--ghostnet-color-background-rgb), 0.94) 100%);
-  border: 1px solid var(--ghostnet-color-border);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-surface) 92%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 100%);
+  border: 1px solid var(--ghostnet-border-regular);
   border-bottom: none;
   border-radius: 1.5rem 1.5rem 0 0;
   color: var(--ghostnet-ink);
   pointer-events: auto;
-  box-shadow: 0 -1.25rem 2.75rem var(--ghostnet-color-shadow-deep), 0 0 1.75rem var(--ghostnet-color-glow);
+  box-shadow: 0 -1.25rem 2.75rem var(--ghostnet-shadow-deep), 0 0 1.75rem var(--ghostnet-glow);
   backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
@@ -131,8 +139,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem 0.75rem 1.5rem;
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.12);
-  border-bottom: 1px solid var(--ghostnet-color-border-soft);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 12%, transparent);
+  border-bottom: 1px solid var(--ghostnet-border-soft);
 }
 
 .terminalHeaderContent {
@@ -150,7 +158,7 @@
 
 .terminalStatus {
   font-size: 0.8rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.68);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 68%, transparent);
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
 }
 
@@ -161,23 +169,23 @@
   gap: 0.5rem;
   padding: 0.4rem 1.1rem;
   border-radius: 999px;
-  border: 1px solid var(--ghostnet-color-border-strong);
-  background: linear-gradient(135deg, rgba(var(--ghostnet-color-primary-rgb), 0.72), rgba(var(--ghostnet-color-primary-rgb), 0.48));
+  border: 1px solid var(--ghostnet-border-strong);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 72%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent));
   color: var(--ghostnet-color-text-strong);
   text-transform: uppercase;
   letter-spacing: 0.24em;
   font-size: 0.72rem;
   cursor: pointer;
-  text-shadow: 0 0 12px rgba(var(--ghostnet-color-primary-rgb), 0.55);
-  box-shadow: 0 0 0 rgba(var(--ghostnet-color-primary-rgb), 0);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-primary) 55%, transparent);
+  box-shadow: 0 0 0 transparent;
   transition: background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
 }
 
 .terminalToggle:hover,
 .terminalToggle:focus-visible {
-  background: linear-gradient(135deg, rgba(var(--ghostnet-color-primary-rgb), 0.88), rgba(var(--ghostnet-color-primary-rgb), 0.62));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 88%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 62%, transparent));
   transform: translateY(-1px);
-  box-shadow: 0 0 18px rgba(var(--ghostnet-color-primary-rgb), 0.38);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
 }
 
 .terminalToggle:focus-visible {
@@ -186,16 +194,16 @@
 }
 
 .terminalToggle:active {
-  background: linear-gradient(135deg, rgba(var(--ghostnet-color-primary-dark-rgb), 0.78), rgba(var(--ghostnet-color-primary-rgb), 0.52));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary-dark) 78%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 52%, transparent));
   transform: translateY(1px);
-  box-shadow: 0 0 10px rgba(var(--ghostnet-color-primary-dark-rgb), 0.48);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--ghostnet-color-primary-dark) 48%, transparent);
 }
 
 .terminalToggleIcon {
   font-size: 0.95rem;
   line-height: 1;
   color: var(--ghostnet-color-text-strong);
-  text-shadow: 0 0 14px rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   transition: transform 200ms ease, color 200ms ease;
 }
 
@@ -209,10 +217,10 @@
 .terminalToggleCollapsed {
   background: linear-gradient(
     135deg,
-    rgba(var(--ghostnet-color-primary-dark-rgb), 0.82),
-    rgba(var(--ghostnet-color-primary-rgb), 0.48)
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 82%, transparent),
+    color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent)
   );
-  box-shadow: 0 0 14px rgba(var(--ghostnet-color-primary-dark-rgb), 0.36);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-primary-dark) 36%, transparent);
 }
 
 .terminalToggleCollapsed .terminalToggleIcon {
@@ -224,8 +232,8 @@
   padding: 1.25rem 1.5rem 1.5rem;
   background: linear-gradient(
     180deg,
-    rgba(var(--ghostnet-color-primary-rgb), 0.16) 0%,
-    rgba(var(--ghostnet-color-primary-rgb), 0.04) 60%,
+    color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-primary) 4%, transparent) 60%,
     transparent 100%
   );
   overflow: hidden;
@@ -265,7 +273,7 @@
 }
 
 .terminalPromptResponse {
-  color: rgba(var(--ghostnet-color-primary-rgb), 0.75);
+  color: color-mix(in srgb, var(--ghostnet-color-primary) 75%, transparent);
 }
 
 .terminalPromptAlert {
@@ -281,25 +289,25 @@
 }
 
 .terminalPromptDecrypt {
-  color: rgba(var(--ghostnet-color-primary-rgb), 0.95);
+  color: color-mix(in srgb, var(--ghostnet-color-primary) 95%, transparent);
 }
 
 .terminalPromptGlitch {
-  color: rgba(var(--ghostnet-color-primary-rgb), 0.85);
-  text-shadow: 0 0 18px rgba(var(--ghostnet-color-primary-rgb), 0.48);
+  color: color-mix(in srgb, var(--ghostnet-color-primary) 85%, transparent);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent);
 }
 
 .terminalPromptSystem {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.72);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 72%, transparent);
 }
 
 .terminalText {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.82);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 82%, transparent);
 }
 
 .terminalTextAlert {
   color: var(--ghostnet-color-warning);
-  text-shadow: 0 0 12px rgba(var(--ghostnet-color-warning-rgb), 0.58);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-warning) 58%, transparent);
 }
 
 .terminalTextCipher {
@@ -308,22 +316,22 @@
 }
 
 .terminalTextBinary {
-  color: rgba(var(--ghostnet-color-success-rgb), 0.92);
-  text-shadow: 0 0 10px rgba(var(--ghostnet-color-success-rgb), 0.55);
+  color: color-mix(in srgb, var(--ghostnet-color-success) 92%, transparent);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--ghostnet-color-success) 55%, transparent);
 }
 
 .terminalTextDecrypt {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.95);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 95%, transparent);
 }
 
 .terminalTextGlitch {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.7);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
   letter-spacing: 0.2em;
-  text-shadow: 0 0 22px rgba(var(--ghostnet-color-primary-rgb), 0.45);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
 }
 
 .terminalTextSystem {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.92);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 92%, transparent);
 }
 
 @keyframes terminalLineReveal {
@@ -355,7 +363,7 @@
   border-radius: 1.25rem;
   background: var(--ghostnet-panel);
   border: 1px solid var(--ghostnet-panel-border);
-  box-shadow: 0 1.75rem 3.5rem var(--ghostnet-color-shadow);
+  box-shadow: 0 1.75rem 3.5rem var(--ghostnet-shadow);
   backdrop-filter: blur(12px);
 }
 
@@ -388,8 +396,8 @@
 .sectionFrameElevated {
   border-radius: 1.5rem;
   background: var(--ghostnet-panel);
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.32);
-  box-shadow: 0 1.75rem 4rem rgba(var(--ghostnet-color-background-rgb), 0.85);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
+  box-shadow: 0 1.75rem 4rem color-mix(in srgb, var(--ghostnet-color-background) 85%, transparent);
   backdrop-filter: blur(14px);
 }
 
@@ -417,8 +425,8 @@
   text-transform: uppercase;
   letter-spacing: 0.18em;
   border-radius: 999px;
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.42);
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.12);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 42%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 12%, transparent);
   color: var(--ghostnet-accent);
 }
 
@@ -434,16 +442,16 @@
 
 .dataTableContainer {
   position: relative;
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.38);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
   border-radius: 1.25rem;
   background: linear-gradient(
       175deg,
-      rgba(var(--ghostnet-color-primary-rgb), 0.18) 0%,
-      rgba(var(--ghostnet-color-primary-dark-rgb), 0.12) 45%,
+      color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent) 0%,
+      color-mix(in srgb, var(--ghostnet-color-primary-dark) 12%, transparent) 45%,
       transparent 100%
     ),
-    linear-gradient(180deg, rgba(var(--ghostnet-color-background-rgb), 0.95) 0%, rgba(var(--ghostnet-color-background-rgb), 0.94) 100%);
-  box-shadow: 0 1.65rem 3.75rem rgba(var(--ghostnet-color-background-rgb), 0.78);
+    linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-background) 95%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 100%);
+  box-shadow: 0 1.65rem 3.75rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
   overflow: hidden;
 }
 
@@ -466,11 +474,11 @@
 
 .dataTable thead {
   background: var(--ghostnet-table-header);
-  box-shadow: inset 0 -1px 0 rgba(var(--ghostnet-color-primary-rgb), 0.38);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
 }
 
 .dataTable thead tr {
-  border-bottom: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.45);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
   background: var(--ghostnet-table-header);
 }
 
@@ -479,7 +487,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.88);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 88%, transparent);
   font-weight: 600;
   text-align: left;
   white-space: nowrap;
@@ -488,16 +496,16 @@
 .dataTable tbody tr {
   background: linear-gradient(
     180deg,
-    rgba(var(--ghostnet-color-background-rgb), 0.86) 0%,
-    rgba(var(--ghostnet-color-primary-dark-rgb), 0.35) 100%
+    color-mix(in srgb, var(--ghostnet-color-background) 86%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 35%, transparent) 100%
   );
-  border-bottom: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.25);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
   transition: background 0.25s ease, transform 0.25s ease;
   font-size: 0.95rem;
 }
 
 .dataTable tbody tr:nth-child(even) {
-  background: rgba(var(--ghostnet-color-primary-dark-rgb), 0.45);
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 45%, transparent);
 }
 
 .dataTable tbody tr:last-child {
@@ -505,7 +513,7 @@
 }
 
 .dataTable tbody tr:hover {
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.18);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
 }
 
 .dataTable td {
@@ -516,7 +524,7 @@
 }
 
 .nonCommodityRow {
-  background: rgba(var(--ghostnet-color-primary-dark-rgb), 0.4);
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 40%, transparent);
   font-size: 0.85rem;
   line-height: 1.2;
 }
@@ -541,11 +549,11 @@
   font-size: 0.7rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.7);
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.45);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
   border-radius: 999px;
   padding: 0.1rem 0.6rem;
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.18);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
 }
 
 .nonCommodityQuantity {
@@ -608,20 +616,20 @@
 }
 
 .tableRowInteractive:hover {
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.2);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent);
 }
 
 .tableRowExpanded {
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.16) !important;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent) !important;
 }
 
 .tableRowExpanded:hover {
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.22) !important;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent) !important;
 }
 
 .tableDetailRow td {
-  background: rgba(var(--ghostnet-color-background-rgb), 0.88);
-  border-top: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.25);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
   padding: 0 1.5rem 1.5rem;
 }
 
@@ -655,7 +663,7 @@
 }
 
 .tableMessageBorder {
-  border-bottom: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.25);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
 }
 
 .tableIdleState {
@@ -680,7 +688,7 @@
 }
 
 .tableMetaMuted {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   font-size: 0.75rem;
   margin-top: 0.25rem;
 }
@@ -692,13 +700,13 @@
 }
 
 .tableMutedNote {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   font-size: 0.75rem;
   margin-top: 0.45rem;
 }
 
 .tableIndicatorPlaceholder {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   font-size: 0.82rem;
 }
 
@@ -724,12 +732,12 @@
   padding: 1.75rem 2rem;
   background: linear-gradient(
     135deg,
-    rgba(var(--ghostnet-color-primary-dark-rgb), 0.85),
-    rgba(var(--ghostnet-color-background-rgb), 0.9)
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 85%, transparent),
+    color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent)
   );
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.38);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
   border-radius: 1.25rem;
-  box-shadow: 0 1.5rem 3rem var(--ghostnet-color-shadow);
+  box-shadow: 0 1.5rem 3rem var(--ghostnet-shadow);
 }
 
 .routeDetailBackButton {
@@ -738,11 +746,11 @@
   gap: 0.55rem;
   padding: 0.55rem 1.4rem;
   border-radius: 999px;
-  border: 1px solid var(--ghostnet-color-border-strong);
+  border: 1px solid var(--ghostnet-border-strong);
   background: linear-gradient(
     135deg,
-    rgba(var(--ghostnet-color-primary-rgb), 0.62),
-    rgba(var(--ghostnet-color-primary-rgb), 0.4)
+    color-mix(in srgb, var(--ghostnet-color-primary) 62%, transparent),
+    color-mix(in srgb, var(--ghostnet-color-primary) 40%, transparent)
   );
   color: var(--ghostnet-color-text-strong);
   text-transform: uppercase;
@@ -750,18 +758,18 @@
   font-size: 0.66rem;
   cursor: pointer;
   transition: background 200ms ease, box-shadow 200ms ease, transform 200ms ease;
-  text-shadow: 0 0 14px rgba(var(--ghostnet-color-primary-rgb), 0.45);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
 }
 
 .routeDetailBackButton:hover,
 .routeDetailBackButton:focus-visible {
   background: linear-gradient(
     135deg,
-    rgba(var(--ghostnet-color-primary-rgb), 0.8),
-    rgba(var(--ghostnet-color-primary-rgb), 0.55)
+    color-mix(in srgb, var(--ghostnet-color-primary) 80%, transparent),
+    color-mix(in srgb, var(--ghostnet-color-primary) 55%, transparent)
   );
   transform: translateY(-1px);
-  box-shadow: 0 0 18px rgba(var(--ghostnet-color-primary-rgb), 0.4);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-primary) 40%, transparent);
 }
 
 .routeDetailBackButton:focus-visible {
@@ -772,11 +780,11 @@
 .routeDetailBackButton:active {
   background: linear-gradient(
     135deg,
-    rgba(var(--ghostnet-color-primary-dark-rgb), 0.75),
-    rgba(var(--ghostnet-color-primary-rgb), 0.5)
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 75%, transparent),
+    color-mix(in srgb, var(--ghostnet-color-primary) 50%, transparent)
   );
   transform: translateY(1px);
-  box-shadow: 0 0 12px rgba(var(--ghostnet-color-primary-dark-rgb), 0.48);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-primary-dark) 48%, transparent);
 }
 
 .routeDetailHeading {
@@ -792,7 +800,7 @@
   text-transform: uppercase;
   letter-spacing: 0.32em;
   font-size: 0.68rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.7);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
 }
 
 .routeDetailTitle {
@@ -802,7 +810,7 @@
   gap: 0.85rem;
   font-size: 1.65rem;
   color: var(--ghostnet-color-text-strong);
-  text-shadow: 0 0 14px rgba(var(--ghostnet-color-primary-rgb), 0.45);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
   margin: 0;
 }
 
@@ -818,11 +826,11 @@
   gap: 0.65rem;
   margin: 0;
   font-size: 0.92rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.74);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 74%, transparent);
 }
 
 .routeDetailArrow {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   font-size: 1.1rem;
 }
 
@@ -833,16 +841,16 @@
   min-width: 160px;
   padding: 0.9rem 1.25rem;
   border-radius: 1rem;
-  background: rgba(var(--ghostnet-color-primary-dark-rgb), 0.6);
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.35);
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.78);
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 35%, transparent);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 78%, transparent);
 }
 
 .routeDetailMetaLabel {
   text-transform: uppercase;
   letter-spacing: 0.22em;
   font-size: 0.65rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
 }
 
 .routeDetailMetaValue {
@@ -863,16 +871,16 @@
   gap: 0.4rem;
   padding: 1.15rem 1.35rem;
   border-radius: 1.1rem;
-  background: rgba(var(--ghostnet-color-background-rgb), 0.92);
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.32);
-  box-shadow: 0 1.2rem 2.4rem rgba(var(--ghostnet-color-background-rgb), 0.55);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
+  box-shadow: 0 1.2rem 2.4rem color-mix(in srgb, var(--ghostnet-color-background) 55%, transparent);
 }
 
 .routeDetailMetricLabel {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.68rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.62);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
 }
 
 .routeDetailMetricValue {
@@ -892,10 +900,10 @@
   flex-direction: column;
   gap: 1rem;
   padding: 1.75rem 1.9rem;
-  background: rgba(var(--ghostnet-color-background-rgb), 0.92);
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.32);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
   border-radius: 1.25rem;
-  box-shadow: 0 1.45rem 2.8rem rgba(var(--ghostnet-color-background-rgb), 0.55);
+  box-shadow: 0 1.45rem 2.8rem color-mix(in srgb, var(--ghostnet-color-background) 55%, transparent);
 }
 
 .routeDetailPanelHeader {
@@ -909,7 +917,7 @@
   text-transform: uppercase;
   letter-spacing: 0.28em;
   font-size: 0.68rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.62);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
 }
 
 .routeDetailStation {
@@ -937,7 +945,7 @@
 
 .routeDetailSystem {
   font-size: 0.85rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.62);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
 }
 
 .routeDetailInfoRow {
@@ -945,7 +953,7 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 1rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.78);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 78%, transparent);
   font-size: 0.92rem;
 }
 
@@ -953,7 +961,7 @@
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.7rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.58);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 58%, transparent);
 }
 
 .routeDetailInfoValue {
@@ -966,7 +974,7 @@
 .routeDetailDividerLine {
   height: 1px;
   width: 100%;
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.25);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
   margin: 0.5rem 0 0.75rem;
 }
 
@@ -974,14 +982,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.84);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 84%, transparent);
 }
 
 .routeDetailCommodityLabel {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.68rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
 }
 
 .routeDetailCommodityValue {
@@ -995,7 +1003,7 @@
   flex-wrap: wrap;
   gap: 0.85rem;
   font-size: 0.88rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.74);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 74%, transparent);
 }
 
 @media (max-width: 1100px) {
@@ -1063,7 +1071,7 @@
   align-items: baseline;
   gap: 0.4rem;
   font-size: 0.95rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.84);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 84%, transparent);
 }
 
 .tableEntryValueHighlight {
@@ -1078,7 +1086,7 @@
 }
 
 .tableEntryLabel {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -1092,7 +1100,7 @@
 }
 
 .tableEntryFootnote {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   font-size: 0.75rem;
   margin-top: 0.2rem;
 }
@@ -1114,7 +1122,7 @@
 
 .tableFootnote {
   margin-top: 1.5rem;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   font-size: 0.85rem;
   line-height: 1.6;
 }
@@ -1161,7 +1169,7 @@
 }
 
 .noticeMuted {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.5);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 50%, transparent);
 }
 
 .inlineNotice {
@@ -1171,7 +1179,7 @@
 
 .inlineNoticeMuted {
   padding: 1rem 0;
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.5);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 50%, transparent);
 }
 
 .placeholder {
@@ -1182,9 +1190,9 @@
   color: var(--ghostnet-muted);
   font-size: 1.35rem;
   border-radius: 1.5rem;
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.28);
-  background: linear-gradient(160deg, rgba(var(--ghostnet-color-primary-rgb), 0.18), rgba(var(--ghostnet-color-background-rgb), 0.82));
-  box-shadow: 0 1.85rem 4rem rgba(var(--ghostnet-color-background-rgb), 0.78);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent), color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent));
+  box-shadow: 0 1.85rem 4rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
 }
 
 .ghostnet :global(.ghostnet-surface) {
@@ -1204,17 +1212,17 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table) {
-  background: linear-gradient(180deg, rgba(var(--ghostnet-color-background-rgb), 0.94) 0%, rgba(var(--ghostnet-color-background-rgb), 0.92) 100%);
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.38);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
   border-radius: 1.25rem;
   overflow: hidden;
-  box-shadow: 0 1.75rem 3.5rem rgba(var(--ghostnet-color-background-rgb), 0.75);
+  box-shadow: 0 1.75rem 3.5rem color-mix(in srgb, var(--ghostnet-color-background) 75%, transparent);
   backdrop-filter: blur(10px);
 }
 
 .ghostnet :global(.ghostnet-panel-table > .scrollable) {
-  background: linear-gradient(180deg, rgba(var(--ghostnet-color-primary-dark-rgb), 0.78) 0%, rgba(var(--ghostnet-color-background-rgb), 0.9) 100%);
-  scrollbar-color: rgba(var(--ghostnet-color-primary-rgb), 0.6) rgba(var(--ghostnet-color-background-rgb), 0.85);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-primary-dark) 78%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent) 100%);
+  scrollbar-color: color-mix(in srgb, var(--ghostnet-color-primary) 60%, transparent) color-mix(in srgb, var(--ghostnet-color-background) 85%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table > .scrollable::-webkit-scrollbar) {
@@ -1222,23 +1230,23 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table > .scrollable::-webkit-scrollbar-track) {
-  background: rgba(var(--ghostnet-color-background-rgb), 0.75);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 75%, transparent);
   border-radius: 0.65rem;
 }
 
 .ghostnet :global(.ghostnet-panel-table > .scrollable::-webkit-scrollbar-thumb) {
-  background: linear-gradient(180deg, rgba(var(--ghostnet-color-primary-rgb), 0.75) 0%, rgba(var(--ghostnet-color-primary-dark-rgb), 0.85) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-primary) 75%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-primary-dark) 85%, transparent) 100%);
   border-radius: 0.65rem;
-  box-shadow: 0 0 0 2px rgba(var(--ghostnet-color-background-rgb), 0.55) inset;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ghostnet-color-background) 55%, transparent) inset;
 }
 
 .ghostnet :global(.ghostnet-panel-table > .scrollable::-webkit-scrollbar-thumb:hover) {
-  background: linear-gradient(180deg, rgba(var(--ghostnet-color-primary-rgb), 0.85) 0%, rgba(var(--ghostnet-color-primary-dark-rgb), 0.9) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-primary) 85%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-primary-dark) 90%, transparent) 100%);
 }
 
 .ghostnet :global(.ghostnet-panel-table table thead) {
   background: var(--ghostnet-table-header);
-  box-shadow: inset 0 -1px 0 rgba(var(--ghostnet-color-primary-rgb), 0.38);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table table thead tr) {
@@ -1246,25 +1254,25 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table table thead tr th) {
-  border-bottom: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.45);
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.88);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 88%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table tbody tr) {
-  border-bottom: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.25);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table tbody tr:nth-child(even)) {
-  background: rgba(var(--ghostnet-color-primary-dark-rgb), 0.45);
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 45%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table tbody tr:hover) {
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.18) !important;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent) !important;
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__detail) {
-  background: rgba(var(--ghostnet-color-background-rgb), 0.85);
-  border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.22);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-status) {
@@ -1284,7 +1292,7 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table .text-secondary) {
-  color: rgba(var(--ghostnet-color-text-strong-rgb), 0.85);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 85%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table .text-muted) {
@@ -1301,12 +1309,12 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--active) {
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.18);
-  border-color: rgba(var(--ghostnet-color-primary-rgb), 0.45);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  border-color: color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--active:hover) {
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.24);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--icon) {
@@ -1314,7 +1322,7 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--icon:hover) {
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.16);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--secondary) {
@@ -1322,11 +1330,11 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--secondary:hover) {
-  background: rgba(var(--ghostnet-color-primary-rgb), 0.16);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent);
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__inspector) {
-  border-left: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.22);
+  border-left: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent);
 }
 
 @media (max-width: 640px) {
@@ -1363,18 +1371,18 @@
 @keyframes ghostnetArrivalSurface {
   0% {
     --ghostnet-bg: var(--ghostnet-color-background);
-    --ghostnet-panel: rgba(var(--ghostnet-color-primary-dark-rgb), 0.82);
-    --ghostnet-panel-border: rgba(var(--ghostnet-color-warning-rgb), 0.45);
-    --ghostnet-ink: rgba(var(--ghostnet-color-text-strong-rgb), 0.96);
-    --ghostnet-muted: rgba(var(--ghostnet-color-warning-rgb), 0.65);
-    --ghostnet-subdued: rgba(var(--ghostnet-color-warning-rgb), 0.45);
+    --ghostnet-panel: color-mix(in srgb, var(--ghostnet-color-primary-dark) 82%, transparent);
+    --ghostnet-panel-border: color-mix(in srgb, var(--ghostnet-color-warning) 45%, transparent);
+    --ghostnet-ink: color-mix(in srgb, var(--ghostnet-color-text-strong) 96%, transparent);
+    --ghostnet-muted: color-mix(in srgb, var(--ghostnet-color-warning) 65%, transparent);
+    --ghostnet-subdued: color-mix(in srgb, var(--ghostnet-color-warning) 45%, transparent);
     --ghostnet-accent: var(--ghostnet-color-warning);
-    --ghostnet-highlight: rgba(var(--ghostnet-color-warning-rgb), 0.28);
+    --ghostnet-highlight: color-mix(in srgb, var(--ghostnet-color-warning) 28%, transparent);
     background: linear-gradient(
         165deg,
-        rgba(var(--ghostnet-color-warning-rgb), 0.22) 0%,
-        rgba(var(--ghostnet-color-primary-rgb), 0.18) 45%,
-        rgba(var(--ghostnet-color-background-rgb), 0.9) 100%
+        color-mix(in srgb, var(--ghostnet-color-warning) 22%, transparent) 0%,
+        color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent) 45%,
+        color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent) 100%
       ),
       var(--ghostnet-bg);
     filter: saturate(1.08) contrast(1.05);
@@ -1382,18 +1390,18 @@
   }
   42% {
     --ghostnet-bg: var(--ghostnet-color-background);
-    --ghostnet-panel: rgba(var(--ghostnet-color-surface-rgb), 0.88);
-    --ghostnet-panel-border: rgba(var(--ghostnet-color-primary-rgb), 0.38);
-    --ghostnet-ink: rgba(var(--ghostnet-color-text-strong-rgb), 0.94);
-    --ghostnet-muted: rgba(var(--ghostnet-color-text-strong-rgb), 0.78);
-    --ghostnet-subdued: rgba(var(--ghostnet-color-text-strong-rgb), 0.6);
+    --ghostnet-panel: color-mix(in srgb, var(--ghostnet-color-surface) 88%, transparent);
+    --ghostnet-panel-border: color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
+    --ghostnet-ink: color-mix(in srgb, var(--ghostnet-color-text-strong) 94%, transparent);
+    --ghostnet-muted: color-mix(in srgb, var(--ghostnet-color-text-strong) 78%, transparent);
+    --ghostnet-subdued: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
     --ghostnet-accent: var(--ghostnet-color-primary-light);
-    --ghostnet-highlight: rgba(var(--ghostnet-color-primary-rgb), 0.2);
+    --ghostnet-highlight: color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent);
     background: linear-gradient(
         165deg,
-        rgba(var(--ghostnet-color-primary-rgb), 0.24) 0%,
-        rgba(var(--ghostnet-color-primary-dark-rgb), 0.32) 55%,
-        rgba(var(--ghostnet-color-background-rgb), 0.88) 100%
+        color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent) 0%,
+        color-mix(in srgb, var(--ghostnet-color-primary-dark) 32%, transparent) 55%,
+        color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent) 100%
       ),
       var(--ghostnet-bg);
     filter: saturate(1.05);
@@ -1402,9 +1410,9 @@
   62% {
     background: linear-gradient(
         165deg,
-        rgba(var(--ghostnet-color-primary-rgb), 0.2) 0%,
-        rgba(var(--ghostnet-color-primary-dark-rgb), 0.28) 55%,
-        rgba(var(--ghostnet-color-background-rgb), 0.86) 100%
+        color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent) 0%,
+        color-mix(in srgb, var(--ghostnet-color-primary-dark) 28%, transparent) 55%,
+        color-mix(in srgb, var(--ghostnet-color-background) 86%, transparent) 100%
       ),
       var(--ghostnet-bg);
     filter: saturate(1.02);
@@ -1413,9 +1421,9 @@
   72% {
     background: linear-gradient(
         165deg,
-        rgba(var(--ghostnet-color-primary-rgb), 0.16) 0%,
-        rgba(var(--ghostnet-color-primary-dark-rgb), 0.26) 55%,
-        rgba(var(--ghostnet-color-background-rgb), 0.84) 100%
+        color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent) 0%,
+        color-mix(in srgb, var(--ghostnet-color-primary-dark) 26%, transparent) 55%,
+        color-mix(in srgb, var(--ghostnet-color-background) 84%, transparent) 100%
       ),
       var(--ghostnet-bg);
     filter: saturate(0.96);
@@ -1423,13 +1431,13 @@
   }
   100% {
     --ghostnet-bg: var(--ghostnet-color-background);
-    --ghostnet-panel: rgba(var(--ghostnet-color-background-rgb), 0.88);
-    --ghostnet-panel-border: var(--ghostnet-color-border-soft);
-    --ghostnet-ink: rgba(var(--ghostnet-color-text-strong-rgb), 0.92);
-    --ghostnet-muted: rgba(var(--ghostnet-color-text-strong-rgb), 0.7);
-    --ghostnet-subdued: rgba(var(--ghostnet-color-text-strong-rgb), 0.56);
+    --ghostnet-panel: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
+    --ghostnet-panel-border: var(--ghostnet-border-soft);
+    --ghostnet-ink: color-mix(in srgb, var(--ghostnet-color-text-strong) 92%, transparent);
+    --ghostnet-muted: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
+    --ghostnet-subdued: color-mix(in srgb, var(--ghostnet-color-text-strong) 56%, transparent);
     --ghostnet-accent: var(--ghostnet-color-primary-light);
-    --ghostnet-highlight: rgba(var(--ghostnet-color-primary-rgb), 0.12);
+    --ghostnet-highlight: color-mix(in srgb, var(--ghostnet-color-primary) 12%, transparent);
     background: linear-gradient(
         165deg,
         var(--ghostnet-gradient-top) 0%,
@@ -1470,16 +1478,16 @@
     opacity: 0.85;
     background: linear-gradient(
       180deg,
-      rgba(var(--ghostnet-color-background-rgb), 0.35) 0%,
-      rgba(var(--ghostnet-color-background-rgb), 0.94) 100%
+      color-mix(in srgb, var(--ghostnet-color-background) 35%, transparent) 0%,
+      color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 100%
     );
   }
   40% {
     opacity: 0.7;
     background: linear-gradient(
       180deg,
-      rgba(var(--ghostnet-color-primary-dark-rgb), 0.28) 0%,
-      rgba(var(--ghostnet-color-background-rgb), 0.92) 100%
+      color-mix(in srgb, var(--ghostnet-color-primary-dark) 28%, transparent) 0%,
+      color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent) 100%
     );
   }
   70% {
@@ -1487,7 +1495,7 @@
   }
   100% {
     opacity: 1;
-    background: linear-gradient(180deg, rgba(var(--ghostnet-color-background-rgb), 0) 0%, rgba(var(--ghostnet-color-background-rgb), 0.9) 100%);
+    background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent) 100%);
   }
 }
 
@@ -1521,22 +1529,22 @@
 
 @keyframes ghostnetArrivalChromatic {
   0% {
-    color: rgba(var(--ghostnet-color-warning-rgb), 0.95);
-    text-shadow: 0 0 1.35rem rgba(var(--ghostnet-color-warning-rgb), 0.55);
+    color: color-mix(in srgb, var(--ghostnet-color-warning) 95%, transparent);
+    text-shadow: 0 0 1.35rem color-mix(in srgb, var(--ghostnet-color-warning) 55%, transparent);
     transform: translate3d(0, 0, 0);
   }
   35% {
-    color: rgba(var(--ghostnet-color-warning-rgb), 0.85);
-    text-shadow: 0 0 1.15rem rgba(var(--ghostnet-color-warning-rgb), 0.45);
+    color: color-mix(in srgb, var(--ghostnet-color-warning) 85%, transparent);
+    text-shadow: 0 0 1.15rem color-mix(in srgb, var(--ghostnet-color-warning) 45%, transparent);
   }
   55% {
-    color: rgba(var(--ghostnet-color-success-rgb), 0.9);
-    text-shadow: 0 0 1.35rem rgba(var(--ghostnet-color-success-rgb), 0.55);
+    color: color-mix(in srgb, var(--ghostnet-color-success) 90%, transparent);
+    text-shadow: 0 0 1.35rem color-mix(in srgb, var(--ghostnet-color-success) 55%, transparent);
     transform: translate3d(-2px, 1px, 0);
   }
   68% {
-    color: rgba(var(--ghostnet-color-primary-rgb), 0.92);
-    text-shadow: 0 0 1.35rem rgba(var(--ghostnet-color-primary-rgb), 0.65);
+    color: color-mix(in srgb, var(--ghostnet-color-primary) 92%, transparent);
+    text-shadow: 0 0 1.35rem color-mix(in srgb, var(--ghostnet-color-primary) 65%, transparent);
     transform: translate3d(2px, -1px, 0);
   }
   100% {
@@ -1548,27 +1556,27 @@
 
 @keyframes ghostnetArrivalPanel {
   0% {
-    background: rgba(var(--ghostnet-color-primary-dark-rgb), 0.82);
-    border-color: rgba(var(--ghostnet-color-warning-rgb), 0.5);
-    box-shadow: 0 1.85rem 3.9rem rgba(var(--ghostnet-color-background-rgb), 0.7);
+    background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 82%, transparent);
+    border-color: color-mix(in srgb, var(--ghostnet-color-warning) 50%, transparent);
+    box-shadow: 0 1.85rem 3.9rem color-mix(in srgb, var(--ghostnet-color-background) 70%, transparent);
     filter: saturate(1.05);
     transform: translate3d(0, 8px, 0);
   }
   40% {
-    background: rgba(var(--ghostnet-color-surface-rgb), 0.9);
-    border-color: rgba(var(--ghostnet-color-primary-rgb), 0.38);
-    box-shadow: 0 1.95rem 4rem rgba(var(--ghostnet-color-background-rgb), 0.75);
+    background: color-mix(in srgb, var(--ghostnet-color-surface) 90%, transparent);
+    border-color: color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
+    box-shadow: 0 1.95rem 4rem color-mix(in srgb, var(--ghostnet-color-background) 75%, transparent);
     transform: translate3d(-2px, 2px, 0);
   }
   68% {
-    background: rgba(var(--ghostnet-color-background-rgb), 0.9);
-    border-color: rgba(var(--ghostnet-color-primary-rgb), 0.34);
+    background: color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent);
+    border-color: color-mix(in srgb, var(--ghostnet-color-primary) 34%, transparent);
     transform: translate3d(2px, -2px, 0);
   }
   100% {
     background: var(--ghostnet-panel);
     border-color: var(--ghostnet-panel-border);
-    box-shadow: 0 1.75rem 3.5rem rgba(var(--ghostnet-color-background-rgb), 0.8);
+    box-shadow: 0 1.75rem 3.5rem color-mix(in srgb, var(--ghostnet-color-background) 80%, transparent);
     filter: none;
     transform: none;
   }
@@ -1576,25 +1584,25 @@
 
 @keyframes ghostnetArrivalBadge {
   0% {
-    background: rgba(var(--ghostnet-color-warning-rgb), 0.28);
-    border-color: rgba(var(--ghostnet-color-warning-rgb), 0.55);
-    color: rgba(var(--ghostnet-color-warning-rgb), 0.92);
+    background: color-mix(in srgb, var(--ghostnet-color-warning) 28%, transparent);
+    border-color: color-mix(in srgb, var(--ghostnet-color-warning) 55%, transparent);
+    color: color-mix(in srgb, var(--ghostnet-color-warning) 92%, transparent);
     transform: translate3d(0, 4px, 0);
   }
   55% {
-    background: rgba(var(--ghostnet-color-primary-rgb), 0.22);
-    border-color: rgba(var(--ghostnet-color-primary-rgb), 0.42);
-    color: rgba(var(--ghostnet-color-primary-rgb), 0.85);
+    background: color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent);
+    border-color: color-mix(in srgb, var(--ghostnet-color-primary) 42%, transparent);
+    color: color-mix(in srgb, var(--ghostnet-color-primary) 85%, transparent);
     transform: translate3d(-2px, 0, 0);
   }
   70% {
-    background: rgba(var(--ghostnet-color-success-rgb), 0.2);
-    border-color: rgba(var(--ghostnet-color-primary-rgb), 0.38);
+    background: color-mix(in srgb, var(--ghostnet-color-success) 20%, transparent);
+    border-color: color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
     transform: translate3d(1px, -1px, 0);
   }
   100% {
-    background: rgba(var(--ghostnet-color-primary-rgb), 0.12);
-    border: 1px solid rgba(var(--ghostnet-color-primary-rgb), 0.42);
+    background: color-mix(in srgb, var(--ghostnet-color-primary) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 42%, transparent);
     color: var(--ghostnet-accent);
     transform: none;
   }
