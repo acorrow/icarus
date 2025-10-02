@@ -17,6 +17,7 @@
 - Mirror the structural patterns and layout conventions of other Icarus pages so the product feels cohesive, while still honoring GhostNet's unique identity.
 - Keep data tables outside of `SectionFrame` containers; tables should rely on GhostNet table shells (`dataTableContainer`, `dataTable`) for structure instead of being nested inside section frames.
 - Table rows must never expand inline like a drawer. Selecting a row should always open a dedicated full-page view in the workspace, mirroring the behavior on the Find Trade Routes page. This ensures a clean experience on smaller displays.
+- Full-page workspace detail views should follow the existing `routeDetail` layout in `ghostnet.module.css`: the purple back button anchors on the left, the heading/subhead stay centered, and key stats render in the detail metrics grid ahead of any tables.
 
 ### GhostNet Purple Theme Specification
 - **Primary hue:** GhostNet surfaces should lean on a rich royal purple (`#5D2EFF`) for primary actions, interactive accents, and key highlights.

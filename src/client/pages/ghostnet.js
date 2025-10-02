@@ -198,6 +198,47 @@ function isSameMarketEntry (a, b) {
   return false
 }
 
+function getListingKey (listing) {
+  if (!listing || typeof listing !== 'object') return ''
+  if (listing.marketId) return `market:${listing.marketId}`
+  const station = normaliseName(listing.stationName)
+  const system = normaliseName(listing.systemName)
+  const pad = typeof listing.pad === 'string' ? listing.pad.trim().toLowerCase() : ''
+  const updated = listing.updatedAt ? Number(new Date(listing.updatedAt)) || String(listing.updatedAt) : ''
+  return `${system || 'unknown'}|${station || 'unknown'}|${pad || 'na'}|${updated}`
+}
+
+function getPreferredListing (listings) {
+  if (!Array.isArray(listings) || listings.length === 0) return null
+  const candidates = listings.filter(candidate => candidate && typeof candidate === 'object')
+  if (candidates.length === 0) return null
+  const sorted = [...candidates].sort((a, b) => {
+    const aPrice = Number.isFinite(a?.price) ? a.price : Number.MIN_SAFE_INTEGER
+    const bPrice = Number.isFinite(b?.price) ? b.price : Number.MIN_SAFE_INTEGER
+    if (aPrice !== bPrice) return bPrice - aPrice
+
+    const aDemand = Number.isFinite(a?.demand) ? a.demand : Number.MIN_SAFE_INTEGER
+    const bDemand = Number.isFinite(b?.demand) ? b.demand : Number.MIN_SAFE_INTEGER
+    if (aDemand !== bDemand) return bDemand - aDemand
+
+    const aDistance = Number.isFinite(a?.distanceLy) ? a.distanceLy : Number.POSITIVE_INFINITY
+    const bDistance = Number.isFinite(b?.distanceLy) ? b.distanceLy : Number.POSITIVE_INFINITY
+    if (aDistance !== bDistance) return aDistance - bDistance
+
+    const aSystem = normaliseName(a?.systemName)
+    const bSystem = normaliseName(b?.systemName)
+    if (aSystem !== bSystem) return aSystem < bSystem ? -1 : 1
+
+    const aStation = normaliseName(a?.stationName)
+    const bStation = normaliseName(b?.stationName)
+    if (aStation !== bStation) return aStation < bStation ? -1 : 1
+
+    return 0
+  })
+
+  return sorted[0] || null
+}
+
 function normaliseFactionKey(value) {
   return typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : ''
 }
@@ -695,6 +736,13 @@ const DEFAULT_SORT_DIRECTION = {
   distance: 'asc'
 }
 
+const DEFAULT_COMMODITY_DETAIL_SORT_DIRECTION = {
+  price: 'desc',
+  distanceLy: 'asc',
+  distanceLs: 'asc',
+  demand: 'desc'
+}
+
 function getStationIconName (localInfo = {}, remoteInfo = {}) {
   if (localInfo?.icon) return localInfo.icon
   const candidates = [
@@ -716,6 +764,60 @@ function StationIcon ({ icon, size = 26, color = 'var(--ghostnet-accent)' }) {
   return (
     <svg
       viewBox={viewBox}
+      focusable='false'
+      aria-hidden='true'
+      style={{ width: size, height: size, fill: color, flexShrink: 0 }}
+    >
+      {paths}
+    </svg>
+  )
+}
+
+const COMMODITY_ICON_FALLBACK = 'cargo'
+
+function getCommodityIconNameFromItem (item = {}) {
+  const parts = [item?.category, item?.group, item?.type, item?.name, item?.symbol]
+    .filter(value => typeof value === 'string' && value.trim())
+    .join(' ')
+    .toLowerCase()
+
+  if (!parts) return COMMODITY_ICON_FALLBACK
+
+  if (/(metal|alloy|ore|painite|gold|silver|platinum|palladium|bertrandite|cobalt|indite)/.test(parts)) {
+    return 'materials'
+  }
+  if (/(mineral|rock|geological|crystal|gem|jewel|opal|alexandrite|diamond)/.test(parts)) {
+    return 'materials-raw'
+  }
+  if (/(fuel|hydrogen|deuterium|tritium|oxid|propellant|power|cell|reactor|coolant)/.test(parts)) {
+    return 'fuel'
+  }
+  if (/(food|grain|fruit|tea|coffee|beer|wine|ale|meat|fish|crop|agri|agricultural|nutrition)/.test(parts)) {
+    return 'cargo-import'
+  }
+  if (/(medicine|pharma|medical|drug|stimulant|vaccine|antigen|antidote|remedy)/.test(parts)) {
+    return 'help'
+  }
+  if (/(tech|technology|computer|processor|circuit|component|sensor|relay|data|micro)/.test(parts)) {
+    return 'cogs'
+  }
+  if (/(weapon|munitions|armament|combat|defence|defense|shield|artillery|missile)/.test(parts)) {
+    return 'engineering'
+  }
+  if (/(textile|fabric|clothing|consumer|luxury|domestic|furnishing)/.test(parts)) {
+    return 'inventory'
+  }
+
+  return COMMODITY_ICON_FALLBACK
+}
+
+function CommodityIcon ({ item, size = 34, color = '#f5f1ff' }) {
+  const iconName = getCommodityIconNameFromItem(item)
+  const paths = Icons[iconName] || Icons[COMMODITY_ICON_FALLBACK]
+  if (!paths) return null
+  return (
+    <svg
+      viewBox='0 0 1000 1000'
       focusable='false'
       aria-hidden='true'
       style={{ width: size, height: size, fill: color, flexShrink: 0 }}
@@ -1314,6 +1416,14 @@ function CommodityTradePanel () {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
   const [valuation, setValuation] = useState({ results: [], metadata: { ghostnetStatus: 'idle', marketStatus: 'idle' } })
+  const [detailContext, setDetailContext] = useState(null)
+  const [detailSortField, setDetailSortField] = useState('price')
+  const [detailSortDirection, setDetailSortDirection] = useState(DEFAULT_COMMODITY_DETAIL_SORT_DIRECTION.price)
+  const commoditySelectionRef = useRef({})
+  const [activeCommoditySummary, setActiveCommoditySummary] = useState(null)
+  const factionStandings = useFactionStandings()
+
+  const detailViewActive = Boolean(detailContext?.rowKey)
 
   const cargoKey = useMemo(() => {
     if (!Array.isArray(cargo) || cargo.length === 0) return ''
@@ -1323,8 +1433,15 @@ function CommodityTradePanel () {
   }, [cargo])
 
   useEffect(() => {
+    if (detailViewActive) return
     animateTableEffect()
-  }, [cargoKey, valuation?.results?.length])
+  }, [cargoKey, valuation?.results?.length, detailViewActive])
+
+  useEffect(() => {
+    setDetailContext(null)
+    setActiveCommoditySummary(null)
+    commoditySelectionRef.current = {}
+  }, [cargoKey])
 
   useEffect(() => {
     if (!connected) return
@@ -1639,13 +1756,566 @@ function CommodityTradePanel () {
     return null
   }
 
-  const currentSystemName = currentSystem?.name || 'Unknown'
+  const getSourceLabel = useCallback(source => {
+    if (source === 'ghostnet') return 'GHOSTNET'
+    if (source === 'local-station') return 'Local Station'
+    if (source === 'local-history') return 'Local Data'
+    return ''
+  }, [])
+
+  const handleCommoditySelect = useCallback(row => {
+    if (!row || row.nonCommodity) return
+
+    const stored = commoditySelectionRef.current[row.key]
+    const defaultListing = stored?.selectedListingKey
+      ? stored.selectedListingKey
+      : (() => {
+          const preferred = getPreferredListing(row.entry?.ghostnetListings)
+          return preferred ? getListingKey(preferred) : null
+        })()
+
+    const context = {
+      rowKey: row.key,
+      selectedListingKey: defaultListing || null
+    }
+
+    commoditySelectionRef.current[row.key] = { selectedListingKey: context.selectedListingKey }
+    setDetailContext(context)
+    setActiveCommoditySummary(context)
+  }, [])
+
+  const handleCommodityKeyDown = useCallback((event, row) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      handleCommoditySelect(row)
+    }
+  }, [handleCommoditySelect])
+
+  const handleDetailClose = useCallback(() => {
+    setDetailContext(null)
+  }, [])
+
+  const handleDetailSortChange = useCallback(field => {
+    if (!field) return
+    setDetailSortField(prevField => {
+      if (prevField === field) {
+        setDetailSortDirection(prevDirection => (prevDirection === 'asc' ? 'desc' : 'asc'))
+        return prevField
+      }
+      setDetailSortDirection(DEFAULT_COMMODITY_DETAIL_SORT_DIRECTION[field] || 'asc')
+      return field
+    })
+  }, [])
+
+  const handleDetailSortKeyDown = useCallback((event, field) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      handleDetailSortChange(field)
+    }
+  }, [handleDetailSortChange])
+
+  const handleDetailListingSelect = useCallback((listing, options = {}) => {
+    if (!detailContext?.rowKey || !listing) return
+    const listingKey = listing.ghostnetListingKey || getListingKey(listing)
+    if (!listingKey) return
+
+    setDetailContext(prev => {
+      if (!prev || prev.rowKey !== detailContext.rowKey) return prev
+      if (prev.selectedListingKey === listingKey) return prev
+      return { ...prev, selectedListingKey: listingKey }
+    })
+
+    commoditySelectionRef.current[detailContext.rowKey] = { selectedListingKey: listingKey }
+
+    setActiveCommoditySummary(prev => {
+      if (options.silent) return prev
+      if (prev?.rowKey === detailContext.rowKey && prev?.selectedListingKey === listingKey) return prev
+      return { rowKey: detailContext.rowKey, selectedListingKey: listingKey }
+    })
+  }, [detailContext?.rowKey])
+
+  const handleDetailListingKeyDown = useCallback((event, listing) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      handleDetailListingSelect(listing)
+    }
+  }, [handleDetailListingSelect])
+
+  const renderDetailSortArrow = field => {
+    if (detailSortField !== field) return null
+    const arrow = detailSortDirection === 'asc' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
+    return <span style={{ color: 'var(--ghostnet-accent)', marginLeft: '0.35rem', fontSize: '0.75rem' }}>{arrow}</span>
+  }
+
+  const selectedCommodityRow = useMemo(() => {
+    if (!detailContext?.rowKey) return null
+    return rows.find(row => row.key === detailContext.rowKey) || null
+  }, [rows, detailContext?.rowKey])
+
+  const detailListings = useMemo(() => {
+    const listings = Array.isArray(selectedCommodityRow?.entry?.ghostnetListings)
+      ? selectedCommodityRow.entry.ghostnetListings.filter(entry => entry && typeof entry === 'object')
+      : []
+    if (listings.length === 0) return []
+
+    const field = detailSortField || 'price'
+    const directionFactor = detailSortDirection === 'asc' ? 1 : -1
+
+    const resolveValue = (listing, targetField) => {
+      if (!listing || typeof listing !== 'object') return null
+      switch (targetField) {
+        case 'distanceLy':
+          return Number.isFinite(listing.distanceLy) ? listing.distanceLy : null
+        case 'distanceLs':
+          return Number.isFinite(listing.distanceLs) ? listing.distanceLs : null
+        case 'demand':
+          return Number.isFinite(listing.demand) ? listing.demand : null
+        case 'price':
+        default:
+          return Number.isFinite(listing.price) ? listing.price : null
+      }
+    }
+
+    const sorted = [...listings].sort((a, b) => {
+      const aValue = resolveValue(a, field)
+      const bValue = resolveValue(b, field)
+
+      if (aValue === null && bValue === null) return 0
+      if (aValue === null) return 1 * directionFactor
+      if (bValue === null) return -1 * directionFactor
+      if (aValue === bValue) return 0
+      return (aValue < bValue ? -1 : 1) * directionFactor
+    })
+
+    const deduped = []
+    const seen = new Set()
+
+    sorted.forEach(listing => {
+      const key = getListingKey(listing) || `listing-${deduped.length}`
+      if (seen.has(key)) return
+      seen.add(key)
+      deduped.push({ ...listing, ghostnetListingKey: key })
+    })
+
+    return deduped
+  }, [selectedCommodityRow?.entry?.ghostnetListings, detailSortField, detailSortDirection])
+
+  const detailListingSignature = useMemo(() => detailListings.map(listing => listing.ghostnetListingKey).join('|'), [detailListings])
+
+  const selectedDetailListing = useMemo(() => {
+    if (!detailViewActive || detailListings.length === 0) return null
+    if (detailContext?.selectedListingKey) {
+      const match = detailListings.find(listing => listing.ghostnetListingKey === detailContext.selectedListingKey)
+      if (match) return match
+    }
+    return detailListings[0]
+  }, [detailViewActive, detailListings, detailContext?.selectedListingKey])
+
+  useEffect(() => {
+    if (!detailViewActive) return
+    if (selectedCommodityRow) return
+    setDetailContext(null)
+  }, [detailViewActive, selectedCommodityRow])
+
+  useEffect(() => {
+    if (!detailContext?.rowKey) return
+    setDetailSortField('price')
+    setDetailSortDirection(DEFAULT_COMMODITY_DETAIL_SORT_DIRECTION.price)
+  }, [detailContext?.rowKey])
+
+  useEffect(() => {
+    if (!detailViewActive) return
+    if (typeof window === 'undefined') return
+    const handler = event => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setDetailContext(null)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => {
+      window.removeEventListener('keydown', handler)
+    }
+  }, [detailViewActive])
+
+  useEffect(() => {
+    if (!detailViewActive || !detailContext?.rowKey) return
+
+    if (detailListings.length === 0) {
+      commoditySelectionRef.current[detailContext.rowKey] = { selectedListingKey: null }
+      setActiveCommoditySummary(prev => {
+        if (prev?.rowKey === detailContext.rowKey && prev?.selectedListingKey === null) return prev
+        if (prev?.rowKey !== detailContext.rowKey) return prev
+        return { rowKey: detailContext.rowKey, selectedListingKey: null }
+      })
+
+      if (detailContext?.selectedListingKey !== null) {
+        setDetailContext(prev => {
+          if (!prev || prev.rowKey !== detailContext.rowKey) return prev
+          return { ...prev, selectedListingKey: null }
+        })
+      }
+      return
+    }
+
+    const resolvedKey = selectedDetailListing?.ghostnetListingKey || detailListings[0]?.ghostnetListingKey || null
+    if (!resolvedKey) return
+
+    if (detailContext?.selectedListingKey !== resolvedKey) {
+      setDetailContext(prev => {
+        if (!prev || prev.rowKey !== detailContext.rowKey) return prev
+        return { ...prev, selectedListingKey: resolvedKey }
+      })
+      return
+    }
+
+    commoditySelectionRef.current[detailContext.rowKey] = { selectedListingKey: resolvedKey }
+    setActiveCommoditySummary(prev => {
+      if (prev?.rowKey === detailContext.rowKey && prev?.selectedListingKey === resolvedKey) return prev
+      return { rowKey: detailContext.rowKey, selectedListingKey: resolvedKey }
+    })
+  }, [detailViewActive, detailContext?.rowKey, detailContext?.selectedListingKey, detailListings, selectedDetailListing])
+
+  useEffect(() => {
+    if (!detailViewActive) return
+    return animateTableEffect()
+  }, [detailViewActive, detailListingSignature])
+
+  const activeSummaryRow = useMemo(() => {
+    if (!activeCommoditySummary?.rowKey) return null
+    return rows.find(row => row.key === activeCommoditySummary.rowKey) || null
+  }, [rows, activeCommoditySummary?.rowKey])
+
+  useEffect(() => {
+    if (!activeCommoditySummary?.rowKey) return
+    const row = rows.find(candidate => candidate.key === activeCommoditySummary.rowKey)
+    if (!row) {
+      delete commoditySelectionRef.current[activeCommoditySummary.rowKey]
+      setActiveCommoditySummary(null)
+      return
+    }
+
+    const listings = Array.isArray(row.entry?.ghostnetListings)
+      ? row.entry.ghostnetListings.filter(entry => entry && typeof entry === 'object')
+      : []
+
+    if (listings.length === 0) {
+      if (activeCommoditySummary.selectedListingKey !== null) {
+        commoditySelectionRef.current[row.key] = { selectedListingKey: null }
+        setActiveCommoditySummary({ rowKey: row.key, selectedListingKey: null })
+      }
+      return
+    }
+
+    if (activeCommoditySummary.selectedListingKey) {
+      const match = listings.find(listing => getListingKey(listing) === activeCommoditySummary.selectedListingKey)
+      if (match) return
+    }
+
+    const preferred = getPreferredListing(listings)
+    if (!preferred) return
+    const nextKey = getListingKey(preferred)
+    if (!nextKey || activeCommoditySummary.selectedListingKey === nextKey) return
+    commoditySelectionRef.current[row.key] = { selectedListingKey: nextKey }
+    setActiveCommoditySummary({ rowKey: row.key, selectedListingKey: nextKey })
+  }, [rows, activeCommoditySummary?.rowKey, activeCommoditySummary?.selectedListingKey])
+
+  const activeSummaryListing = useMemo(() => {
+    if (!activeSummaryRow) return null
+    if (!activeCommoditySummary?.selectedListingKey) return null
+    const listings = Array.isArray(activeSummaryRow.entry?.ghostnetListings)
+      ? activeSummaryRow.entry.ghostnetListings.filter(entry => entry && typeof entry === 'object')
+      : []
+    const match = listings.find(listing => getListingKey(listing) === activeCommoditySummary.selectedListingKey)
+    return match ? { ...match, ghostnetListingKey: getListingKey(match) } : null
+  }, [activeSummaryRow, activeCommoditySummary?.selectedListingKey])
+
+  const currentSystemName = useMemo(() => {
+    if (typeof currentSystem?.name !== 'string') return ''
+    const trimmed = currentSystem.name.trim()
+    return trimmed || ''
+  }, [currentSystem?.name])
+
   const cargoCount = Number(ship?.cargo?.count) || 0
   const cargoCapacity = Number(ship?.cargo?.capacity) || 0
 
   const ghostnetStatus = valuation?.metadata?.ghostnetStatus || 'idle'
   const marketStatus = valuation?.metadata?.marketStatus || 'idle'
   const historyStatus = valuation?.metadata?.historyStatus || 'idle'
+
+  const showSummaryContext = Boolean(activeSummaryRow)
+  const summaryContextViewing = Boolean(
+    showSummaryContext && detailViewActive && detailContext?.rowKey === activeSummaryRow?.key
+  )
+
+  const summaryCommodityName = showSummaryContext
+    ? (activeSummaryRow?.item?.name || activeSummaryRow?.item?.symbol || 'Unknown Commodity')
+    : ''
+  const summaryCommoditySymbol = showSummaryContext && activeSummaryRow?.item?.symbol && activeSummaryRow?.item?.symbol !== activeSummaryRow?.item?.name
+    ? activeSummaryRow.item.symbol
+    : ''
+  const summaryQuantity = showSummaryContext ? (Number(activeSummaryRow?.quantity) || 0) : 0
+  const summaryListing = showSummaryContext ? activeSummaryListing : null
+  const summaryFallbackListing = showSummaryContext ? activeSummaryRow?.entry?.ghostnet : null
+  const summaryCommodityIconName = showSummaryContext ? getCommodityIconNameFromItem(activeSummaryRow?.item) : null
+  const summaryStationIconName = showSummaryContext
+    ? getStationIconName(
+      summaryFallbackListing || activeSummaryRow?.entry?.market || {},
+      summaryListing || {}
+    )
+    : null
+  const summaryStationName = summaryListing?.stationName
+    || (typeof summaryFallbackListing?.stationName === 'string' ? summaryFallbackListing.stationName : '')
+  const summarySystemName = summaryListing?.systemName
+    || (typeof summaryFallbackListing?.systemName === 'string' ? summaryFallbackListing.systemName : '')
+  const summaryFactionName = showSummaryContext
+    ? (
+        extractFactionNameCandidate(summaryListing?.stationFaction)
+        || extractFactionNameCandidate(summaryListing?.faction)
+        || extractFactionNameCandidate(summaryListing?.controllingFaction)
+        || extractFactionNameCandidate(summaryFallbackListing?.stationFaction)
+        || extractFactionNameCandidate(summaryFallbackListing?.faction)
+        || extractFactionNameCandidate(summaryFallbackListing?.controllingFaction)
+        || extractFactionNameCandidate(activeSummaryRow?.entry?.market?.stationFaction)
+        || extractFactionNameCandidate(activeSummaryRow?.entry?.market?.faction)
+        || extractFactionNameCandidate(activeSummaryRow?.entry?.market?.controllingFaction)
+      )
+    : ''
+  const summaryFactionDisplay = summaryFactionName
+    ? getFactionStandingDisplay(summaryFactionName, factionStandings)
+    : null
+  const summaryFactionStatusLabel = summaryFactionDisplay?.statusLabel || null
+  const summaryFactionTitle = summaryFactionDisplay?.statusDescription
+  const summaryFactionClassName = summaryFactionDisplay?.className || styles.tableTextNeutral
+  const summaryFactionColor = summaryFactionDisplay?.color || 'var(--ghostnet-accent)'
+  const summaryDistanceLy = summaryListing?.distanceLyText
+    || formatSystemDistance(summaryListing?.distanceLy, '')
+    || (summaryFallbackListing ? formatSystemDistance(summaryFallbackListing.distanceLy, '--') : '--')
+  const summaryDistanceLs = summaryListing?.distanceLsText
+    || (Number.isFinite(summaryListing?.distanceLs) ? formatStationDistance(summaryListing.distanceLs) : '')
+    || (Number.isFinite(summaryFallbackListing?.distanceLs) ? formatStationDistance(summaryFallbackListing.distanceLs) : '--')
+  const summaryPriceDisplay = summaryListing
+    ? formatCredits(summaryListing.price, summaryListing.priceText || '--')
+    : (summaryFallbackListing ? formatCredits(summaryFallbackListing.price, summaryFallbackListing.priceText || '--') : '--')
+  const summaryDemandDisplay = summaryListing?.demandText
+    || (Number.isFinite(summaryListing?.demand) ? summaryListing.demand.toLocaleString() : '')
+    || (typeof summaryFallbackListing?.demand === 'number' ? summaryFallbackListing.demand.toLocaleString() : '')
+  const summaryUpdatedDisplay = summaryListing?.updatedText
+    || (summaryListing?.updatedAt ? formatRelativeTime(summaryListing.updatedAt) : '')
+    || (summaryFallbackListing?.updatedText)
+    || (summaryFallbackListing?.updatedAt ? formatRelativeTime(summaryFallbackListing.updatedAt) : '--')
+  const summaryQuantityDisplay = summaryQuantity > 0
+    ? `${summaryQuantity.toLocaleString()} units aboard`
+    : '0 units aboard'
+
+  const renderCommodityDetailView = () => {
+    if (!selectedCommodityRow) {
+      return (
+        <div className={styles.routeDetailContainer}>
+          <div className={styles.routeDetailHeader}>
+            <button type='button' className={styles.routeDetailBackButton} onClick={handleDetailClose}>
+              {String.fromCharCode(0x2190)} Back to Commodities
+            </button>
+            <div className={styles.routeDetailHeading}>
+              <span className={styles.routeDetailLabel}>Commodity Intel</span>
+              <h3 className={styles.routeDetailTitle}>No Commodity Selected</h3>
+              <p className={styles.routeDetailSubhead}>Return to the manifest and choose a commodity to review intercepted listings.</p>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    const {
+      item,
+      quantity,
+      entry,
+      ghostnetPrice,
+      ghostnetValue,
+      localValue
+    } = selectedCommodityRow
+
+    const commodityName = item?.name || item?.symbol || 'Unknown Commodity'
+    const commoditySymbol = item?.symbol && item?.symbol !== item?.name ? item.symbol : ''
+    const quantityNumber = Number(quantity) || 0
+    const targetListing = selectedDetailListing || null
+    const targetUpdatedDisplay = targetListing?.updatedText
+      || (targetListing?.updatedAt ? formatRelativeTime(targetListing.updatedAt) : '--')
+
+    const resolvedGhostnetPrice = typeof targetListing?.price === 'number'
+      ? targetListing.price
+      : (typeof ghostnetPrice === 'number' ? ghostnetPrice : null)
+
+    const ghostnetUpdatedDisplay = targetUpdatedDisplay || entry?.ghostnet?.updatedText
+      || (entry?.ghostnet?.updatedAt ? formatRelativeTime(entry.ghostnet.updatedAt) : '--')
+    const ghostnetError = entry?.errors?.ghostnet
+
+    const resolvedGhostnetValue = typeof resolvedGhostnetPrice === 'number'
+      ? resolvedGhostnetPrice * quantityNumber
+      : ghostnetValue
+
+    const listingsCountDisplay = detailListings.length > 0
+      ? `${detailListings.length.toLocaleString()} station${detailListings.length === 1 ? '' : 's'}`
+      : 'No listings'
+
+    return (
+      <div className={styles.routeDetailContainer}>
+        {ghostnetError ? (
+          <div className={styles.notice} style={{ marginTop: '-0.5rem' }}>{ghostnetError}</div>
+        ) : null}
+
+        <div className={styles.dataTableContainer}>
+          {detailListings.length > 0 ? (
+            <table className={`${styles.dataTable} ${styles.dataTableFixed}`}>
+              <colgroup>
+                <col style={{ width: '24%' }} />
+                <col style={{ width: '20%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '8%' }} />
+              </colgroup>
+              <thead className={styles.commodityDetailTableHead}>
+                <tr className={styles.commodityDetailHeaderRow}>
+                  <th colSpan='8' className={styles.commodityDetailHeaderCell}>
+                    <div className={styles.commodityDetailHeader}>
+                      <button type='button' className={styles.routeDetailBackButton} onClick={handleDetailClose}>
+                        {String.fromCharCode(0x2190)} Back to Commodities
+                      </button>
+                      <div className={styles.commodityDetailHeading}>
+                        <span className={styles.commodityDetailLabel}>Commodity Intel</span>
+                        <div className={styles.commodityDetailTitle}>
+                          {commodityName}
+                          {commoditySymbol ? <span className={styles.commodityDetailSymbol}>({commoditySymbol})</span> : null}
+                        </div>
+                      </div>
+                      <div className={styles.commodityDetailMeta}>
+                        <div className={styles.commodityDetailMetaItem}>
+                          <span className={styles.commodityDetailMetaLabel}>GHOSTNET Update</span>
+                          <span className={styles.commodityDetailMetaValue}>{ghostnetUpdatedDisplay || '--'}</span>
+                        </div>
+                        <div className={styles.commodityDetailMetaItem}>
+                          <span className={styles.commodityDetailMetaLabel}>Listings</span>
+                          <span className={styles.commodityDetailMetaValue}>{listingsCountDisplay}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                </tr>
+                <tr className={styles.commodityDetailColumnsRow}>
+                  <th>Station</th>
+                  <th>System</th>
+                  <th>Pad</th>
+                  <th
+                    className={`text-right ${styles.tableHeaderInteractive}`}
+                    onClick={() => handleDetailSortChange('distanceLy')}
+                    onKeyDown={event => handleDetailSortKeyDown(event, 'distanceLy')}
+                    tabIndex={0}
+                    aria-sort={detailSortField === 'distanceLy' ? (detailSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  >
+                    Distance (Ly)
+                    {renderDetailSortArrow('distanceLy')}
+                  </th>
+                  <th
+                    className={`text-right ${styles.tableHeaderInteractive}`}
+                    onClick={() => handleDetailSortChange('distanceLs')}
+                    onKeyDown={event => handleDetailSortKeyDown(event, 'distanceLs')}
+                    tabIndex={0}
+                    aria-sort={detailSortField === 'distanceLs' ? (detailSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  >
+                    Distance (Ls)
+                    {renderDetailSortArrow('distanceLs')}
+                  </th>
+                  <th
+                    className={`text-right ${styles.tableHeaderInteractive}`}
+                    onClick={() => handleDetailSortChange('demand')}
+                    onKeyDown={event => handleDetailSortKeyDown(event, 'demand')}
+                    tabIndex={0}
+                    aria-sort={detailSortField === 'demand' ? (detailSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  >
+                    Demand
+                    {renderDetailSortArrow('demand')}
+                  </th>
+                  <th
+                    className={`text-right ${styles.tableHeaderInteractive}`}
+                    onClick={() => handleDetailSortChange('price')}
+                    onKeyDown={event => handleDetailSortKeyDown(event, 'price')}
+                    tabIndex={0}
+                    aria-sort={detailSortField === 'price' ? (detailSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  >
+                    Price
+                    {renderDetailSortArrow('price')}
+                  </th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detailListings.map((listing, index) => {
+                  const stationName = listing?.stationName || 'Unknown Station'
+                  const systemName = listing?.systemName || 'Unknown System'
+                  const stationLink = listing?.stationUrl
+                  const distanceLyDisplay = listing?.distanceLyText || formatSystemDistance(listing?.distanceLy, '--')
+                  const distanceLsDisplay = listing?.distanceLsText
+                    || (Number.isFinite(listing?.distanceLs) ? formatStationDistance(listing.distanceLs) : '--')
+                  const demandDisplay = listing?.demandText
+                    || (Number.isFinite(listing?.demand) ? listing.demand.toLocaleString() : '--')
+                  const priceDisplay = formatCredits(listing?.price, listing?.priceText || '--')
+                  const updatedDisplay = listing?.updatedText
+                    || (listing?.updatedAt ? formatRelativeTime(listing.updatedAt) : '--')
+                  const listingKey = listing.ghostnetListingKey || getListingKey(listing) || `${stationName}-${systemName}-${index}`
+                  const isSelected = detailContext?.selectedListingKey
+                    ? detailContext.selectedListingKey === listingKey
+                    : (selectedDetailListing?.ghostnetListingKey === listingKey)
+                  const rowClassName = `${styles.tableRowSelectable}${isSelected ? ` ${styles.tableRowSelected}` : ''}`
+
+                  return (
+                    <tr
+                      key={listingKey}
+                      className={rowClassName}
+                      data-ghostnet-table-row='pending'
+                      onClick={() => handleDetailListingSelect(listing)}
+                      onKeyDown={event => handleDetailListingKeyDown(event, listing)}
+                      tabIndex={0}
+                      role='button'
+                      aria-pressed={isSelected}
+                      aria-label={`Set target station to ${stationName} in ${systemName}`}
+                    >
+                      <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                        {stationLink ? (
+                          <a href={stationLink} target='_blank' rel='noreferrer noopener' className={styles.routeDetailLink}>
+                            {stationName}
+                          </a>
+                        ) : (
+                          <span>{stationName}</span>
+                        )}
+                      </td>
+                      <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>{systemName}</td>
+                      <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>{listing?.pad || '--'}</td>
+                      <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceLyDisplay || '--'}</td>
+                      <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceLsDisplay || '--'}</td>
+                      <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{demandDisplay || '--'}</td>
+                      <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{priceDisplay}</td>
+                      <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>{updatedDisplay || '--'}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className={styles.tableEmptyState}>No intercepted listings available for this commodity.</div>
+          )}
+        </div>
+
+        {(typeof resolvedGhostnetValue === 'number' && typeof localValue === 'number' && Math.abs(resolvedGhostnetValue - localValue) > 0.01) ? (
+          <div className={styles.inlineNoticeMuted}>
+            Value comparison · GHOSTNET {formatCredits(resolvedGhostnetValue, '--')} · Local {formatCredits(localValue, '--')}
+          </div>
+        ) : null}
+      </div>
+    )
+  }
 
   return (
     <section className={styles.tableSection}>
@@ -1680,6 +2350,87 @@ function CommodityTradePanel () {
           </div>
         </div>
 
+        {showSummaryContext && (
+          <div className={styles.detailContextSummary}>
+            <div className={styles.detailContextSummaryHeader}>
+              <div className={styles.detailContextSummaryTitleRow}>
+                {summaryCommodityIconName ? (
+                  <div className={styles.detailContextSummaryIcon} aria-hidden='true'>
+                    <CommodityIcon item={activeSummaryRow?.item} />
+                  </div>
+                ) : null}
+                <div className={styles.detailContextSummaryHeadingText}>
+                  <span className={styles.detailContextSummaryLabel}>Commodity in focus</span>
+                  <div className={styles.detailContextSummaryTitle}>
+                    {summaryCommodityName}
+                    {summaryCommoditySymbol ? <span className={styles.detailContextSummarySymbol}>({summaryCommoditySymbol})</span> : null}
+                  </div>
+                  <span className={styles.detailContextSummaryMeta}>{summaryQuantityDisplay}</span>
+                </div>
+              </div>
+              <button
+                type='button'
+                className={styles.detailContextAction}
+                onClick={() => {
+                  if (!summaryContextViewing && activeSummaryRow) {
+                    handleCommoditySelect(activeSummaryRow)
+                  }
+                }}
+                disabled={summaryContextViewing}
+                aria-disabled={summaryContextViewing}
+              >
+                {summaryContextViewing ? 'Viewing Intel' : 'Resume Intel'}
+              </button>
+            </div>
+            <div className={styles.detailContextSummaryGrid}>
+              <div className={styles.detailContextSummaryItem}>
+                <span className={styles.detailContextSummaryItemLabel}>Target Station</span>
+                {summaryStationName ? (
+                  <div className={styles.detailContextSummaryStation}>
+                    {summaryStationIconName ? (
+                      <div className={styles.detailContextSummaryStationIcon} aria-hidden='true'>
+                        <StationIcon icon={summaryStationIconName} size={32} color={summaryFactionColor} />
+                      </div>
+                    ) : null}
+                    <div className={styles.detailContextSummaryStationInfo}>
+                      <span className={styles.detailContextSummaryItemValue}>{summaryStationName}</span>
+                      <span className={styles.detailContextSummaryItemMeta}>{summarySystemName || 'Unknown system'}</span>
+                      {summaryFactionName ? (
+                        <span className={styles.detailContextSummaryFaction} title={summaryFactionTitle}>
+                          Controlled by{' '}
+                          <span className={summaryFactionClassName}>{summaryFactionName}</span>
+                          {summaryFactionStatusLabel ? (
+                            <span className={styles.detailContextSummaryFactionStatus}> · {summaryFactionStatusLabel}</span>
+                          ) : null}
+                        </span>
+                      ) : (
+                        <span className={styles.detailContextSummaryItemMeta}>Faction unknown</span>
+                      )}
+                      <span className={styles.detailContextSummaryItemMeta}>Updated {summaryUpdatedDisplay || '--'}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <span className={styles.detailContextSummaryItemMeta}>No GHOSTNET station selected yet.</span>
+                )}
+              </div>
+              <div className={styles.detailContextSummaryItem}>
+                <span className={styles.detailContextSummaryItemLabel}>Sell Price</span>
+                <span className={styles.detailContextSummaryItemValue}>{summaryPriceDisplay}</span>
+                <span className={styles.detailContextSummaryItemMeta}>
+                  {summaryDemandDisplay ? `Demand ${summaryDemandDisplay}` : 'No demand data'}
+                </span>
+              </div>
+              <div className={styles.detailContextSummaryItem}>
+                <span className={styles.detailContextSummaryItemLabel}>Distance</span>
+                <span className={styles.detailContextSummaryItemValue}>{summaryDistanceLy || '--'}</span>
+                <span className={styles.detailContextSummaryItemMeta}>
+                  {summaryDistanceLs && summaryDistanceLs !== '--' ? summaryDistanceLs : 'Star distance unavailable'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {(ghostnetStatus === 'error' || ghostnetStatus === 'partial') && (
           <div className={styles.notice}>
             {ghostnetStatus === 'error'
@@ -1713,13 +2464,20 @@ function CommodityTradePanel () {
         )}
       </div>
 
-      <div className='ghostnet-panel-table'>
-        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-          {renderStatusBanner()}
+      {detailViewActive ? (
+        <div className='ghostnet-panel-table'>
+          <div className={`scrollable ${styles.routeDetailScrollArea}`} style={TABLE_SCROLL_AREA_STYLE}>
+            {renderCommodityDetailView()}
+          </div>
+        </div>
+      ) : (
+        <div className='ghostnet-panel-table'>
+          <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
+            {renderStatusBanner()}
 
-          {status === 'ready' && hasCargo && hasDisplayableRows && (
-            <div className={styles.dataTableContainer}>
-              <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
+            {status === 'ready' && hasCargo && hasDisplayableRows && (
+              <div className={styles.dataTableContainer}>
+                <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
                 <colgroup>
                   <col style={{ width: '32%' }} />
                   <col style={{ width: '8%' }} />
@@ -1796,8 +2554,19 @@ function CommodityTradePanel () {
 
                     const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
 
+                    const rowLabel = item?.name || item?.symbol || 'Unknown commodity'
+
                     return (
-                      <tr key={`${row.key}-${index}`} data-ghostnet-table-row='pending'>
+                      <tr
+                        key={`${row.key}-${index}`}
+                        data-ghostnet-table-row='pending'
+                        className={styles.tableRowInteractive}
+                        onClick={() => handleCommoditySelect(row)}
+                        onKeyDown={event => handleCommodityKeyDown(event, row)}
+                        role='button'
+                        tabIndex={0}
+                        aria-label={`View commodity intel for ${rowLabel}`}
+                      >
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                           <div>{item?.name || item?.symbol || 'Unknown'}</div>
                           {item?.symbol && item?.symbol !== item?.name && (
@@ -1865,11 +2634,12 @@ function CommodityTradePanel () {
                     )
                   })}
                 </tbody>
-              </table>
-            </div>
-          )}
+                </table>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={styles.tableFootnote}>
         In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
