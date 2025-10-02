@@ -3110,18 +3110,42 @@ function GhostnetTerminalOverlay () {
   const [offset, setOffset] = useState(0)
 
   const terminalLines = useMemo(() => ([
-    { type: 'command', label: 'ghostnet@ship', text: 'uplink --channel "VEGA-9" --handshake mesh://relay-04' },
+    { type: 'command', label: 'ghostnet@ship', text: 'uplink --channel "VEGA-9" --handshake mesh://relay-04 --entropy 512' },
     { type: 'response', label: 'mesh', text: 'Handshake acknowledged · encryption lattice stable · latency 42ms' },
     { type: 'command', label: 'ghostnet@ship', text: 'stream manifest ping://drydock --burst 32kb --checksum' },
-    { type: 'response', label: 'ship', text: 'Payload queued · 12 telemetry frames buffered for dispatch' },
-    { type: 'command', label: 'ghostnet@ship', text: 'listen mesh://syndicate.radar --filter "convoy:aurora"' },
+    { type: 'response', label: 'telemetry', text: 'Payload queued · 12 telemetry frames buffered for dispatch' },
+    { type: 'command', label: 'ghostnet@ship', text: 'listen mesh://syndicate.radar --filter "convoy:aurora" --prism triad' },
     { type: 'response', label: 'mesh', text: 'Intercepted 3 convoy packets · decrypting spectral bands' },
     { type: 'response', label: 'mesh', text: 'Return vector mapped · ghost corridor aligned to Perseus Reach' },
-    { type: 'command', label: 'ghostnet@ship', text: 'send burst://outpost-ix --file navmap.dat --repeat 2' },
+    { type: 'command', label: 'ghostnet@ship', text: 'send burst://outpost-ix --file navmap.dat --repeat 2 --compress delta' },
     { type: 'response', label: 'ship', text: 'Uplink thrusters trimming · data stream locked at 8.4 kb/s' },
     { type: 'response', label: 'mesh', text: 'Outpost IX confirms receipt · requesting follow-on diagnostics' },
     { type: 'command', label: 'ghostnet@ship', text: 'monitor relay://ghostnet.delta --mode passive --squelch 3' },
-    { type: 'response', label: 'mesh', text: 'Passive net cast · spectral noise floor nominal' }
+    { type: 'response', label: 'mesh', text: 'Passive net cast · spectral noise floor nominal' },
+    { type: 'command', label: 'ghostnet@ship', text: 'trace flux://nx-113 --return-hop 5 --mask "ghost-netting"' },
+    { type: 'response', label: 'analysis', text: 'Foreign hash mapped to rogue relay NX-113 · patching firewall weaves' },
+    { type: 'alert', label: '!!!', text: 'ANOMOLY DETECTED - INTERCEPTING FOREIGN SIGNAL' },
+    { type: 'cipher', label: 'cipher', text: '▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓' },
+    { type: 'cipher', label: 'cipher', text: '{▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓' },
+    { type: 'decrypt', label: 'mesh', text: '{"signal":"VX-77","vector":[▓▓▓▓▓▓▓▓▓▓▓▓▓▓],"payload":▓▓▓}' },
+    { type: 'decrypt', label: 'mesh', text: '{"signal":"VX-77","vector":[-0.72,1.12,0.04],"payload":{"keys":["Φ-3","KAPPA"],"seed":917402}}' },
+    { type: 'response', label: 'mesh', text: 'Anomaly quarantined · redirecting foreign signal residue into sandbox' },
+    { type: 'command', label: 'ghostnet@ship', text: 'capture relay://buoy.kite --mode spectral --spread 512khz' },
+    { type: 'response', label: 'telemetry', text: 'Spectral sweep normalized · 42 spikes flagged for review' },
+    { type: 'binary', label: 'payload', text: '01100110 01110010 01100001 01100011 01110100 01100001 01101100' },
+    { type: 'command', label: 'ghostnet@ship', text: 'open packet://perseus/cache.xml --decrypt --channel dusk' },
+    { type: 'cipher', label: 'cipher', text: '<▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒>' },
+    { type: 'decrypt', label: 'mesh', text: '<cache><node id="dusk"><route>β-17→γ-02</route><ttl>04:22</ttl></node></cache>' },
+    { type: 'command', label: 'ghostnet@ship', text: 'queue datagram --body @cargo-manifest.json --burst-mode scatter' },
+    { type: 'cipher', label: 'cipher', text: '▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓' },
+    { type: 'decrypt', label: 'ship', text: '{"manifest":["meta-alloys","ancient-relay-shards","quantum-lattice"],"eta":"04:19:08"}' },
+    { type: 'response', label: 'mesh', text: 'Broadcast complete · watchers asleep · proceed unseen' },
+    { type: 'command', label: 'ghostnet@ship', text: 'seed beacon://echo-nine --prompt "signal bloom" --variance 0.012' },
+    { type: 'response', label: 'mesh', text: 'Beacon echo returns · coherence 98.6% · drift compensated' },
+    { type: 'command', label: 'ghostnet@ship', text: 'siphon datacube://vault.theta --offset 8441 --chunks 3' },
+    { type: 'cipher', label: 'cipher', text: '█▓▒░█▒░▓▒░█▒░▓▒░█▒░▓▒░█▒░▓▒░█▒░▓▒░' },
+    { type: 'decrypt', label: 'mesh', text: '<log entry="7772">Δwave@841Hz;phase-shift=0.14π;auth=ghostnet</log>' },
+    { type: 'response', label: 'mesh', text: 'Archive sync complete · security halo steady at 99%' }
   ]), [])
 
   useEffect(() => {
@@ -3168,14 +3192,30 @@ function GhostnetTerminalOverlay () {
         </div>
         <div className={styles.terminalBody}>
           <ul className={styles.terminalFeed}>
-            {visibleLines.map(line => (
-              <li key={line.id} className={styles.terminalLine}>
-                <span className={`${styles.terminalPrompt} ${line.type === 'command' ? styles.terminalPromptCommand : styles.terminalPromptResponse}`}>
-                  {line.label}
-                </span>
-                <span className={styles.terminalText}>{line.text}</span>
-              </li>
-            ))}
+            {visibleLines.map(line => {
+              const promptClassNames = [styles.terminalPrompt]
+              if (line.type === 'command') promptClassNames.push(styles.terminalPromptCommand)
+              else if (line.type === 'response') promptClassNames.push(styles.terminalPromptResponse)
+              else if (line.type === 'alert') promptClassNames.push(styles.terminalPromptAlert)
+              else if (line.type === 'cipher') promptClassNames.push(styles.terminalPromptCipher)
+              else if (line.type === 'binary') promptClassNames.push(styles.terminalPromptBinary)
+              else if (line.type === 'decrypt') promptClassNames.push(styles.terminalPromptDecrypt)
+
+              const textClassNames = [styles.terminalText]
+              if (line.type === 'alert') textClassNames.push(styles.terminalTextAlert)
+              if (line.type === 'cipher') textClassNames.push(styles.terminalTextCipher)
+              if (line.type === 'binary') textClassNames.push(styles.terminalTextBinary)
+              if (line.type === 'decrypt') textClassNames.push(styles.terminalTextDecrypt)
+
+              return (
+                <li key={line.id} className={styles.terminalLine}>
+                  <span className={promptClassNames.join(' ')}>
+                    {line.label}
+                  </span>
+                  <span className={textClassNames.join(' ')}>{line.text}</span>
+                </li>
+              )
+            })}
           </ul>
         </div>
       </div>

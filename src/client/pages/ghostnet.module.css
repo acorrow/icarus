@@ -332,8 +332,43 @@
   color: rgba(140, 92, 255, 0.75);
 }
 
+.terminalPromptAlert {
+  color: #ff5fc1;
+}
+
+.terminalPromptCipher {
+  color: rgba(245, 241, 255, 0.56);
+}
+
+.terminalPromptBinary {
+  color: #29f3c3;
+}
+
+.terminalPromptDecrypt {
+  color: rgba(140, 92, 255, 0.95);
+}
+
 .terminalText {
   color: rgba(245, 241, 255, 0.82);
+}
+
+.terminalTextAlert {
+  color: #ff5fc1;
+  text-shadow: 0 0 12px rgba(255, 95, 193, 0.58);
+}
+
+.terminalTextCipher {
+  color: rgba(245, 241, 255, 0.54);
+  letter-spacing: 0.18em;
+}
+
+.terminalTextBinary {
+  color: rgba(41, 243, 195, 0.92);
+  text-shadow: 0 0 10px rgba(41, 243, 195, 0.55);
+}
+
+.terminalTextDecrypt {
+  color: rgba(245, 241, 255, 0.95);
 }
 
 @keyframes terminalLineReveal {
