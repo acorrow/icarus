@@ -16,6 +16,7 @@ const NAVIGATION_EXCLUSION_SELECTOR = '#primaryNavigation'
 const FORCED_FADE_CLEANUP_DELAY = 720
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
 const MAX_CHARACTER_ANIMATIONS = 3200
+const MIN_TOP_LEVEL_GROUPS = 5
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
@@ -399,6 +400,107 @@ function shuffle (array) {
   return array
 }
 
+function chooseRepresentative (elements, used) {
+  if (!Array.isArray(elements) || elements.length === 0) {
+    return null
+  }
+
+  for (const element of elements) {
+    if (!used.has(element)) {
+      used.add(element)
+      return element
+    }
+  }
+
+  const fallback = elements[0]
+  if (fallback) {
+    used.add(fallback)
+  }
+  return fallback || null
+}
+
+function ensureTopLevelGroups (anchorGroups, minimumCount) {
+  const result = anchorGroups
+    .map(({ anchor, childGroups }) => ({
+      representative: anchor,
+      childGroups: childGroups.map((members) => members.slice()).filter((members) => members.length > 0)
+    }))
+    .filter((group) => group.childGroups.length > 0)
+
+  if (result.length === 0) {
+    return []
+  }
+
+  const usedRepresentatives = new Set(result.map((group) => group.representative).filter(Boolean))
+
+  const normalizeRepresentative = (group) => {
+    const flattened = group.childGroups.flat()
+    if (flattened.length === 0) {
+      group.representative = null
+      return
+    }
+    if (!flattened.includes(group.representative)) {
+      const replacement = chooseRepresentative(flattened, usedRepresentatives)
+      if (replacement) {
+        group.representative = replacement
+      }
+    }
+  }
+
+  const detachChildGroup = (donor, childGroup) => {
+    const clone = childGroup.slice()
+    const representative = chooseRepresentative(clone, usedRepresentatives)
+    return {
+      representative,
+      childGroups: [clone]
+    }
+  }
+
+  while (result.length < minimumCount) {
+    let donorIndex = -1
+    let donorChildIndex = -1
+    let largestSize = 0
+
+    result.forEach((group, groupIndex) => {
+      group.childGroups.forEach((childGroup, childIndex) => {
+        if (childGroup.length > largestSize) {
+          largestSize = childGroup.length
+          donorIndex = groupIndex
+          donorChildIndex = childIndex
+        }
+      })
+    })
+
+    if (donorIndex === -1 || donorChildIndex === -1 || largestSize <= 1) {
+      break
+    }
+
+    const donor = result[donorIndex]
+    const childGroup = donor.childGroups[donorChildIndex]
+
+    if (donor.childGroups.length > 1) {
+      donor.childGroups.splice(donorChildIndex, 1)
+      result.push(detachChildGroup(donor, childGroup))
+    } else {
+      const randomized = shuffle(childGroup.slice())
+      const splitPoint = Math.ceil(randomized.length / 2)
+      const firstHalf = randomized.slice(0, splitPoint)
+      const secondHalf = randomized.slice(splitPoint)
+
+      if (secondHalf.length === 0) {
+        break
+      }
+
+      donor.childGroups[0] = firstHalf
+      result.push(detachChildGroup(donor, secondHalf))
+    }
+
+    normalizeRepresentative(donor)
+  }
+
+  return result
+}
+
 function partitionGroupMembers (anchor, membersSet) {
   const members = Array.from(membersSet).filter(Boolean)
   if (members.length === 0) {
@@ -442,7 +544,7 @@ function buildAssimilationPlan () {
   const root = document.querySelector('.layout__main') || document.body
 
   if (!root) {
-    return { root: null, groups: [], targets: [] }
+    return { root: null, topLevelGroups: [], targets: [] }
   }
 
   const eligibleElements = Array.from(root.querySelectorAll('*')).filter((element) => isEligibleTarget(element))
@@ -452,7 +554,7 @@ function buildAssimilationPlan () {
   }
 
   if (eligibleElements.length === 0) {
-    return { root, groups: [], targets: [] }
+    return { root, topLevelGroups: [], targets: [] }
   }
 
   const threshold = getLowerHalfThreshold(root)
@@ -472,10 +574,35 @@ function buildAssimilationPlan () {
     })
 
   const randomizedAnchors = shuffle(Array.from(groupMap.entries()))
-  const groups = shuffle(randomizedAnchors.flatMap(([anchor, members]) => partitionGroupMembers(anchor, members)))
-  const targets = Array.from(new Set(groups.flat()))
+  const anchorGroups = randomizedAnchors.map(([anchor, members]) => ({
+    anchor,
+    childGroups: partitionGroupMembers(anchor, members)
+  }))
 
-  return { root, groups, targets }
+  let topLevelGroups = ensureTopLevelGroups(anchorGroups, MIN_TOP_LEVEL_GROUPS)
+
+  topLevelGroups = topLevelGroups
+    .map((group) => ({
+      representative: group.representative,
+      childGroups: group.childGroups.filter((child) => Array.isArray(child) && child.length > 0)
+    }))
+    .filter((group) => group.childGroups.length > 0)
+
+  if (topLevelGroups.length === 0) {
+    return { root, topLevelGroups: [], targets: [] }
+  }
+
+  const targetsSet = new Set()
+  topLevelGroups.forEach((group) => {
+    group.childGroups.forEach((child) => {
+      child.forEach((element) => targetsSet.add(element))
+    })
+    if (group.representative) {
+      targetsSet.add(group.representative)
+    }
+  })
+
+  return { root, topLevelGroups, targets: Array.from(targetsSet) }
 }
 
 function upgradeElement (element, baseDelay) {
@@ -552,22 +679,41 @@ function upgradeElement (element, baseDelay) {
 }
 
 function beginAssimilationEffect () {
-  const { groups, targets } = buildAssimilationPlan()
+  const { topLevelGroups, targets } = buildAssimilationPlan()
   assimilationStartTime = performance.now()
   document.body.classList.add('ghostnet-assimilation-mode')
   showAssimilationOverlay()
 
-  if (groups.length > 0) {
-    const delayStep = Math.min(320, effectDurationMs / Math.max(1, groups.length))
+  if (topLevelGroups.length > 0) {
     const scheduler = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
       ? window.requestAnimationFrame.bind(window)
       : (callback) => window.setTimeout(callback, 16)
 
     scheduler(() => {
-      groups.forEach((group, index) => {
-        const baseDelay = index * delayStep
-        group.forEach((element) => {
-          upgradeElement(element, baseDelay)
+      const topLevelDelayStep = topLevelGroups.length > 0
+        ? Math.min(420, effectDurationMs / Math.max(1, topLevelGroups.length))
+        : 0
+
+      topLevelGroups.forEach((group, groupIndex) => {
+        const baseDelay = groupIndex * topLevelDelayStep
+        const nestedGroups = Array.isArray(group.childGroups) ? group.childGroups : []
+
+        if (nestedGroups.length === 0) {
+          if (group.representative) {
+            upgradeElement(group.representative, baseDelay)
+          }
+          return
+        }
+
+        const nestedDelayStep = nestedGroups.length > 1
+          ? Math.min(260, topLevelDelayStep / nestedGroups.length)
+          : 0
+
+        nestedGroups.forEach((childGroup, childIndex) => {
+          const childDelay = baseDelay + (childIndex * nestedDelayStep)
+          childGroup.forEach((element) => {
+            upgradeElement(element, childDelay)
+          })
         })
       })
     })
