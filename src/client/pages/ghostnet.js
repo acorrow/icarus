@@ -695,6 +695,13 @@ const DEFAULT_SORT_DIRECTION = {
   distance: 'asc'
 }
 
+const DEFAULT_COMMODITY_DETAIL_SORT_DIRECTION = {
+  price: 'desc',
+  distanceLy: 'asc',
+  distanceLs: 'asc',
+  demand: 'desc'
+}
+
 function getStationIconName (localInfo = {}, remoteInfo = {}) {
   if (localInfo?.icon) return localInfo.icon
   const candidates = [
@@ -1314,6 +1321,11 @@ function CommodityTradePanel () {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
   const [valuation, setValuation] = useState({ results: [], metadata: { ghostnetStatus: 'idle', marketStatus: 'idle' } })
+  const [detailContext, setDetailContext] = useState(null)
+  const [detailSortField, setDetailSortField] = useState('price')
+  const [detailSortDirection, setDetailSortDirection] = useState(DEFAULT_COMMODITY_DETAIL_SORT_DIRECTION.price)
+
+  const detailViewActive = Boolean(detailContext?.rowKey)
 
   const cargoKey = useMemo(() => {
     if (!Array.isArray(cargo) || cargo.length === 0) return ''
@@ -1323,8 +1335,13 @@ function CommodityTradePanel () {
   }, [cargo])
 
   useEffect(() => {
+    if (detailViewActive) return
     animateTableEffect()
-  }, [cargoKey, valuation?.results?.length])
+  }, [cargoKey, valuation?.results?.length, detailViewActive])
+
+  useEffect(() => {
+    setDetailContext(prev => (prev ? null : prev))
+  }, [cargoKey])
 
   useEffect(() => {
     if (!connected) return
@@ -1639,13 +1656,374 @@ function CommodityTradePanel () {
     return null
   }
 
-  const currentSystemName = currentSystem?.name || 'Unknown'
+  const getSourceLabel = useCallback(source => {
+    if (source === 'ghostnet') return 'GHOSTNET'
+    if (source === 'local-station') return 'Local Station'
+    if (source === 'local-history') return 'Local Data'
+    return ''
+  }, [])
+
+  const handleCommoditySelect = useCallback(row => {
+    if (!row || row.nonCommodity) return
+    setDetailContext({ rowKey: row.key })
+  }, [])
+
+  const handleCommodityKeyDown = useCallback((event, row) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      handleCommoditySelect(row)
+    }
+  }, [handleCommoditySelect])
+
+  const handleDetailClose = useCallback(() => {
+    setDetailContext(null)
+  }, [])
+
+  const handleDetailSortChange = useCallback(field => {
+    if (!field) return
+    setDetailSortField(prevField => {
+      if (prevField === field) {
+        setDetailSortDirection(prevDirection => (prevDirection === 'asc' ? 'desc' : 'asc'))
+        return prevField
+      }
+      setDetailSortDirection(DEFAULT_COMMODITY_DETAIL_SORT_DIRECTION[field] || 'asc')
+      return field
+    })
+  }, [])
+
+  const handleDetailSortKeyDown = useCallback((event, field) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      handleDetailSortChange(field)
+    }
+  }, [handleDetailSortChange])
+
+  const renderDetailSortArrow = field => {
+    if (detailSortField !== field) return null
+    const arrow = detailSortDirection === 'asc' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
+    return <span style={{ color: 'var(--ghostnet-accent)', marginLeft: '0.35rem', fontSize: '0.75rem' }}>{arrow}</span>
+  }
+
+  const selectedCommodityRow = useMemo(() => {
+    if (!detailContext?.rowKey) return null
+    return rows.find(row => row.key === detailContext.rowKey) || null
+  }, [rows, detailContext?.rowKey])
+
+  const detailListings = useMemo(() => {
+    const listings = Array.isArray(selectedCommodityRow?.entry?.ghostnetListings)
+      ? [...selectedCommodityRow.entry.ghostnetListings]
+      : []
+    if (listings.length === 0) return listings
+
+    const field = detailSortField || 'price'
+    const directionFactor = detailSortDirection === 'asc' ? 1 : -1
+
+    const resolveValue = (listing, targetField) => {
+      if (!listing || typeof listing !== 'object') return null
+      switch (targetField) {
+        case 'distanceLy':
+          return Number.isFinite(listing.distanceLy) ? listing.distanceLy : null
+        case 'distanceLs':
+          return Number.isFinite(listing.distanceLs) ? listing.distanceLs : null
+        case 'demand':
+          return Number.isFinite(listing.demand) ? listing.demand : null
+        case 'price':
+        default:
+          return Number.isFinite(listing.price) ? listing.price : null
+      }
+    }
+
+    return listings.sort((a, b) => {
+      const aValue = resolveValue(a, field)
+      const bValue = resolveValue(b, field)
+
+      if (aValue === null && bValue === null) return 0
+      if (aValue === null) return 1 * directionFactor
+      if (bValue === null) return -1 * directionFactor
+      if (aValue === bValue) return 0
+      return (aValue < bValue ? -1 : 1) * directionFactor
+    })
+  }, [selectedCommodityRow?.entry?.ghostnetListings, detailSortField, detailSortDirection])
+
+  useEffect(() => {
+    if (!detailViewActive) return
+    if (selectedCommodityRow) return
+    setDetailContext(null)
+  }, [detailViewActive, selectedCommodityRow])
+
+  useEffect(() => {
+    if (!detailContext?.rowKey) return
+    setDetailSortField('price')
+    setDetailSortDirection(DEFAULT_COMMODITY_DETAIL_SORT_DIRECTION.price)
+  }, [detailContext?.rowKey])
+
+  useEffect(() => {
+    if (!detailViewActive) return
+    if (typeof window === 'undefined') return
+    const handler = event => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setDetailContext(null)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => {
+      window.removeEventListener('keydown', handler)
+    }
+  }, [detailViewActive])
+
+  const currentSystemName = useMemo(() => {
+    if (typeof currentSystem?.name !== 'string') return ''
+    const trimmed = currentSystem.name.trim()
+    return trimmed || ''
+  }, [currentSystem?.name])
+
   const cargoCount = Number(ship?.cargo?.count) || 0
   const cargoCapacity = Number(ship?.cargo?.capacity) || 0
 
   const ghostnetStatus = valuation?.metadata?.ghostnetStatus || 'idle'
   const marketStatus = valuation?.metadata?.marketStatus || 'idle'
   const historyStatus = valuation?.metadata?.historyStatus || 'idle'
+
+  const renderCommodityDetailView = () => {
+    if (!selectedCommodityRow) {
+      return (
+        <div className={styles.routeDetailContainer}>
+          <div className={styles.routeDetailHeader}>
+            <button type='button' className={styles.routeDetailBackButton} onClick={handleDetailClose}>
+              {String.fromCharCode(0x2190)} Back to Commodities
+            </button>
+            <div className={styles.routeDetailHeading}>
+              <span className={styles.routeDetailLabel}>Commodity Intel</span>
+              <h3 className={styles.routeDetailTitle}>No Commodity Selected</h3>
+              <p className={styles.routeDetailSubhead}>Return to the manifest and choose a commodity to review intercepted listings.</p>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    const {
+      item,
+      quantity,
+      entry,
+      bestPrice,
+      bestSource,
+      bestValue,
+      ghostnetPrice,
+      ghostnetValue,
+      localValue,
+      localBestEntry,
+      localBestSource
+    } = selectedCommodityRow
+
+    const commodityName = item?.name || item?.symbol || 'Unknown Commodity'
+    const commoditySymbol = item?.symbol && item?.symbol !== item?.name ? item.symbol : ''
+    const quantityNumber = Number(quantity) || 0
+    const quantityDisplay = quantityNumber > 0 ? `${quantityNumber.toLocaleString()} units` : '0 units'
+    const bestPriceDisplay = formatCredits(bestPrice, '--')
+    const bestValueDisplay = formatCredits(bestValue, '--')
+    const ghostnetPriceDisplay = formatCredits(ghostnetPrice, '--')
+    const localBestPriceDisplay = localBestEntry ? formatCredits(localBestEntry.sellPrice, '--') : '--'
+    const bestSourceLabel = getSourceLabel(bestSource)
+    const localSourceLabel = getSourceLabel(localBestSource)
+    const ghostnetStationLine = entry?.ghostnet?.stationName
+      ? `${entry.ghostnet.stationName}${entry.ghostnet.systemName ? ` · ${entry.ghostnet.systemName}` : ''}`
+      : ''
+    const ghostnetUpdatedDisplay = entry?.ghostnet?.updatedText
+      || (entry?.ghostnet?.updatedAt ? formatRelativeTime(entry.ghostnet.updatedAt) : '--')
+    const ghostnetDemandDisplay = entry?.ghostnet?.demandText
+      || (typeof entry?.ghostnet?.demand === 'number' ? entry.ghostnet.demand.toLocaleString() : '')
+    const ghostnetError = entry?.errors?.ghostnet
+
+    const localStationLine = localBestEntry?.stationName
+      ? `${localBestEntry.stationName}${localBestEntry.systemName ? ` · ${localBestEntry.systemName}` : ''}`
+      : ''
+
+    const metrics = [
+      {
+        label: 'Best Sell Price',
+        value: bestPriceDisplay,
+        footnote: bestSourceLabel ? `Source: ${bestSourceLabel}` : null
+      },
+      {
+        label: 'Hold Value (Best)',
+        value: bestValueDisplay,
+        footnote: quantityNumber > 0 ? `${quantityNumber.toLocaleString()} units aboard` : null
+      }
+    ]
+
+    if (localBestEntry) {
+      metrics.push({
+        label: 'Local Station Price',
+        value: localBestPriceDisplay,
+        footnote: localStationLine ? localStationLine : (localSourceLabel ? `Source: ${localSourceLabel}` : null)
+      })
+    }
+
+    if (typeof ghostnetPrice === 'number') {
+      metrics.push({
+        label: 'GHOSTNET Listing',
+        value: ghostnetPriceDisplay,
+        footnote: ghostnetStationLine || (ghostnetDemandDisplay ? `Demand: ${ghostnetDemandDisplay}` : null)
+      })
+    }
+
+    const listingsCountDisplay = detailListings.length > 0
+      ? `${detailListings.length.toLocaleString()} station${detailListings.length === 1 ? '' : 's'}`
+      : 'No listings'
+
+    return (
+      <div className={styles.routeDetailContainer}>
+        <div className={styles.routeDetailHeader}>
+          <button type='button' className={styles.routeDetailBackButton} onClick={handleDetailClose}>
+            {String.fromCharCode(0x2190)} Back to Commodities
+          </button>
+          <div className={styles.routeDetailHeading}>
+            <span className={styles.routeDetailLabel}>Commodity Intel</span>
+            <h3 className={styles.routeDetailTitle}>
+              {commodityName}
+              {commoditySymbol ? <span style={{ fontSize: '0.85rem', color: 'rgba(245, 241, 255, 0.7)' }}> ({commoditySymbol})</span> : null}
+            </h3>
+            <p className={styles.routeDetailSubhead}>
+              {quantityDisplay}
+              <span className={styles.routeDetailArrow} aria-hidden='true'>{String.fromCharCode(0x2022)}</span>
+              {currentSystemName || 'Unknown system'}
+            </p>
+          </div>
+          <div className={styles.routeDetailMeta}>
+            <span className={styles.routeDetailMetaLabel}>GHOSTNET Update</span>
+            <span className={styles.routeDetailMetaValue}>{ghostnetUpdatedDisplay || '--'}</span>
+            <span className={styles.routeDetailMetaLabel}>Listings Captured</span>
+            <span className={styles.routeDetailMetaValue}>{listingsCountDisplay}</span>
+          </div>
+        </div>
+
+        {ghostnetError ? (
+          <div className={styles.notice} style={{ marginTop: '-0.5rem' }}>{ghostnetError}</div>
+        ) : null}
+
+        <div className={styles.routeDetailMetrics}>
+          {metrics.map(metric => (
+            <div key={metric.label} className={styles.routeDetailMetric}>
+              <span className={styles.routeDetailMetricLabel}>{metric.label}</span>
+              <span className={styles.routeDetailMetricValue}>{metric.value}</span>
+              {metric.footnote ? <span className={styles.routeDetailMetricFootnote}>{metric.footnote}</span> : null}
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.dataTableContainer}>
+          {detailListings.length > 0 ? (
+            <table className={`${styles.dataTable} ${styles.dataTableFixed}`}>
+              <colgroup>
+                <col style={{ width: '24%' }} />
+                <col style={{ width: '20%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '8%' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Station</th>
+                  <th>System</th>
+                  <th>Pad</th>
+                  <th
+                    className={`text-right ${styles.tableHeaderInteractive}`}
+                    onClick={() => handleDetailSortChange('distanceLy')}
+                    onKeyDown={event => handleDetailSortKeyDown(event, 'distanceLy')}
+                    tabIndex={0}
+                    aria-sort={detailSortField === 'distanceLy' ? (detailSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  >
+                    Distance (Ly)
+                    {renderDetailSortArrow('distanceLy')}
+                  </th>
+                  <th
+                    className={`text-right ${styles.tableHeaderInteractive}`}
+                    onClick={() => handleDetailSortChange('distanceLs')}
+                    onKeyDown={event => handleDetailSortKeyDown(event, 'distanceLs')}
+                    tabIndex={0}
+                    aria-sort={detailSortField === 'distanceLs' ? (detailSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  >
+                    Distance (Ls)
+                    {renderDetailSortArrow('distanceLs')}
+                  </th>
+                  <th
+                    className={`text-right ${styles.tableHeaderInteractive}`}
+                    onClick={() => handleDetailSortChange('demand')}
+                    onKeyDown={event => handleDetailSortKeyDown(event, 'demand')}
+                    tabIndex={0}
+                    aria-sort={detailSortField === 'demand' ? (detailSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  >
+                    Demand
+                    {renderDetailSortArrow('demand')}
+                  </th>
+                  <th
+                    className={`text-right ${styles.tableHeaderInteractive}`}
+                    onClick={() => handleDetailSortChange('price')}
+                    onKeyDown={event => handleDetailSortKeyDown(event, 'price')}
+                    tabIndex={0}
+                    aria-sort={detailSortField === 'price' ? (detailSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  >
+                    Price
+                    {renderDetailSortArrow('price')}
+                  </th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detailListings.map((listing, index) => {
+                  const stationName = listing?.stationName || 'Unknown Station'
+                  const systemName = listing?.systemName || 'Unknown System'
+                  const stationLink = listing?.stationUrl
+                  const distanceLyDisplay = listing?.distanceLyText || formatSystemDistance(listing?.distanceLy, '--')
+                  const distanceLsDisplay = listing?.distanceLsText
+                    || (Number.isFinite(listing?.distanceLs) ? formatStationDistance(listing.distanceLs) : '--')
+                  const demandDisplay = listing?.demandText
+                    || (Number.isFinite(listing?.demand) ? listing.demand.toLocaleString() : '--')
+                  const priceDisplay = formatCredits(listing?.price, listing?.priceText || '--')
+                  const updatedDisplay = listing?.updatedText
+                    || (listing?.updatedAt ? formatRelativeTime(listing.updatedAt) : '--')
+
+                  return (
+                    <tr key={`${stationName}-${systemName}-${index}`} data-ghostnet-table-row='pending'>
+                      <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                        {stationLink ? (
+                          <a href={stationLink} target='_blank' rel='noreferrer noopener' className={styles.routeDetailLink}>
+                            {stationName}
+                          </a>
+                        ) : (
+                          <span>{stationName}</span>
+                        )}
+                      </td>
+                      <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>{systemName}</td>
+                      <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>{listing?.pad || '--'}</td>
+                      <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceLyDisplay || '--'}</td>
+                      <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceLsDisplay || '--'}</td>
+                      <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{demandDisplay || '--'}</td>
+                      <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{priceDisplay}</td>
+                      <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>{updatedDisplay || '--'}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className={styles.tableEmptyState}>No intercepted listings available for this commodity.</div>
+          )}
+        </div>
+
+        {(typeof ghostnetValue === 'number' && typeof localValue === 'number' && Math.abs(ghostnetValue - localValue) > 0.01) ? (
+          <div className={styles.inlineNoticeMuted}>
+            Value comparison · GHOSTNET {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
+          </div>
+        ) : null}
+      </div>
+    )
+  }
 
   return (
     <section className={styles.tableSection}>
@@ -1713,13 +2091,20 @@ function CommodityTradePanel () {
         )}
       </div>
 
-      <div className='ghostnet-panel-table'>
-        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-          {renderStatusBanner()}
+      {detailViewActive ? (
+        <div className='ghostnet-panel-table'>
+          <div className={`scrollable ${styles.routeDetailScrollArea}`} style={TABLE_SCROLL_AREA_STYLE}>
+            {renderCommodityDetailView()}
+          </div>
+        </div>
+      ) : (
+        <div className='ghostnet-panel-table'>
+          <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
+            {renderStatusBanner()}
 
-          {status === 'ready' && hasCargo && hasDisplayableRows && (
-            <div className={styles.dataTableContainer}>
-              <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
+            {status === 'ready' && hasCargo && hasDisplayableRows && (
+              <div className={styles.dataTableContainer}>
+                <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
                 <colgroup>
                   <col style={{ width: '32%' }} />
                   <col style={{ width: '8%' }} />
@@ -1796,8 +2181,19 @@ function CommodityTradePanel () {
 
                     const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
 
+                    const rowLabel = item?.name || item?.symbol || 'Unknown commodity'
+
                     return (
-                      <tr key={`${row.key}-${index}`} data-ghostnet-table-row='pending'>
+                      <tr
+                        key={`${row.key}-${index}`}
+                        data-ghostnet-table-row='pending'
+                        className={styles.tableRowInteractive}
+                        onClick={() => handleCommoditySelect(row)}
+                        onKeyDown={event => handleCommodityKeyDown(event, row)}
+                        role='button'
+                        tabIndex={0}
+                        aria-label={`View commodity intel for ${rowLabel}`}
+                      >
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                           <div>{item?.name || item?.symbol || 'Unknown'}</div>
                           {item?.symbol && item?.symbol !== item?.name && (
@@ -1865,11 +2261,12 @@ function CommodityTradePanel () {
                     )
                   })}
                 </tbody>
-              </table>
-            </div>
-          )}
+                </table>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={styles.tableFootnote}>
         In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.

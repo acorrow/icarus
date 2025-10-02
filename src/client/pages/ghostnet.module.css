@@ -843,6 +843,30 @@
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
 }
 
+.routeDetailMetricFootnote {
+  font-size: 0.75rem;
+  color: rgba(245, 241, 255, 0.64);
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  letter-spacing: 0.08em;
+}
+
+.routeDetailLink {
+  color: var(--ghostnet-accent);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.routeDetailLink:hover,
+.routeDetailLink:focus-visible {
+  color: #f5f1ff;
+  text-decoration: underline;
+}
+
+.routeDetailLink:focus-visible {
+  outline: 2px solid #29f3c3;
+  outline-offset: 2px;
+}
+
 .routeDetailGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
