@@ -664,3 +664,258 @@ body.ghostnet-assimilation-mode::after {
     filter: blur(3px) hue-rotate(12deg);
   }
 }
+
+/* GhostNet exit transition */
+
+body.ghostnet-exit-transition-active {
+  cursor: wait;
+}
+
+.ghostnet-exit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.75rem, 5vw, 4rem);
+  pointer-events: auto;
+}
+
+.ghostnet-exit-dialog {
+  width: min(620px, 92vw);
+  border: 1px solid rgba(140, 92, 255, 0.4);
+  background: linear-gradient(145deg, rgba(16, 12, 34, 0.96), rgba(24, 18, 46, 0.92));
+  box-shadow: 0 0 36px rgba(93, 46, 255, 0.25), 0 0 12px rgba(13, 11, 26, 0.65);
+  border-radius: 1.2rem;
+  padding: clamp(1.8rem, 3vw, 2.35rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.2rem, 2vw, 1.65rem);
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.ghostnet-exit-dialog::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 95, 193, 0.16);
+  border-radius: 1.2rem;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.ghostnet-exit-dialog__header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.ghostnet-exit-dialog__badge {
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 1.2rem;
+  background: radial-gradient(circle at 50% 35%, rgba(255, 95, 193, 0.55), rgba(255, 95, 193, 0.12) 58%, transparent 100%);
+  border: 1px solid rgba(255, 95, 193, 0.45);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 18px rgba(255, 95, 193, 0.35);
+}
+
+.ghostnet-exit-dialog__badge-shape {
+  position: relative;
+  width: 0;
+  height: 0;
+  border-left: 1.15rem solid transparent;
+  border-right: 1.15rem solid transparent;
+  border-bottom: 2rem solid #ff5fc1;
+  filter: drop-shadow(0 0 10px rgba(255, 95, 193, 0.65));
+}
+
+.ghostnet-exit-dialog__badge-bar {
+  position: absolute;
+  top: 0.45rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0.3rem;
+  height: 0.95rem;
+  border-radius: 0.3rem;
+  background: #0d0b1a;
+}
+
+.ghostnet-exit-dialog__badge-dot {
+  position: absolute;
+  bottom: -1.6rem;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: #0d0b1a;
+}
+
+.ghostnet-exit-dialog__text {
+  flex: 1;
+}
+
+.ghostnet-exit-dialog__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.12rem;
+  text-transform: uppercase;
+  color: #f5f1ff;
+}
+
+.ghostnet-exit-dialog__subtitle {
+  margin: 0.3rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: rgba(245, 241, 255, 0.76);
+}
+
+.ghostnet-exit-dialog__log {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.7rem, 1.5vw, 1rem);
+  padding: clamp(1.1rem, 2vw, 1.4rem) clamp(1.2rem, 2.5vw, 1.65rem);
+  background: rgba(19, 15, 34, 0.78);
+  border-radius: 0.9rem;
+  border: 1px solid rgba(93, 46, 255, 0.38);
+  box-shadow: inset 0 0 12px rgba(93, 46, 255, 0.25);
+  font-family: 'IBM Plex Mono', 'Menlo', 'Consolas', monospace;
+}
+
+.ghostnet-exit-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.9rem, 2vw, 1.25rem);
+  font-size: clamp(1.02rem, 2vw, 1.16rem);
+  color: rgba(245, 241, 255, 0.86);
+  letter-spacing: 0.03em;
+}
+
+.ghostnet-exit-line__text {
+  position: relative;
+  flex: 1;
+  min-height: 1.45rem;
+}
+
+.ghostnet-exit-line__text::before {
+  content: '> ';
+  color: rgba(255, 95, 193, 0.58);
+}
+
+.ghostnet-exit-line--active .ghostnet-exit-line__text::after {
+  content: '▌';
+  position: absolute;
+  right: -0.55rem;
+  animation: ghostnet-exit-caret 0.5s steps(2, end) infinite;
+  color: rgba(255, 95, 193, 0.9);
+}
+
+@keyframes ghostnet-exit-caret {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.ghostnet-exit-line__status {
+  font-size: clamp(0.88rem, 1.6vw, 0.98rem);
+  letter-spacing: 0.24rem;
+  text-transform: uppercase;
+  color: rgba(245, 241, 255, 0.62);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.ghostnet-exit-line[data-tone='warning'] .ghostnet-exit-line__status {
+  color: #ff5fc1;
+}
+
+.ghostnet-exit-line[data-tone='success'] .ghostnet-exit-line__status {
+  color: #29f3c3;
+}
+
+.ghostnet-exit-line--status .ghostnet-exit-line__status {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ghostnet-exit-dialog__footnote {
+  margin: 0;
+  font-size: clamp(0.82rem, 1.8vw, 0.9rem);
+  line-height: 1.4;
+  color: rgba(245, 241, 255, 0.68);
+  letter-spacing: 0.05em;
+}
+
+.ghostnet-exit-overlay--closing {
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.ghostnet-exit-dissolve {
+  pointer-events: none;
+  transition: opacity 420ms cubic-bezier(0.55, 0, 0.45, 1), filter 420ms cubic-bezier(0.55, 0, 0.45, 1), transform 420ms cubic-bezier(0.55, 0, 0.45, 1);
+}
+
+.ghostnet-exit-dissolve--active {
+  opacity: 0;
+  filter: saturate(0.55) blur(1.8px);
+  transform: scale(0.985);
+}
+
+.ghostnet-exit-dissolve--active button,
+.ghostnet-exit-dissolve--active .button,
+.ghostnet-exit-dissolve--active [role='button'] {
+  animation: ghostnet-exit-button-dissolve 340ms cubic-bezier(0.6, 0.04, 0.98, 0.335) forwards;
+}
+
+@keyframes ghostnet-exit-button-dissolve {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: none;
+  }
+  60% {
+    opacity: 0.35;
+    transform: translateY(-4px);
+    filter: saturate(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+    filter: blur(2px) saturate(0.4);
+  }
+}
+
+@media (max-width: 600px) {
+  .ghostnet-exit-overlay {
+    padding: 1.5rem;
+  }
+
+  .ghostnet-exit-dialog {
+    width: min(94vw, 480px);
+    padding: 1.6rem;
+  }
+
+  .ghostnet-exit-dialog__badge {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .ghostnet-exit-dialog__title {
+    font-size: 1rem;
+  }
+
+  .ghostnet-exit-line {
+    font-size: 0.88rem;
+  }
+}

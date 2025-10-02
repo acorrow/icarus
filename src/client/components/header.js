@@ -6,6 +6,7 @@ import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
 import { initiateGhostnetAssimilation, isGhostnetAssimilationActive } from 'lib/ghostnet-assimilation'
+import { initiateGhostnetExitTransition, isGhostnetExitTransitionActive } from 'lib/ghostnet-exit-transition'
 
 const NAV_BUTTONS = [
   {
@@ -117,6 +118,11 @@ export default function Header ({ connected, active }) {
       initiateGhostnetAssimilation(() => router.push(path))
       return
     }
+    if (currentPath === '/ghostnet') {
+      if (isGhostnetExitTransitionActive()) return
+      initiateGhostnetExitTransition(() => router.push(path))
+      return
+    }
     router.push(path)
   }
 
@@ -168,12 +174,13 @@ export default function Header ({ connected, active }) {
         {NAV_BUTTONS.filter(button => button).map((button, i) => {
           const isActive = button.path === currentPath
           const isGhostNet = button.path === '/ghostnet'
+          const exitActive = isGhostnetExitTransitionActive()
           return (
             <button
               key={button.name}
               data-primary-navigation={i + 1}
               tabIndex='1'
-              disabled={isActive || (isGhostNet && isGhostnetAssimilationActive())}
+              disabled={isActive || (isGhostNet && isGhostnetAssimilationActive()) || exitActive}
               aria-current={isActive ? 'page' : undefined}
               className={[
                 isActive ? 'button--active' : '',
