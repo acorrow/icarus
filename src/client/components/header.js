@@ -442,6 +442,7 @@ export default function Header ({ connected, active }) {
   const accessibleTitle = (titleChars.join('').trimEnd()) || ORIGINAL_TITLE
   const assimilationComplete = titleAnimationState.current.completed
   const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
+  const dateTimeLabel = `${dateTime.day} ${dateTime.month} ${dateTime.year} ${dateTime.time}`
 
   function handleNavigate (path) {
     if (path === '/ghostnet') {
@@ -489,54 +490,55 @@ export default function Header ({ connected, active }) {
           </span>
         </span>
       </h1>
-      <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
-        <p
-          className='text-primary text-center text-uppercase'
-          style={{ display: 'inline-block', padding: 0, margin: 0, lineHeight: '1rem', minWidth: '7.5rem' }}
-        >
-           <span style={{position: 'relative', top: '.3rem', fontSize: '2.4rem', paddingTop: '.25rem'}}>
-           {dateTime.time}
-          </span>
-          <br/>
-          <span style={{fontSize: '1.1rem', position: 'relative', top: '.4rem'}}>
+      <div className='header-utility-tray'>
+        <time className='header-utility-clock text-uppercase' aria-label={dateTimeLabel}>
+          <span className='header-utility-clock__time text-primary'>{dateTime.time}</span>
+          <span className='header-utility-clock__date text-muted'>
             {dateTime.day} {dateTime.month} {dateTime.year}
           </span>
-        </p>
+        </time>
 
-        <button
-          tabIndex='1'
-          onClick={() => { openPirateModal(); document.activeElement?.blur?.() }}
-          className='button--icon button--transparent pirate-access-button'
-          style={{ marginRight: '.5rem' }}
-          aria-haspopup='dialog'
-          aria-expanded={pirateModalVisible}
-        >
-          <i className='icon icarus-terminal-shield pirate-access-icon' aria-hidden='true' />
-          <span className='sr-only'>Open encrypted access challenge</span>
-        </button>
+        <div className='header-utility-controls'>
+          <button
+            tabIndex='1'
+            onClick={() => { openPirateModal(); document.activeElement?.blur?.() }}
+            className='button--icon button--transparent pirate-access-button header-utility-button'
+            aria-haspopup='dialog'
+            aria-expanded={pirateModalVisible}
+          >
+            <i className='icon icarus-terminal-shield pirate-access-icon' aria-hidden='true' />
+            <span className='sr-only'>Open encrypted access challenge</span>
+          </button>
 
-        <button disabled className='button--icon button--transparent' style={{ marginRight: '.5rem', opacity: active ? 1 : .25, transition: 'all .25s ease-out' }}>
-          <i className={signalClassName} style={{ position: 'relative', transition: 'all .25s ease', fontSize: '3rem', lineHeight: '1.8rem', top: '.5rem', right: '.25rem' }} />
-        </button>
+          <button disabled className='button--icon button--transparent header-utility-button header-utility-button--signal' style={{ opacity: active ? 1 : 0.25 }}>
+            <i className={signalClassName} />
+          </button>
 
-        {IS_WINDOWS_APP &&
-          <button tabIndex='1' onClick={pinWindow} className={`button--icon ${isPinned ? 'button--transparent' : ''}`} style={{ marginRight: '.5rem' }} disabled={isFullScreen}>
-            <i className='icon icarus-terminal-pin-window' style={{ fontSize: '2rem' }} />
-          </button>}
+          {IS_WINDOWS_APP &&
+            <button
+              tabIndex='1'
+              onClick={pinWindow}
+              className={`button--icon header-utility-button ${isPinned ? 'button--transparent' : ''}`.trim()}
+              disabled={isFullScreen}
+            >
+              <i className='icon icarus-terminal-pin-window' />
+            </button>}
 
-        <button tabIndex='1' onClick={toggleNotifications} className='button--icon' style={{ marginRight: '.5rem' }}>
-          <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} style={{ fontSize: '2rem' }} />
-        </button>
+          <button tabIndex='1' onClick={toggleNotifications} className='button--icon header-utility-button'>
+            <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} />
+          </button>
 
-        <button
-          tabIndex='1' className='button--icon' style={{ marginRight: '.5rem' }}
-          onClick={() => { setSettingsVisible(!settingsVisible); document.activeElement.blur() }}
-        >
-          <i className='icon icarus-terminal-settings' style={{ fontSize: '2rem' }} />
-        </button>
-        <button tabIndex='1' onClick={fullScreen} className='button--icon'>
-          <i className='icon icarus-terminal-fullscreen' style={{ fontSize: '2rem' }} />
-        </button>
+          <button
+            tabIndex='1'
+            className='button--icon header-utility-button'
+            onClick={() => { setSettingsVisible(!settingsVisible); document.activeElement.blur() }}
+          >
+            <i className='icon icarus-terminal-settings' />
+          </button>
+          <button tabIndex='1' onClick={fullScreen} className='button--icon header-utility-button'>
+            <i className='icon icarus-terminal-fullscreen' />
+          </button>
+        </div>
       </div>
       <hr />
       <div id='primaryNavigation' className='button-group'>
@@ -575,39 +577,46 @@ export default function Header ({ connected, active }) {
           aria-modal='true'
           aria-labelledby='pirate-password-title'
         >
-          {pirateStatus === 'success' && (
-            <div className='pirate-password-success' aria-live='assertive'>
-              <span className='pirate-password-success__icon' aria-hidden='true'>✔</span>
-              <p className='pirate-password-success__text'>Signal aligned</p>
-            </div>
-          )}
-          {pirateStatus !== 'success' && (
-            <form onSubmit={handlePirateSubmit}>
-              <h2 id='pirate-password-title' className='pirate-password-title text-info text-uppercase'>Ghost Access Gate</h2>
-              <p className='pirate-password-subtitle text-muted'>Whisper the covenant phrase to still the static.</p>
-              <label className='pirate-password-label text-primary text-uppercase' htmlFor='pirate-password-input'>Passphrase</label>
-              <input
-                id='pirate-password-input'
-                ref={piratePasswordRef}
-                className={`pirate-password-input ${pirateStatus === 'error' ? 'pirate-password-input--error' : ''}`.trim()}
-                type='password'
-                autoComplete='off'
-                spellCheck='false'
-                value={piratePassword}
-                onChange={event => {
-                  setPiratePassword(event.target.value)
-                  if (pirateStatus) setPirateStatus(null)
-                }}
-                aria-invalid={pirateStatus === 'error' || pirateStatus === 'locked'}
-                aria-describedby='pirate-password-feedback'
-              />
-              <button type='submit' className='pirate-password-submit button--primary text-uppercase'>Enter</button>
-              <div id='pirate-password-feedback' className='pirate-password-feedback' aria-live='assertive'>
-                {pirateStatus === 'error' && <span className='pirate-password-feedback--error'>Access rejected. Static persists.</span>}
-                {pirateStatus === 'locked' && <span className='pirate-password-feedback--locked'>⟟ Cipher fracture detected. Coordinates lost in the void.</span>}
+          <div className='pirate-password-dialog__chrome' aria-hidden='true'>
+            <span className='pirate-password-dialog__chrome-light pirate-password-dialog__chrome-light--primary' />
+            <span className='pirate-password-dialog__chrome-light pirate-password-dialog__chrome-light--secondary' />
+            <span className='pirate-password-dialog__chrome-light pirate-password-dialog__chrome-light--tertiary' />
+          </div>
+          <div className='pirate-password-dialog__body'>
+            {pirateStatus === 'success' && (
+              <div className='pirate-password-success' aria-live='assertive'>
+                <span className='pirate-password-success__icon' aria-hidden='true'>✔</span>
+                <p className='pirate-password-success__text'>Signal aligned</p>
               </div>
-            </form>
-          )}
+            )}
+            {pirateStatus !== 'success' && (
+              <form onSubmit={handlePirateSubmit}>
+                <h2 id='pirate-password-title' className='pirate-password-title text-info text-uppercase'>Ghost Access Gate</h2>
+                <p className='pirate-password-subtitle text-muted'>Whisper the covenant phrase to still the static.</p>
+                <label className='pirate-password-label text-primary text-uppercase' htmlFor='pirate-password-input'>Passphrase</label>
+                <input
+                  id='pirate-password-input'
+                  ref={piratePasswordRef}
+                  className={`pirate-password-input ${pirateStatus === 'error' ? 'pirate-password-input--error' : ''}`.trim()}
+                  type='password'
+                  autoComplete='off'
+                  spellCheck='false'
+                  value={piratePassword}
+                  onChange={event => {
+                    setPiratePassword(event.target.value)
+                    if (pirateStatus) setPirateStatus(null)
+                  }}
+                  aria-invalid={pirateStatus === 'error' || pirateStatus === 'locked'}
+                  aria-describedby='pirate-password-feedback'
+                />
+                <button type='submit' className='pirate-password-submit button--primary text-uppercase'>Enter</button>
+                <div id='pirate-password-feedback' className='pirate-password-feedback' aria-live='assertive'>
+                  {pirateStatus === 'error' && <span className='pirate-password-feedback--error'>Access rejected. Static persists.</span>}
+                  {pirateStatus === 'locked' && <span className='pirate-password-feedback--locked'>⟟ Cipher fracture detected. Coordinates lost in the void.</span>}
+                </div>
+              </form>
+            )}
+          </div>
         </section>
       </div>
     )}
