@@ -34,6 +34,37 @@ let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
 const ALWAYS_ANIMATE_TAGS = new Set(['H', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'SPAN'])
 
+let cachedMainHeaderElement = null
+let attemptedHeaderLookup = false
+
+function getMainHeaderElement () {
+  if (typeof document === 'undefined') return null
+
+  if (!attemptedHeaderLookup) {
+    attemptedHeaderLookup = true
+    try {
+      cachedMainHeaderElement = document.querySelector('body > header')
+    } catch (err) {
+      cachedMainHeaderElement = null
+    }
+  }
+
+  return cachedMainHeaderElement || null
+}
+
+function isInMainHeaderSection (element) {
+  if (!element || !(element instanceof HTMLElement)) return false
+
+  const mainHeader = getMainHeaderElement()
+  if (!mainHeader) return false
+
+  return mainHeader === element || mainHeader.contains(element)
+}
+
+function shouldSkipAssimilationSubtree (element) {
+  return isInMainHeaderSection(element)
+}
+
 const ASSIMILATION_ALERT_LINES = [
   {
     text: 'Unauthorized GhostNet signal traced to active console',
@@ -451,6 +482,10 @@ function collectPermittedBlockedDescendants (blockedElements, existingSet) {
 
       visited.add(current)
 
+      if (shouldSkipAssimilationSubtree(current)) {
+        continue
+      }
+
       const children = typeof current.children !== 'undefined'
         ? Array.from(current.children)
         : []
@@ -501,6 +536,10 @@ function collectVisibleEligibleElements (root) {
     }
 
     visited.add(current)
+
+    if (shouldSkipAssimilationSubtree(current)) {
+      continue
+    }
 
     const children = typeof current.children !== 'undefined'
       ? Array.from(current.children)
@@ -847,11 +886,12 @@ function buildAssimilationPlan () {
   const leafSet = new Set(
     candidates
       .filter((element) => !parentCandidates.has(element))
+      .filter((element) => !shouldSkipAssimilationSubtree(element))
       .filter((element) => isEffectPermitted(element))
   )
 
   parentCandidates.forEach((element) => {
-    if (shouldIncludeParentCandidate(element, candidateSet)) {
+    if (!shouldSkipAssimilationSubtree(element) && shouldIncludeParentCandidate(element, candidateSet)) {
       leafSet.add(element)
     }
   })
@@ -894,7 +934,7 @@ function buildAssimilationPlan () {
   topLevelGroups.forEach((group) => {
     group.childGroups.forEach((child) => {
       child.forEach((element) => {
-        if (isEffectPermitted(element)) {
+        if (!shouldSkipAssimilationSubtree(element) && isEffectPermitted(element)) {
           targetsSet.add(element)
         }
       })
@@ -906,6 +946,7 @@ function buildAssimilationPlan () {
 
 function upgradeElement (element, baseDelay) {
   if (!element || element.dataset.ghostnetAssimilated === 'true') return
+  if (shouldSkipAssimilationSubtree(element)) return
   if (!isEffectPermitted(element)) return
   if (remainingCharacterAnimations <= 0) return
 
