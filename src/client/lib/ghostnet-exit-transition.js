@@ -35,7 +35,7 @@ const NAVIGATION_TRIGGER_DELAY = 1080
 
 let exitInProgress = false
 let overlayElement = null
-let hostElement = null
+let hostState = null
 let navigationInvoked = false
 
 const activeTimers = new Set()
@@ -199,13 +199,25 @@ async function playTerminalSequence (rows) {
 }
 
 function applyDissolveEffect () {
+  const ghostnetSurface = document.querySelector('.ghostnet')
+  if (ghostnetSurface) {
+    ghostnetSurface.classList.add('ghostnet-exit-dissolve')
+    schedule(() => {
+      ghostnetSurface.classList.add('ghostnet-exit-dissolve--active')
+    }, 16)
+
+    return { mode: 'class', element: ghostnetSurface }
+  }
+
   const host = document.querySelector('.layout__main')
   if (!host) return null
 
-  host.dataset.ghostnetExitOpacity = host.style.opacity || ''
-  host.dataset.ghostnetExitTransform = host.style.transform || ''
-  host.dataset.ghostnetExitFilter = host.style.filter || ''
-  host.dataset.ghostnetExitTransition = host.style.transition || ''
+  const initial = {
+    opacity: host.style.opacity || '',
+    transform: host.style.transform || '',
+    filter: host.style.filter || '',
+    transition: host.style.transition || ''
+  }
 
   host.style.transition = 'opacity 320ms cubic-bezier(0.55, 0, 0.45, 1), transform 320ms cubic-bezier(0.55, 0, 0.45, 1), filter 320ms cubic-bezier(0.55, 0, 0.45, 1)'
   schedule(() => {
@@ -214,31 +226,25 @@ function applyDissolveEffect () {
     host.style.filter = 'saturate(0.65) blur(1.6px)'
   }, 16)
 
-  return host
+  return { mode: 'style', element: host, initial }
 }
 
 function restoreHost () {
-  if (!hostElement) return
+  if (!hostState) return
 
-  if (hostElement.dataset.ghostnetExitOpacity !== undefined) {
-    hostElement.style.opacity = hostElement.dataset.ghostnetExitOpacity
-  }
-  if (hostElement.dataset.ghostnetExitTransform !== undefined) {
-    hostElement.style.transform = hostElement.dataset.ghostnetExitTransform
-  }
-  if (hostElement.dataset.ghostnetExitFilter !== undefined) {
-    hostElement.style.filter = hostElement.dataset.ghostnetExitFilter
-  }
-  if (hostElement.dataset.ghostnetExitTransition !== undefined) {
-    hostElement.style.transition = hostElement.dataset.ghostnetExitTransition
+  if (hostState.mode === 'class') {
+    const { element } = hostState
+    element.classList.remove('ghostnet-exit-dissolve--active')
+    element.classList.remove('ghostnet-exit-dissolve')
+  } else if (hostState.mode === 'style' && hostState.element) {
+    const { element, initial } = hostState
+    element.style.opacity = initial.opacity
+    element.style.transform = initial.transform
+    element.style.filter = initial.filter
+    element.style.transition = initial.transition
   }
 
-  delete hostElement.dataset.ghostnetExitOpacity
-  delete hostElement.dataset.ghostnetExitTransform
-  delete hostElement.dataset.ghostnetExitFilter
-  delete hostElement.dataset.ghostnetExitTransition
-
-  hostElement = null
+  hostState = null
 }
 
 function cleanup () {
@@ -279,7 +285,7 @@ export function initiateGhostnetExitTransition (callback) {
   overlayElement = overlay
   const rows = buildTerminalRows(log)
 
-  hostElement = applyDissolveEffect()
+  hostState = applyDissolveEffect()
 
   document.body.appendChild(overlay)
 
