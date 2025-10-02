@@ -12,8 +12,12 @@ const ARRIVAL_FLAG_KEY = 'ghostnet.assimilationArrival'
 const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'])
+const FORCED_FADE_CLEANUP_DELAY = 720
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
+const MAX_ACTIVE_TARGETS = 160
+const MAX_CHARACTER_ANIMATIONS = 3200
 let effectDurationMs = DEFAULT_EFFECT_DURATION
+let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
 function clearJitterTimer (element) {
   if (!element) return
@@ -22,6 +26,18 @@ function clearJitterTimer (element) {
     window.clearTimeout(timer)
     delete element[JITTER_TIMER_FIELD]
   }
+}
+
+function fadeAssimilationTargets (elements) {
+  if (!Array.isArray(elements)) return
+
+  elements.forEach((element) => {
+    if (!element) return
+    element.classList.add('ghostnet-assimilation-force-fade')
+    element.style.setProperty('--ghostnet-assimilation-intensity', '0')
+    element.style.setProperty('--ghostnet-assimilation-ghost-opacity', '0')
+    clearJitterTimer(element)
+  })
 }
 
 function scheduleJitter (element) {
@@ -75,6 +91,7 @@ function shuffle (array) {
 
 function upgradeElement (element, baseDelay) {
   if (!element || element.dataset.ghostnetAssimilated === 'true') return
+  if (remainingCharacterAnimations <= 0) return
 
   element.dataset.ghostnetAssimilated = 'true'
   element.classList.add('ghostnet-assimilation-target')
@@ -97,12 +114,17 @@ function upgradeElement (element, baseDelay) {
   }
 
   textNodes.forEach((node) => {
+    if (remainingCharacterAnimations <= 0) {
+      return
+    }
     const original = node.textContent
     const spanWrapper = document.createElement('span')
     spanWrapper.className = 'ghostnet-assimilation-text'
     const fragment = document.createDocumentFragment()
-    for (let i = 0; i < original.length; i++) {
-      const char = original[i]
+    const characters = Array.from(original)
+    const allowedCharacters = Math.min(characters.length, remainingCharacterAnimations)
+    for (let i = 0; i < allowedCharacters; i++) {
+      const char = characters[i]
       const charSpan = document.createElement('span')
       charSpan.className = 'ghostnet-assimilation-char'
       if (char === ' ') {
@@ -114,7 +136,14 @@ function upgradeElement (element, baseDelay) {
       fragment.appendChild(charSpan)
     }
     spanWrapper.appendChild(fragment)
+
+    if (allowedCharacters < characters.length) {
+      const remainder = characters.slice(allowedCharacters).join('')
+      spanWrapper.appendChild(document.createTextNode(remainder))
+    }
+
     node.parentNode.replaceChild(spanWrapper, node)
+    remainingCharacterAnimations -= allowedCharacters
   })
 
   const safeWindow = Math.max(180, effectDurationMs - baseDelay - 120)
@@ -153,7 +182,8 @@ function buildElementList () {
 }
 
 function beginAssimilationEffect () {
-  const targets = buildElementList()
+  const allTargets = buildElementList()
+  const targets = allTargets.slice(0, MAX_ACTIVE_TARGETS)
   assimilationStartTime = performance.now()
   document.body.classList.add('ghostnet-assimilation-mode')
 
@@ -164,11 +194,11 @@ function beginAssimilationEffect () {
     }, delay)
   })
 
-  return () => {
+  const cleanup = () => {
     document.body.classList.remove('ghostnet-assimilation-mode')
     targets.forEach((element) => {
       if (!element) return
-      element.classList.remove('ghostnet-assimilation-target', 'ghostnet-assimilation-remove')
+      element.classList.remove('ghostnet-assimilation-target', 'ghostnet-assimilation-remove', 'ghostnet-assimilation-force-fade')
       clearJitterTimer(element)
       delete element.dataset.ghostnetAssimilated
       element.style.removeProperty('--ghostnet-assimilation-shift-x')
@@ -182,7 +212,10 @@ function beginAssimilationEffect () {
       element.style.removeProperty('--ghostnet-assimilation-loop')
       element.style.removeProperty('--ghostnet-assimilation-ghost-loop')
     })
+    document.body.classList.remove('ghostnet-assimilation-forced')
   }
+
+  return { cleanup, targets }
 }
 
 export function initiateGhostnetAssimilation (callback) {
@@ -197,17 +230,29 @@ export function initiateGhostnetAssimilation (callback) {
 
   const configuredSeconds = getAssimilationDurationSeconds()
   const configuredDurationMs = Math.round(configuredSeconds * 1000)
-  effectDurationMs = Number.isFinite(configuredDurationMs) && configuredDurationMs > 0
+  const sanitizedDuration = Number.isFinite(configuredDurationMs) && configuredDurationMs > 0
     ? configuredDurationMs
     : DEFAULT_EFFECT_DURATION
+  effectDurationMs = sanitizedDuration
+  remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
   assimilationInProgress = true
   if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
     window.dispatchEvent(new CustomEvent(GHOSTNET_ASSIMILATION_EVENT))
   }
-  const cleanup = beginAssimilationEffect()
+  const { cleanup, targets } = beginAssimilationEffect()
 
-  window.setTimeout(() => {
+  let completed = false
+  const clearTimers = () => {
+    if (completionTimer) window.clearTimeout(completionTimer)
+    if (capTimer) window.clearTimeout(capTimer)
+  }
+
+  const finalize = (forced) => {
+    clearTimers()
+    if (completed) return
+    completed = true
+
     if (typeof callback === 'function') {
       callback()
     }
@@ -218,11 +263,23 @@ export function initiateGhostnetAssimilation (callback) {
     } catch (err) {
       // Ignore storage write issues
     }
-    window.setTimeout(() => {
+
+    const performCleanup = () => {
       cleanup()
       assimilationInProgress = false
-    }, 600)
-  }, effectDurationMs)
+    }
+
+    if (forced) {
+      document.body.classList.add('ghostnet-assimilation-forced')
+      fadeAssimilationTargets(targets)
+      window.setTimeout(performCleanup, FORCED_FADE_CLEANUP_DELAY)
+    } else {
+      window.setTimeout(performCleanup, 600)
+    }
+  }
+
+  const completionTimer = window.setTimeout(() => finalize(false), effectDurationMs)
+  const capTimer = window.setTimeout(() => finalize(true), effectDurationMs)
 }
 
 export function isGhostnetAssimilationActive () {
