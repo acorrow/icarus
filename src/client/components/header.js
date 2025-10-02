@@ -48,205 +48,100 @@ const NAV_BUTTONS = [
   }
 ]
 
-const NAV_LOCKED_BUTTONS = NAV_BUTTONS.filter(button => button.path !== GHOSTNET_NAV_PATH)
-
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 const randomBetween = (min, max) => min + Math.random() * (max - min)
 const formatPx = value => `${value.toFixed(1)}px`
-const formatPercent = value => `${value.toFixed(1)}%`
+const formatDeg = value => `${value.toFixed(1)}deg`
 
-const createNavButtonGlitchProfile = ({ outDelay, outDuration, inDelay, inDuration, emphasizeUnlock = false }) => {
-  const jitterLoop = Math.round(randomBetween(emphasizeUnlock ? 180 : 220, emphasizeUnlock ? 260 : 360))
-  const ghostLoop = Math.round(randomBetween(emphasizeUnlock ? 280 : 320, emphasizeUnlock ? 440 : 520))
-  const ghostOpacity = randomBetween(0.28, emphasizeUnlock ? 0.6 : 0.5).toFixed(2)
-  const shiftX = formatPx(randomBetween(-8, 8))
-  const shiftY = formatPx(randomBetween(-2.5, 2.5))
-  const tilt = `${randomBetween(-2.1, 2.1).toFixed(2)}deg`
-  const glowRadius = `${randomBetween(emphasizeUnlock ? 2.1 : 1.7, emphasizeUnlock ? 3.05 : 2.5).toFixed(2)}rem`
-  const glowOpacity = randomBetween(emphasizeUnlock ? 0.6 : 0.45, emphasizeUnlock ? 0.88 : 0.68).toFixed(2)
-  const saturation = randomBetween(emphasizeUnlock ? 1.22 : 1.12, emphasizeUnlock ? 1.46 : 1.36).toFixed(2)
+const createNavMotionProfile = ({ index, emphasizeGhost = false }) => {
+  const baseDelay = 90 + index * 120
+  const delay = Math.round(randomBetween(baseDelay - 50, baseDelay + 160))
+  const duration = Math.round(randomBetween(1100, 1600))
 
   const horizontalBias = Math.random() > 0.5 ? 1 : -1
-  const outScaleA = randomBetween(0.9, 0.97).toFixed(3)
-  const outScaleB = randomBetween(0.82, 0.92).toFixed(3)
-  const outScaleC = randomBetween(0.72, 0.86).toFixed(3)
-  const outScaleD = randomBetween(0.64, 0.8).toFixed(3)
-  const outTranslateXA = formatPx(randomBetween(6, 18) * horizontalBias)
-  const outTranslateXB = formatPx(randomBetween(10, 22) * horizontalBias)
-  const outTranslateXC = formatPx(randomBetween(18, 32) * horizontalBias)
-  const outTranslateXD = formatPx(randomBetween(26, 38) * horizontalBias)
-  const outTranslateYA = formatPx(randomBetween(-2.5, 2.5))
-  const outTranslateYB = formatPx(randomBetween(-2, 2))
-  const outTranslateYC = formatPx(randomBetween(-1.5, 1.5))
-  const outTranslateYD = formatPx(randomBetween(-1, 1))
-  const outOpacityA = randomBetween(0.25, 0.45).toFixed(2)
-  const outOpacityB = randomBetween(0.55, 0.88).toFixed(2)
-  const outOpacityC = randomBetween(0.18, 0.42).toFixed(2)
+  const amplitudeX = emphasizeGhost ? randomBetween(16, 26) : randomBetween(8, 18)
+  const amplitudeY = randomBetween(1.5, 4.2)
 
-  const inScaleStart = randomBetween(0.6, 0.74).toFixed(3)
-  const inScaleMidA = randomBetween(0.75, 0.9).toFixed(3)
-  const inScaleMidB = randomBetween(0.88, 1.01).toFixed(3)
-  const inScaleMidC = randomBetween(0.8, 0.96).toFixed(3)
-  const inTranslateStartX = formatPx(randomBetween(-26, 26))
-  const inTranslateAX = formatPx(randomBetween(-18, 18))
-  const inTranslateBX = formatPx(randomBetween(-9, 12))
-  const inTranslateCX = formatPx(randomBetween(-6, 8))
-  const inTranslateStartY = formatPx(randomBetween(-2.2, 2.2))
-  const inTranslateAY = formatPx(randomBetween(-1.8, 1.8))
-  const inTranslateBY = formatPx(randomBetween(-1.2, 1.2))
-  const inTranslateCY = formatPx(randomBetween(-0.8, 0.8))
+  const scaleXMin = emphasizeGhost ? randomBetween(0.32, 0.55) : randomBetween(0.74, 0.88)
+  const scaleXMid = emphasizeGhost ? randomBetween(0.62, 0.84) : randomBetween(0.82, 0.94)
+  const scaleXMax = emphasizeGhost ? randomBetween(0.94, 1.08) : randomBetween(0.92, 1.04)
+  const scaleYMin = emphasizeGhost ? randomBetween(0.74, 0.9) : randomBetween(0.86, 0.98)
+  const scaleYMid = emphasizeGhost ? randomBetween(0.86, 1.02) : randomBetween(0.92, 1.04)
+  const scaleYMax = emphasizeGhost ? randomBetween(0.96, 1.08) : randomBetween(0.96, 1.05)
 
-  const clipStartTop = formatPercent(randomBetween(38, 56))
-  const clipStartBottom = formatPercent(randomBetween(32, 48))
-  const clipMidTopA = formatPercent(randomBetween(0, 8))
-  const clipMidBottomA = formatPercent(randomBetween(26, 44))
-  const clipMidTopB = formatPercent(randomBetween(6, 18))
-  const clipMidBottomB = formatPercent(clamp(randomBetween(-2, 16), 0, 50))
-  const clipMidTopC = formatPercent(randomBetween(0, 14))
-  const clipMidBottomC = formatPercent(randomBetween(30, 52))
+  const xA = formatPx(amplitudeX * horizontalBias)
+  const xB = formatPx(randomBetween(amplitudeX * 0.45, amplitudeX * 0.9) * -horizontalBias)
+  const xC = formatPx(randomBetween(amplitudeX * 0.25, amplitudeX * 0.6) * horizontalBias)
+
+  const yA = formatPx(randomBetween(-amplitudeY, amplitudeY))
+  const yB = formatPx(randomBetween(-amplitudeY * 0.6, amplitudeY * 0.6))
+  const yC = formatPx(randomBetween(-amplitudeY * 0.4, amplitudeY * 0.4))
+
+  const hue = formatDeg(randomBetween(-14, 18))
+  const saturation = randomBetween(1.08, emphasizeGhost ? 1.42 : 1.28).toFixed(2)
+  const brightness = randomBetween(0.88, 1.08).toFixed(2)
+  const flashA = randomBetween(0.28, 0.6).toFixed(2)
+  const flashB = randomBetween(0.18, 0.46).toFixed(2)
+  const flashC = randomBetween(0.12, 0.32).toFixed(2)
 
   return {
-    outDelay,
-    outDuration,
-    inDelay,
-    inDuration,
-    jitterLoop,
-    ghostLoop,
-    ghostOpacity,
-    shiftX,
-    shiftY,
-    tilt,
-    glowRadius,
-    glowOpacity,
+    delay,
+    duration,
+    xA,
+    xB,
+    xC,
+    yA,
+    yB,
+    yC,
+    scaleXStart: emphasizeGhost ? clamp(scaleXMin, 0.18, 0.68) : clamp(scaleXMin, 0.65, 0.92),
+    scaleXMid,
+    scaleXMax,
+    scaleYStart: scaleYMin,
+    scaleYMid,
+    scaleYMax,
+    hue,
     saturation,
-    outScaleA,
-    outScaleB,
-    outScaleC,
-    outScaleD,
-    outTranslateXA,
-    outTranslateXB,
-    outTranslateXC,
-    outTranslateXD,
-    outTranslateYA,
-    outTranslateYB,
-    outTranslateYC,
-    outTranslateYD,
-    outOpacityA,
-    outOpacityB,
-    outOpacityC,
-    inScaleStart,
-    inScaleMidA,
-    inScaleMidB,
-    inScaleMidC,
-    inTranslateStartX,
-    inTranslateAX,
-    inTranslateBX,
-    inTranslateCX,
-    inTranslateStartY,
-    inTranslateAY,
-    inTranslateBY,
-    inTranslateCY,
-    clipStartTop,
-    clipStartBottom,
-    clipMidTopA,
-    clipMidBottomA,
-    clipMidTopB,
-    clipMidBottomB,
-    clipMidTopC,
-    clipMidBottomC
+    brightness,
+    flashA,
+    flashB,
+    flashC,
+    emphasizeGhost
   }
 }
 
-const createNavGlitchProfiles = () => {
+const createNavMotionProfiles = () => {
   const profiles = {}
-  const nonGhostButtons = NAV_LOCKED_BUTTONS
 
-  nonGhostButtons.forEach((button, index) => {
-    const baseDelay = 90 + index * 120
-    const outDelay = Math.round(randomBetween(baseDelay - 40, baseDelay + 160))
-    const outDuration = Math.round(randomBetween(420, 720))
-    const inDelay = outDelay + outDuration + Math.round(randomBetween(150, 280))
-    const inDuration = Math.round(randomBetween(760, 1180))
-    profiles[button.path] = createNavButtonGlitchProfile({ outDelay, outDuration, inDelay, inDuration })
-  })
-
-  const longestOut = nonGhostButtons.reduce((max, button) => {
-    const profile = profiles[button.path]
-    return Math.max(max, profile ? profile.outDelay + profile.outDuration : 0)
-  }, 0)
-
-  const ghostnetInDelay = longestOut + Math.round(randomBetween(240, 420))
-  const ghostnetInDuration = Math.round(randomBetween(880, 1280))
-
-  profiles[GHOSTNET_NAV_PATH] = createNavButtonGlitchProfile({
-    outDelay: 0,
-    outDuration: 0,
-    inDelay: ghostnetInDelay,
-    inDuration: ghostnetInDuration,
-    emphasizeUnlock: true
+  NAV_BUTTONS.forEach((button, index) => {
+    const emphasizeGhost = button.path === GHOSTNET_NAV_PATH
+    profiles[button.path] = createNavMotionProfile({ index, emphasizeGhost })
   })
 
   return profiles
 }
 
-const applyNavGlitchBase = (style, profile) => {
-  style['--ghostnet-assimilation-loop'] = `${profile.jitterLoop}ms`
-  style['--ghostnet-assimilation-ghost-loop'] = `${profile.ghostLoop}ms`
-  style['--ghostnet-assimilation-ghost-opacity'] = profile.ghostOpacity
-  style['--ghostnet-assimilation-shift-x'] = profile.shiftX
-  style['--ghostnet-assimilation-shift-y'] = profile.shiftY
-  style['--ghostnet-assimilation-tilt'] = profile.tilt
-  style['--ghostnet-assimilation-glow-radius'] = profile.glowRadius
-  style['--ghostnet-assimilation-glow-opacity'] = profile.glowOpacity
-  style['--ghostnet-assimilation-saturation'] = profile.saturation
-}
-
-const applyNavGlitchOut = (style, profile) => {
-  applyNavGlitchBase(style, profile)
-  style['--ghostnet-nav-glitch-out-delay'] = `${profile.outDelay}ms`
-  style['--ghostnet-nav-glitch-out-duration'] = `${profile.outDuration}ms`
-  style['--ghostnet-nav-glitch-out-scale-a'] = profile.outScaleA
-  style['--ghostnet-nav-glitch-out-scale-b'] = profile.outScaleB
-  style['--ghostnet-nav-glitch-out-scale-c'] = profile.outScaleC
-  style['--ghostnet-nav-glitch-out-scale-d'] = profile.outScaleD
-  style['--ghostnet-nav-glitch-out-translate-x-a'] = profile.outTranslateXA
-  style['--ghostnet-nav-glitch-out-translate-x-b'] = profile.outTranslateXB
-  style['--ghostnet-nav-glitch-out-translate-x-c'] = profile.outTranslateXC
-  style['--ghostnet-nav-glitch-out-translate-x-d'] = profile.outTranslateXD
-  style['--ghostnet-nav-glitch-out-translate-y-a'] = profile.outTranslateYA
-  style['--ghostnet-nav-glitch-out-translate-y-b'] = profile.outTranslateYB
-  style['--ghostnet-nav-glitch-out-translate-y-c'] = profile.outTranslateYC
-  style['--ghostnet-nav-glitch-out-translate-y-d'] = profile.outTranslateYD
-  style['--ghostnet-nav-glitch-out-opacity-a'] = profile.outOpacityA
-  style['--ghostnet-nav-glitch-out-opacity-b'] = profile.outOpacityB
-  style['--ghostnet-nav-glitch-out-opacity-c'] = profile.outOpacityC
-  style['--ghostnet-nav-glitch-out-opacity-d'] = '0'
-}
-
-const applyNavGlitchIn = (style, profile) => {
-  applyNavGlitchBase(style, profile)
-  style['--ghostnet-nav-glitch-in-delay'] = `${profile.inDelay}ms`
-  style['--ghostnet-nav-glitch-in-duration'] = `${profile.inDuration}ms`
-  style['--ghostnet-nav-glitch-in-scale-start'] = profile.inScaleStart
-  style['--ghostnet-nav-glitch-in-scale-mid-a'] = profile.inScaleMidA
-  style['--ghostnet-nav-glitch-in-scale-mid-b'] = profile.inScaleMidB
-  style['--ghostnet-nav-glitch-in-scale-mid-c'] = profile.inScaleMidC
-  style['--ghostnet-nav-glitch-in-translate-start-x'] = profile.inTranslateStartX
-  style['--ghostnet-nav-glitch-in-translate-x-a'] = profile.inTranslateAX
-  style['--ghostnet-nav-glitch-in-translate-x-b'] = profile.inTranslateBX
-  style['--ghostnet-nav-glitch-in-translate-x-c'] = profile.inTranslateCX
-  style['--ghostnet-nav-glitch-in-translate-start-y'] = profile.inTranslateStartY
-  style['--ghostnet-nav-glitch-in-translate-y-a'] = profile.inTranslateAY
-  style['--ghostnet-nav-glitch-in-translate-y-b'] = profile.inTranslateBY
-  style['--ghostnet-nav-glitch-in-translate-y-c'] = profile.inTranslateCY
-  style['--ghostnet-nav-glitch-in-clip-start-top'] = profile.clipStartTop
-  style['--ghostnet-nav-glitch-in-clip-start-bottom'] = profile.clipStartBottom
-  style['--ghostnet-nav-glitch-in-clip-mid-top-a'] = profile.clipMidTopA
-  style['--ghostnet-nav-glitch-in-clip-mid-bottom-a'] = profile.clipMidBottomA
-  style['--ghostnet-nav-glitch-in-clip-mid-top-b'] = profile.clipMidTopB
-  style['--ghostnet-nav-glitch-in-clip-mid-bottom-b'] = profile.clipMidBottomB
-  style['--ghostnet-nav-glitch-in-clip-mid-top-c'] = profile.clipMidTopC
-  style['--ghostnet-nav-glitch-in-clip-mid-bottom-c'] = profile.clipMidBottomC
+const applyNavMotionProfile = (style, profile) => {
+  if (!profile) return
+  style['--ghostnet-nav-motion-delay'] = `${profile.delay}ms`
+  style['--ghostnet-nav-motion-duration'] = `${profile.duration}ms`
+  style['--ghostnet-nav-motion-x-a'] = profile.xA
+  style['--ghostnet-nav-motion-x-b'] = profile.xB
+  style['--ghostnet-nav-motion-x-c'] = profile.xC
+  style['--ghostnet-nav-motion-y-a'] = profile.yA
+  style['--ghostnet-nav-motion-y-b'] = profile.yB
+  style['--ghostnet-nav-motion-y-c'] = profile.yC
+  style['--ghostnet-nav-motion-scale-x-start'] = profile.scaleXStart.toFixed(3)
+  style['--ghostnet-nav-motion-scale-x-mid'] = profile.scaleXMid.toFixed(3)
+  style['--ghostnet-nav-motion-scale-x-max'] = profile.scaleXMax.toFixed(3)
+  style['--ghostnet-nav-motion-scale-y-start'] = profile.scaleYStart.toFixed(3)
+  style['--ghostnet-nav-motion-scale-y-mid'] = profile.scaleYMid.toFixed(3)
+  style['--ghostnet-nav-motion-scale-y-max'] = profile.scaleYMax.toFixed(3)
+  style['--ghostnet-nav-motion-hue'] = profile.hue
+  style['--ghostnet-nav-motion-saturation'] = profile.saturation
+  style['--ghostnet-nav-motion-brightness'] = profile.brightness
+  style['--ghostnet-nav-motion-flash-a'] = profile.flashA
+  style['--ghostnet-nav-motion-flash-b'] = profile.flashB
+  style['--ghostnet-nav-motion-flash-c'] = profile.flashC
 }
 
 let IS_WINDOWS_APP = false
@@ -281,11 +176,9 @@ export default function Header ({ connected, active }) {
   }
   const [navUnlocked, setNavUnlocked] = useState(initialNavUnlockStateRef.current)
   const [navRevealState, setNavRevealState] = useState(initialNavUnlockStateRef.current ? 'complete' : 'locked')
-  const [navGlitchProfiles, setNavGlitchProfiles] = useState(() => createNavGlitchProfiles())
+  const [navMotionProfiles, setNavMotionProfiles] = useState(() => createNavMotionProfiles())
   const [pendingNavReveal, setPendingNavReveal] = useState(false)
   const navRevealTimeouts = useRef([])
-  const navGlitchInCompletedRef = useRef(new Set())
-  const navGlitchInTargetCountRef = useRef(NAV_BUTTONS.length)
   const SECRET_CODE = 'ATLAS'
 
   const clearTitleAnimationTimeouts = useCallback(() => {
@@ -349,41 +242,27 @@ export default function Header ({ connected, active }) {
     setNavRevealState(prev => {
       if (prev === 'locked') {
         shouldStart = true
-        return 'glitchOut'
+        return 'glitching'
       }
       return prev
     })
 
     if (!shouldStart) return
 
-    const profiles = createNavGlitchProfiles()
-    setNavGlitchProfiles(profiles)
+    const profiles = createNavMotionProfiles()
+    setNavMotionProfiles(profiles)
 
     clearNavRevealTimeouts()
 
-    const nonGhostProfiles = NAV_LOCKED_BUTTONS
-      .map(button => profiles[button.path])
-      .filter(Boolean)
-
-    const allProfiles = NAV_BUTTONS
-      .map(button => profiles[button.path])
-      .filter(Boolean)
-
-    const longestOut = nonGhostProfiles.reduce((max, profile) => Math.max(max, profile.outDelay + profile.outDuration), 0)
-    const glitchInStart = longestOut + 180
+    const longestDuration = NAV_BUTTONS.reduce((max, button) => {
+      const profile = profiles[button.path]
+      if (!profile) return max
+      return Math.max(max, profile.delay + profile.duration)
+    }, 0)
 
     registerNavRevealTimeout(() => {
-      setNavRevealState(prev => (prev === 'glitchOut' ? 'glitchOverlap' : prev))
-    }, glitchInStart)
-
-    const longestIn = allProfiles.reduce((max, profile) => Math.max(max, profile.inDelay + profile.inDuration), 0)
-    const completionDelay = longestIn + 320
-
-    registerNavRevealTimeout(() => {
-      if (navGlitchInCompletedRef.current.size >= navGlitchInTargetCountRef.current) {
-        setNavRevealState(prev => (prev === 'glitchOverlap' ? 'complete' : prev))
-      }
-    }, completionDelay)
+      setNavRevealState('complete')
+    }, longestDuration + 420)
   }, [clearNavRevealTimeouts, registerNavRevealTimeout])
 
   const closePirateModal = useCallback(() => {
@@ -725,23 +604,6 @@ export default function Header ({ connected, active }) {
   }, [navRevealState, pendingNavReveal, pirateModalVisible, setPendingNavReveal, startNavUnlockSequence])
 
   useEffect(() => {
-    if (navRevealState === 'glitchOverlap') {
-      navGlitchInCompletedRef.current = new Set()
-      navGlitchInTargetCountRef.current = NAV_BUTTONS.length
-    }
-  }, [navRevealState])
-
-  useEffect(() => {
-    if (navRevealState !== 'glitchOverlap') return undefined
-
-    const cancel = registerNavRevealTimeout(() => {
-      setNavRevealState(prev => (prev === 'glitchOverlap' ? 'complete' : prev))
-    }, 4800)
-
-    return cancel
-  }, [navRevealState, registerNavRevealTimeout])
-
-  useEffect(() => {
     if (!pirateModalVisible || pirateGlitch) return undefined
     const setTimeoutFn = typeof window !== 'undefined' ? window.setTimeout : setTimeout
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -767,24 +629,9 @@ export default function Header ({ connected, active }) {
   const accessibleTitle = (titleChars.join('').trimEnd()) || ORIGINAL_TITLE
   const assimilationComplete = titleAnimationState.current.completed
   const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
-  const navUnlockAnimating = navRevealState === 'glitchOut' || navRevealState === 'glitchOverlap'
+  const navUnlockAnimating = navRevealState === 'glitching'
   const disableNavButtons = navUnlockAnimating
   const navTabIndex = disableNavButtons ? -1 : 1
-  const navPreVisible = navRevealState !== 'complete'
-  const navPreOverlay = navRevealState === 'glitchOverlap'
-  const navPostVisible = navRevealState === 'complete' || navRevealState === 'glitchOverlap'
-  const navPostGlitching = navRevealState === 'glitchOverlap'
-
-  const handleNavGlitchAnimationEnd = useCallback((buttonPath, event) => {
-    if (navRevealState !== 'glitchOverlap') return
-    if (!event?.animationName || event.animationName !== 'ghostnet-nav-button-glitch-in') return
-
-    navGlitchInCompletedRef.current.add(buttonPath)
-
-    if (navGlitchInCompletedRef.current.size >= navGlitchInTargetCountRef.current) {
-      setNavRevealState(prev => (prev === 'glitchOverlap' ? 'complete' : prev))
-    }
-  }, [navRevealState])
 
   function handleNavigate (path) {
     if (path === GHOSTNET_NAV_PATH) {
@@ -800,50 +647,48 @@ export default function Header ({ connected, active }) {
     router.push(path)
   }
 
-  const renderNavButton = (button, index, variant) => {
+  const renderNavButton = (button, index) => {
     const isActive = button.path === currentPath
     const isGhostNet = button.path === GHOSTNET_NAV_PATH
     const exitActive = isGhostnetExitTransitionActive()
     const buttonClasses = [
       isActive ? 'button--active' : '',
-      isGhostNet ? 'ghostnet-nav-button' : ''
+      isGhostNet ? 'ghostnet-nav-button ghostnet-nav-button--ghost' : ''
     ]
 
-    const profile = navGlitchProfiles[button.path]
     const buttonStyle = { fontSize: '1.5rem' }
+    const ghostCollapsed = !navUnlocked && navRevealState === 'locked' && isGhostNet
+    const profile = navMotionProfiles[button.path]
 
-    if (variant === 'pre') {
-      if ((navRevealState === 'glitchOut' || navRevealState === 'glitchOverlap') && profile) {
-        buttonClasses.push('ghostnet-nav-button--glitch-phase', 'ghostnet-nav-button--glitch-out')
-        applyNavGlitchOut(buttonStyle, profile)
-      }
-    } else if (variant === 'post') {
-      if (navRevealState === 'glitchOverlap' && profile) {
-        buttonClasses.push('ghostnet-nav-button--glitch-phase', 'ghostnet-nav-button--glitch-in')
-        if (isGhostNet) {
-          buttonClasses.push('ghostnet-nav-button--unlock')
-        }
-        applyNavGlitchIn(buttonStyle, profile)
+    if (ghostCollapsed) {
+      buttonClasses.push('ghostnet-nav-button--collapsed')
+    }
+
+    if (navUnlockAnimating && profile) {
+      buttonClasses.push('ghostnet-nav-button--glitching')
+      applyNavMotionProfile(buttonStyle, profile)
+      if (isGhostNet) {
+        buttonClasses.push('ghostnet-nav-button--ghost-reveal')
+      } else {
+        buttonClasses.push('ghostnet-nav-button--shift')
       }
     }
 
-    const disabled = disableNavButtons || isActive || (isGhostNet && isGhostnetAssimilationActive()) || exitActive
-
-    const animationEndHandler = variant === 'post'
-      ? event => handleNavGlitchAnimationEnd(button.path, event)
-      : undefined
+    const disabled = ghostCollapsed || disableNavButtons || isActive || (isGhostNet && (!navUnlocked || isGhostnetAssimilationActive())) || exitActive
+    const effectiveTabIndex = disabled ? -1 : navTabIndex
+    const ariaHidden = ghostCollapsed ? 'true' : undefined
 
     return (
       <button
-        key={`${variant}-${button.path}`}
+        key={button.path}
         data-primary-navigation={index + 1}
-        tabIndex={navTabIndex}
+        tabIndex={effectiveTabIndex}
         disabled={disabled}
+        aria-hidden={ariaHidden}
         aria-current={isActive ? 'page' : undefined}
         className={buttonClasses.filter(Boolean).join(' ')}
         onClick={() => handleNavigate(button.path)}
         style={buttonStyle}
-        onAnimationEnd={animationEndHandler}
       >
         <span className='visible-small'>{button.abbr}</span>
         <span className='hidden-small'>{button.name}</span>
@@ -939,32 +784,7 @@ export default function Header ({ connected, active }) {
         id='primaryNavigation'
         className={['button-group', navUnlockAnimating ? 'button-group--nav-unlock-animating' : ''].filter(Boolean).join(' ')}
       >
-        <div className='ghostnet-nav-stack'>
-          {navPreVisible && (
-            <div
-              className={[
-                'ghostnet-nav-track',
-                'ghostnet-nav-track--pre',
-                navPreOverlay ? 'ghostnet-nav-track--overlay' : ''
-              ].filter(Boolean).join(' ')}
-              aria-hidden={navPreOverlay ? 'true' : undefined}
-            >
-              {NAV_LOCKED_BUTTONS.map((button, i) => renderNavButton(button, i, 'pre'))}
-            </div>
-          )}
-          {navPostVisible && (
-            <div
-              className={[
-                'ghostnet-nav-track',
-                'ghostnet-nav-track--post',
-                navPostGlitching ? 'ghostnet-nav-track--glitching' : ''
-              ].filter(Boolean).join(' ')}
-              aria-hidden={navPostGlitching ? 'true' : undefined}
-            >
-              {NAV_BUTTONS.map((button, i) => renderNavButton(button, i, 'post'))}
-            </div>
-          )}
-        </div>
+        {NAV_BUTTONS.map((button, i) => renderNavButton(button, i))}
       </div>
       <hr className='bold' />
       <Settings visible={settingsVisible} toggleVisible={() => setSettingsVisible(!settingsVisible)} />
