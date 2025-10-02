@@ -1901,7 +1901,7 @@ function TradeRoutesPanel () {
   const [sortField, setSortField] = useState('distance')
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
-  const [expandedRouteKey, setExpandedRouteKey] = useState(null)
+  const [selectedRouteContext, setSelectedRouteContext] = useState(null)
   const factionStandings = useFactionStandings()
   const lastAutoRefreshSystem = useRef('')
   const isMountedRef = useRef(true)
@@ -2263,19 +2263,23 @@ function TradeRoutesPanel () {
   }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, status])
 
   useEffect(() => {
-    setExpandedRouteKey(null)
+    setSelectedRouteContext(null)
   }, [rawRoutes])
 
-  const handleRowToggle = useCallback(rowId => {
-    setExpandedRouteKey(prev => (prev === rowId ? null : rowId))
+  const handleRouteSelect = useCallback((route, index) => {
+    setSelectedRouteContext({ route, index })
   }, [])
 
-  const handleRowKeyDown = useCallback((event, rowId) => {
+  const handleRouteKeyDown = useCallback((event, route, index) => {
     if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
       event.preventDefault()
-      handleRowToggle(rowId)
+      handleRouteSelect(route, index)
     }
-  }, [handleRowToggle])
+  }, [handleRouteSelect])
+
+  const handleDetailClose = useCallback(() => {
+    setSelectedRouteContext(null)
+  }, [])
 
   const renderQuantityIndicator = (entry, type) => {
     if (!entry) return null
@@ -2313,7 +2317,32 @@ function TradeRoutesPanel () {
     refreshRoutes(currentName)
   }, [currentSystem?.name, refreshRoutes])
 
-  useEffect(() => animateTableEffect(), [routes, expandedRouteKey])
+  const detailViewActive = Boolean(selectedRouteContext?.route)
+
+  useEffect(() => {
+    if (detailViewActive) return
+
+    if (typeof window === 'undefined') {
+      animateTableEffect()
+      return
+    }
+
+    if (typeof window.requestAnimationFrame !== 'function') {
+      animateTableEffect()
+      return
+    }
+
+    let frameId = window.requestAnimationFrame(() => {
+      frameId = null
+      animateTableEffect()
+    })
+
+    return () => {
+      if (frameId !== null && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(frameId)
+      }
+    }
+  }, [routes, detailViewActive])
 
   const renderRoutesTable = () => (
     <div className={styles.dataTableContainer}>
@@ -2414,26 +2443,23 @@ function TradeRoutesPanel () {
           const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
 
           const rowKey = `route-${index}`
-          const detailsId = `${rowKey}-details`
-          const isExpanded = expandedRouteKey === rowKey
           const originIconName = getStationIconName(originLocal, route?.origin)
           const destinationIconName = getStationIconName(destinationLocal, route?.destination)
-          const expansionSymbol = isExpanded ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
+          const caretSymbol = String.fromCharCode(0x203A)
 
           return (
             <React.Fragment key={rowKey}>
               <tr
-                className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
+                className={styles.tableRowInteractive}
                 data-ghostnet-table-row='pending'
-                onClick={() => handleRowToggle(rowKey)}
-                onKeyDown={event => handleRowKeyDown(event, rowKey)}
+                onClick={() => handleRouteSelect(route, index)}
+                onKeyDown={event => handleRouteKeyDown(event, route, index)}
                 role='button'
                 tabIndex={0}
-                aria-expanded={isExpanded}
-                aria-controls={isExpanded ? detailsId : undefined}
+                aria-label={`View trade route details for ${originStation} to ${destinationStation}`}
               >
                 <td className={styles.tableCellCaret} aria-hidden='true'>
-                  {expansionSymbol}
+                  {caretSymbol}
                 </td>
                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
                   <div className={styles.tableCellInline}>
@@ -2472,115 +2498,6 @@ function TradeRoutesPanel () {
                 <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{systemDistanceDisplay || '--'}</td>
                 <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{updatedDisplay || '--'}</td>
               </tr>
-              {isExpanded && (
-                <tr
-                  id={detailsId}
-                  className={styles.tableDetailRow}
-                  data-ghostnet-table-row='pending'
-                >
-                  <td style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
-                    <div className={styles.tableDetailSection}>
-                      <span
-                        style={originStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
-                        className={originStationClassName}
-                        title={originStationTitle}
-                      >
-                        {originSystemName || 'Unknown system'}
-                      </span>
-                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
-                        Faction:&nbsp;
-                        <span
-                          className={originFactionName ? originStationClassName : undefined}
-                          style={originFactionName ? { fontWeight: 600, color: originStationColor } : { fontWeight: 600, color: 'var(--ghostnet-subdued)' }}
-                          title={originStationTitle}
-                        >
-                          {originFactionName || 'Unknown faction'}
-                        </span>
-                      </span>
-                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
-                        Standing:&nbsp;
-                        {originStandingStatusText
-                          ? (
-                            <span
-                              className={originStationClassName}
-                              title={originStationTitle}
-                              style={{ fontWeight: 600, color: originStationColor }}
-                            >
-                              {originStandingStatusText}
-                            </span>
-                            )
-                          : (
-                            <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>
-                              {originFactionName ? 'No local standing data' : 'Not available'}
-                            </span>
-                          )}
-                      </span>
-                      <span>Outbound supply:&nbsp;{outboundSupplyIndicator || indicatorPlaceholder}</span>
-                      <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
-                    <div className={styles.tableDetailSection}>
-                      <span
-                        style={destinationStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
-                        className={destinationStationClassName}
-                        title={destinationStationTitle}
-                      >
-                        {destinationSystemName || 'Unknown system'}
-                      </span>
-                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
-                        Faction:&nbsp;
-                        <span
-                          className={destinationFactionName ? destinationStationClassName : undefined}
-                          style={destinationFactionName ? { fontWeight: 600, color: destinationStationColor } : { fontWeight: 600, color: 'var(--ghostnet-subdued)' }}
-                          title={destinationStationTitle}
-                        >
-                          {destinationFactionName || 'Unknown faction'}
-                        </span>
-                      </span>
-                      <span style={{ color: 'var(--ghostnet-subdued)' }}>
-                        Standing:&nbsp;
-                        {destinationStandingStatusText
-                          ? (
-                            <span
-                              className={destinationStationClassName}
-                              title={destinationStationTitle}
-                              style={{ fontWeight: 600, color: destinationStationColor }}
-                            >
-                              {destinationStandingStatusText}
-                            </span>
-                            )
-                          : (
-                            <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>
-                              {destinationFactionName ? 'No local standing data' : 'Not available'}
-                            </span>
-                          )}
-                      </span>
-                      <span>Outbound demand:&nbsp;{outboundDemandIndicator || indicatorPlaceholder}</span>
-                      <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
-                    </div>
-                  </td>
-                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span>Buy: {outboundBuy?.priceText || '--'}</span>
-                      <span>Sell: {outboundSell?.priceText || '--'}</span>
-                    </div>
-                  </td>
-                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span>Buy: {returnBuy?.priceText || '--'}</span>
-                      <span>Sell: {returnSell?.priceText || '--'}</span>
-                    </div>
-                  </td>
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                </tr>
-              )}
             </React.Fragment>
           )
         })}
@@ -2589,154 +2506,380 @@ function TradeRoutesPanel () {
     </div>
   )
 
+  const renderRouteDetailView = () => {
+    if (!selectedRouteContext?.route) return null
+
+    const { route } = selectedRouteContext
+    const originLocal = route?.origin?.local
+    const destinationLocal = route?.destination?.local
+    const originStation = originLocal?.station || route?.origin?.stationName || route?.originStation || route?.sourceStation || route?.startStation || route?.fromStation || route?.station || '--'
+    const originSystemName = originLocal?.system || route?.origin?.systemName || route?.originSystem || route?.sourceSystem || route?.startSystem || route?.fromSystem || route?.system || ''
+    const destinationStation = destinationLocal?.station || route?.destination?.stationName || route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || '--'
+    const destinationSystemName = destinationLocal?.system || route?.destination?.systemName || route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || ''
+
+    const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
+    const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
+    const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
+    const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
+    const originStationClassName = originStandingDisplay.className || undefined
+    const destinationStationClassName = destinationStandingDisplay.className || undefined
+    const originStationColor = originStandingDisplay.color
+    const destinationStationColor = destinationStandingDisplay.color
+    const originStationTitle = originStandingDisplay.title
+    const destinationStationTitle = destinationStandingDisplay.title
+    const originStandingStatusText = originStandingDisplay.statusDescription || null
+    const destinationStandingStatusText = destinationStandingDisplay.statusDescription || null
+
+    const outboundBuy = route?.origin?.buy || null
+    const outboundSell = route?.destination?.sell || null
+    const returnBuy = route?.destination?.buyReturn || null
+    const returnSell = route?.origin?.sellReturn || null
+
+    const outboundCommodity = outboundBuy?.commodity || outboundSell?.commodity || route?.commodity || '--'
+    const returnCommodity = returnBuy?.commodity || returnSell?.commodity || '--'
+
+    const outboundSupplyIndicator = renderQuantityIndicator(outboundBuy, 'supply')
+    const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand')
+    const returnSupplyIndicator = renderQuantityIndicator(returnBuy, 'supply')
+    const returnDemandIndicator = renderQuantityIndicator(returnSell, 'demand')
+    const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
+
+    const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
+    const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
+    const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
+    const routeDistanceDisplay = formatSystemDistance(route?.summary?.routeDistanceLy ?? route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.routeDistanceText || route?.summary?.distanceText || route?.distanceDisplay)
+    const systemDistanceDisplay = formatSystemDistance(route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.distanceText || route?.distanceDisplay)
+    const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
+
+    const originIconName = getStationIconName(originLocal, route?.origin)
+    const destinationIconName = getStationIconName(destinationLocal, route?.destination)
+
+    const standingFallback = text => (
+      <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>{text}</span>
+    )
+
+    const originStanding = originStandingStatusText
+      ? (
+        <span
+          className={originStationClassName}
+          title={originStationTitle}
+          style={{ fontWeight: 600, color: originStationColor }}
+        >
+          {originStandingStatusText}
+        </span>
+        )
+      : standingFallback(originFactionName ? 'No local standing data' : 'Not available')
+
+    const destinationStanding = destinationStandingStatusText
+      ? (
+        <span
+          className={destinationStationClassName}
+          title={destinationStationTitle}
+          style={{ fontWeight: 600, color: destinationStationColor }}
+        >
+          {destinationStandingStatusText}
+        </span>
+        )
+      : standingFallback(destinationFactionName ? 'No local standing data' : 'Not available')
+
+    const metrics = [
+      { label: 'Profit/Ton', value: profitPerTon || '--' },
+      { label: 'Profit/Trip', value: profitPerTrip || '--' },
+      { label: 'Profit/Hour', value: profitPerHour || '--' },
+      { label: 'Route Distance', value: routeDistanceDisplay || '--' },
+      { label: 'System Distance', value: systemDistanceDisplay || '--' },
+      { label: 'Updated', value: updatedDisplay || '--' }
+    ]
+
+    return (
+      <div className={styles.routeDetailContainer}>
+        <div className={styles.routeDetailHeader}>
+          <button type='button' className={styles.routeDetailBackButton} onClick={handleDetailClose}>
+            <span aria-hidden='true'>{String.fromCharCode(0x2039)}</span>
+            <span>Back to routes</span>
+          </button>
+          <div className={styles.routeDetailHeading}>
+            <span className={styles.routeDetailLabel}>Trade Route Intel</span>
+            <h3 className={styles.routeDetailTitle}>
+              {originStation}
+              <span className={styles.routeDetailDivider}>{String.fromCharCode(0x279E)}</span>
+              {destinationStation}
+            </h3>
+            <p className={styles.routeDetailSubhead}>
+              {originSystemName || 'Unknown system'}
+              <span className={styles.routeDetailArrow} aria-hidden='true'>{String.fromCharCode(0x2192)}</span>
+              {destinationSystemName || 'Unknown system'}
+            </p>
+          </div>
+          <div className={styles.routeDetailMeta}>
+            <span className={styles.routeDetailMetaLabel}>Last Update</span>
+            <span className={styles.routeDetailMetaValue}>{updatedDisplay || '--'}</span>
+          </div>
+        </div>
+        <div className={styles.routeDetailMetrics}>
+          {metrics.map(metric => (
+            <div key={metric.label} className={styles.routeDetailMetric}>
+              <span className={styles.routeDetailMetricLabel}>{metric.label}</span>
+              <span className={styles.routeDetailMetricValue}>{metric.value}</span>
+            </div>
+          ))}
+        </div>
+        <div className={styles.routeDetailGrid}>
+          <div className={styles.routeDetailPanel}>
+            <div className={styles.routeDetailPanelHeader}>
+              <span className={styles.routeDetailPanelLabel}>Origin</span>
+              <div className={styles.routeDetailStation}>
+                {originIconName && <StationIcon icon={originIconName} color={originStationColor} />}
+                <div className={styles.routeDetailStationInfo}>
+                  <span className={styles.routeDetailStationName}>{originStation}</span>
+                  <span className={styles.routeDetailSystem}>{originSystemName || 'Unknown system'}</span>
+                </div>
+              </div>
+            </div>
+            <div className={styles.routeDetailInfoRow}>
+              <span className={styles.routeDetailInfoLabel}>Faction</span>
+              <span className={styles.routeDetailInfoValue}>
+                <span
+                  className={originFactionName ? originStationClassName : undefined}
+                  style={originFactionName ? { fontWeight: 600, color: originStationColor } : undefined}
+                  title={originStationTitle}
+                >
+                  {originFactionName || 'Unknown faction'}
+                </span>
+              </span>
+            </div>
+            <div className={styles.routeDetailInfoRow}>
+              <span className={styles.routeDetailInfoLabel}>Standing</span>
+              <span className={styles.routeDetailInfoValue}>{originStanding}</span>
+            </div>
+            <div className={styles.routeDetailInfoRow}>
+              <span className={styles.routeDetailInfoLabel}>Outbound Supply</span>
+              <span className={styles.routeDetailInfoValue}>{outboundSupplyIndicator || indicatorPlaceholder}</span>
+            </div>
+            <div className={styles.routeDetailInfoRow}>
+              <span className={styles.routeDetailInfoLabel}>Return Demand</span>
+              <span className={styles.routeDetailInfoValue}>{returnDemandIndicator || indicatorPlaceholder}</span>
+            </div>
+            <div className={styles.routeDetailDividerLine} />
+            <div className={styles.routeDetailCommodity}>
+              <span className={styles.routeDetailCommodityLabel}>Outbound Commodity</span>
+              <span className={styles.routeDetailCommodityValue}>{outboundCommodity || '--'}</span>
+              <div className={styles.routeDetailPriceRow}>
+                <span>Buy: {outboundBuy?.priceText || '--'}</span>
+                <span>Sell: {outboundSell?.priceText || '--'}</span>
+              </div>
+            </div>
+          </div>
+          <div className={styles.routeDetailPanel}>
+            <div className={styles.routeDetailPanelHeader}>
+              <span className={styles.routeDetailPanelLabel}>Destination</span>
+              <div className={styles.routeDetailStation}>
+                {destinationIconName && <StationIcon icon={destinationIconName} color={destinationStationColor} />}
+                <div className={styles.routeDetailStationInfo}>
+                  <span className={styles.routeDetailStationName}>{destinationStation}</span>
+                  <span className={styles.routeDetailSystem}>{destinationSystemName || 'Unknown system'}</span>
+                </div>
+              </div>
+            </div>
+            <div className={styles.routeDetailInfoRow}>
+              <span className={styles.routeDetailInfoLabel}>Faction</span>
+              <span className={styles.routeDetailInfoValue}>
+                <span
+                  className={destinationFactionName ? destinationStationClassName : undefined}
+                  style={destinationFactionName ? { fontWeight: 600, color: destinationStationColor } : undefined}
+                  title={destinationStationTitle}
+                >
+                  {destinationFactionName || 'Unknown faction'}
+                </span>
+              </span>
+            </div>
+            <div className={styles.routeDetailInfoRow}>
+              <span className={styles.routeDetailInfoLabel}>Standing</span>
+              <span className={styles.routeDetailInfoValue}>{destinationStanding}</span>
+            </div>
+            <div className={styles.routeDetailInfoRow}>
+              <span className={styles.routeDetailInfoLabel}>Outbound Demand</span>
+              <span className={styles.routeDetailInfoValue}>{outboundDemandIndicator || indicatorPlaceholder}</span>
+            </div>
+            <div className={styles.routeDetailInfoRow}>
+              <span className={styles.routeDetailInfoLabel}>Return Supply</span>
+              <span className={styles.routeDetailInfoValue}>{returnSupplyIndicator || indicatorPlaceholder}</span>
+            </div>
+            <div className={styles.routeDetailDividerLine} />
+            <div className={styles.routeDetailCommodity}>
+              <span className={styles.routeDetailCommodityLabel}>Return Commodity</span>
+              <span className={styles.routeDetailCommodityValue}>{returnCommodity || '--'}</span>
+              <div className={styles.routeDetailPriceRow}>
+                <span>Buy: {returnBuy?.priceText || '--'}</span>
+                <span>Sell: {returnSell?.priceText || '--'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <section className={styles.tableSection}>
       <div className={styles.tableSectionHeader}>
         <h2 className={styles.tableSectionTitle}>Find Trade Routes</h2>
         <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
-        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-          <div>
-            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>
-              {selectedSystemName || 'Unknown'}
+        {!detailViewActive && (
+          <>
+            <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
+              <div>
+                <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+                <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>
+                  {selectedSystemName || 'Unknown'}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', flexGrow: 1 }}>
-              <button
-                type='button'
-                onClick={() => setFiltersCollapsed(prev => !prev)}
-                style={FILTER_TOGGLE_BUTTON_STYLE}
-                aria-expanded={!filtersCollapsed}
-                aria-controls='trade-route-filters'
-              >
-                {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
-              </button>
-              {filtersCollapsed && (
-                <div style={FILTER_SUMMARY_STYLE}>
-                  <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
+            <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', flexGrow: 1 }}>
                   <button
-                    type='submit'
-                    style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
-                    title='Refresh trade routes'
-                    aria-label='Refresh trade routes'
+                    type='button'
+                    onClick={() => setFiltersCollapsed(prev => !prev)}
+                    style={FILTER_TOGGLE_BUTTON_STYLE}
+                    aria-expanded={!filtersCollapsed}
+                    aria-controls='trade-route-filters'
                   >
-                    <svg
-                      viewBox='0 0 24 24'
-                      focusable='false'
-                      aria-hidden='true'
-                      style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
-                    >
-                      <path
-                        fill='currentColor'
-                        d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
-                      />
-                    </svg>
+                    {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
                   </button>
+                  {filtersCollapsed && (
+                    <div style={FILTER_SUMMARY_STYLE}>
+                      <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
+                      <button
+                        type='submit'
+                        style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
+                        title='Refresh trade routes'
+                        aria-label='Refresh trade routes'
+                      >
+                        <svg
+                          viewBox='0 0 24 24'
+                          focusable='false'
+                          aria-hidden='true'
+                          style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
+                        >
+                          <path
+                            fill='currentColor'
+                            d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {!filtersCollapsed && (
+                <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
+                  <div style={{ ...FILTER_FIELD_STYLE }}>
+                    <label style={FILTER_LABEL_STYLE}>Route Distance</label>
+                    <select
+                      value={routeDistance}
+                      onChange={event => setRouteDistance(event.target.value)}
+                      style={{ ...FILTER_CONTROL_STYLE }}
+                    >
+                      {routeDistanceOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ ...FILTER_FIELD_STYLE }}>
+                    <label style={FILTER_LABEL_STYLE}>Max Price Age</label>
+                    <select
+                      value={priceAge}
+                      onChange={event => setPriceAge(event.target.value)}
+                      style={{ ...FILTER_CONTROL_STYLE }}
+                    >
+                      {priceAgeOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ ...FILTER_FIELD_STYLE }}>
+                    <label style={FILTER_LABEL_STYLE}>Min Supply</label>
+                    <select
+                      value={minSupply}
+                      onChange={event => setMinSupply(event.target.value)}
+                      style={{ ...FILTER_CONTROL_STYLE }}
+                    >
+                      {supplyOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ ...FILTER_FIELD_STYLE }}>
+                    <label style={FILTER_LABEL_STYLE}>Min Demand</label>
+                    <select
+                      value={minDemand}
+                      onChange={event => setMinDemand(event.target.value)}
+                      style={{ ...FILTER_CONTROL_STYLE }}
+                    >
+                      {demandOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ ...FILTER_FIELD_STYLE }}>
+                    <label style={FILTER_LABEL_STYLE}>Surface Stations</label>
+                    <select
+                      value={surfacePreference}
+                      onChange={event => setSurfacePreference(event.target.value)}
+                      style={{ ...FILTER_CONTROL_STYLE }}
+                    >
+                      {surfaceOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ ...FILTER_FIELD_STYLE }}>
+                    <label style={FILTER_LABEL_STYLE}>Station Distance</label>
+                    <select
+                      value={stationDistance}
+                      onChange={event => setStationDistance(event.target.value)}
+                      style={{ ...FILTER_CONTROL_STYLE }}
+                    >
+                      {stationDistanceOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               )}
-            </div>
+            </form>
+          </>
+        )}
+      </div>
+      {detailViewActive ? (
+        <div className='ghostnet-panel-table'>
+          <div className={`scrollable ${styles.routeDetailScrollArea}`} style={TABLE_SCROLL_AREA_STYLE}>
+            {renderRouteDetailView()}
           </div>
-          {!filtersCollapsed && (
-            <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
-              <div style={{ ...FILTER_FIELD_STYLE }}>
-                <label style={FILTER_LABEL_STYLE}>Route Distance</label>
-                <select
-                  value={routeDistance}
-                  onChange={event => setRouteDistance(event.target.value)}
-                  style={{ ...FILTER_CONTROL_STYLE }}
-                >
-                  {routeDistanceOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ ...FILTER_FIELD_STYLE }}>
-                <label style={FILTER_LABEL_STYLE}>Max Price Age</label>
-                <select
-                  value={priceAge}
-                  onChange={event => setPriceAge(event.target.value)}
-                  style={{ ...FILTER_CONTROL_STYLE }}
-                >
-                  {priceAgeOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ ...FILTER_FIELD_STYLE }}>
-                <label style={FILTER_LABEL_STYLE}>Min Supply</label>
-                <select
-                  value={minSupply}
-                  onChange={event => setMinSupply(event.target.value)}
-                  style={{ ...FILTER_CONTROL_STYLE }}
-                >
-                  {supplyOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ ...FILTER_FIELD_STYLE }}>
-                <label style={FILTER_LABEL_STYLE}>Min Demand</label>
-                <select
-                  value={minDemand}
-                  onChange={event => setMinDemand(event.target.value)}
-                  style={{ ...FILTER_CONTROL_STYLE }}
-                >
-                  {demandOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ ...FILTER_FIELD_STYLE }}>
-                <label style={FILTER_LABEL_STYLE}>Surface Stations</label>
-                <select
-                  value={surfacePreference}
-                  onChange={event => setSurfacePreference(event.target.value)}
-                  style={{ ...FILTER_CONTROL_STYLE }}
-                >
-                  {surfaceOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ ...FILTER_FIELD_STYLE }}>
-                <label style={FILTER_LABEL_STYLE}>Station Distance</label>
-                <select
-                  value={stationDistance}
-                  onChange={event => setStationDistance(event.target.value)}
-                  style={{ ...FILTER_CONTROL_STYLE }}
-                >
-                  {stationDistanceOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-        </form>
-      </div>
-      <div className='ghostnet-panel-table'>
-        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-          {message && status !== 'idle' && status !== 'loading' && (
-            <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
-          )}
-          {status === 'idle' && (
-            <div className={styles.tableIdleState}>Tune the filters and pulse refresh to surface profitable corridors.</div>
-          )}
-          {status === 'loading' && (
-            <LoadingSpinner label='Loading trade routes…' />
-          )}
-          {status === 'error' && (
-            <div className={styles.tableErrorState}>{error || 'Unable to fetch trade routes.'}</div>
-          )}
-          {status === 'empty' && (
-            <div className={styles.tableEmptyState}>No profitable routes detected near {selectedSystemName || 'Unknown System'}.</div>
-          )}
-          {status === 'populated' && renderRoutesTable()}
         </div>
-      </div>
+      ) : (
+        <div className='ghostnet-panel-table'>
+          <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
+            {message && status !== 'idle' && status !== 'loading' && (
+              <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
+            )}
+            {status === 'idle' && (
+              <div className={styles.tableIdleState}>Tune the filters and pulse refresh to surface profitable corridors.</div>
+            )}
+            {status === 'loading' && (
+              <LoadingSpinner label='Loading trade routes…' />
+            )}
+            {status === 'error' && (
+              <div className={styles.tableErrorState}>{error || 'Unable to fetch trade routes.'}</div>
+            )}
+            {status === 'empty' && (
+              <div className={styles.tableEmptyState}>No profitable routes detected near {selectedSystemName || 'Unknown System'}.</div>
+            )}
+            {status === 'populated' && renderRoutesTable()}
+          </div>
+        </div>
+      )}
     </section>
   )
 }

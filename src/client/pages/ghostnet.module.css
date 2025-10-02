@@ -680,6 +680,320 @@
   font-size: 0.82rem;
 }
 
+.routeDetailScrollArea {
+  padding: 2.25rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.routeDetailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.routeDetailHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.75rem 2rem;
+  background: linear-gradient(135deg, rgba(45, 25, 98, 0.85), rgba(26, 17, 60, 0.9));
+  border: 1px solid rgba(140, 92, 255, 0.38);
+  border-radius: 1.25rem;
+  box-shadow: 0 1.5rem 3rem rgba(5, 8, 13, 0.55);
+}
+
+.routeDetailBackButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(140, 92, 255, 0.55);
+  background: linear-gradient(135deg, rgba(93, 46, 255, 0.62), rgba(140, 92, 255, 0.4));
+  color: #f5f1ff;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 0.66rem;
+  cursor: pointer;
+  transition: background 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+  text-shadow: 0 0 14px rgba(93, 46, 255, 0.45);
+}
+
+.routeDetailBackButton:hover,
+.routeDetailBackButton:focus-visible {
+  background: linear-gradient(135deg, rgba(117, 70, 255, 0.8), rgba(140, 92, 255, 0.55));
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(93, 46, 255, 0.4);
+}
+
+.routeDetailBackButton:focus-visible {
+  outline: 2px solid #29f3c3;
+  outline-offset: 3px;
+}
+
+.routeDetailBackButton:active {
+  background: linear-gradient(135deg, rgba(42, 14, 130, 0.75), rgba(93, 46, 255, 0.5));
+  transform: translateY(1px);
+  box-shadow: 0 0 12px rgba(42, 14, 130, 0.48);
+}
+
+.routeDetailHeading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  flex: 1;
+}
+
+.routeDetailLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-size: 0.68rem;
+  color: rgba(245, 241, 255, 0.7);
+}
+
+.routeDetailTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  font-size: 1.65rem;
+  color: #f5f1ff;
+  text-shadow: 0 0 14px rgba(93, 46, 255, 0.45);
+  margin: 0;
+}
+
+.routeDetailDivider {
+  color: #29f3c3;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.routeDetailSubhead {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+  font-size: 0.92rem;
+  color: rgba(245, 241, 255, 0.74);
+}
+
+.routeDetailArrow {
+  color: rgba(245, 241, 255, 0.6);
+  font-size: 1.1rem;
+}
+
+.routeDetailMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 160px;
+  padding: 0.9rem 1.25rem;
+  border-radius: 1rem;
+  background: rgba(35, 20, 68, 0.85);
+  border: 1px solid rgba(140, 92, 255, 0.35);
+  color: rgba(245, 241, 255, 0.78);
+}
+
+.routeDetailMetaLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.65rem;
+  color: rgba(245, 241, 255, 0.6);
+}
+
+.routeDetailMetaValue {
+  font-size: 0.98rem;
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  color: #f5f1ff;
+}
+
+.routeDetailMetrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+}
+
+.routeDetailMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.15rem 1.35rem;
+  border-radius: 1.1rem;
+  background: rgba(22, 15, 44, 0.92);
+  border: 1px solid rgba(140, 92, 255, 0.32);
+  box-shadow: 0 1.2rem 2.4rem rgba(4, 7, 12, 0.55);
+}
+
+.routeDetailMetricLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.68rem;
+  color: rgba(245, 241, 255, 0.62);
+}
+
+.routeDetailMetricValue {
+  font-size: 1.05rem;
+  color: #f5f1ff;
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+}
+
+.routeDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem;
+}
+
+.routeDetailPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.75rem 1.9rem;
+  background: rgba(12, 10, 28, 0.92);
+  border: 1px solid rgba(140, 92, 255, 0.32);
+  border-radius: 1.25rem;
+  box-shadow: 0 1.45rem 2.8rem rgba(4, 7, 12, 0.55);
+}
+
+.routeDetailPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.routeDetailPanelLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.68rem;
+  color: rgba(245, 241, 255, 0.62);
+}
+
+.routeDetailStation {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.routeDetailStation :global(svg) {
+  width: 1.65rem;
+  height: 1.65rem;
+}
+
+.routeDetailStationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.routeDetailStationName {
+  font-size: 1.05rem;
+  color: #f5f1ff;
+  font-weight: 600;
+}
+
+.routeDetailSystem {
+  font-size: 0.85rem;
+  color: rgba(245, 241, 255, 0.62);
+}
+
+.routeDetailInfoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  color: rgba(245, 241, 255, 0.78);
+  font-size: 0.92rem;
+}
+
+.routeDetailInfoLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  color: rgba(245, 241, 255, 0.58);
+}
+
+.routeDetailInfoValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+}
+
+.routeDetailDividerLine {
+  height: 1px;
+  width: 100%;
+  background: rgba(140, 92, 255, 0.25);
+  margin: 0.5rem 0 0.75rem;
+}
+
+.routeDetailCommodity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: rgba(245, 241, 255, 0.84);
+}
+
+.routeDetailCommodityLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.68rem;
+  color: rgba(245, 241, 255, 0.6);
+}
+
+.routeDetailCommodityValue {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #f5f1ff;
+}
+
+.routeDetailPriceRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  font-size: 0.88rem;
+  color: rgba(245, 241, 255, 0.74);
+}
+
+@media (max-width: 1100px) {
+  .routeDetailHeader {
+    padding: 1.5rem;
+  }
+
+  .routeDetailGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .routeDetailScrollArea {
+    padding: 1.75rem 1.4rem;
+  }
+
+  .routeDetailHeader {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .routeDetailHeading {
+    align-items: center;
+  }
+
+  .routeDetailMeta {
+    align-self: center;
+  }
+
+  .routeDetailMetrics {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
 .tableEntry {
   display: flex;
   flex-direction: column;
