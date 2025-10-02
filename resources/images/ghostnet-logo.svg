@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="gn-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FA9600" />
+      <stop offset="100%" stop-color="#B44A00" />
+    </linearGradient>
+    <linearGradient id="gn-cyan" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14F5FF" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#0B99FF" stop-opacity="0.9" />
+    </linearGradient>
+    <filter id="gn-glow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="32" fill="#05060A" />
+  <g filter="url(#gn-glow)">
+    <path d="M96 160v32h48v-32zm272 0v32h48v-32z" fill="#0B99FF" opacity="0.6" />
+    <path d="M128 136l32-32h64l-32 32zm160 0l32-32h64l-32 32z" fill="#FA9600" opacity="0.65" />
+    <path d="M256 80c-95 0-172 77-172 172 0 40 13 76 36 105l-25 72 84-30 22 68 55-47h60l55 47 22-68 84 30-25-72c23-29 36-65 36-105 0-95-77-172-172-172z" fill="url(#gn-cyan)" opacity="0.18" />
+    <path d="M256 108c-82 0-148 66-148 148 0 37 13 71 37 97l-19 56 64-23 18 55 48-40h50l48 40 18-55 64 23-19-56c24-26 37-60 37-97 0-82-66-148-148-148z" fill="#05060A" stroke="#14F5FF" stroke-width="6" />
+    <path d="M256 132c-69 0-124 55-124 124 0 33 11 61 31 85l-14 41 41-15 14 44 36-30h32l36 30 14-44 41 15-14-41c20-24 31-52 31-85 0-69-55-124-124-124z" fill="url(#gn-orange)" stroke="#0B99FF" stroke-width="4" />
+    <path d="M194 214c-28 0-50 22-50 50 0 20 12 37 30 45l-16 42 40-14 16 40 30-26h54l30 26 16-40 40 14-16-42c18-8 30-25 30-45 0-28-22-50-50-50-14 0-26 5-36 14-15-18-37-30-62-30s-47 12-62 30c-10-9-22-14-36-14z" fill="#05060A" />
+    <path d="M194 214c-28 0-50 22-50 50 0 20 12 37 30 45l-16 42 40-14 16 40 30-26h54l30 26 16-40 40 14-16-42c18-8 30-25 30-45 0-28-22-50-50-50-14 0-26 5-36 14-15-18-37-30-62-30s-47 12-62 30c-10-9-22-14-36-14z" stroke="#14F5FF" stroke-width="4" fill="none" />
+    <path d="M210 244c-18 0-34 16-34 36 0 16 10 29 24 34l-12 32 26-9 12 30 22-19h16l22 19 12-30 26 9-12-32c14-5 24-18 24-34 0-20-16-36-34-36-16 0-28 10-34 22-6-12-18-22-34-22z" fill="#05060A" />
+    <path d="M210 244c-18 0-34 16-34 36 0 16 10 29 24 34l-12 32 26-9 12 30 22-19h16l22 19 12-30 26 9-12-32c14-5 24-18 24-34 0-20-16-36-34-36-16 0-28 10-34 22-6-12-18-22-34-22z" stroke="#FA9600" stroke-width="3" fill="none" />
+    <path d="M202 258l36 12-20 36-36-12zm108 0l36 12-36 36-20-36z" fill="#0B99FF" />
+    <path d="M246 310l10 18 10-18-10-18z" fill="#14F5FF" />
+    <path d="M256 144v-40m-44 52-32-64m120 64 32-64" stroke="#14F5FF" stroke-width="6" stroke-linecap="round" />
+    <path d="M128 208h-32m320 0h-32m-272 96h-32m320 0h-32" stroke="#0B99FF" stroke-width="6" stroke-linecap="round" stroke-dasharray="16 18" />
+    <path d="M96 352h56l48 48h112l48-48h56" stroke="#FA9600" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <path d="M160 408c26 30 60 46 96 46s70-16 96-46" stroke="#14F5FF" stroke-width="6" stroke-linecap="round" fill="none" />
+  </g>
+</svg>
