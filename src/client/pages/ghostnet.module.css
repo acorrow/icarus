@@ -1258,6 +1258,11 @@
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 88%, transparent);
 }
 
+.ghostnet :global(.ghostnet-panel-table table thead tr th::after) {
+  border-bottom: 0.2rem solid var(--ghostnet-color-primary);
+  box-shadow: 0 0.03rem 0.5rem color-mix(in srgb, var(--ghostnet-color-primary) 60%, transparent);
+}
+
 .ghostnet :global(.ghostnet-panel-table tbody tr) {
   border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
 }
