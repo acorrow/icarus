@@ -57,6 +57,107 @@ LoadingSpinner.defaultProps = {
   inline: false
 }
 
+const STARTUP_SPINNER_SESSION_KEY = 'ghostnet.session.startupSpinner.v1'
+const STARTUP_SPINNER_ORBIT_ICONS = ['cargo', 'route', 'asteroid-base', 'megaship']
+const STARTUP_SPINNER_TELEMETRY = [
+  { icon: 'route', label: 'Corsair handshake', value: 'Authenticated' },
+  { icon: 'cargo', label: 'Contraband uplink', value: 'Synchronized' },
+  { icon: 'megaship', label: 'Ghost flag signature', value: 'Verified' }
+]
+
+function StartupSpinnerIcon ({ name, size = 48, color = 'var(--ghostnet-accent)' }) {
+  if (!name) return null
+  const paths = Icons[name]
+  if (!paths) return null
+  const viewBox = name === 'asteroid-base' ? '0 0 2000 2000' : '0 0 1000 1000'
+  return (
+    <svg
+      viewBox={viewBox}
+      focusable='false'
+      aria-hidden='true'
+      className={styles.startupSpinnerIcon}
+      style={{ width: size, height: size, fill: color }}
+    >
+      {paths}
+    </svg>
+  )
+}
+
+StartupSpinnerIcon.defaultProps = {
+  name: '',
+  size: 48,
+  color: 'var(--ghostnet-accent)'
+}
+
+function StartupSpinnerOverlay ({ active }) {
+  return (
+    <div
+      className={`${styles.startupSpinner} ${active ? styles.startupSpinnerActive : ''}`}
+      role='status'
+      aria-live='assertive'
+      aria-label='Ghost Net pirate link initializing'
+    >
+      <div className={styles.startupSpinnerContent}>
+        <span className={styles.startupSpinnerBadge}>
+          <i className='icon icarus-terminal-warning' aria-hidden='true' />
+          GhostNet Corsair Link
+        </span>
+        <div className={styles.startupSpinnerCore}>
+          <div className={styles.startupSpinnerRings} aria-hidden='true'>
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className={styles.startupSpinnerOrbit} aria-hidden='true'>
+            {STARTUP_SPINNER_ORBIT_ICONS.map((icon, index) => {
+              const angle = (index / STARTUP_SPINNER_ORBIT_ICONS.length) * 360
+              return (
+                <div
+                  key={`${icon}-${index}`}
+                  className={styles.startupSpinnerOrbitIcon}
+                  style={{ transform: `rotate(${angle}deg) translateY(-7.25rem)` }}
+                >
+                  <div
+                    className={styles.startupSpinnerOrbitIconInner}
+                    style={{ transform: `rotate(${-angle}deg)`, animationDelay: `${index * 0.18}s` }}
+                  >
+                    <StartupSpinnerIcon name={icon} size={40} color='var(--ghostnet-ink)' />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div className={styles.startupSpinnerGlyph} aria-hidden='true'>
+            <StartupSpinnerIcon name='fleet-carrier' size={84} color='var(--ghostnet-ink)' />
+          </div>
+          <span className={styles.startupSpinnerSymbol} aria-hidden='true'>☠</span>
+        </div>
+        <div className={styles.startupSpinnerText}>
+          <p className={styles.startupSpinnerHeadline}>Decrypting pirate relays…</p>
+          <p className={styles.startupSpinnerSubline}>
+            Splicing hidden buccaneer beacons into the GhostNet mesh.
+          </p>
+        </div>
+        <ul className={styles.startupSpinnerTelemetry}>
+          {STARTUP_SPINNER_TELEMETRY.map(entry => (
+            <li key={entry.label}>
+              <span className={styles.startupSpinnerTelemetryIcon} aria-hidden='true'>
+                <i className={`icon icarus-terminal-${entry.icon}`} />
+              </span>
+              <span className={styles.startupSpinnerTelemetryLabel}>{entry.label}</span>
+              <span className={styles.startupSpinnerTelemetryValue}>{entry.value}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+StartupSpinnerOverlay.defaultProps = {
+  active: false
+}
+
 function normaliseName (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
@@ -3095,6 +3196,8 @@ function PristineMiningPanel () {
 
 export default function GhostnetPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
+  const [startupSpinnerVisible, setStartupSpinnerVisible] = useState(false)
+  const [startupSpinnerActive, setStartupSpinnerActive] = useState(false)
   const { connected, ready, active: socketActive } = useSocket()
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
@@ -3105,6 +3208,57 @@ export default function GhostnetPage() {
       document.body.classList.remove('ghostnet-theme')
     }
   }, [])
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    let shouldShow = false
+    try {
+      shouldShow = window.sessionStorage.getItem(STARTUP_SPINNER_SESSION_KEY) !== 'seen'
+      if (shouldShow) {
+        window.sessionStorage.setItem(STARTUP_SPINNER_SESSION_KEY, 'seen')
+      }
+    } catch (err) {
+      if (!window.__ghostnetStartupPlayed) {
+        shouldShow = true
+        window.__ghostnetStartupPlayed = true
+      }
+    }
+
+    if (!shouldShow) return undefined
+
+    let cancelled = false
+    setStartupSpinnerVisible(true)
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      if (!cancelled) setStartupSpinnerActive(true)
+    })
+
+    const hideTimer = window.setTimeout(() => {
+      if (!cancelled) setStartupSpinnerActive(false)
+    }, 2600)
+
+    const cleanupTimer = window.setTimeout(() => {
+      if (!cancelled) setStartupSpinnerVisible(false)
+    }, 3200)
+
+    return () => {
+      cancelled = true
+      window.cancelAnimationFrame(animationFrame)
+      window.clearTimeout(hideTimer)
+      window.clearTimeout(cleanupTimer)
+    }
+  }, [])
+  useEffect(() => {
+    if (typeof document === 'undefined' || !document.body) return undefined
+    if (!startupSpinnerVisible) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [startupSpinnerVisible])
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Commodity Trade', icon: 'cargo', active: activeTab === 'commodityTrade', onClick: () => setActiveTab('commodityTrade') },
@@ -3129,6 +3283,9 @@ export default function GhostnetPage() {
     <Layout connected active ready loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div className={styles.ghostnet}>
+          {startupSpinnerVisible ? (
+            <StartupSpinnerOverlay active={startupSpinnerActive} />
+          ) : null}
           <div className={styles.shell}>
             <section className={styles.header} aria-labelledby='ghostnet-heading'>
               <div>
