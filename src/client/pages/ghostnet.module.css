@@ -254,9 +254,10 @@
 
 .dataTableContainer {
   position: relative;
-  border: 1px solid rgba(216, 180, 254, 0.24);
+  border: 1px solid rgba(140, 92, 255, 0.38);
   border-radius: 1.25rem;
-  background: rgba(7, 10, 18, 0.92);
+  background: radial-gradient(circle at 50% 0%, rgba(93, 46, 255, 0.18), transparent 65%),
+    linear-gradient(180deg, rgba(9, 8, 26, 0.95) 0%, rgba(7, 11, 20, 0.94) 100%);
   box-shadow: 0 1.65rem 3.75rem rgba(3, 7, 12, 0.78);
   overflow: hidden;
 }
@@ -279,11 +280,12 @@
 }
 
 .dataTable thead {
-  background: linear-gradient(180deg, rgba(12, 16, 26, 0.96) 0%, rgba(7, 11, 20, 0.94) 100%);
+  background: linear-gradient(180deg, rgba(93, 46, 255, 0.85) 0%, rgba(42, 14, 130, 0.8) 75%, rgba(140, 92, 255, 0.65) 100%);
+  box-shadow: inset 0 -1px 0 rgba(140, 92, 255, 0.38);
 }
 
 .dataTable thead tr {
-  border-bottom: 1px solid rgba(216, 180, 254, 0.22);
+  border-bottom: 1px solid rgba(140, 92, 255, 0.45);
 }
 
 .dataTable thead th {
@@ -291,17 +293,21 @@
   font-size: 0.72rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--ghostnet-subdued);
+  color: rgba(245, 241, 255, 0.88);
   font-weight: 600;
   text-align: left;
   white-space: nowrap;
 }
 
 .dataTable tbody tr {
-  background: rgba(5, 8, 13, 0.78);
-  border-bottom: 1px solid rgba(216, 180, 254, 0.14);
+  background: linear-gradient(180deg, rgba(13, 11, 26, 0.86) 0%, rgba(16, 9, 38, 0.76) 100%);
+  border-bottom: 1px solid rgba(140, 92, 255, 0.25);
   transition: background 0.25s ease, transform 0.25s ease;
   font-size: 0.95rem;
+}
+
+.dataTable tbody tr:nth-child(even) {
+  background: rgba(27, 16, 58, 0.45);
 }
 
 .dataTable tbody tr:last-child {
@@ -309,7 +315,7 @@
 }
 
 .dataTable tbody tr:hover {
-  background: rgba(127, 233, 255, 0.16);
+  background: rgba(93, 46, 255, 0.18);
 }
 
 .dataTable td {
@@ -668,8 +674,8 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table) {
-  background: var(--ghostnet-panel);
-  border: 1px solid var(--ghostnet-panel-border);
+  background: linear-gradient(180deg, rgba(13, 11, 26, 0.94) 0%, rgba(7, 11, 20, 0.92) 100%);
+  border: 1px solid rgba(140, 92, 255, 0.38);
   border-radius: 1.25rem;
   overflow: hidden;
   box-shadow: 0 1.75rem 3.5rem rgba(4, 9, 14, 0.75);
@@ -677,19 +683,49 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table > .scrollable) {
-  background: rgba(5, 8, 13, 0.4);
+  background: linear-gradient(180deg, rgba(9, 7, 24, 0.78) 0%, rgba(7, 11, 20, 0.9) 100%);
+  scrollbar-color: rgba(140, 92, 255, 0.6) rgba(13, 11, 26, 0.85);
+}
+
+.ghostnet :global(.ghostnet-panel-table > .scrollable::-webkit-scrollbar) {
+  width: 0.65rem;
+}
+
+.ghostnet :global(.ghostnet-panel-table > .scrollable::-webkit-scrollbar-track) {
+  background: rgba(13, 11, 26, 0.75);
+  border-radius: 0.65rem;
+}
+
+.ghostnet :global(.ghostnet-panel-table > .scrollable::-webkit-scrollbar-thumb) {
+  background: linear-gradient(180deg, rgba(93, 46, 255, 0.75) 0%, rgba(42, 14, 130, 0.85) 100%);
+  border-radius: 0.65rem;
+  box-shadow: 0 0 0 2px rgba(13, 11, 26, 0.55) inset;
+}
+
+.ghostnet :global(.ghostnet-panel-table > .scrollable::-webkit-scrollbar-thumb:hover) {
+  background: linear-gradient(180deg, rgba(117, 70, 255, 0.85) 0%, rgba(42, 14, 130, 0.9) 100%);
+}
+
+.ghostnet :global(.ghostnet-panel-table table thead) {
+  background: linear-gradient(180deg, rgba(93, 46, 255, 0.85) 0%, rgba(42, 14, 130, 0.8) 75%, rgba(140, 92, 255, 0.65) 100%);
+  box-shadow: inset 0 -1px 0 rgba(140, 92, 255, 0.38);
 }
 
 .ghostnet :global(.ghostnet-panel-table table thead tr th) {
-  border-bottom: 1px solid rgba(216, 180, 254, 0.2);
+  border-bottom: 1px solid rgba(140, 92, 255, 0.45);
+  color: rgba(245, 241, 255, 0.88);
+}
+
+.ghostnet :global(.ghostnet-panel-table tbody tr) {
+  border-bottom: 1px solid rgba(140, 92, 255, 0.25);
 }
 
 .ghostnet :global(.ghostnet-panel-table tbody tr:nth-child(even)) {
-  background: rgba(216, 180, 254, 0.06);
+  background: rgba(27, 16, 58, 0.45);
 }
 
 .ghostnet :global(.ghostnet-panel-table tbody tr:hover) {
-  background: rgba(216, 180, 254, 0.14) !important;
+  background: rgba(93, 46, 255, 0.18) !important;
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__detail) {
