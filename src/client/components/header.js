@@ -14,6 +14,7 @@ const getTargetTitleChars = () => TARGET_TITLE_PADDED.split('')
 const TITLE_PREFIX_LENGTH = 7
 const TITLE_MIN_WIDTH = `${ORIGINAL_TITLE.length}ch`
 const TITLE_GLYPHS = ['Λ', 'Ξ', 'Ψ', 'Ø', 'Σ', '✦', '✧', '☍', '⌁', '⌖', '◬', '◈', '★', '✶', '⋆']
+const createEmptyGlitchStyles = () => Array.from({ length: ORIGINAL_TITLE.length }, () => null)
 
 const NAV_BUTTONS = [
   {
@@ -56,12 +57,131 @@ export default function Header ({ connected, active }) {
   const [titleAssimilated, setTitleAssimilated] = useState(false)
   const titleAnimationState = useRef({ running: false, completed: false })
   const titleAnimationTimeouts = useRef([])
+  const [charGlitchStyles, setCharGlitchStyles] = useState(createEmptyGlitchStyles)
+  const titleGlitchLoopTimeout = useRef(null)
+  const titleGlitchRevertTimeouts = useRef([])
+  const activeTitleGlitchIndices = useRef(new Set())
+  const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
+  const isGhostnetRouteActive = currentPath === '/ghostnet'
 
   const clearTitleAnimationTimeouts = useCallback(() => {
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
     titleAnimationTimeouts.current.forEach(timeoutId => clearTimeoutFn(timeoutId))
     titleAnimationTimeouts.current = []
   }, [])
+
+  const clearTitleGlitchTimeouts = useCallback(() => {
+    const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
+    if (titleGlitchLoopTimeout.current) {
+      clearTimeoutFn(titleGlitchLoopTimeout.current)
+      titleGlitchLoopTimeout.current = null
+    }
+    titleGlitchRevertTimeouts.current.forEach(timeoutId => clearTimeoutFn(timeoutId))
+    titleGlitchRevertTimeouts.current = []
+  }, [])
+
+  const runTitleGlitch = useCallback(() => {
+    if (typeof window === 'undefined') return
+    if (!titleAnimationState.current.completed) return
+
+    const targetChars = getTargetTitleChars()
+    const glitchableIndices = targetChars.reduce((indices, char, index) => {
+      if (char !== ' ' && !activeTitleGlitchIndices.current.has(index)) {
+        indices.push(index)
+      }
+      return indices
+    }, [])
+
+    if (glitchableIndices.length === 0) return
+
+    const glitchIndex = glitchableIndices[Math.floor(Math.random() * glitchableIndices.length)]
+    const originalChar = targetChars[glitchIndex]
+    const swapToGlyph = Math.random() < 0.45
+    const glyph = TITLE_GLYPHS[Math.floor(Math.random() * TITLE_GLYPHS.length)]
+
+    if (swapToGlyph) {
+      setTitleChars(prev => {
+        if (prev[glitchIndex] === glyph) return prev
+        const next = [...prev]
+        next[glitchIndex] = glyph
+        return next
+      })
+    }
+
+    const offsetX = (Math.random() - 0.5) * 0.4
+    const offsetY = (Math.random() - 0.5) * 0.45
+    const skew = (Math.random() - 0.5) * 7
+    const scale = 1 + (Math.random() - 0.5) * 0.08
+    const opacity = Math.max(0.82, Math.min(1, 0.92 + (Math.random() - 0.5) * 0.18))
+
+    activeTitleGlitchIndices.current.add(glitchIndex)
+    setCharGlitchStyles(prev => {
+      const next = [...prev]
+      next[glitchIndex] = {
+        transform: `translate(${offsetX.toFixed(3)}ch, ${offsetY.toFixed(3)}ch) skewX(${skew.toFixed(2)}deg) scale(${scale.toFixed(3)})`,
+        opacity
+      }
+      return next
+    })
+
+    const revertDelay = 60 + Math.random() * 140
+    const revertTimeout = window.setTimeout(() => {
+      if (swapToGlyph) {
+        setTitleChars(prev => {
+          if (prev[glitchIndex] === originalChar) return prev
+          const next = [...prev]
+          next[glitchIndex] = originalChar
+          return next
+        })
+      }
+      setCharGlitchStyles(prev => {
+        const next = [...prev]
+        next[glitchIndex] = null
+        return next
+      })
+      activeTitleGlitchIndices.current.delete(glitchIndex)
+      titleGlitchRevertTimeouts.current = titleGlitchRevertTimeouts.current.filter(id => id !== revertTimeout)
+    }, revertDelay)
+    titleGlitchRevertTimeouts.current.push(revertTimeout)
+  }, [])
+
+  const startTitleGlitching = useCallback(() => {
+    if (titleGlitchLoopTimeout.current) return
+    if (typeof window === 'undefined') return
+
+    const scheduleNext = () => {
+      const minDelay = 900
+      const maxDelay = 2600
+      const delay = minDelay + Math.random() * (maxDelay - minDelay)
+      titleGlitchLoopTimeout.current = window.setTimeout(() => {
+        titleGlitchLoopTimeout.current = null
+        runTitleGlitch()
+        scheduleNext()
+      }, delay)
+    }
+
+    scheduleNext()
+  }, [runTitleGlitch])
+
+  const stopTitleGlitching = useCallback((restoreTitle = true) => {
+    clearTitleGlitchTimeouts()
+    activeTitleGlitchIndices.current.clear()
+    setCharGlitchStyles(prev => {
+      const hasActiveStyles = prev.some(style => style !== null)
+      if (!hasActiveStyles) return prev
+      return createEmptyGlitchStyles()
+    })
+
+    if (restoreTitle && titleAnimationState.current.completed) {
+      setTitleChars(prev => {
+        const targetChars = getTargetTitleChars()
+        if (prev.length === targetChars.length && prev.every((char, index) => char === targetChars[index])) {
+          return prev
+        }
+        return targetChars
+      })
+    }
+  }, [clearTitleGlitchTimeouts])
 
   const startTitleMorph = useCallback(() => {
     if (titleAnimationState.current.running || titleAnimationState.current.completed) return
@@ -174,8 +294,9 @@ export default function Header ({ connected, active }) {
   useEffect(() => {
     return () => {
       clearTitleAnimationTimeouts()
+      clearTitleGlitchTimeouts()
     }
-  }, [clearTitleAnimationTimeouts])
+  }, [clearTitleAnimationTimeouts, clearTitleGlitchTimeouts])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
@@ -201,6 +322,20 @@ export default function Header ({ connected, active }) {
     }
   }, [startTitleMorph])
 
+  useEffect(() => {
+    if (!titleAssimilated) return undefined
+
+    if (isGhostnetRouteActive) {
+      startTitleGlitching()
+      return () => {
+        stopTitleGlitching(true)
+      }
+    }
+
+    stopTitleGlitching(true)
+    return undefined
+  }, [isGhostnetRouteActive, startTitleGlitching, stopTitleGlitching, titleAssimilated])
+
   let signalClassName = 'icon icarus-terminal-signal '
   if (!connected) {
     signalClassName += 'text-primary'
@@ -210,7 +345,6 @@ export default function Header ({ connected, active }) {
     signalClassName += 'text-primary'
   }
 
-  const currentPath = `/${router.pathname.split('/')[1].toLowerCase()}`
   const accessibleTitle = (titleChars.join('').trimEnd()) || ORIGINAL_TITLE
   const assimilationComplete = titleAnimationState.current.completed
   const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
@@ -240,10 +374,13 @@ export default function Header ({ connected, active }) {
               const charClasses = ['ghostnet-title-morph__char']
               if (char === ' ') charClasses.push('ghostnet-title-morph__char--space')
               if (index >= smallVisibleLimit) charClasses.push('hidden-small')
+              const charStyle = charGlitchStyles[index]
+              if (charStyle) charClasses.push('ghostnet-title-morph__char--glitch')
               return (
                 <span
                   key={`title-char-${index}`}
                   className={charClasses.join(' ')}
+                  style={charStyle || undefined}
                 >
                   {displayChar}
                 </span>

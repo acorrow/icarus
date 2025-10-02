@@ -22,6 +22,7 @@
   width: 1ch;
 }
 
-.ghostnet-title-morph--assimilated .ghostnet-title-morph__char {
-  color: rgb(216, 180, 254);
+.ghostnet-title-morph__char--glitch {
+  text-shadow: 0 0 0.45rem rgba(93, 46, 255, 0.55), 0 0 0.2rem rgba(41, 243, 195, 0.35);
+  filter: contrast(1.08);
 }
