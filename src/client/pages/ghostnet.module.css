@@ -494,6 +494,15 @@
   transform: translateY(1px);
 }
 
+.detailContextAction[disabled],
+.detailContextAction[aria-disabled='true'] {
+  cursor: default;
+  opacity: 0.6;
+  box-shadow: none;
+  transform: none;
+  pointer-events: none;
+}
+
 .detailContextSummaryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

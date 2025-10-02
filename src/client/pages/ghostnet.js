@@ -2043,7 +2043,10 @@ function CommodityTradePanel () {
   const marketStatus = valuation?.metadata?.marketStatus || 'idle'
   const historyStatus = valuation?.metadata?.historyStatus || 'idle'
 
-  const showSummaryContext = !detailViewActive && Boolean(activeSummaryRow)
+  const showSummaryContext = Boolean(activeSummaryRow)
+  const summaryContextViewing = Boolean(
+    showSummaryContext && detailViewActive && detailContext?.rowKey === activeSummaryRow?.key
+  )
 
   const summaryCommodityName = showSummaryContext
     ? (activeSummaryRow?.item?.name || activeSummaryRow?.item?.symbol || 'Unknown Commodity')
@@ -2467,9 +2470,15 @@ function CommodityTradePanel () {
               <button
                 type='button'
                 className={styles.detailContextAction}
-                onClick={() => activeSummaryRow && handleCommoditySelect(activeSummaryRow)}
+                onClick={() => {
+                  if (!summaryContextViewing && activeSummaryRow) {
+                    handleCommoditySelect(activeSummaryRow)
+                  }
+                }}
+                disabled={summaryContextViewing}
+                aria-disabled={summaryContextViewing}
               >
-                Resume Intel
+                {summaryContextViewing ? 'Viewing Intel' : 'Resume Intel'}
               </button>
             </div>
             <div className={styles.detailContextSummaryGrid}>
