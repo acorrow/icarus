@@ -28,7 +28,7 @@
   filter: blur(0.038rem) contrast(1.06) saturate(1.05);
 }
 
-.pirate-password-overlay {
+.pirate-cipher-overlay {
   position: fixed;
   inset: 0;
   display: flex;
@@ -39,7 +39,7 @@
   backdrop-filter: blur(0.2rem);
 }
 
-.pirate-password-dialog {
+.pirate-cipher-dialog {
   position: relative;
   width: min(90vw, 38rem);
   padding: 3.6rem 3.2rem 3.1rem;
@@ -54,7 +54,7 @@
   overflow: hidden;
 }
 
-.pirate-password-dialog--glitch {
+.pirate-cipher-dialog--glitch {
   --ghostnet-assimilation-glow-radius: 2.4rem;
   --ghostnet-assimilation-glow-opacity: 0.65;
   --ghostnet-assimilation-shift-x: 6px;
@@ -63,16 +63,16 @@
   animation: none !important;
 }
 
-.pirate-password-dialog--glitch.ghostnet-assimilation-target {
+.pirate-cipher-dialog--glitch.ghostnet-assimilation-target {
   animation: none !important;
 }
 
-.pirate-password-dialog--glitch.ghostnet-assimilation-target::before {
+.pirate-cipher-dialog--glitch.ghostnet-assimilation-target::before {
   opacity: 0.5;
   z-index: 1;
 }
 
-.pirate-password-dialog__inner-frame {
+.pirate-cipher-dialog__inner-frame {
   position: absolute;
   inset: 0.75rem;
   border-radius: 0.95rem;
@@ -84,7 +84,7 @@
   z-index: 0;
 }
 
-.pirate-password-dialog__surface-glow {
+.pirate-cipher-dialog__surface-glow {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(93, 46, 255, 0.24), transparent 28%);
@@ -94,11 +94,11 @@
   transition: opacity 0.35s ease;
 }
 
-.pirate-password-dialog--glitch .pirate-password-dialog__surface-glow {
+.pirate-cipher-dialog--glitch .pirate-cipher-dialog__surface-glow {
   opacity: 0.2;
 }
 
-.pirate-password-dialog__chrome {
+.pirate-cipher-dialog__chrome {
   position: absolute;
   top: 1.1rem;
   left: 1.5rem;
@@ -112,7 +112,7 @@
   z-index: 1;
 }
 
-.pirate-password-dialog__chrome-light {
+.pirate-cipher-dialog__chrome-light {
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
@@ -120,19 +120,19 @@
   opacity: 0.88;
 }
 
-.pirate-password-dialog__chrome-light--primary {
+.pirate-cipher-dialog__chrome-light--primary {
   color: rgba(41, 243, 195, 0.95);
 }
 
-.pirate-password-dialog__chrome-light--secondary {
+.pirate-cipher-dialog__chrome-light--secondary {
   color: rgba(93, 46, 255, 0.85);
 }
 
-.pirate-password-dialog__chrome-light--tertiary {
+.pirate-cipher-dialog__chrome-light--tertiary {
   color: rgba(255, 95, 193, 0.9);
 }
 
-.pirate-password-dialog__body {
+.pirate-cipher-dialog__body {
   position: relative;
   z-index: 2;
   display: flex;
@@ -140,19 +140,19 @@
   gap: 1.4rem;
 }
 
-.pirate-password-form {
+.pirate-cipher-form {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.pirate-password-title {
+.pirate-cipher-title {
   font-size: 2.6rem;
   letter-spacing: 0.14em;
   margin-bottom: 1rem;
 }
 
-.pirate-password-subtitle {
+.pirate-cipher-subtitle {
   font-size: 1.2rem;
   margin: 0 0 2rem 0;
   color: rgba(245, 241, 255, 0.68);
@@ -161,43 +161,47 @@
   margin-right: auto;
 }
 
-.pirate-password-label {
+.pirate-cipher-label {
   display: block;
-  font-size: 1rem;
-  letter-spacing: 0.3em;
+  font-size: 1.2rem;
+  letter-spacing: 0.4em;
   margin: 0 auto 0.8rem;
   width: 100%;
   max-width: 25rem;
 }
 
 
-.pirate-password-input {
+.pirate-cipher-input {
   width: 100%;
   max-width: 25rem;
   margin: 0 auto;
-  padding: 1.1rem 1.5rem;
-  font-size: 1.6rem;
+  padding: 1.4rem 2rem;
+  font-size: 3.2rem;
+  font-weight: 600;
+  line-height: 1;
   color: #F5F1FF;
   background: rgba(13, 11, 26, 0.9);
   border: 1px solid rgba(140, 92, 255, 0.42);
   border-radius: 0.9rem;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.6em;
   text-align: center;
+  text-transform: uppercase;
   box-shadow: inset 0 0 0.8rem rgba(93, 46, 255, 0.18);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  caret-color: #29F3C3;
 }
 
-.pirate-password-input:focus {
+.pirate-cipher-input:focus {
   outline: none;
   border-color: #29F3C3;
   box-shadow: 0 0 0 0.2rem rgba(41, 243, 195, 0.3);
 }
 
-.pirate-password-input--error {
+.pirate-cipher-input--error {
   border-color: #FF5FC1;
 }
 
-.pirate-password-submit {
+.pirate-cipher-submit {
   margin-top: 2rem;
   width: 100%;
   max-width: 17rem;
@@ -207,7 +211,7 @@
   box-shadow: 0 0 1.2rem rgba(93, 46, 255, 0.35);
 }
 
-.pirate-password-feedback {
+.pirate-cipher-feedback {
   min-height: 2.4rem;
   margin: 1.6rem auto 0;
   width: 100%;
@@ -221,19 +225,19 @@
   box-shadow: inset 0 0 0.9rem rgba(93, 46, 255, 0.22);
 }
 
-.pirate-password-feedback:empty {
+.pirate-cipher-feedback:empty {
   display: none;
 }
 
-.pirate-password-feedback--error {
+.pirate-cipher-feedback--error {
   color: #FF5FC1;
 }
 
-.pirate-password-feedback--locked {
+.pirate-cipher-feedback--locked {
   color: #FF5FC1;
 }
 
-.pirate-password-success {
+.pirate-cipher-success {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -241,13 +245,13 @@
   gap: 1.5rem;
 }
 
-.pirate-password-success__icon {
+.pirate-cipher-success__icon {
   font-size: 6rem;
   color: #29F3C3;
   text-shadow: 0 0 1.8rem rgba(41, 243, 195, 0.55);
 }
 
-.pirate-password-success__text {
+.pirate-cipher-success__text {
   font-size: 1.8rem;
   letter-spacing: 0.2em;
   color: rgba(245, 241, 255, 0.88);
@@ -255,6 +259,14 @@
 
 .button-group--nav-unlock-animating {
   pointer-events: none;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.button-group--nav-unlock-animating button {
+  width: auto;
+  flex: 1 1 0;
+  transition: flex-basis 0.45s ease, width 0.45s ease;
 }
 
 .ghostnet-nav-button--glitch-phase {
@@ -272,6 +284,7 @@
   --ghostnet-assimilation-ghost-loop: 360ms;
   --ghostnet-assimilation-ghost-opacity: 0.4;
   --ghostnet-assimilation-saturation: 1.25;
+  transform-origin: center;
 }
 
 .ghostnet-nav-button--glitch-phase::before {
@@ -291,6 +304,7 @@
   --ghostnet-assimilation-shift-x: 4px;
   --ghostnet-assimilation-shift-y: -6px;
   --ghostnet-assimilation-tilt: -1.6deg;
+  transform: scale(0.94) translateY(0);
   animation:
     ghostnet-nav-button-glitch-out 0.72s steps(2, end) forwards,
     ghostnet-assimilation-jitter var(--ghostnet-assimilation-loop, 280ms) steps(2, end) infinite;
@@ -300,6 +314,7 @@
   opacity: 0;
   filter: blur(2.4px) saturate(0.72) hue-rotate(-10deg);
   clip-path: inset(50% 0 40% 0);
+  transform: scale(0.68) translateY(16px);
   --ghostnet-assimilation-glow-radius: 2.35rem;
   --ghostnet-assimilation-glow-opacity: 0.65;
   --ghostnet-assimilation-shift-x: 3px;
@@ -317,26 +332,38 @@
   opacity: 0.45;
 }
 
+.ghostnet-nav-button--unlock {
+  --ghostnet-assimilation-glow-radius: 2.7rem;
+  --ghostnet-assimilation-glow-opacity: 0.75;
+  --ghostnet-assimilation-loop: 230ms;
+  --ghostnet-nav-glitch-delay: 320ms;
+}
+
 @keyframes ghostnet-nav-button-glitch-out {
   0% {
     opacity: 1;
     filter: none;
+    transform: scale(1) translateY(0);
   }
   18% {
     opacity: 0.35;
     filter: blur(1.4px) saturate(1.2);
+    transform: scale(0.92) translateY(-6px);
   }
   36% {
     opacity: 0.82;
     filter: blur(0.6px) saturate(1.08);
+    transform: scale(0.85) translateY(-3px);
   }
   58% {
     opacity: 0.2;
     filter: blur(1.8px) saturate(0.74) hue-rotate(-4deg);
+    transform: scale(0.74) translateY(-10px);
   }
   100% {
     opacity: 0;
     filter: blur(2.6px) saturate(0.62) hue-rotate(-6deg);
+    transform: scale(0.68) translateY(-14px);
   }
 }
 
@@ -345,25 +372,30 @@
     opacity: 0;
     filter: blur(2.4px) saturate(0.72) hue-rotate(-10deg);
     clip-path: inset(52% 0 42% 0);
+    transform: scale(0.6) translateY(12px);
   }
   24% {
     opacity: 0.45;
     filter: blur(1.6px) saturate(0.86) hue-rotate(-5deg);
     clip-path: inset(0 0 38% 0);
+    transform: scale(0.74) translateY(6px);
   }
   46% {
     opacity: 0.88;
     filter: blur(0.9px) saturate(1.12) hue-rotate(3deg);
     clip-path: inset(12% 0 0 0);
+    transform: scale(0.92) translateY(2px);
   }
   64% {
     opacity: 0.6;
     filter: blur(1.1px) saturate(1.18) hue-rotate(-2deg);
     clip-path: inset(0 0 50% 0);
+    transform: scale(0.84) translateY(-2px);
   }
   100% {
     opacity: 1;
     filter: none;
     clip-path: inset(0);
+    transform: scale(1) translateY(0);
   }
 }

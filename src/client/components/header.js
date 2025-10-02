@@ -66,12 +66,12 @@ export default function Header ({ connected, active }) {
   const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
   const isGhostnetRouteActive = currentPath === '/ghostnet'
   const [pirateModalVisible, setPirateModalVisible] = useState(false)
-  const [piratePassword, setPiratePassword] = useState('')
+  const [pirateCipher, setPirateCipher] = useState('')
   const [pirateAttempts, setPirateAttempts] = useState(0)
   const [pirateStatus, setPirateStatus] = useState(null)
   const [pirateGlitch, setPirateGlitch] = useState(false)
   const pirateTimeouts = useRef([])
-  const piratePasswordRef = useRef(null)
+  const pirateCipherRef = useRef(null)
   const initialNavUnlockStateRef = useRef(null)
   if (initialNavUnlockStateRef.current === null) {
     initialNavUnlockStateRef.current = isGhostnetNavUnlocked()
@@ -80,7 +80,7 @@ export default function Header ({ connected, active }) {
   const [navRevealState, setNavRevealState] = useState(initialNavUnlockStateRef.current ? 'complete' : 'locked')
   const [pendingNavReveal, setPendingNavReveal] = useState(false)
   const navRevealTimeouts = useRef([])
-  const SECRET_PASSWORD = 'ATLAS'
+  const SECRET_CODE = 'ATLAS'
 
   const clearTitleAnimationTimeouts = useCallback(() => {
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -164,7 +164,7 @@ export default function Header ({ connected, active }) {
   const closePirateModal = useCallback(() => {
     clearPirateTimeouts()
     setPirateModalVisible(false)
-    setPiratePassword('')
+    setPirateCipher('')
     setPirateAttempts(0)
     setPirateStatus(null)
     setPirateGlitch(false)
@@ -172,7 +172,7 @@ export default function Header ({ connected, active }) {
 
   const openPirateModal = useCallback(() => {
     clearPirateTimeouts()
-    setPiratePassword('')
+    setPirateCipher('')
     setPirateAttempts(0)
     setPirateStatus(null)
     setPirateGlitch(false)
@@ -183,8 +183,8 @@ export default function Header ({ connected, active }) {
     event.preventDefault()
     if (pirateStatus === 'success' || pirateStatus === 'locked' || pirateGlitch) return
 
-    const sanitizedPassword = piratePassword.trim().toUpperCase()
-    if (sanitizedPassword === SECRET_PASSWORD) {
+    const sanitizedCipher = pirateCipher.trim().toUpperCase()
+    if (sanitizedCipher === SECRET_CODE) {
       if (!navUnlocked && navRevealState === 'locked') {
         setPendingNavReveal(true)
       } else {
@@ -213,7 +213,7 @@ export default function Header ({ connected, active }) {
     }
 
     setPirateStatus('error')
-  }, [SECRET_PASSWORD, closePirateModal, navRevealState, navUnlocked, pirateAttempts, piratePassword, pirateGlitch, pirateStatus, registerPirateTimeout, setPendingNavReveal])
+  }, [SECRET_CODE, closePirateModal, navRevealState, navUnlocked, pirateAttempts, pirateCipher, pirateGlitch, pirateStatus, registerPirateTimeout, setPendingNavReveal])
 
   const runTitleGlitch = useCallback(() => {
     if (typeof window === 'undefined') return
@@ -505,7 +505,7 @@ export default function Header ({ connected, active }) {
     const setTimeoutFn = typeof window !== 'undefined' ? window.setTimeout : setTimeout
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
     const timeoutId = setTimeoutFn(() => {
-      piratePasswordRef.current?.focus()
+      pirateCipherRef.current?.focus()
     }, 120)
     pirateTimeouts.current.push(timeoutId)
     return () => {
@@ -652,11 +652,15 @@ export default function Header ({ connected, active }) {
 
           if (navRevealState === 'glitchIn') {
             buttonClasses.push('ghostnet-nav-button--glitch-phase', 'ghostnet-nav-button--glitch-in')
+            if (isGhostNet) {
+              buttonClasses.push('ghostnet-nav-button--unlock')
+            }
           }
 
           const buttonStyle = { fontSize: '1.5rem' }
           if (navRevealState === 'glitchIn') {
-            buttonStyle['--ghostnet-nav-glitch-delay'] = `${i * 90}ms`
+            const revealIndexDelay = isGhostNet ? 420 : i * 90
+            buttonStyle['--ghostnet-nav-glitch-delay'] = `${revealIndexDelay}ms`
           }
 
           return (
@@ -680,54 +684,61 @@ export default function Header ({ connected, active }) {
       <Settings visible={settingsVisible} toggleVisible={() => setSettingsVisible(!settingsVisible)} />
     </header>
     {pirateModalVisible && (
-      <div className='pirate-password-overlay' role='presentation'>
+      <div className='pirate-cipher-overlay' role='presentation'>
         <section
           className={[
-            'pirate-password-dialog',
-            pirateGlitch ? 'pirate-password-dialog--glitch ghostnet-assimilation-target ghostnet-assimilation-remove' : ''
+            'pirate-cipher-dialog',
+            pirateGlitch ? 'pirate-cipher-dialog--glitch ghostnet-assimilation-target ghostnet-assimilation-remove' : ''
           ].filter(Boolean).join(' ')}
           role='dialog'
           aria-modal='true'
-          aria-labelledby='pirate-password-title'
+          aria-labelledby='pirate-cipher-title'
         >
-          <div className='pirate-password-dialog__inner-frame' aria-hidden='true' />
-          <div className='pirate-password-dialog__surface-glow' aria-hidden='true' />
-          <div className='pirate-password-dialog__chrome' aria-hidden='true'>
-            <span className='pirate-password-dialog__chrome-light pirate-password-dialog__chrome-light--primary' />
-            <span className='pirate-password-dialog__chrome-light pirate-password-dialog__chrome-light--secondary' />
-            <span className='pirate-password-dialog__chrome-light pirate-password-dialog__chrome-light--tertiary' />
+          <div className='pirate-cipher-dialog__inner-frame' aria-hidden='true' />
+          <div className='pirate-cipher-dialog__surface-glow' aria-hidden='true' />
+          <div className='pirate-cipher-dialog__chrome' aria-hidden='true'>
+            <span className='pirate-cipher-dialog__chrome-light pirate-cipher-dialog__chrome-light--primary' />
+            <span className='pirate-cipher-dialog__chrome-light pirate-cipher-dialog__chrome-light--secondary' />
+            <span className='pirate-cipher-dialog__chrome-light pirate-cipher-dialog__chrome-light--tertiary' />
           </div>
-          <div className='pirate-password-dialog__body'>
+          <div className='pirate-cipher-dialog__body'>
             {pirateStatus === 'success' && (
-              <div className='pirate-password-success' aria-live='assertive'>
-                <span className='pirate-password-success__icon' aria-hidden='true'>✔</span>
-                <p className='pirate-password-success__text'>Signal aligned</p>
+              <div className='pirate-cipher-success' aria-live='assertive'>
+                <span className='pirate-cipher-success__icon' aria-hidden='true'>✔</span>
+                <p className='pirate-cipher-success__text'>Signal aligned</p>
               </div>
             )}
             {pirateStatus !== 'success' && (
-              <form onSubmit={handlePirateSubmit} className='pirate-password-form'>
-                <h2 id='pirate-password-title' className='pirate-password-title text-info text-uppercase'>Ghost Access Gate</h2>
-                <p className='pirate-password-subtitle text-muted'>Whisper the covenant phrase to still the static.</p>
-                <label className='pirate-password-label text-primary text-uppercase' htmlFor='pirate-password-input'>Passphrase</label>
+              <form onSubmit={handlePirateSubmit} className='pirate-cipher-form'>
+                <h2 id='pirate-cipher-title' className='pirate-cipher-title text-info text-uppercase'>Ghost Access Gate</h2>
+                <p className='pirate-cipher-subtitle text-muted'>Whisper the covenant phrase to still the static.</p>
+                <label className='pirate-cipher-label text-primary text-uppercase' htmlFor='pirate-cipher-input'>Cipher Code</label>
                 <input
-                  id='pirate-password-input'
-                  ref={piratePasswordRef}
-                  className={`pirate-password-input ${pirateStatus === 'error' ? 'pirate-password-input--error' : ''}`.trim()}
-                  type='password'
+                  id='pirate-cipher-input'
+                  ref={pirateCipherRef}
+                  className={`pirate-cipher-input ${pirateStatus === 'error' ? 'pirate-cipher-input--error' : ''}`.trim()}
+                  type='text'
                   autoComplete='off'
                   spellCheck='false'
-                  value={piratePassword}
+                  inputMode='text'
+                  maxLength={8}
+                  value={pirateCipher}
                   onChange={event => {
-                    setPiratePassword(event.target.value)
+                    const rawValue = event.target.value
+                    const nextValue = rawValue
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]/g, '')
+                      .slice(0, 8)
+                    setPirateCipher(nextValue)
                     if (pirateStatus) setPirateStatus(null)
                   }}
                   aria-invalid={pirateStatus === 'error' || pirateStatus === 'locked'}
-                  aria-describedby='pirate-password-feedback'
+                  aria-describedby='pirate-cipher-feedback'
                 />
-                <button type='submit' className='pirate-password-submit button--primary text-uppercase'>Enter</button>
-                <div id='pirate-password-feedback' className='pirate-password-feedback' aria-live='assertive'>
-                  {pirateStatus === 'error' && <span className='pirate-password-feedback--error'>Access rejected. Static persists.</span>}
-                  {pirateStatus === 'locked' && <span className='pirate-password-feedback--locked'>⟟ Cipher fracture detected. Coordinates lost in the void.</span>}
+                <button type='submit' className='pirate-cipher-submit button--primary text-uppercase'>Enter</button>
+                <div id='pirate-cipher-feedback' className='pirate-cipher-feedback' aria-live='assertive'>
+                  {pirateStatus === 'error' && <span className='pirate-cipher-feedback--error'>Access rejected. Static persists.</span>}
+                  {pirateStatus === 'locked' && <span className='pirate-cipher-feedback--locked'>⟟ Cipher fracture detected. Coordinates lost in the void.</span>}
                 </div>
               </form>
             )}
