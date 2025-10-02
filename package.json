@@ -4,7 +4,8 @@
   "description": "ICARUS Terminal for Elite Dangerous",
   "scripts": {
     "build": "npm run build:client && npm run build:app && npm run build:service && npm run build:package",
-    "build:client": "cd src/client && next build && next export -o ../../build/client",
+    "build:client": "cd src/client && cross-env NEXT_SKIP_NATIVE_BUILD=1 next build && next export -o ../../build/client",
+    "build:client:swc": "cd src/client && next build && next export -o ../../build/client",
     "build:app": "node scripts/build-app.js",
     "build:service": "node scripts/build-service.js",
     "build:package": "node scripts/build-package.js",
@@ -17,7 +18,8 @@
     "build:debug:service": "node scripts/build-service.js --debug",
     "start": "npm run dev",
     "clean": "npm run build:clean",
-    "dev": "node src/service/main.js --dev",
+    "dev": "cross-env NEXT_SKIP_NATIVE_BUILD=1 node src/service/main.js --dev",
+    "dev:swc": "node src/service/main.js --dev",
     "lint": "npm run lint:go && npm run lint:javascript",
     "lint:go": "go fmt src/app/main.go",
     "lint:javascript": "npx standard --fix",
@@ -32,6 +34,7 @@
     "@testing-library/react": "^12.1.5",
     "babel-jest": "^29.7.0",
     "changeexe": "^1.0.2",
+    "cross-env": "^7.0.3",
     "csvtojson": "^2.0.10",
     "fs-extra": "^10.0.0",
     "identity-obj-proxy": "^3.0.0",
@@ -72,5 +75,19 @@
   "engines": {
     "npm": "9.6.7",
     "node": "18.17.1"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx)$": [
+        "babel-jest",
+        {
+          "presets": ["next/babel"]
+        }
+      ]
+    },
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    }
   }
 }
