@@ -528,3 +528,137 @@ body.ghostnet-theme #secondaryNavigation .button--icon.button--secondary {
   color: var(--ghostnet-nav-accent);
   transform: translateY(-1px);
 }
+
+body.ghostnet-assimilation-mode {
+  background: #0d0b1a;
+  overflow: hidden;
+  transition: background 0.35s ease;
+}
+
+body.ghostnet-assimilation-mode::after {
+  content: '';
+  position: fixed;
+  inset: -2px;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+      0deg,
+      rgba(93, 46, 255, 0.06) 0px,
+      rgba(93, 46, 255, 0.06) 2px,
+      transparent 2px,
+      transparent 4px
+  );
+  mix-blend-mode: screen;
+  opacity: 0.3;
+  animation: ghostnet-assimilation-static 120ms steps(2, end) infinite;
+  z-index: 9999;
+}
+
+@keyframes ghostnet-assimilation-static {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.12;
+  }
+  45% {
+    transform: translate3d(1px, -1px, 0);
+    opacity: 0.2;
+  }
+  70% {
+    transform: translate3d(-1px, 1px, 0);
+    opacity: 0.16;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.12;
+  }
+}
+
+.ghostnet-assimilation-target {
+  position: relative;
+  color: rgba(245, 241, 255, 0.84) !important;
+  border-color: rgba(140, 92, 255, 0.35) !important;
+  background: rgba(28, 22, 51, 0.72) !important;
+  box-shadow: 0 0 1.5rem rgba(93, 46, 255, 0.45);
+  filter: saturate(1.25) hue-rotate(-6deg);
+  transition: color 0.3s ease, background 0.4s ease, border-color 0.4s ease, opacity 0.45s ease, transform 0.4s ease,
+    filter 0.45s ease;
+  animation: ghostnet-assimilation-jitter 280ms steps(2, end) infinite;
+}
+
+.ghostnet-assimilation-target::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 1px solid rgba(93, 46, 255, 0.2);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.4;
+  animation: ghostnet-assimilation-ghost 360ms steps(2, end) infinite;
+}
+
+@keyframes ghostnet-assimilation-jitter {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  48% {
+    transform: translate3d(var(--ghostnet-assimilation-shift-x, 0), var(--ghostnet-assimilation-shift-y, 0), 0)
+      rotate(var(--ghostnet-assimilation-tilt, 0));
+  }
+  100% {
+    transform: translate3d(calc(var(--ghostnet-assimilation-shift-x, 0) * -0.5),
+        calc(var(--ghostnet-assimilation-shift-y, 0) * -0.5), 0)
+      rotate(calc(var(--ghostnet-assimilation-tilt, 0) * -0.5));
+  }
+}
+
+@keyframes ghostnet-assimilation-ghost {
+  0% {
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0.15;
+  }
+}
+
+.ghostnet-assimilation-target.ghostnet-assimilation-remove {
+  opacity: 0;
+  transform: scale(0.94) translate3d(0, -12px, 0);
+  filter: blur(3px) contrast(0.65) saturate(0.85);
+}
+
+.ghostnet-assimilation-text {
+  display: inline-block;
+}
+
+.ghostnet-assimilation-char {
+  display: inline-block;
+  white-space: pre;
+  animation: ghostnet-assimilation-char 1.4s ease forwards;
+  color: rgba(245, 241, 255, 0.84);
+  text-shadow: 0 0 1.1rem rgba(93, 46, 255, 0.55);
+}
+
+.ghostnet-assimilation-char--space {
+  min-width: 0.35em;
+}
+
+@keyframes ghostnet-assimilation-char {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: none;
+  }
+  35% {
+    opacity: 0.8;
+    transform: translate3d(var(--ghostnet-assimilation-shift-x, 2px), calc(var(--ghostnet-assimilation-shift-y, -2px)), 0)
+      scale(1.05);
+    filter: hue-rotate(-12deg) saturate(1.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -18px, 0) scale(0.55);
+    filter: blur(3px) hue-rotate(12deg);
+  }
+}

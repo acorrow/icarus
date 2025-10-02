@@ -5,6 +5,7 @@ import { isWindowFullScreen, isWindowPinned, toggleFullScreen, togglePinWindow }
 import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
+import { initiateGhostnetAssimilation, isGhostnetAssimilationActive } from 'lib/ghostnet-assimilation'
 
 const NAV_BUTTONS = [
   {
@@ -110,6 +111,15 @@ export default function Header ({ connected, active }) {
 
   const currentPath = `/${router.pathname.split('/')[1].toLowerCase()}`
 
+  function handleNavigate (path) {
+    if (path === '/ghostnet') {
+      if (isGhostnetAssimilationActive()) return
+      initiateGhostnetAssimilation(() => router.push(path))
+      return
+    }
+    router.push(path)
+  }
+
   return (
     <header>
       <hr className='small' />
@@ -163,13 +173,13 @@ export default function Header ({ connected, active }) {
               key={button.name}
               data-primary-navigation={i + 1}
               tabIndex='1'
-              disabled={isActive}
+              disabled={isActive || (isGhostNet && isGhostnetAssimilationActive())}
               aria-current={isActive ? 'page' : undefined}
               className={[
                 isActive ? 'button--active' : '',
                 isGhostNet ? 'ghostnet-nav-button' : ''
               ].filter(Boolean).join(' ')}
-              onClick={() => router.push(button.path)}
+              onClick={() => handleNavigate(button.path)}
               style={{ fontSize: '1.5rem' }}
             >
               <span className='visible-small'>{button.abbr}</span>
