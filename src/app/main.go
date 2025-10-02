@@ -22,6 +22,8 @@ var dirname = ""
 var defaultPort = 3300 // Set to 0 to be assigned a free high numbered port
 var port int           // Actual port we are running on
 var webViewInstance webview.WebView
+var joystickConfig JoystickConfig
+var joystickNativeWindowLaunched bool
 
 // Track main window size when switching to/from fullscreen
 var windowWidth = defaultWindowWidth
@@ -61,6 +63,8 @@ func main() {
 	portPtr := flag.Int("port", defaultPort, "Port service should run on")
 	terminalMode := flag.Bool("terminal", false, "Run in terminal only mode")
 	installMode := flag.Bool("install", false, "First run after install")
+	joystickWindowMode := flag.Bool("joystick-window", false, "Enable joystick navigation in this terminal window")
+	joystickConfigMode := flag.Bool("joystick-config", false, "Open the joystick configuration panel")
 	flag.Parse()
 
 	windowWidth = int32(*widthPtr)
@@ -76,6 +80,20 @@ func main() {
 	}
 	dirname = filepath.Dir(pathToExecutable)
 
+	loadedConfig, cfgErr := LoadJoystickConfig(dirname)
+	if cfgErr != nil {
+		fmt.Println("Failed to load joystick configuration:", cfgErr)
+	} else {
+		joystickConfig = loadedConfig
+	}
+
+	if *joystickConfigMode {
+		if err := runJoystickConfigurationWindow(dirname); err != nil {
+			fmt.Println("Failed to open joystick configuration:", err)
+		}
+		return
+	}
+
 	// Check if is first run after installing, in which case we restart without
 	// elevated privilages to ensure we are not running as the installer, as that
 	// causes problems for things like interacting with windows via SteamVR.
@@ -86,7 +104,16 @@ func main() {
 
 	// Check if we are starting in Terminal mode
 	if *terminalMode {
-		createWindow(TERMINAL_WINDOW_TITLE, url, defaultWindowWidth, defaultWindowHeight, webview.HintNone)
+		if *joystickWindowMode {
+			if joystickConfig.Valid() {
+				createNativeWindow(TERMINAL_WINDOW_TITLE, url, defaultWindowWidth, defaultWindowHeight, &joystickConfig)
+			} else {
+				fmt.Println("Joystick configuration invalid, falling back to standard terminal window")
+				createWindow(TERMINAL_WINDOW_TITLE, url, defaultWindowWidth, defaultWindowHeight, webview.HintNone)
+			}
+		} else {
+			createWindow(TERMINAL_WINDOW_TITLE, url, defaultWindowWidth, defaultWindowHeight, webview.HintNone)
+		}
 		return
 	}
 
@@ -156,7 +183,7 @@ func main() {
 	time.Sleep(0 * time.Second)
 
 	// Open main window (block rest of main until closed)
-	createNativeWindow(LAUNCHER_WINDOW_TITLE, launcherUrl, defaultLauncherWindowWidth, defaultLauncherWindowHeight)
+	createNativeWindow(LAUNCHER_WINDOW_TITLE, launcherUrl, defaultLauncherWindowWidth, defaultLauncherWindowHeight, nil)
 
 	// Ensure we terminate all processes cleanly when window closes
 	exitApplication(0)
@@ -194,7 +221,7 @@ func createWindow(LAUNCHER_WINDOW_TITLE string, url string, width int32, height 
 
 // createNativeWindow() explicitly creates a native window and passes the handle
 // for it to the webview, this allows for greater customisation
-func createNativeWindow(LAUNCHER_WINDOW_TITLE string, url string, width int32, height int32) {
+func createNativeWindow(LAUNCHER_WINDOW_TITLE string, url string, width int32, height int32, joystickCfg *JoystickConfig) {
 	// Instance of this executable
 	hInstance := win.GetModuleHandle(nil)
 	if hInstance == 0 {
@@ -226,6 +253,18 @@ func createNativeWindow(LAUNCHER_WINDOW_TITLE string, url string, width int32, h
 	// Pass the pointer to the window as an unsafe reference
 	webViewInstance = webview.NewWindow(DEBUGGER, unsafe.Pointer(&hwndPtr))
 	defer webViewInstance.Destroy()
+
+	var joystickRuntimeInstance *joystickRuntime
+	if joystickCfg != nil && joystickCfg.Valid() {
+		runtimeInstance, err := ensureJoystickRuntime(hwnd, *joystickCfg)
+		if err != nil {
+			fmt.Println("Failed to initialise joystick runtime:", err)
+		} else {
+			joystickRuntimeInstance = runtimeInstance
+			defer joystickRuntimeInstance.stop()
+		}
+	}
+
 	bindFunctionsToWebView(webViewInstance)
 	webViewInstance.Navigate(LoadUrl(url))
 	webViewInstance.Run()
@@ -339,7 +378,14 @@ func bindFunctionsToWebView(w webview.WebView) {
 	})
 
 	w.Bind("icarusTerminal_newWindow", func() int {
-		terminalCmdInstance := exec.Command(filepath.Join(dirname, TERMINAL_EXECUTABLE), "--terminal=true", fmt.Sprintf("--port=%d", port))
+		args := []string{"--terminal=true", fmt.Sprintf("--port=%d", port)}
+		if !joystickNativeWindowLaunched {
+			if joystickConfig.Valid() {
+				args = append(args, "--joystick-window=true")
+			}
+			joystickNativeWindowLaunched = true
+		}
+		terminalCmdInstance := exec.Command(filepath.Join(dirname, TERMINAL_EXECUTABLE), args...)
 		terminalCmdInstance.Dir = dirname
 		terminalCmdErr := terminalCmdInstance.Start()
 
