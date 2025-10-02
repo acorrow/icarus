@@ -20,9 +20,35 @@ const MAX_CHARACTER_ANIMATIONS = 3200
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
+function getNavigationElement () {
+  if (typeof document === 'undefined') return null
+  return document.querySelector(NAVIGATION_EXCLUSION_SELECTOR)
+}
+
 function isWithinExcludedRegion (element) {
   if (!element) return false
-  if (element.closest(NAVIGATION_EXCLUSION_SELECTOR)) return true
+
+  const navigationElement = getNavigationElement()
+  if (!navigationElement) {
+    return false
+  }
+
+  if (element === navigationElement) {
+    return true
+  }
+
+  if (typeof element.closest === 'function' && element.closest(NAVIGATION_EXCLUSION_SELECTOR)) {
+    return true
+  }
+
+  if (typeof element.contains === 'function' && element.contains(navigationElement)) {
+    return true
+  }
+
+  if (typeof navigationElement.contains === 'function' && navigationElement.contains(element)) {
+    return true
+  }
+
   return false
 }
 
