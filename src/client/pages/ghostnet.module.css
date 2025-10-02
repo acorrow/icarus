@@ -427,23 +427,6 @@
   color: #ff5fc1;
 }
 
-.tableStatusBar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: rgba(5, 8, 13, 0.72);
-  border-bottom: 1px solid rgba(127, 233, 255, 0.18);
-  color: var(--ghostnet-subdued);
-  font-size: 0.9rem;
-}
-
-.tableStatusTimestamp {
-  margin-left: auto;
-  font-size: 0.85rem;
-  color: var(--ghostnet-muted);
-}
-
 .tableMessage {
   color: var(--ghostnet-muted);
   padding: 1.25rem 2rem;

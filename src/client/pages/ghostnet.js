@@ -1217,16 +1217,6 @@ function MissionsPanel () {
           {status === 'loading' && (
             <div className={styles.tableIdleState}>Linking mission beacons…</div>
           )}
-          {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
-            <div className={styles.tableStatusBar}>
-              {isRefreshing && <span>Refreshing missions...</span>}
-              {lastUpdatedAt && (
-                <span className={styles.tableStatusTimestamp}>
-                  Updated {formatRelativeTime(lastUpdatedAt)}
-                </span>
-              )}
-            </div>
-          )}
           {status === 'error' && !error && (
             <div className={styles.tableErrorState}>Unable to load missions.</div>
           )}
@@ -2670,16 +2660,6 @@ function TradeRoutesPanel () {
           {status === 'loading' && (
             <LoadingSpinner label='Loading trade routes…' />
           )}
-          {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
-            <div className='trade-routes__refresh-indicator'>
-              {isRefreshing && <LoadingSpinner inline label='Refreshing trade routes…' />}
-              {lastUpdatedAt && (
-                <span className='trade-routes__refresh-timestamp'>
-                  Last refreshed {formatRelativeTime(lastUpdatedAt)}
-                </span>
-              )}
-            </div>
-          )}
           {status === 'error' && (
             <div className={styles.tableErrorState}>{error || 'Unable to fetch trade routes.'}</div>
           )}
@@ -2928,13 +2908,6 @@ function PristineMiningPanel () {
           className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
           style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}
         >
-          {(status === 'populated' || status === 'empty') && lastUpdatedAt && (
-            <div className={styles.tableStatusBar}>
-              <span className={styles.tableStatusTimestamp}>
-                Updated {formatRelativeTime(lastUpdatedAt)}
-              </span>
-            </div>
-          )}
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
