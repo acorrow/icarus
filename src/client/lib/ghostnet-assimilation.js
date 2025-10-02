@@ -14,6 +14,8 @@ const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HTML', 'BODY'])
 const NAVIGATION_EXCLUSION_SELECTOR = '#primaryNavigation'
 const FORCED_FADE_CLEANUP_DELAY = 720
+const STABILIZATION_START_DELAY = 180
+const OVERLAY_REMOVAL_DELAY = 820
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
 const MAX_ACTIVE_TARGETS = 160
 const MAX_CHARACTER_ANIMATIONS = 3200
@@ -587,18 +589,26 @@ export function initiateGhostnetAssimilation (callback) {
         }
     freezeAssimilationOverlayMessage(finalLine)
 
-    const performCleanup = () => {
-      hideAssimilationOverlay()
+    let viewportStabilized = false
+    const stabilizeViewport = () => {
+      if (viewportStabilized) return
+      viewportStabilized = true
       cleanup()
       assimilationInProgress = false
+    }
+
+    const closeOverlay = () => {
+      stabilizeViewport()
+      hideAssimilationOverlay()
     }
 
     if (forced) {
       document.body.classList.add('ghostnet-assimilation-forced')
       fadeAssimilationTargets(targets)
-      window.setTimeout(performCleanup, FORCED_FADE_CLEANUP_DELAY)
+      window.setTimeout(closeOverlay, FORCED_FADE_CLEANUP_DELAY)
     } else {
-      window.setTimeout(performCleanup, 600)
+      window.setTimeout(stabilizeViewport, STABILIZATION_START_DELAY)
+      window.setTimeout(closeOverlay, OVERLAY_REMOVAL_DELAY)
     }
   }
 
