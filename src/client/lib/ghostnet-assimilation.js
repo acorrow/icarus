@@ -266,14 +266,63 @@ function isWithinExcludedRegion (element) {
   return false
 }
 
+function getViewportSize () {
+  if (typeof window !== 'undefined') {
+    const width = Math.max(0, Number.isFinite(window.innerWidth) ? window.innerWidth : 0)
+    const height = Math.max(0, Number.isFinite(window.innerHeight) ? window.innerHeight : 0)
+    if (width > 0 || height > 0) {
+      return { width, height }
+    }
+  }
+
+  if (typeof document !== 'undefined' && document.documentElement) {
+    const { clientWidth, clientHeight } = document.documentElement
+    if (clientWidth > 0 || clientHeight > 0) {
+      return { width: clientWidth, height: clientHeight }
+    }
+  }
+
+  return { width: 0, height: 0 }
+}
+
+function isRectVisibleOnScreen (rect) {
+  if (!rect) return false
+
+  const { width: viewportWidth, height: viewportHeight } = getViewportSize()
+
+  if (viewportWidth > 0) {
+    if (rect.right <= 0 || rect.left >= viewportWidth) {
+      return false
+    }
+  }
+
+  if (viewportHeight > 0) {
+    if (rect.bottom <= 0 || rect.top >= viewportHeight) {
+      return false
+    }
+  }
+
+  return rect.width !== 0 || rect.height !== 0
+}
+
 function isEligibleTarget (element) {
   if (!element) return false
   if (EXCLUDED_TAGS.has(element.tagName)) return false
   if (isWithinExcludedRegion(element)) return false
+  if ('isConnected' in element && !element.isConnected) return false
   if (typeof element.getBoundingClientRect !== 'function') return false
-  const rect = element.getBoundingClientRect()
+
+  const rect = getElementRect(element)
   if (!rect) return false
-  return rect.width !== 0 || rect.height !== 0
+
+  if (typeof element.getClientRects === 'function') {
+    const clientRects = element.getClientRects()
+    if (!clientRects || clientRects.length === 0) {
+      return false
+    }
+  }
+
+  return isRectVisibleOnScreen(rect)
 }
 
 function getHierarchyTailMembers (parent, limit = 2) {
@@ -335,8 +384,9 @@ function getElementRect (element) {
 }
 
 function getLowerHalfThreshold (root) {
-  if (typeof window !== 'undefined' && typeof window.innerHeight === 'number' && window.innerHeight > 0) {
-    return window.innerHeight / 2
+  const { height: viewportHeight } = getViewportSize()
+  if (viewportHeight > 0) {
+    return viewportHeight / 2
   }
 
   const rootRect = getElementRect(root)
