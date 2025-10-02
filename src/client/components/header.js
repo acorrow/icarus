@@ -282,6 +282,8 @@ export default function Header ({ connected, active }) {
   const [navGlitchProfiles, setNavGlitchProfiles] = useState(() => createNavGlitchProfiles())
   const [pendingNavReveal, setPendingNavReveal] = useState(false)
   const navRevealTimeouts = useRef([])
+  const navGlitchInCompletedRef = useRef(new Set())
+  const navGlitchInTargetCountRef = useRef(NAV_BUTTONS.length)
   const SECRET_CODE = 'ATLAS'
 
   const clearTitleAnimationTimeouts = useCallback(() => {
@@ -377,7 +379,9 @@ export default function Header ({ connected, active }) {
     const completionDelay = longestIn + 320
 
     registerNavRevealTimeout(() => {
-      setNavRevealState('complete')
+      if (navGlitchInCompletedRef.current.size >= navGlitchInTargetCountRef.current) {
+        setNavRevealState(prev => (prev === 'glitchIn' ? 'complete' : prev))
+      }
     }, completionDelay)
   }, [clearNavRevealTimeouts, registerNavRevealTimeout])
 
@@ -720,6 +724,23 @@ export default function Header ({ connected, active }) {
   }, [navRevealState, pendingNavReveal, pirateModalVisible, setPendingNavReveal, startNavUnlockSequence])
 
   useEffect(() => {
+    if (navRevealState === 'glitchIn') {
+      navGlitchInCompletedRef.current = new Set()
+      navGlitchInTargetCountRef.current = NAV_BUTTONS.length
+    }
+  }, [navRevealState])
+
+  useEffect(() => {
+    if (navRevealState !== 'glitchIn') return undefined
+
+    const cancel = registerNavRevealTimeout(() => {
+      setNavRevealState(prev => (prev === 'glitchIn' ? 'complete' : prev))
+    }, 4800)
+
+    return cancel
+  }, [navRevealState, registerNavRevealTimeout])
+
+  useEffect(() => {
     if (!pirateModalVisible || pirateGlitch) return undefined
     const setTimeoutFn = typeof window !== 'undefined' ? window.setTimeout : setTimeout
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -753,6 +774,17 @@ export default function Header ({ connected, active }) {
     }
     return true
   })
+
+  const handleNavGlitchAnimationEnd = useCallback((buttonPath, event) => {
+    if (navRevealState !== 'glitchIn') return
+    if (!event?.animationName || event.animationName !== 'ghostnet-nav-button-glitch-in') return
+
+    navGlitchInCompletedRef.current.add(buttonPath)
+
+    if (navGlitchInCompletedRef.current.size >= navGlitchInTargetCountRef.current) {
+      setNavRevealState(prev => (prev === 'glitchIn' ? 'complete' : prev))
+    }
+  }, [navRevealState])
 
   function handleNavigate (path) {
     if (path === GHOSTNET_NAV_PATH) {
@@ -896,6 +928,7 @@ export default function Header ({ connected, active }) {
               className={buttonClasses.filter(Boolean).join(' ')}
               onClick={() => handleNavigate(button.path)}
               style={buttonStyle}
+              onAnimationEnd={event => handleNavGlitchAnimationEnd(button.path, event)}
             >
               <span className='visible-small'>{button.abbr}</span>
               <span className='hidden-small'>{button.name}</span>
