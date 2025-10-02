@@ -3226,67 +3226,14 @@ export default function GhostnetPage() {
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
 
   ]), [activeTab])
-  const activeNavigationLabel = useMemo(
-    () => navigationItems.find(item => item.active)?.name || 'Trade Routes',
-    [navigationItems]
-  )
-  const tickerMessages = useMemo(() => ([
-    'Intercept feed authenticated',
-    'GHOSTNET mesh handshake complete',
-    'Signal hygiene nominal'
-  ]), [])
-  const uplinkStatus = connected && ready ? 'Stable' : 'Linking…'
-  const relayStatus = socketActive ? 'Streaming' : 'Idle'
 
   const ghostnetClassName = [styles.ghostnet, arrivalMode ? styles.arrival : ''].filter(Boolean).join(' ')
 
   return (
-    <Layout connected active ready loader={false}>
+    <Layout connected={connected} active={socketActive} ready={ready} loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div className={ghostnetClassName}>
           <div className={styles.shell}>
-            <section className={styles.header} aria-labelledby='ghostnet-heading'>
-              <div>
-                <span className={styles.kicker}>Underground Intelligence Mesh</span>
-                <h1 id='ghostnet-heading' className={styles.title}>Ghost Net</h1>
-                <p className={styles.subtitle}>
-                  Ghost Net stitches GHOSTNET intercepts into a clandestine command surface, revealing trade corridors, syndicate missions, and pristine deposits hidden from official channels.
-                </p>
-                <div className={styles.ghostnetScroller} aria-hidden='true'>
-                  <div className={styles.ghostnetTicker}>
-                    {tickerMessages.concat(tickerMessages).map((message, index) => (
-                      <span key={`${message}-${index}`} className='ghostnet-inline-accent'>{message}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <aside
-                className={styles.statusCard}
-                role='complementary'
-                aria-label='Signal Brief'
-                aria-labelledby='ghostnet-status-heading'
-              >
-                <h2 id='ghostnet-status-heading' className={styles.statusHeading}>Signal Brief</h2>
-                <ul className={styles.metaList} aria-live='polite'>
-                  <li className={styles.metaItem}>
-                    <span className={styles.metaLabel}>Uplink</span>
-                    <span className={styles.metaValue}>{uplinkStatus}</span>
-                  </li>
-                  <li className={styles.metaItem}>
-                    <span className={styles.metaLabel}>Relays</span>
-                    <span className={styles.metaValue}>{relayStatus}</span>
-                  </li>
-                  <li className={styles.metaItem}>
-                    <span className={styles.metaLabel}>Focus</span>
-                    <span className={styles.metaValue}>{activeNavigationLabel}</span>
-                  </li>
-                  <li className={styles.metaItem}>
-                    <span className={styles.metaLabel}>Source</span>
-                    <span className={styles.metaValue}>GHOSTNET Mesh</span>
-                  </li>
-                </ul>
-              </aside>
-            </section>
             <div className={styles.tabPanels}>
               <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
                 <TradeRoutesPanel />

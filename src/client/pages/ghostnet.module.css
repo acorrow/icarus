@@ -58,22 +58,12 @@
   animation: ghostnetArrivalShell 4.1s cubic-bezier(0.33, 1, 0.68, 1) forwards;
 }
 
-.arrival .kicker,
-.arrival .title,
-.arrival .subtitle,
-.arrival .statusHeading,
-.arrival .metaLabel,
-.arrival .metaValue,
 .arrival .sectionHint,
 .arrival .ghostnetAlert,
 .arrival :global(.ghostnet-inline-accent),
 .arrival :global(.ghostnet-muted),
 .arrival :global(.ghostnet-accent) {
   animation: ghostnetArrivalChromatic 4.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-}
-
-.arrival .statusCard {
-  animation: ghostnetArrivalStatusCard 4.2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
 }
 
 .arrival .sectionFrame,
@@ -85,112 +75,12 @@
   animation: ghostnetArrivalBadge 4.2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
 }
 
-.arrival .ghostnetTicker {
-  animation: ticker 24s linear infinite, ghostnetArrivalTicker 4s ease-out forwards;
-}
-
 .shell {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 2.75rem;
-}
-
-.header {
-  display: grid;
-  gap: 1.25rem;
-  align-items: start;
-}
-
-@media (min-width: 960px) {
-  .header {
-    grid-template-columns: minmax(0, 2.25fr) minmax(0, 1fr);
-    gap: 2.5rem;
-  }
-}
-
-.kicker {
-  text-transform: uppercase;
-  letter-spacing: 0.38em;
-  font-size: 0.85rem;
-  color: var(--ghostnet-accent);
-}
-
-.title {
-  font-size: clamp(2.5rem, 4vw, 3.5rem);
-  margin: 0;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ghostnet-ink);
-}
-
-.subtitle {
-  margin: 0;
-  color: var(--ghostnet-muted);
-  font-size: 1.1rem;
-  line-height: 1.7;
-}
-
-.statusCard {
-  background: linear-gradient(160deg, rgba(216, 180, 254, 0.14), rgba(5, 8, 13, 0.65));
-  border: 1px solid var(--ghostnet-panel-border);
-  border-radius: 1rem;
-  padding: 1.25rem 1.5rem;
-  color: var(--ghostnet-ink);
-  box-shadow: 0 1.5rem 3.5rem rgba(5, 8, 13, 0.65);
-  position: relative;
-  overflow: hidden;
-}
-
-.statusCard::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 15% 20%, rgba(216, 180, 254, 0.26), transparent 55%);
-  opacity: 0.75;
-  pointer-events: none;
-}
-
-.statusHeading {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.95rem;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  color: var(--ghostnet-muted);
-}
-
-.metaList {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 0.75rem 1.25rem;
-}
-
-@media (min-width: 560px) {
-  .metaList {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.metaItem {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.metaLabel {
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ghostnet-subdued);
-}
-
-.metaValue {
-  font-size: 1.05rem;
-  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
-  color: var(--ghostnet-ink);
 }
 
 .tabPanels {
@@ -874,30 +764,6 @@
   color: var(--ghostnet-accent);
 }
 
-.ghostnetScroller {
-  display: inline-flex;
-  gap: 1.25rem;
-  overflow: hidden;
-  white-space: nowrap;
-  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
-  font-size: 0.85rem;
-}
-
-.ghostnetTicker {
-  animation: ticker 24s linear infinite;
-  display: inline-flex;
-  gap: 1.25rem;
-}
-
-@keyframes ticker {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
 .ghostnet :global(.ghostnet-panel-table) {
   background: linear-gradient(180deg, rgba(13, 11, 26, 0.94) 0%, rgba(7, 11, 20, 0.92) 100%);
   border: 1px solid rgba(140, 92, 255, 0.38);
@@ -1213,35 +1079,6 @@
   }
 }
 
-@keyframes ghostnetArrivalStatusCard {
-  0% {
-    background: linear-gradient(160deg, rgba(255, 188, 120, 0.32), rgba(32, 18, 7, 0.86));
-    border-color: rgba(255, 173, 102, 0.55);
-    box-shadow: 0 1.6rem 3.6rem rgba(30, 12, 4, 0.72);
-    filter: saturate(1.05);
-    transform: translate3d(0, 6px, 0);
-  }
-  40% {
-    background: linear-gradient(162deg, rgba(255, 168, 176, 0.28), rgba(24, 13, 32, 0.88));
-    border-color: rgba(233, 182, 255, 0.4);
-    box-shadow: 0 1.75rem 3.8rem rgba(15, 8, 24, 0.7);
-    transform: translate3d(-2px, 2px, 0);
-  }
-  65% {
-    background: linear-gradient(160deg, rgba(255, 140, 220, 0.24), rgba(18, 12, 28, 0.9));
-    border-color: rgba(188, 148, 255, 0.38);
-    box-shadow: 0 1.85rem 4rem rgba(6, 5, 20, 0.75);
-    transform: translate3d(2px, -2px, 0);
-  }
-  100% {
-    background: linear-gradient(160deg, rgba(216, 180, 254, 0.14), rgba(5, 8, 13, 0.65));
-    border-color: var(--ghostnet-panel-border);
-    box-shadow: 0 1.5rem 3.5rem rgba(5, 8, 13, 0.65);
-    filter: none;
-    transform: none;
-  }
-}
-
 @keyframes ghostnetArrivalPanel {
   0% {
     background: rgba(45, 23, 9, 0.92);
@@ -1293,24 +1130,5 @@
     border: 1px solid rgba(216, 180, 254, 0.42);
     color: var(--ghostnet-accent);
     transform: none;
-  }
-}
-
-@keyframes ghostnetArrivalTicker {
-  0% {
-    filter: hue-rotate(-22deg) saturate(1.35);
-    opacity: 0.65;
-  }
-  45% {
-    filter: hue-rotate(-8deg) saturate(1.2);
-    opacity: 0.82;
-  }
-  70% {
-    filter: hue-rotate(12deg) saturate(0.95);
-    opacity: 0.9;
-  }
-  100% {
-    filter: none;
-    opacity: 1;
   }
 }
