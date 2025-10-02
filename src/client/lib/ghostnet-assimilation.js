@@ -276,8 +276,53 @@ function isEligibleTarget (element) {
   return rect.width !== 0 || rect.height !== 0
 }
 
+function getHierarchyTailMembers (parent, limit = 2) {
+  if (!parent || typeof parent.lastElementChild === 'undefined') {
+    return []
+  }
+
+  const tail = []
+  let current = parent.lastElementChild
+
+  while (current && tail.length < limit) {
+    if (isEligibleTarget(current)) {
+      tail.push(current)
+    }
+    current = current.previousElementSibling
+  }
+
+  return tail
+}
+
+function isDivHierarchyTail (element) {
+  if (!element || element.tagName !== 'DIV') {
+    return false
+  }
+
+  const parent = element.parentElement
+  if (!parent) {
+    return false
+  }
+
+  const tailMembers = getHierarchyTailMembers(parent)
+  return tailMembers.includes(element)
+}
+
 function isEffectPermitted (element) {
-  return Boolean(element) && !EFFECT_BLOCKED_TAGS.has(element.tagName)
+  if (!element) return false
+
+  const { tagName } = element
+  if (!tagName) return false
+
+  if (!EFFECT_BLOCKED_TAGS.has(tagName)) {
+    return true
+  }
+
+  if (tagName === 'DIV') {
+    return isDivHierarchyTail(element)
+  }
+
+  return false
 }
 
 function getElementRect (element) {
