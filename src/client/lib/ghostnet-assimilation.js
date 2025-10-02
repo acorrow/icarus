@@ -19,6 +19,15 @@ const MAX_CHARACTER_ANIMATIONS = 3200
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
+function isEligibleTarget (element) {
+  if (!element) return false
+  if (EXCLUDED_TAGS.has(element.tagName)) return false
+  if (typeof element.getBoundingClientRect !== 'function') return false
+  const rect = element.getBoundingClientRect()
+  if (!rect) return false
+  return rect.width !== 0 || rect.height !== 0
+}
+
 function clearJitterTimer (element) {
   if (!element) return
   const timer = element[JITTER_TIMER_FIELD]
@@ -164,26 +173,72 @@ function upgradeElement (element, baseDelay) {
 
 function buildElementList () {
   const root = document.querySelector('.layout__main') || document.body
-  if (!root) return []
-  const elements = Array.from(root.querySelectorAll('*')).filter((element) => {
-    if (!element) return false
-    if (EXCLUDED_TAGS.has(element.tagName)) return false
-    if (!element.getBoundingClientRect) return false
-    const rect = element.getBoundingClientRect()
-    if (!rect || (rect.width === 0 && rect.height === 0)) return false
-    return true
-  })
+  if (!root) {
+    return { root: null, elements: [] }
+  }
+  const elements = Array.from(root.querySelectorAll('*')).filter((element) => isEligibleTarget(element))
 
-  if (root !== document.body && root instanceof HTMLElement) {
+  if (root !== document.body && root instanceof HTMLElement && isEligibleTarget(root)) {
     elements.push(root)
   }
 
-  return shuffle(elements)
+  return {
+    root,
+    elements: shuffle(elements)
+  }
+}
+
+function findFallbackTarget (element, primarySet, fallbackSet, root) {
+  if (!element) return null
+  const rootElement = root || document.body
+  const candidates = []
+  let current = element.parentElement
+
+  while (current) {
+    if (primarySet.has(current) || fallbackSet.has(current)) {
+      return null
+    }
+
+    if (isEligibleTarget(current)) {
+      candidates.push(current)
+    }
+
+    if (current === rootElement || current === document.body) {
+      break
+    }
+
+    current = current.parentElement
+  }
+
+  for (let i = candidates.length - 1; i >= 0; i--) {
+    const candidate = candidates[i]
+    if (!primarySet.has(candidate) && !fallbackSet.has(candidate)) {
+      return candidate
+    }
+  }
+
+  if (isEligibleTarget(rootElement) && !primarySet.has(rootElement) && !fallbackSet.has(rootElement)) {
+    return rootElement
+  }
+
+  return null
 }
 
 function beginAssimilationEffect () {
-  const allTargets = buildElementList()
-  const targets = allTargets.slice(0, MAX_ACTIVE_TARGETS)
+  const { root, elements: shuffledElements } = buildElementList()
+  const primaryTargets = shuffledElements.slice(0, MAX_ACTIVE_TARGETS)
+  const primarySet = new Set(primaryTargets)
+  const overflowTargets = shuffledElements.slice(MAX_ACTIVE_TARGETS)
+  const fallbackSet = new Set()
+
+  overflowTargets.forEach((element) => {
+    const fallback = findFallbackTarget(element, primarySet, fallbackSet, root)
+    if (fallback) {
+      fallbackSet.add(fallback)
+    }
+  })
+
+  const targets = shuffle(Array.from(new Set([...primaryTargets, ...fallbackSet])))
   assimilationStartTime = performance.now()
   document.body.classList.add('ghostnet-assimilation-mode')
 
