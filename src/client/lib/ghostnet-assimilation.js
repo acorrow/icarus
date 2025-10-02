@@ -12,11 +12,13 @@ const ARRIVAL_FLAG_KEY = 'ghostnet.assimilationArrival'
 const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HTML', 'BODY'])
-const EFFECT_BLOCKED_TAGS = new Set()
+const EFFECT_BLOCKED_TAGS = new Set(['TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'COLGROUP', 'COL'])
 const EFFECT_BLOCKED_CLASS_NAMES = new Set([
   'layout__full-width',
   'layout__panel--secondary-navigation',
-  'layout__main'
+  'layout__main',
+  'layout__background',
+  'layout__overlay'
 ])
 const EFFECT_BLOCKED_CLASS_COMBINATIONS = [
   ['scrollable', 'layout__panel--secondary-navigation']
@@ -28,6 +30,8 @@ const MAX_CHARACTER_ANIMATIONS = 4800
 const MIN_TOP_LEVEL_GROUPS = 5
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
+
+const ALWAYS_ANIMATE_TAGS = new Set(['H', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'SPAN'])
 
 const ASSIMILATION_ALERT_LINES = [
   {
@@ -338,6 +342,10 @@ function shouldIncludeParentCandidate (element, candidateSet) {
   if (!element || !candidateSet) return false
   if (!isEffectPermitted(element)) return false
 
+  if (shouldAlwaysAnimateElement(element)) {
+    return true
+  }
+
   const childElements = typeof element.children !== 'undefined'
     ? Array.from(element.children)
     : []
@@ -398,6 +406,11 @@ function hasBlockedEffectClass (element) {
   }
 
   return false
+}
+
+function shouldAlwaysAnimateElement (element) {
+  if (!element || !element.tagName) return false
+  return ALWAYS_ANIMATE_TAGS.has(element.tagName)
 }
 
 function getElementRect (element) {
