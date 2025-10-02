@@ -3073,6 +3073,84 @@ function PristineMiningPanel () {
   )
 }
 
+function GhostnetTerminalOverlay () {
+  const [collapsed, setCollapsed] = useState(false)
+  const [offset, setOffset] = useState(0)
+
+  const terminalLines = useMemo(() => ([
+    { type: 'command', label: 'ghostnet@ship', text: 'uplink --channel "VEGA-9" --handshake mesh://relay-04' },
+    { type: 'response', label: 'mesh', text: 'Handshake acknowledged · encryption lattice stable · latency 42ms' },
+    { type: 'command', label: 'ghostnet@ship', text: 'stream manifest ping://drydock --burst 32kb --checksum' },
+    { type: 'response', label: 'ship', text: 'Payload queued · 12 telemetry frames buffered for dispatch' },
+    { type: 'command', label: 'ghostnet@ship', text: 'listen mesh://syndicate.radar --filter "convoy:aurora"' },
+    { type: 'response', label: 'mesh', text: 'Intercepted 3 convoy packets · decrypting spectral bands' },
+    { type: 'response', label: 'mesh', text: 'Return vector mapped · ghost corridor aligned to Perseus Reach' },
+    { type: 'command', label: 'ghostnet@ship', text: 'send burst://outpost-ix --file navmap.dat --repeat 2' },
+    { type: 'response', label: 'ship', text: 'Uplink thrusters trimming · data stream locked at 8.4 kb/s' },
+    { type: 'response', label: 'mesh', text: 'Outpost IX confirms receipt · requesting follow-on diagnostics' },
+    { type: 'command', label: 'ghostnet@ship', text: 'monitor relay://ghostnet.delta --mode passive --squelch 3' },
+    { type: 'response', label: 'mesh', text: 'Passive net cast · spectral noise floor nominal' }
+  ]), [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const interval = window.setInterval(() => {
+      setOffset(previous => (previous + 1) % terminalLines.length)
+    }, 3200)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [terminalLines.length])
+
+  const visibleLines = useMemo(() => {
+    const windowSize = 7
+    return Array.from({ length: windowSize }).map((_, index) => {
+      const currentIndex = (offset + index) % terminalLines.length
+      return { ...terminalLines[currentIndex], id: `${currentIndex}-${index}` }
+    })
+  }, [offset, terminalLines])
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed(previous => !previous)
+  }, [])
+
+  return (
+    <div className={`${styles.terminal} ${collapsed ? styles.terminalCollapsed : ''}`}>
+      <div className={styles.terminalShell} role='region' aria-label='Ghost Net ship uplink activity log'>
+        <div className={styles.terminalHeader}>
+          <div className={styles.terminalHeaderContent}>
+            <span className={styles.terminalTitle}>Ship Uplink Console</span>
+            <span className={styles.terminalStatus}>Channel mesh://ghostnet</span>
+          </div>
+          <button
+            type='button'
+            className={styles.terminalToggle}
+            onClick={toggleCollapsed}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? 'Expand uplink console' : 'Minimize uplink console'}
+          >
+            {collapsed ? 'Expand' : 'Minimize'}
+          </button>
+        </div>
+        <div className={styles.terminalBody}>
+          <ul className={styles.terminalFeed}>
+            {visibleLines.map(line => (
+              <li key={line.id} className={styles.terminalLine}>
+                <span className={`${styles.terminalPrompt} ${line.type === 'command' ? styles.terminalPromptCommand : styles.terminalPromptResponse}`}>
+                  {line.label}
+                </span>
+                <span className={styles.terminalText}>{line.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function GhostnetPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [arrivalMode, setArrivalMode] = useState(false)
@@ -3192,6 +3270,7 @@ export default function GhostnetPage() {
               </div>
             </div>
           </div>
+          <GhostnetTerminalOverlay />
         </div>
       </Panel>
     </Layout>
