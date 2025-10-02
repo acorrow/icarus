@@ -43,10 +43,39 @@ function getMainHeaderElement () {
   if (!attemptedHeaderLookup) {
     attemptedHeaderLookup = true
     try {
-      cachedMainHeaderElement = document.querySelector('body > header')
+      const selectors = [
+        'body > header',
+        'body > .layout > header',
+        'body > div > header',
+        'body > div > .layout > header',
+        '#__next > header',
+        '#__next > .layout > header',
+        'body header'
+      ]
+
+      for (const selector of selectors) {
+        const candidate = document.querySelector(selector)
+        if (candidate && candidate instanceof HTMLElement && document.body.contains(candidate)) {
+          cachedMainHeaderElement = candidate
+          break
+        }
+      }
+
+      if (!cachedMainHeaderElement) {
+        const fallback = document.querySelector('header')
+        if (fallback && fallback instanceof HTMLElement && document.body.contains(fallback)) {
+          cachedMainHeaderElement = fallback
+        }
+      }
     } catch (err) {
       cachedMainHeaderElement = null
     }
+  }
+
+  if (cachedMainHeaderElement && (!cachedMainHeaderElement.isConnected || !document.body.contains(cachedMainHeaderElement))) {
+    cachedMainHeaderElement = null
+    attemptedHeaderLookup = false
+    return getMainHeaderElement()
   }
 
   return cachedMainHeaderElement || null
