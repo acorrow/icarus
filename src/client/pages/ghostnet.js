@@ -1759,61 +1759,64 @@ function CommodityTradePanel () {
         </div>
       </div>
 
-      {(ghostnetStatus === 'error' || ghostnetStatus === 'partial') && (
-        <div className={styles.notice}>
-          {ghostnetStatus === 'error'
-            ? 'Unable to retrieve GHOSTNET price data at this time.'
-            : 'Some commodities are missing GHOSTNET price data. Displayed values use local market prices where available.'}
-        </div>
-      )}
+      <div className={styles.commodityTradeContent}>
+        {(ghostnetStatus === 'error' || ghostnetStatus === 'partial') && (
+          <div className={styles.notice}>
+            {ghostnetStatus === 'error'
+              ? 'Unable to retrieve GHOSTNET price data at this time.'
+              : 'Some commodities are missing GHOSTNET price data. Displayed values use local market prices where available.'}
+          </div>
+        )}
 
-      {marketStatus === 'missing' && (
-        <div className={styles.notice}>
-          Local market prices are unavailable. Dock at a station and reopen this panel to import in-game price data.
-        </div>
-      )}
+        {marketStatus === 'missing' && (
+          <div className={styles.notice}>
+            Local market prices are unavailable. Dock at a station and reopen this panel to import in-game price data.
+          </div>
+        )}
 
-      {historyStatus === 'missing' && (
-        <div className={styles.notice}>
-          Unable to locate Elite Dangerous journal logs to build local market history. Confirm your log directory settings and reopen this panel.
-        </div>
-      )}
+        {historyStatus === 'missing' && (
+          <div className={styles.notice}>
+            Unable to locate Elite Dangerous journal logs to build local market history. Confirm your log directory settings and reopen this panel.
+          </div>
+        )}
 
-      {historyStatus === 'error' && (
-        <div className={styles.notice}>
-          Local market history could not be parsed. Try reopening the commodities market in-game to refresh the data.
-        </div>
-      )}
+        {historyStatus === 'error' && (
+          <div className={styles.notice}>
+            Local market history could not be parsed. Try reopening the commodities market in-game to refresh the data.
+          </div>
+        )}
 
-      {historyStatus === 'empty' && (
-        <div className={styles.noticeMuted}>
-          No nearby market history has been recorded yet. Visit commodity markets to capture additional local price data.
-        </div>
-      )}
+        {historyStatus === 'empty' && (
+          <div className={styles.noticeMuted}>
+            No nearby market history has been recorded yet. Visit commodity markets to capture additional local price data.
+          </div>
+        )}
 
-      {renderStatusBanner()}
+        {renderStatusBanner()}
 
-      {status === 'ready' && hasCargo && hasRows && (
-        <div className={styles.dataTableContainer}>
-          <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense} table--animated fx-fade-in`}>
-            <colgroup>
-              <col style={{ width: '32%' }} />
-              <col style={{ width: '8%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '24%' }} />
-              <col style={{ width: '16%' }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Commodity</th>
-                <th className='text-right'>Qty</th>
-                <th>Local Data</th>
-                <th>GHOSTNET Max</th>
-                <th className='text-right'>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, index) => {
+        {status === 'ready' && hasCargo && hasRows && (
+          <div className={styles.commodityTradeTableRegion}>
+            <div className={`${styles.dataTableContainer} ${styles.commodityTradeTableContainer}`}>
+              <div className={styles.commodityTradeTableScroll}>
+                <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense} table--animated fx-fade-in`}>
+                  <colgroup>
+                    <col style={{ width: '32%' }} />
+                    <col style={{ width: '8%' }} />
+                    <col style={{ width: '20%' }} />
+                    <col style={{ width: '24%' }} />
+                    <col style={{ width: '16%' }} />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>Commodity</th>
+                      <th className='text-right'>Qty</th>
+                      <th>Local Data</th>
+                      <th>GHOSTNET Max</th>
+                      <th className='text-right'>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, index) => {
               const {
                 item,
                 entry,
@@ -1940,11 +1943,18 @@ function CommodityTradePanel () {
                   </td>
                 </tr>
               )
-            })}
-            </tbody>
-          </table>
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className={styles.tableFootnote}>
+          In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
         </div>
-      )}
+      </div>
 
       <div
         className={[styles.listingDrawerOverlay, listingsDrawerOpen ? styles.listingDrawerOverlayVisible : '']
@@ -2061,10 +2071,6 @@ function CommodityTradePanel () {
               )}
         </div>
       </aside>
-
-      <div className={styles.tableFootnote}>
-        In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
-      </div>
     </div>
   )
 }
@@ -3424,16 +3430,16 @@ export default function GhostnetPage() {
               </aside>
             </section>
             <div className={styles.tabPanels}>
-              <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+              <div className={styles.tabPanel} style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
                 <TradeRoutesPanel />
               </div>
-              <div style={{ display: activeTab === 'commodityTrade' ? 'block' : 'none' }}>
+              <div className={styles.tabPanel} style={{ display: activeTab === 'commodityTrade' ? 'block' : 'none' }}>
                 <CommodityTradePanel />
               </div>
-              <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
+              <div className={styles.tabPanel} style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
                 <MissionsPanel />
               </div>
-              <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
+              <div className={styles.tabPanel} style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
                 <PristineMiningPanel />
               </div>
             </div>

@@ -1,6 +1,8 @@
 .ghostnet {
   position: relative;
-  min-height: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   padding: 2.5rem 3rem 3.5rem;
   background: radial-gradient(circle at 20% 15%, rgba(216, 180, 254, 0.14), transparent 55%),
     radial-gradient(circle at 85% 10%, rgba(167, 139, 250, 0.22), transparent 60%),
@@ -87,6 +89,8 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   gap: 2.75rem;
 }
 
@@ -189,6 +193,17 @@
 .tabPanels {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tabPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .sectionFrame {
@@ -551,7 +566,8 @@
 }
 
 .tableFootnote {
-  margin-top: 1.5rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
   color: rgba(140, 160, 188, 0.75);
   font-size: 0.85rem;
   line-height: 1.6;
@@ -567,6 +583,38 @@
 
 .commodityTrade {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.commodityTradeContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.commodityTradeTableRegion {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.commodityTradeTableContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.commodityTradeTableScroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 .metricItem {
