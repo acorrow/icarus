@@ -20,6 +20,7 @@ const EFFECT_BLOCKED_CLASS_NAMES = new Set([
   'layout__background',
   'layout__overlay'
 ])
+const EFFECT_BLOCKED_ID_NAMES = new Set(['secondaryNavigation'])
 const EFFECT_BLOCKED_CLASS_COMBINATIONS = [
   ['scrollable', 'layout__panel--secondary-navigation']
 ]
@@ -389,7 +390,15 @@ function isEffectPermitted (element) {
 }
 
 function hasBlockedEffectClass (element) {
-  if (!element || typeof element.classList === 'undefined') {
+  if (!element) {
+    return false
+  }
+
+  if (element.id && EFFECT_BLOCKED_ID_NAMES.has(element.id)) {
+    return true
+  }
+
+  if (typeof element.classList === 'undefined') {
     return false
   }
 
@@ -406,6 +415,55 @@ function hasBlockedEffectClass (element) {
   }
 
   return false
+}
+
+function collectPermittedBlockedDescendants (root, threshold) {
+  if (!root) return []
+
+  const blockedElements = []
+
+  if (root !== document.body && hasBlockedEffectClass(root)) {
+    blockedElements.push(root)
+  }
+
+  if (typeof root.querySelectorAll === 'function') {
+    blockedElements.push(
+      ...Array.from(root.querySelectorAll('*')).filter((element) => hasBlockedEffectClass(element))
+    )
+  }
+
+  if (blockedElements.length === 0) {
+    return []
+  }
+
+  const descendants = new Set()
+
+  blockedElements.forEach((blocked) => {
+    if (!blocked) return
+
+    const childNodes = typeof blocked.querySelectorAll === 'function'
+      ? Array.from(blocked.querySelectorAll('*'))
+      : []
+
+    childNodes.forEach((candidate) => {
+      if (!candidate || candidate === blocked) {
+        return
+      }
+
+      if (!isEligibleTarget(candidate)) {
+        return
+      }
+
+      const rect = getElementRect(candidate)
+      if (!rect || rect.bottom < threshold) {
+        return
+      }
+
+      descendants.add(candidate)
+    })
+  })
+
+  return Array.from(descendants)
 }
 
 function shouldAlwaysAnimateElement (element) {
@@ -701,7 +759,7 @@ function buildAssimilationPlan () {
   }
 
   const threshold = getLowerHalfThreshold(root)
-  const candidates = eligibleElements
+  let candidates = eligibleElements
     .map((element) => ({ element, rect: getElementRect(element) }))
     .filter(({ rect }) => rect && rect.bottom >= threshold)
     .map(({ element }) => element)
@@ -711,6 +769,16 @@ function buildAssimilationPlan () {
   }
 
   const candidateSet = new Set(candidates)
+
+  const forcedDescendants = collectPermittedBlockedDescendants(root, threshold)
+  if (forcedDescendants.length > 0) {
+    forcedDescendants.forEach((element) => {
+      if (!candidateSet.has(element)) {
+        candidateSet.add(element)
+        candidates.push(element)
+      }
+    })
+  }
   const parentCandidates = new Set()
 
   candidates.forEach((element) => {
