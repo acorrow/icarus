@@ -8,6 +8,11 @@ import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 import styles from './ghostnet.module.css'
 
+const GHOSTNET_ACCENT_HEX = '#5D2EFF'
+const GHOSTNET_SUCCESS_HEX = '#29F3C3'
+const GHOSTNET_WARNING_HEX = '#FF5FC1'
+const GHOSTNET_MUTED_HEX = 'rgba(245, 241, 255, 0.56)'
+
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
   'Loadout',
   'ModuleBuy',
@@ -303,7 +308,7 @@ function getFactionStandingDisplay(factionName, standings) {
     statusLabel: null,
     statusDescription: undefined,
     hasData: false,
-    color: '#7f8697'
+    color: GHOSTNET_MUTED_HEX
   }
 
   if (!key || !standings) {
@@ -345,13 +350,13 @@ function getFactionStandingDisplay(factionName, standings) {
 
   const normalizedStanding = typeof info.standing === 'string' ? info.standing.trim().toLowerCase() : ''
   let className = null
-  let color = '#ffb347'
+  let color = GHOSTNET_ACCENT_HEX
   if (normalizedStanding === 'ally') {
     className = 'text-success'
-    color = 'var(--color-success)'
+    color = GHOSTNET_SUCCESS_HEX
   } else if (normalizedStanding === 'hostile') {
     className = 'text-danger'
-    color = 'var(--color-danger)'
+    color = GHOSTNET_WARNING_HEX
   }
 
   const reputationLabel = typeof info.reputation === 'number'
@@ -625,17 +630,17 @@ const FILTER_CONTROL_STYLE = {
   padding: '.35rem .7rem',
   fontSize: '0.9rem',
   borderRadius: '.35rem',
-  border: '1px solid rgba(127, 233, 255, 0.35)',
-  background: 'rgba(5, 8, 13, 0.75)',
+  border: '1px solid rgba(93, 46, 255, 0.38)',
+  background: 'rgba(21, 17, 39, 0.75)',
   color: 'var(--ghostnet-ink)',
   lineHeight: '1.2',
   boxSizing: 'border-box'
 }
 
 const FILTER_TOGGLE_BUTTON_STYLE = {
-  background: 'rgba(127, 233, 255, 0.12)',
-  border: '1px solid rgba(127, 233, 255, 0.4)',
-  color: 'var(--ghostnet-accent)',
+  background: 'rgba(93, 46, 255, 0.18)',
+  border: '1px solid rgba(93, 46, 255, 0.42)',
+  color: GHOSTNET_ACCENT_HEX,
   borderRadius: '.35rem',
   padding: '0 1rem',
   fontSize: '0.85rem',
@@ -655,7 +660,7 @@ const FILTER_SUMMARY_STYLE = {
 }
 
 const FILTER_SUMMARY_TEXT_STYLE = {
-  color: '#ffa45b',
+  color: GHOSTNET_ACCENT_HEX,
   fontSize: '0.85rem',
   fontWeight: 500,
   whiteSpace: 'nowrap',
@@ -669,9 +674,9 @@ const FILTER_SUMMARY_REFRESH_BUTTON_STYLE = {
   width: '2.1rem',
   height: '2.1rem',
   borderRadius: '999px',
-  border: '1px solid var(--color-info)',
-  background: 'rgba(206, 237, 255, 0.18)',
-  color: 'var(--color-info)',
+  border: '1px solid rgba(93, 46, 255, 0.42)',
+  background: 'rgba(93, 46, 255, 0.22)',
+  color: GHOSTNET_ACCENT_HEX,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -704,7 +709,7 @@ function getStationIconName (localInfo = {}, remoteInfo = {}) {
   return stationIconFromType(candidates[0])
 }
 
-function StationIcon ({ icon, size = 26, color = '#ffb347' }) {
+function StationIcon ({ icon, size = 26, color = GHOSTNET_ACCENT_HEX }) {
   if (!icon) return null
   const paths = Icons[icon]
   if (!paths) return null
@@ -1196,7 +1201,7 @@ function MissionsPanel () {
       <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
         Availability signals originate from GHOSTNET contributors and may trail live mission boards.
       </p>
-      {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
+      {error && <div style={{ color: GHOSTNET_WARNING_HEX, textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
@@ -2221,11 +2226,11 @@ function TradeRoutesPanel () {
     const level = typeof entry?.level === 'number' && entry.level > 0 ? Math.min(entry.level, 4) : null
     const symbol = type === 'supply' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
     const icon = level ? symbol.repeat(Math.min(level, 3)) : symbol
-    const color = type === 'supply' ? '#5bd1a5' : '#ff6b6b'
+    const color = type === 'supply' ? GHOSTNET_SUCCESS_HEX : GHOSTNET_WARNING_HEX
     return (
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85em' }}>
         <span style={{ color }}>{icon}</span>
-        <span style={{ color: '#bbb' }}>{quantityText || '--'}</span>
+        <span style={{ color: GHOSTNET_MUTED_HEX }}>{quantityText || '--'}</span>
       </span>
     )
   }
@@ -2411,8 +2416,8 @@ function TradeRoutesPanel () {
                   id={detailsId}
                   className={styles.tableDetailRow}
                 >
-                  <td style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
+                  <td style={{ borderTop: '1px solid rgba(140, 92, 255, 0.28)' }} aria-hidden='true' />
+                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(140, 92, 255, 0.28)', verticalAlign: 'top' }}>
                     <div className={styles.tableDetailSection}>
                       <span
                         style={originStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
@@ -2453,7 +2458,7 @@ function TradeRoutesPanel () {
                       <span>Return demand:&nbsp;{returnDemandIndicator || indicatorPlaceholder}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
+                  <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(140, 92, 255, 0.28)', verticalAlign: 'top' }}>
                     <div className={styles.tableDetailSection}>
                       <span
                         style={destinationStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
@@ -2494,24 +2499,24 @@ function TradeRoutesPanel () {
                       <span>Return supply:&nbsp;{returnSupplyIndicator || indicatorPlaceholder}</span>
                     </div>
                   </td>
-                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
+                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(140, 92, 255, 0.28)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                       <span>Buy: {outboundBuy?.priceText || '--'}</span>
                       <span>Sell: {outboundSell?.priceText || '--'}</span>
                     </div>
                   </td>
-                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
+                  <td className='hidden-small' style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(140, 92, 255, 0.28)', verticalAlign: 'top', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                       <span>Buy: {returnBuy?.priceText || '--'}</span>
                       <span>Sell: {returnSell?.priceText || '--'}</span>
                     </div>
                   </td>
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
-                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(140, 92, 255, 0.28)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(140, 92, 255, 0.28)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(140, 92, 255, 0.28)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(140, 92, 255, 0.28)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(140, 92, 255, 0.28)' }} aria-hidden='true' />
+                  <td className='hidden-small' style={{ borderTop: '1px solid rgba(140, 92, 255, 0.28)' }} aria-hidden='true' />
                 </tr>
               )}
             </React.Fragment>
@@ -2908,7 +2913,7 @@ function PristineMiningPanel () {
       <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
         Geological echoes are sourced from volunteer GHOSTNET submissions and may lag in-system discoveries.
       </p>
-      {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
+      {error && <div style={{ color: GHOSTNET_WARNING_HEX, textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div
         className={`pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
       >
@@ -3003,7 +3008,7 @@ function PristineMiningPanel () {
                       </tr>
                       {isExpanded && (
                         <tr className={styles.tableDetailRow}>
-                          <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
+                        <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(18, 15, 34, 0.94)', borderTop: '1px solid rgba(140, 92, 255, 0.28)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
                                 <div className='pristine-mining__detail-summary'>
