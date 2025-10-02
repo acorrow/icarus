@@ -15,7 +15,8 @@
   max-width: 1ch;
   text-align: center;
   white-space: pre;
-  transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+  transition: color 0.18s ease, transform 0.09s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.12s ease, filter 0.14s ease;
+  will-change: transform, opacity, filter;
 }
 
 .ghostnet-title-morph__char--space {
@@ -23,6 +24,6 @@
 }
 
 .ghostnet-title-morph__char--glitch {
-  text-shadow: 0 0 0.45rem rgba(93, 46, 255, 0.55), 0 0 0.2rem rgba(41, 243, 195, 0.35);
-  filter: contrast(1.08);
+  text-shadow: 0 0 0.4rem rgba(93, 46, 255, 0.55), 0 0 0.16rem rgba(41, 243, 195, 0.4);
+  filter: blur(0.045rem) contrast(1.08) saturate(1.06);
 }

@@ -108,11 +108,11 @@ export default function Header ({ connected, active }) {
       })
     }
 
-    const offsetX = (Math.random() - 0.5) * 0.4
-    const offsetY = (Math.random() - 0.5) * 0.45
-    const skew = (Math.random() - 0.5) * 7
-    const scale = 1 + (Math.random() - 0.5) * 0.08
-    const opacity = Math.max(0.82, Math.min(1, 0.92 + (Math.random() - 0.5) * 0.18))
+    const offsetX = (Math.random() - 0.5) * 0.16
+    const offsetY = (Math.random() - 0.5) * 0.18
+    const skew = (Math.random() - 0.5) * 3.4
+    const scale = 1 + (Math.random() - 0.5) * 0.045
+    const opacity = Math.max(0.86, Math.min(1, 0.94 + (Math.random() - 0.5) * 0.14))
 
     activeTitleGlitchIndices.current.add(glitchIndex)
     setCharGlitchStyles(prev => {
@@ -124,7 +124,7 @@ export default function Header ({ connected, active }) {
       return next
     })
 
-    const revertDelay = 60 + Math.random() * 140
+    const revertDelay = 35 + Math.random() * 90
     const revertTimeout = window.setTimeout(() => {
       if (swapToGlyph) {
         setTitleChars(prev => {
