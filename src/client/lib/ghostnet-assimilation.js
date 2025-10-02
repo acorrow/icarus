@@ -13,6 +13,14 @@ const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HTML', 'BODY'])
 const EFFECT_BLOCKED_TAGS = new Set(['DIV'])
+const EFFECT_BLOCKED_CLASS_NAMES = new Set([
+  'layout__full-width',
+  'layout__panel--secondary-navigation',
+  'layout__main'
+])
+const EFFECT_BLOCKED_CLASS_COMBINATIONS = [
+  ['scrollable', 'layout__panel--secondary-navigation']
+]
 const NAVIGATION_EXCLUSION_SELECTOR = '#primaryNavigation'
 const FORCED_FADE_CLEANUP_DELAY = 720
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
@@ -310,6 +318,7 @@ function isEligibleTarget (element) {
   if (EXCLUDED_TAGS.has(element.tagName)) return false
   if (isWithinExcludedRegion(element)) return false
   if ('isConnected' in element && !element.isConnected) return false
+  if (hasBlockedEffectClass(element)) return false
   if (typeof element.getBoundingClientRect !== 'function') return false
 
   const rect = getElementRect(element)
@@ -363,12 +372,36 @@ function isEffectPermitted (element) {
   const { tagName } = element
   if (!tagName) return false
 
+  if (hasBlockedEffectClass(element)) {
+    return false
+  }
+
   if (!EFFECT_BLOCKED_TAGS.has(tagName)) {
     return true
   }
 
   if (tagName === 'DIV') {
     return isDivHierarchyTail(element)
+  }
+
+  return false
+}
+
+function hasBlockedEffectClass (element) {
+  if (!element || typeof element.classList === 'undefined') {
+    return false
+  }
+
+  for (const className of EFFECT_BLOCKED_CLASS_NAMES) {
+    if (element.classList.contains(className)) {
+      return true
+    }
+  }
+
+  for (const combination of EFFECT_BLOCKED_CLASS_COMBINATIONS) {
+    if (combination.every((className) => element.classList.contains(className))) {
+      return true
+    }
   }
 
   return false
