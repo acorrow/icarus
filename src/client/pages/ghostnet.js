@@ -773,6 +773,60 @@ function StationIcon ({ icon, size = 26, color = 'var(--ghostnet-accent)' }) {
   )
 }
 
+const COMMODITY_ICON_FALLBACK = 'cargo'
+
+function getCommodityIconNameFromItem (item = {}) {
+  const parts = [item?.category, item?.group, item?.type, item?.name, item?.symbol]
+    .filter(value => typeof value === 'string' && value.trim())
+    .join(' ')
+    .toLowerCase()
+
+  if (!parts) return COMMODITY_ICON_FALLBACK
+
+  if (/(metal|alloy|ore|painite|gold|silver|platinum|palladium|bertrandite|cobalt|indite)/.test(parts)) {
+    return 'materials'
+  }
+  if (/(mineral|rock|geological|crystal|gem|jewel|opal|alexandrite|diamond)/.test(parts)) {
+    return 'materials-raw'
+  }
+  if (/(fuel|hydrogen|deuterium|tritium|oxid|propellant|power|cell|reactor|coolant)/.test(parts)) {
+    return 'fuel'
+  }
+  if (/(food|grain|fruit|tea|coffee|beer|wine|ale|meat|fish|crop|agri|agricultural|nutrition)/.test(parts)) {
+    return 'cargo-import'
+  }
+  if (/(medicine|pharma|medical|drug|stimulant|vaccine|antigen|antidote|remedy)/.test(parts)) {
+    return 'help'
+  }
+  if (/(tech|technology|computer|processor|circuit|component|sensor|relay|data|micro)/.test(parts)) {
+    return 'cogs'
+  }
+  if (/(weapon|munitions|armament|combat|defence|defense|shield|artillery|missile)/.test(parts)) {
+    return 'engineering'
+  }
+  if (/(textile|fabric|clothing|consumer|luxury|domestic|furnishing)/.test(parts)) {
+    return 'inventory'
+  }
+
+  return COMMODITY_ICON_FALLBACK
+}
+
+function CommodityIcon ({ item, size = 34, color = '#f5f1ff' }) {
+  const iconName = getCommodityIconNameFromItem(item)
+  const paths = Icons[iconName] || Icons[COMMODITY_ICON_FALLBACK]
+  if (!paths) return null
+  return (
+    <svg
+      viewBox='0 0 1000 1000'
+      focusable='false'
+      aria-hidden='true'
+      style={{ width: size, height: size, fill: color, flexShrink: 0 }}
+    >
+      {paths}
+    </svg>
+  )
+}
+
 function parseNumberFromText (value) {
   if (typeof value !== 'string') return null
   const cleaned = value.replace(/[^0-9.-]/g, '')
@@ -1367,6 +1421,7 @@ function CommodityTradePanel () {
   const [detailSortDirection, setDetailSortDirection] = useState(DEFAULT_COMMODITY_DETAIL_SORT_DIRECTION.price)
   const commoditySelectionRef = useRef({})
   const [activeCommoditySummary, setActiveCommoditySummary] = useState(null)
+  const factionStandings = useFactionStandings()
 
   const detailViewActive = Boolean(detailContext?.rowKey)
 
@@ -1999,10 +2054,37 @@ function CommodityTradePanel () {
   const summaryQuantity = showSummaryContext ? (Number(activeSummaryRow?.quantity) || 0) : 0
   const summaryListing = showSummaryContext ? activeSummaryListing : null
   const summaryFallbackListing = showSummaryContext ? activeSummaryRow?.entry?.ghostnet : null
+  const summaryCommodityIconName = showSummaryContext ? getCommodityIconNameFromItem(activeSummaryRow?.item) : null
+  const summaryStationIconName = showSummaryContext
+    ? getStationIconName(
+      summaryFallbackListing || activeSummaryRow?.entry?.market || {},
+      summaryListing || {}
+    )
+    : null
   const summaryStationName = summaryListing?.stationName
     || (typeof summaryFallbackListing?.stationName === 'string' ? summaryFallbackListing.stationName : '')
   const summarySystemName = summaryListing?.systemName
     || (typeof summaryFallbackListing?.systemName === 'string' ? summaryFallbackListing.systemName : '')
+  const summaryFactionName = showSummaryContext
+    ? (
+        extractFactionNameCandidate(summaryListing?.stationFaction)
+        || extractFactionNameCandidate(summaryListing?.faction)
+        || extractFactionNameCandidate(summaryListing?.controllingFaction)
+        || extractFactionNameCandidate(summaryFallbackListing?.stationFaction)
+        || extractFactionNameCandidate(summaryFallbackListing?.faction)
+        || extractFactionNameCandidate(summaryFallbackListing?.controllingFaction)
+        || extractFactionNameCandidate(activeSummaryRow?.entry?.market?.stationFaction)
+        || extractFactionNameCandidate(activeSummaryRow?.entry?.market?.faction)
+        || extractFactionNameCandidate(activeSummaryRow?.entry?.market?.controllingFaction)
+      )
+    : ''
+  const summaryFactionDisplay = summaryFactionName
+    ? getFactionStandingDisplay(summaryFactionName, factionStandings)
+    : null
+  const summaryFactionStatusLabel = summaryFactionDisplay?.statusLabel || null
+  const summaryFactionTitle = summaryFactionDisplay?.statusDescription
+  const summaryFactionClassName = summaryFactionDisplay?.className || styles.tableTextNeutral
+  const summaryFactionColor = summaryFactionDisplay?.color || 'var(--ghostnet-accent)'
   const summaryDistanceLy = summaryListing?.distanceLyText
     || formatSystemDistance(summaryListing?.distanceLy, '')
     || (summaryFallbackListing ? formatSystemDistance(summaryFallbackListing.distanceLy, '--') : '--')
@@ -2367,13 +2449,20 @@ function CommodityTradePanel () {
         {showSummaryContext && (
           <div className={styles.detailContextSummary}>
             <div className={styles.detailContextSummaryHeader}>
-              <div className={styles.detailContextSummaryHeading}>
-                <span className={styles.detailContextSummaryLabel}>Commodity in focus</span>
-                <div className={styles.detailContextSummaryTitle}>
-                  {summaryCommodityName}
-                  {summaryCommoditySymbol ? <span className={styles.detailContextSummarySymbol}>({summaryCommoditySymbol})</span> : null}
+              <div className={styles.detailContextSummaryTitleRow}>
+                {summaryCommodityIconName ? (
+                  <div className={styles.detailContextSummaryIcon} aria-hidden='true'>
+                    <CommodityIcon item={activeSummaryRow?.item} />
+                  </div>
+                ) : null}
+                <div className={styles.detailContextSummaryHeadingText}>
+                  <span className={styles.detailContextSummaryLabel}>Commodity in focus</span>
+                  <div className={styles.detailContextSummaryTitle}>
+                    {summaryCommodityName}
+                    {summaryCommoditySymbol ? <span className={styles.detailContextSummarySymbol}>({summaryCommoditySymbol})</span> : null}
+                  </div>
+                  <span className={styles.detailContextSummaryMeta}>{summaryQuantityDisplay}</span>
                 </div>
-                <span className={styles.detailContextSummaryMeta}>{summaryQuantityDisplay}</span>
               </div>
               <button
                 type='button'
@@ -2387,11 +2476,29 @@ function CommodityTradePanel () {
               <div className={styles.detailContextSummaryItem}>
                 <span className={styles.detailContextSummaryItemLabel}>Target Station</span>
                 {summaryStationName ? (
-                  <>
-                    <span className={styles.detailContextSummaryItemValue}>{summaryStationName}</span>
-                    <span className={styles.detailContextSummaryItemMeta}>{summarySystemName || 'Unknown system'}</span>
-                    <span className={styles.detailContextSummaryItemMeta}>Updated {summaryUpdatedDisplay || '--'}</span>
-                  </>
+                  <div className={styles.detailContextSummaryStation}>
+                    {summaryStationIconName ? (
+                      <div className={styles.detailContextSummaryStationIcon} aria-hidden='true'>
+                        <StationIcon icon={summaryStationIconName} size={32} color={summaryFactionColor} />
+                      </div>
+                    ) : null}
+                    <div className={styles.detailContextSummaryStationInfo}>
+                      <span className={styles.detailContextSummaryItemValue}>{summaryStationName}</span>
+                      <span className={styles.detailContextSummaryItemMeta}>{summarySystemName || 'Unknown system'}</span>
+                      {summaryFactionName ? (
+                        <span className={styles.detailContextSummaryFaction} title={summaryFactionTitle}>
+                          Controlled by{' '}
+                          <span className={summaryFactionClassName}>{summaryFactionName}</span>
+                          {summaryFactionStatusLabel ? (
+                            <span className={styles.detailContextSummaryFactionStatus}> · {summaryFactionStatusLabel}</span>
+                          ) : null}
+                        </span>
+                      ) : (
+                        <span className={styles.detailContextSummaryItemMeta}>Faction unknown</span>
+                      )}
+                      <span className={styles.detailContextSummaryItemMeta}>Updated {summaryUpdatedDisplay || '--'}</span>
+                    </div>
+                  </div>
                 ) : (
                   <span className={styles.detailContextSummaryItemMeta}>No GHOSTNET station selected yet.</span>
                 )}

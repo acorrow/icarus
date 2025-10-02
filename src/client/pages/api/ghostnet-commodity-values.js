@@ -365,6 +365,42 @@ function normalise (value) {
   return cleanText(value).toLowerCase()
 }
 
+function extractFactionNameCandidate (value) {
+  if (!value) return ''
+  if (typeof value === 'string') {
+    return cleanText(value)
+  }
+  if (typeof value === 'object') {
+    const candidates = [
+      value.name,
+      value.Name,
+      value.localisedName,
+      value.localizedName,
+      value.LocalisedName,
+      value.Name_Localised,
+      value.Faction,
+      value.faction,
+      value.title,
+      value.FactionName,
+      value.factionName
+    ]
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        return cleanText(candidate)
+      }
+    }
+    if (value.name && typeof value.name === 'object') {
+      const nested = extractFactionNameCandidate(value.name)
+      if (nested) return nested
+    }
+    if (value.faction && typeof value.faction === 'object') {
+      const nested = extractFactionNameCandidate(value.faction)
+      if (nested) return nested
+    }
+  }
+  return ''
+}
+
 function normaliseCommodityKey (value) {
   if (!value) return ''
   return cleanText(value)
@@ -425,6 +461,10 @@ function loadMarketFile (logDirOverride = null) {
 function buildMarketLookup (marketData) {
   if (!marketData || !Array.isArray(marketData.Items)) return null
   const lookup = {}
+  const stationFaction = extractFactionNameCandidate(marketData?.StationFaction)
+    || extractFactionNameCandidate(marketData?.Faction)
+    || cleanText(marketData?.StationFaction_Localised)
+    || cleanText(marketData?.Faction_Localised)
   marketData.Items.forEach(item => {
     const symbolKey = normalise(item?.Name)
     const nameKey = normalise(item?.Name_Localised || item?.Name)
@@ -445,7 +485,9 @@ function buildMarketLookup (marketData) {
     stationName: marketData?.StationName || null,
     systemName: marketData?.StarSystem || null,
     marketId: marketData?.MarketID || null,
-    timestamp: marketData?.timestamp || null
+    timestamp: marketData?.timestamp || null,
+    stationType: marketData?.StationType || null,
+    stationFaction: stationFaction || null
   }
 }
 
@@ -490,6 +532,12 @@ function ingestJournalMarketEvent (event, commodityMarketsMap, maxAgeMs) {
   const stationName = cleanText(event.StationName || event.Station)
   const systemName = cleanText(event.StarSystem || event.System || event.SystemName)
   const stationType = cleanText(event.StationType)
+  const stationFaction = extractFactionNameCandidate(event.StationFaction)
+    || extractFactionNameCandidate(event.Faction)
+    || ''
+  const systemFaction = extractFactionNameCandidate(event.SystemFaction)
+    || extractFactionNameCandidate(event.SystemFactionName)
+    || ''
   const distanceValue = [event.DistFromStarLS, event.DistanceFromArrivalLS, event.StationDistanceLS]
     .map(value => Number(value))
     .find(isFiniteNumber)
@@ -526,6 +574,8 @@ function ingestJournalMarketEvent (event, commodityMarketsMap, maxAgeMs) {
       systemName: systemName || null,
       stationType: stationType || null,
       marketId: marketId || null,
+      stationFaction: stationFaction || null,
+      systemFaction: systemFaction || null,
       distanceLs,
       timestamp,
       source: 'journal'
@@ -778,6 +828,8 @@ export default async function handler (req, res) {
           stationName: marketData.stationName || null,
           systemName: marketData.systemName || null,
           marketId: marketData.marketId || null,
+          stationType: marketData.stationType || null,
+          stationFaction: marketData.stationFaction || null,
           timestamp: marketData.timestamp || null,
           stock: candidate.stock,
           demand: candidate.demand,
