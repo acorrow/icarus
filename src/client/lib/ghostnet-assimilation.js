@@ -1,3 +1,8 @@
+import {
+  getAssimilationDurationSeconds,
+  ASSIMILATION_DURATION_DEFAULT
+} from 'lib/ghostnet-settings'
+
 let assimilationInProgress = false
 let assimilationStartTime = 0
 
@@ -5,7 +10,8 @@ const ARRIVAL_FLAG_KEY = 'ghostnet.assimilationArrival'
 const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'])
-const EFFECT_DURATION = 4000
+const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
+let effectDurationMs = DEFAULT_EFFECT_DURATION
 
 function clearJitterTimer (element) {
   if (!element) return
@@ -20,7 +26,7 @@ function scheduleJitter (element) {
   if (!element || !assimilationInProgress) return
 
   const elapsed = Math.max(0, performance.now() - assimilationStartTime)
-  const progress = Math.min(1, elapsed / EFFECT_DURATION)
+  const progress = Math.min(1, elapsed / effectDurationMs)
   const eased = Math.pow(progress, 1.45)
   const intensity = Math.max(0, 1 - eased)
 
@@ -109,7 +115,7 @@ function upgradeElement (element, baseDelay) {
     node.parentNode.replaceChild(spanWrapper, node)
   })
 
-  const safeWindow = Math.max(180, EFFECT_DURATION - baseDelay - 120)
+  const safeWindow = Math.max(180, effectDurationMs - baseDelay - 120)
   const removalDelay = Math.max(180, Math.min(safeWindow, 900 + Math.random() * 450))
 
   window.setTimeout(() => {
@@ -150,7 +156,7 @@ function beginAssimilationEffect () {
   document.body.classList.add('ghostnet-assimilation-mode')
 
   targets.forEach((element) => {
-    const delay = Math.random() * (EFFECT_DURATION * 0.55)
+    const delay = Math.random() * (effectDurationMs * 0.55)
     window.setTimeout(() => {
       upgradeElement(element, delay)
     }, delay)
@@ -187,6 +193,12 @@ export function initiateGhostnetAssimilation (callback) {
     return
   }
 
+  const configuredSeconds = getAssimilationDurationSeconds()
+  const configuredDurationMs = Math.round(configuredSeconds * 1000)
+  effectDurationMs = Number.isFinite(configuredDurationMs) && configuredDurationMs > 0
+    ? configuredDurationMs
+    : DEFAULT_EFFECT_DURATION
+
   assimilationInProgress = true
   const cleanup = beginAssimilationEffect()
 
@@ -205,7 +217,7 @@ export function initiateGhostnetAssimilation (callback) {
       cleanup()
       assimilationInProgress = false
     }, 600)
-  }, EFFECT_DURATION)
+  }, effectDurationMs)
 }
 
 export function isGhostnetAssimilationActive () {
