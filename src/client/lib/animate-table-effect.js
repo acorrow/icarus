@@ -1,26 +1,46 @@
 module.exports = () => {
-  const observer = new IntersectionObserver(callbackFunction, {})
-  function callbackFunction (entries) {
-    let shownItems = 0
-    for (let i = 0; i < entries.length; i++) {
-      if (entries[i].isIntersecting) {
-        entries[i].target.style.animationDelay = `${shownItems++ * .03}s`;
-      }
-      entries[i].target.className += " --shown";
-      observer.unobserve(entries[i].target)
-      //} else {
-      //  entries[i].target.className = entries[i].target.className.replace(' --shown', '');
-      //}
-    }
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return () => {}
   }
 
-  setTimeout(() => {
-    const elements = document.querySelectorAll("table.table--animated tbody tr")
-    elements.forEach(el => observer.observe(el))
-  }, 0)
+  const selector = "[data-ghostnet-table-row], table.table--animated tbody tr"
+  const observer = new IntersectionObserver(entries => {
+    let shownItems = 0
+
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return
+
+      const target = entry.target
+      const delay = `${shownItems++ * 0.03}s`
+
+      if (target.matches('[data-ghostnet-table-row]')) {
+        target.style.setProperty('--ghostnet-row-delay', delay)
+        target.setAttribute('data-ghostnet-table-row', 'visible')
+      } else {
+        target.style.animationDelay = delay
+        target.classList.add('--shown')
+      }
+
+      observer.unobserve(target)
+    })
+  })
+
+  const observeElements = () => {
+    const elements = document.querySelectorAll(selector)
+    elements.forEach(element => {
+      if (element.matches('[data-ghostnet-table-row]')) {
+        const state = element.getAttribute('data-ghostnet-table-row')
+        if (state === 'visible') return
+        if (!state) element.setAttribute('data-ghostnet-table-row', 'pending')
+      }
+      observer.observe(element)
+    })
+  }
+
+  setTimeout(observeElements, 0)
 
   return () => {
-    const elements = document.querySelectorAll("table.table--animated tbody tr")
-    elements.forEach(el => observer.unobserve(el))
+    const elements = document.querySelectorAll(selector)
+    elements.forEach(element => observer.unobserve(element))
   }
 }

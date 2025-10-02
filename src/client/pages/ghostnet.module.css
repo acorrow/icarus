@@ -375,6 +375,26 @@
   gap: 1.5rem;
 }
 
+.tableSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tableSectionHeader {
+  display: grid;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  align-items: start;
+}
+
+.tableSectionTitle {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.4vw, 2rem);
+  font-weight: 700;
+  color: var(--ghostnet-ink);
+}
+
 .sectionFrameElevated {
   border-radius: 1.5rem;
   background: var(--ghostnet-panel);
@@ -496,6 +516,18 @@
   vertical-align: middle;
 }
 
+.dataTable :global([data-ghostnet-table-row]) {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition-delay: var(--ghostnet-row-delay, 0s);
+}
+
+.dataTable :global([data-ghostnet-table-row='visible']) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .tableCellTop {
   vertical-align: top;
 }
@@ -577,23 +609,6 @@
 
 .tableTextDanger {
   color: #ff5fc1;
-}
-
-.tableStatusBar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: rgba(5, 8, 13, 0.72);
-  border-bottom: 1px solid rgba(127, 233, 255, 0.18);
-  color: var(--ghostnet-subdued);
-  font-size: 0.9rem;
-}
-
-.tableStatusTimestamp {
-  margin-left: auto;
-  font-size: 0.85rem;
-  color: var(--ghostnet-muted);
 }
 
 .tableMessage {
