@@ -199,6 +199,369 @@
   color: var(--ghostnet-ink);
 }
 
+.dataTableContainer {
+  position: relative;
+  border: 1px solid rgba(216, 180, 254, 0.24);
+  border-radius: 1.25rem;
+  background: rgba(7, 10, 18, 0.92);
+  box-shadow: 0 1.65rem 3.75rem rgba(3, 7, 12, 0.78);
+  overflow: hidden;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  color: var(--ghostnet-ink);
+  line-height: 1.45;
+  background: transparent;
+}
+
+.dataTableFixed {
+  table-layout: fixed;
+}
+
+.dataTableDense td {
+  line-height: 1.35;
+}
+
+.dataTable thead {
+  background: linear-gradient(180deg, rgba(12, 16, 26, 0.96) 0%, rgba(7, 11, 20, 0.94) 100%);
+}
+
+.dataTable thead tr {
+  border-bottom: 1px solid rgba(216, 180, 254, 0.22);
+}
+
+.dataTable thead th {
+  padding: 0.75rem 1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ghostnet-subdued);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dataTable tbody tr {
+  background: rgba(5, 8, 13, 0.78);
+  border-bottom: 1px solid rgba(216, 180, 254, 0.14);
+  transition: background 0.25s ease, transform 0.25s ease;
+  font-size: 0.95rem;
+}
+
+.dataTable tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.dataTable tbody tr:hover {
+  background: rgba(127, 233, 255, 0.16);
+}
+
+.dataTable td {
+  padding: 0.75rem 1rem;
+  color: var(--ghostnet-ink);
+  text-transform: none !important;
+  vertical-align: middle;
+}
+
+.tableCellTop {
+  vertical-align: top;
+}
+
+.tableCellTight {
+  padding: 0.6rem 0.75rem;
+}
+
+.tableCellCompact {
+  padding: 0.5rem 0.65rem;
+}
+
+.tableCellCaret {
+  padding: 0.6rem 0.35rem;
+  text-align: center;
+  vertical-align: top;
+  color: #ffb347;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.tableCellWrap {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.tableCellInline {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.tableHeaderInteractive {
+  cursor: pointer;
+  user-select: none;
+}
+
+.tableRowInteractive {
+  cursor: pointer;
+}
+
+.tableRowInteractive:hover {
+  background: rgba(127, 233, 255, 0.2);
+}
+
+.tableRowExpanded {
+  background: rgba(127, 233, 255, 0.16) !important;
+}
+
+.tableRowExpanded:hover {
+  background: rgba(127, 233, 255, 0.22) !important;
+}
+
+.tableDetailRow td {
+  background: rgba(5, 8, 13, 0.88);
+  border-top: 1px solid rgba(127, 233, 255, 0.18);
+  padding: 0 1.5rem 1.5rem;
+}
+
+.tableDetailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  color: var(--ghostnet-muted);
+}
+
+.tableDetailSection span {
+  line-height: 1.4;
+}
+
+.tableStatusBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(5, 8, 13, 0.72);
+  border-bottom: 1px solid rgba(127, 233, 255, 0.18);
+  color: var(--ghostnet-subdued);
+  font-size: 0.9rem;
+}
+
+.tableStatusTimestamp {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--ghostnet-muted);
+}
+
+.tableMessage {
+  color: var(--ghostnet-muted);
+  padding: 1.25rem 2rem;
+}
+
+.tableMessageBorder {
+  border-bottom: 1px solid rgba(127, 233, 255, 0.18);
+}
+
+.tableIdleState {
+  color: var(--ghostnet-muted);
+  padding: 2rem;
+}
+
+.tableErrorState {
+  color: #ff4d4f;
+  padding: 2rem;
+}
+
+.tableEmptyState {
+  color: var(--ghostnet-muted);
+  padding: 2rem;
+}
+
+.tableSubtext {
+  color: var(--ghostnet-muted);
+  font-size: 0.82rem;
+  margin-top: 0.35rem;
+}
+
+.tableMetaMuted {
+  color: rgba(140, 160, 188, 0.75);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.tableWarning {
+  color: #ffb347;
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+}
+
+.tableMutedNote {
+  color: rgba(120, 140, 168, 0.75);
+  font-size: 0.75rem;
+  margin-top: 0.45rem;
+}
+
+.tableIndicatorPlaceholder {
+  color: rgba(120, 140, 168, 0.75);
+  font-size: 0.82rem;
+}
+
+.tableEntry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.tableEntry + .tableEntry {
+  margin-top: 0.55rem;
+}
+
+.tableEntryHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+  color: var(--ghostnet-subdued);
+}
+
+.tableEntryHighlight {
+  color: var(--ghostnet-ink);
+  font-weight: 600;
+}
+
+.tableEntryValue {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  color: rgba(220, 228, 255, 0.84);
+}
+
+.tableEntryValueHighlight {
+  color: var(--ghostnet-ink);
+}
+
+.tableEntrySource {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5bd1a5;
+}
+
+.tableEntryLabel {
+  color: rgba(140, 160, 188, 0.78);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 0.2rem;
+}
+
+.tableEntryMeta {
+  color: var(--ghostnet-muted);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.tableEntryFootnote {
+  color: rgba(120, 140, 168, 0.75);
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
+}
+
+.tableBadge {
+  margin-left: 0.4rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.tableBadgeWarning {
+  color: #ff7c22;
+}
+
+.tableBadgeSuccess {
+  color: #5bd1a5;
+}
+
+.tableFootnote {
+  margin-top: 1.5rem;
+  color: rgba(140, 160, 188, 0.75);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.metricGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.metricItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 11rem;
+}
+
+.metricLabel {
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ghostnet-subdued);
+}
+
+.metricValue {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.metricValueWarning {
+  color: #ff7c22;
+}
+
+.metricValueSuccess {
+  color: #5bd1a5;
+}
+
+.notice {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: #ffb347;
+}
+
+.noticeMuted {
+  color: #aaa;
+}
+
+.inlineNotice {
+  padding: 1rem 0;
+  color: #ff4d4f;
+}
+
+.inlineNoticeMuted {
+  padding: 1rem 0;
+  color: #aaa;
+}
+
+.placeholder {
+  margin: 2.5rem auto;
+  max-width: 36rem;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  color: var(--ghostnet-muted);
+  font-size: 1.35rem;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(216, 180, 254, 0.28);
+  background: linear-gradient(160deg, rgba(216, 180, 254, 0.18), rgba(5, 8, 13, 0.82));
+  box-shadow: 0 1.85rem 4rem rgba(3, 7, 11, 0.78);
+}
+
 .ghostnet :global(.ghostnet-surface) {
   background: transparent;
 }

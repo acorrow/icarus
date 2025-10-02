@@ -1200,57 +1200,48 @@ function MissionsPanel () {
       <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid rgba(127, 233, 255, 0.18)' : 'none' }}>
+            <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
             </div>
           )}
           {status === 'idle' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
+            <div className={styles.tableIdleState}>
               Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>Linking mission beacons…</div>
+            <div className={styles.tableIdleState}>Linking mission beacons…</div>
           )}
           {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '.75rem',
-              color: 'var(--ghostnet-subdued)',
-              padding: '.75rem 1rem',
-              borderBottom: '1px solid rgba(127, 233, 255, 0.18)',
-              fontSize: '.9rem',
-              background: 'rgba(5, 8, 13, 0.6)'
-            }}
-            >
+            <div className={styles.tableStatusBar}>
               {isRefreshing && <span>Refreshing missions...</span>}
               {lastUpdatedAt && (
-                <span style={{ marginLeft: 'auto', fontSize: '.85rem' }}>
+                <span className={styles.tableStatusTimestamp}>
                   Updated {formatRelativeTime(lastUpdatedAt)}
                 </span>
               )}
             </div>
           )}
           {status === 'error' && !error && (
-            <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load missions.</div>
+            <div className={styles.tableErrorState}>Unable to load missions.</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
+            <div className={styles.tableEmptyState}>
               No mining missions located near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && missions.length > 0 && (
-            <table className='table--animated fx-fade-in' style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Faction</th>
-                  <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>System</th>
-                  <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Distance</th>
-                  <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Updated</th>
-                </tr>
-              </thead>
-              <tbody>
+            <div className={styles.dataTableContainer}>
+              <table className={`${styles.dataTable} table--animated fx-fade-in`}>
+                <thead>
+                  <tr>
+                  <th>Faction</th>
+                  <th>System</th>
+                  <th className='hidden-small text-right'>Distance</th>
+                  <th className='hidden-small text-right'>Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
                 {missions.map((mission, index) => {
                   const key = `${mission.system || 'unknown'}-${mission.faction || 'faction'}-${index}`
                   const distanceDisplay = formatSystemDistance(mission.distanceLy, mission.distanceText)
@@ -1275,15 +1266,15 @@ function MissionsPanel () {
 
                   return (
                     <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
-                      <td style={{ padding: '.65rem 1rem' }}>
+                      <td className={`${styles.tableCellTop}`}>
                         {mission.faction
                           ? (
                             <span className={standingClass} title={factionTitle}>{mission.faction}</span>
                             )
                           : '--'}
                       </td>
-                      <td style={{ padding: '.65rem 1rem' }}>
-                        <div className='text-no-wrap' style={{ display: 'flex', alignItems: 'center' }}>
+                      <td className={styles.tableCellTop}>
+                        <div className={`${styles.tableCellInline} text-no-wrap`}>
                           {isTargetSystem
                             ? (
                               <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
@@ -1294,13 +1285,14 @@ function MissionsPanel () {
                           {mission.system || '--'}
                         </div>
                       </td>
-                      <td className='hidden-small text-right' style={{ padding: '.65rem 1rem' }}>{distanceDisplay || '--'}</td>
-                      <td className='hidden-small text-right' style={{ padding: '.65rem 1rem' }}>{updatedDisplay || mission.updatedText || '--'}</td>
+                      <td className={`${styles.tableCellTop} hidden-small text-right`}>{distanceDisplay || '--'}</td>
+                      <td className={`${styles.tableCellTop} hidden-small text-right`}>{updatedDisplay || mission.updatedText || '--'}</td>
                     </tr>
                   )
                 })}
               </tbody>
-            </table>
+              </table>
+            </div>
           )}
         </div>
       </div>
@@ -1550,13 +1542,13 @@ function CommodityTradePanel () {
 
   const renderSourceBadge = source => {
     if (source === 'ghostnet') {
-      return <span style={{ color: '#ff7c22', fontSize: '.75rem', marginLeft: '.4rem' }}>GHOSTNET</span>
+      return <span className={`${styles.tableBadge} ${styles.tableBadgeWarning}`}>GHOSTNET</span>
     }
     if (source === 'local-station') {
-      return <span style={{ color: '#5bd1a5', fontSize: '.75rem', marginLeft: '.4rem' }}>Local Station</span>
+      return <span className={`${styles.tableBadge} ${styles.tableBadgeSuccess}`}>Local Station</span>
     }
     if (source === 'local-history') {
-      return <span style={{ color: '#5bd1a5', fontSize: '.75rem', marginLeft: '.4rem' }}>Local Data</span>
+      return <span className={`${styles.tableBadge} ${styles.tableBadgeSuccess}`}>Local Data</span>
     }
     return null
   }
@@ -1576,24 +1568,20 @@ function CommodityTradePanel () {
       : ''
     const timestampDisplay = entryData.timestamp ? formatRelativeTime(entryData.timestamp) : ''
 
+    const valueClassName = highlight
+      ? `${styles.tableEntryValue} ${styles.tableEntryValueHighlight}`
+      : styles.tableEntryValue
+
     return (
-      <div key={`${label || resolvedSource}-${index}`} style={{ marginTop: index === 0 ? 0 : '.55rem' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '.4rem', fontSize: '.95rem', color: highlight ? '#fff' : '#ddd' }}>
+      <div key={`${label || resolvedSource}-${index}`} className={styles.tableEntry}>
+        <div className={valueClassName}>
           <span>{priceDisplay}</span>
-          <span style={{ color: '#5bd1a5', fontSize: '.72rem' }}>{resolvedSource}</span>
+          <span className={styles.tableEntrySource}>{resolvedSource}</span>
         </div>
-        {label ? (
-          <div style={{ color: '#666', fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.05em', marginTop: '.2rem' }}>{label}</div>
-        ) : null}
-        {stationLine ? (
-          <div style={{ color: '#888', fontSize: '.8rem', marginTop: '.25rem' }}>{stationLine}</div>
-        ) : null}
-        {distanceDisplay ? (
-          <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Distance: {distanceDisplay}</div>
-        ) : null}
-        {timestampDisplay ? (
-          <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>As of {timestampDisplay}</div>
-        ) : null}
+        {label ? <div className={styles.tableEntryLabel}>{label}</div> : null}
+        {stationLine ? <div className={styles.tableEntryMeta}>{stationLine}</div> : null}
+        {distanceDisplay ? <div className={styles.tableEntryFootnote}>Distance: {distanceDisplay}</div> : null}
+        {timestampDisplay ? <div className={styles.tableEntryFootnote}>As of {timestampDisplay}</div> : null}
       </div>
     )
   }
@@ -1603,21 +1591,13 @@ function CommodityTradePanel () {
       return <LoadingSpinner label='Loading commodity valuations…' />
     }
     if (status === 'error') {
-      return <div style={{ color: '#ff4d4f', padding: '1rem 0' }}>{error || 'Unable to load commodity valuations.'}</div>
+      return <div className={styles.inlineNotice}>{error || 'Unable to load commodity valuations.'}</div>
     }
     if ((status === 'empty' || (status === 'ready' && !hasRows)) && hasCargo) {
-      return (
-        <div style={{ color: '#aaa', padding: '1rem 0' }}>
-          No price data available for your current cargo.
-        </div>
-      )
+      return <div className={styles.inlineNoticeMuted}>No price data available for your current cargo.</div>
     }
     if (!hasCargo) {
-      return (
-        <div style={{ color: '#aaa', padding: '1rem 0' }}>
-          Cargo hold is empty.
-        </div>
-      )
+      return <div className={styles.inlineNoticeMuted}>Cargo hold is empty.</div>
     }
     return null
   }
@@ -1633,31 +1613,31 @@ function CommodityTradePanel () {
   return (
     <div>
       <h2>Commodity Trade</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
-        <div>
-          <div style={{ color: '#888', fontSize: '.85rem' }}>Current System</div>
-          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{currentSystemName}</div>
+      <div className={styles.metricGrid}>
+        <div className={styles.metricItem}>
+          <span className={styles.metricLabel}>Current System</span>
+          <span className={styles.metricValue}>{currentSystemName}</span>
         </div>
-        <div>
-          <div style={{ color: '#888', fontSize: '.85rem' }}>Cargo</div>
-          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{cargoCount.toLocaleString()} / {cargoCapacity.toLocaleString()} t</div>
+        <div className={styles.metricItem}>
+          <span className={styles.metricLabel}>Cargo</span>
+          <span className={styles.metricValue}>{cargoCount.toLocaleString()} / {cargoCapacity.toLocaleString()} t</span>
         </div>
-        <div>
-          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (Best)</div>
-          <div className='text-primary' style={{ fontSize: '1.1rem' }}>{formatCredits(totals.best, '--')}</div>
+        <div className={styles.metricItem}>
+          <span className={styles.metricLabel}>Hold Value (Best)</span>
+          <span className={styles.metricValue}>{formatCredits(totals.best, '--')}</span>
         </div>
-        <div>
-          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (GHOSTNET)</div>
-          <div style={{ color: '#ff7c22', fontSize: '1.1rem' }}>{formatCredits(totals.ghostnet, '--')}</div>
+        <div className={styles.metricItem}>
+          <span className={styles.metricLabel}>Hold Value (GHOSTNET)</span>
+          <span className={`${styles.metricValue} ${styles.metricValueWarning}`}>{formatCredits(totals.ghostnet, '--')}</span>
         </div>
-        <div>
-          <div style={{ color: '#888', fontSize: '.85rem' }}>Hold Value (Local Data)</div>
-          <div style={{ color: '#5bd1a5', fontSize: '1.1rem' }}>{formatCredits(totals.local, '--')}</div>
+        <div className={styles.metricItem}>
+          <span className={styles.metricLabel}>Hold Value (Local Data)</span>
+          <span className={`${styles.metricValue} ${styles.metricValueSuccess}`}>{formatCredits(totals.local, '--')}</span>
         </div>
       </div>
 
       {(ghostnetStatus === 'error' || ghostnetStatus === 'partial') && (
-        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+        <div className={styles.notice}>
           {ghostnetStatus === 'error'
             ? 'Unable to retrieve GHOSTNET price data at this time.'
             : 'Some commodities are missing GHOSTNET price data. Displayed values use local market prices where available.'}
@@ -1665,25 +1645,25 @@ function CommodityTradePanel () {
       )}
 
       {marketStatus === 'missing' && (
-        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+        <div className={styles.notice}>
           Local market prices are unavailable. Dock at a station and reopen this panel to import in-game price data.
         </div>
       )}
 
       {historyStatus === 'missing' && (
-        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+        <div className={styles.notice}>
           Unable to locate Elite Dangerous journal logs to build local market history. Confirm your log directory settings and reopen this panel.
         </div>
       )}
 
       {historyStatus === 'error' && (
-        <div style={{ color: '#ffb347', marginBottom: '.75rem', fontSize: '.9rem' }}>
+        <div className={styles.notice}>
           Local market history could not be parsed. Try reopening the commodities market in-game to refresh the data.
         </div>
       )}
 
       {historyStatus === 'empty' && (
-        <div style={{ color: '#aaa', marginBottom: '.75rem', fontSize: '.9rem' }}>
+        <div className={styles.noticeMuted}>
           No nearby market history has been recorded yet. Visit commodity markets to capture additional local price data.
         </div>
       )}
@@ -1691,25 +1671,26 @@ function CommodityTradePanel () {
       {renderStatusBanner()}
 
       {status === 'ready' && hasCargo && hasRows && (
-        <table className='table--animated fx-fade-in' style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
-          <colgroup>
-            <col style={{ width: '32%' }} />
-            <col style={{ width: '8%' }} />
-            <col style={{ width: '20%' }} />
-            <col style={{ width: '24%' }} />
-            <col style={{ width: '16%' }} />
-          </colgroup>
-          <thead>
-            <tr style={{ fontSize: '.95rem' }}>
-              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Commodity</th>
-              <th className='text-right' style={{ padding: '.6rem .65rem' }}>Qty</th>
-              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Local Data</th>
-              <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>GHOSTNET Max</th>
-              <th className='text-right' style={{ padding: '.6rem .65rem' }}>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => {
+        <div className={styles.dataTableContainer}>
+          <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense} table--animated fx-fade-in`}>
+            <colgroup>
+              <col style={{ width: '32%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '24%' }} />
+              <col style={{ width: '16%' }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Commodity</th>
+                <th className='text-right'>Qty</th>
+                <th>Local Data</th>
+                <th>GHOSTNET Max</th>
+                <th className='text-right'>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, index) => {
               const {
                 item,
                 entry,
@@ -1770,20 +1751,20 @@ function CommodityTradePanel () {
 
               return (
                 <tr key={`${row.key}-${index}`} style={{ animationDelay: `${index * 0.03}s` }}>
-                  <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
-                    <div style={{ fontSize: '1rem' }}>{item?.name || item?.symbol || 'Unknown'}</div>
+                  <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                    <div>{item?.name || item?.symbol || 'Unknown'}</div>
                     {item?.symbol && item?.symbol !== item?.name && (
-                      <div style={{ color: '#888', fontSize: '.82rem' }}>{item.symbol}</div>
+                      <div className={styles.tableSubtext}>{item.symbol}</div>
                     )}
                     {entry?.errors?.ghostnet && !entry?.ghostnet && (
-                      <div style={{ color: '#ffb347', fontSize: '.78rem', marginTop: '.35rem' }}>{entry.errors.ghostnet}</div>
+                      <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
                     )}
                     {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
-                      <div style={{ color: '#ffb347', fontSize: '.78rem', marginTop: '.35rem' }}>{entry.errors.market}</div>
+                      <div className={styles.tableWarning}>{entry.errors.market}</div>
                     )}
                   </td>
-                  <td className='text-right' style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>{quantity.toLocaleString()}</td>
-                  <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                  <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{quantity.toLocaleString()}</td>
+                  <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                     {localEntriesForDisplay.length > 0
                       ? localEntriesForDisplay.map((entryInfo, entryIndex) => renderLocalEntry(entryInfo.label, entryInfo.entry, {
                           highlight: entryInfo.highlight,
@@ -1792,27 +1773,28 @@ function CommodityTradePanel () {
                         }))
                       : <div>--</div>}
                     {remainingCount > 0 && (
-                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.45rem' }}>+ {remainingCount} more recorded markets</div>
+                      <div className={styles.tableMutedNote}>+ {remainingCount} more recorded markets</div>
                     )}
                   </td>
-                  <td style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                  <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                     <div>{ghostnetPriceDisplay}</div>
                     {ghostnetStation && (
-                      <div style={{ color: '#888', fontSize: '.8rem', marginTop: '.25rem' }}>
-                        {ghostnetStation}{ghostnetSystem ? ` · ${ghostnetSystem}` : ''}
+                      <div className={styles.tableSubtext}>
+                        {ghostnetStation}
+                        {ghostnetSystem ? ` · ${ghostnetSystem}` : ''}
                       </div>
                     )}
                     {ghostnetDemand && (
-                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Demand: {ghostnetDemand}</div>
+                      <div className={styles.tableMetaMuted}>Demand: {ghostnetDemand}</div>
                     )}
                     {ghostnetUpdated && (
-                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>Updated {ghostnetUpdated}</div>
+                      <div className={styles.tableMetaMuted}>Updated {ghostnetUpdated}</div>
                     )}
                   </td>
-                  <td className='text-right' style={{ padding: '.65rem .75rem', verticalAlign: 'top' }}>
+                  <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>
                     <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
                     {typeof localValue === 'number' && typeof ghostnetValue === 'number' && Math.abs(localValue - ghostnetValue) > 0.01 && (
-                      <div style={{ color: '#666', fontSize: '.75rem', marginTop: '.2rem' }}>
+                      <div className={styles.tableMetaMuted}>
                         GHOSTNET {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
                       </div>
                     )}
@@ -1820,11 +1802,12 @@ function CommodityTradePanel () {
                 </tr>
               )
             })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       )}
 
-      <div style={{ color: '#666', fontSize: '.8rem', marginTop: '1.5rem' }}>
+      <div className={styles.tableFootnote}>
         In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
       </div>
     </div>
@@ -2267,7 +2250,8 @@ function TradeRoutesPanel () {
   }, [currentSystem?.name, refreshRoutes])
 
   const renderRoutesTable = () => (
-    <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', tableLayout: 'fixed', lineHeight: 1.35 }}>
+    <div className={styles.dataTableContainer}>
+      <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense} table--interactive table--animated`}>
       <colgroup>
         <col style={{ width: '4%' }} />
         <col style={{ width: '20%' }} />
@@ -2282,15 +2266,14 @@ function TradeRoutesPanel () {
         <col style={{ width: '4%' }} />
       </colgroup>
       <thead>
-        <tr style={{ fontSize: '0.95rem' }}>
-          <th aria-hidden='true' />
-          <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Origin</th>
-          <th style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Destination</th>
-          <th className='hidden-small' style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Outbound Commodity</th>
-          <th className='hidden-small' style={{ textAlign: 'left', padding: '.6rem .65rem' }}>Return Commodity</th>
+        <tr>
+          <th aria-hidden='true' className={styles.tableCellCaret} />
+          <th>Origin</th>
+          <th>Destination</th>
+          <th className='hidden-small'>Outbound Commodity</th>
+          <th className='hidden-small'>Return Commodity</th>
           <th
-            className='hidden-small text-right'
-            style={{ padding: '.6rem .65rem', cursor: 'pointer', userSelect: 'none' }}
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
             onClick={() => handleSortChange('profitPerTon')}
             onKeyDown={event => handleSortKeyDown(event, 'profitPerTon')}
             tabIndex={0}
@@ -2298,11 +2281,10 @@ function TradeRoutesPanel () {
           >
             Profit/Ton{renderSortArrow('profitPerTon')}
           </th>
-          <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Profit/Trip</th>
-          <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Profit/Hour</th>
+          <th className='hidden-small text-right'>Profit/Trip</th>
+          <th className='hidden-small text-right'>Profit/Hour</th>
           <th
-            className='hidden-small text-right'
-            style={{ padding: '.6rem .65rem', cursor: 'pointer', userSelect: 'none' }}
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
             onClick={() => handleSortChange('routeDistance')}
             onKeyDown={event => handleSortKeyDown(event, 'routeDistance')}
             tabIndex={0}
@@ -2311,8 +2293,7 @@ function TradeRoutesPanel () {
             Route Distance{renderSortArrow('routeDistance')}
           </th>
           <th
-            className='hidden-small text-right'
-            style={{ padding: '.6rem .65rem', cursor: 'pointer', userSelect: 'none' }}
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
             onClick={() => handleSortChange('distance')}
             onKeyDown={event => handleSortKeyDown(event, 'distance')}
             tabIndex={0}
@@ -2320,7 +2301,7 @@ function TradeRoutesPanel () {
           >
             Distance{renderSortArrow('distance')}
           </th>
-          <th className='hidden-small text-right' style={{ padding: '.6rem .65rem' }}>Updated</th>
+          <th className='hidden-small text-right'>Updated</th>
         </tr>
       </thead>
       <tbody>
@@ -2357,7 +2338,7 @@ function TradeRoutesPanel () {
           const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand')
           const returnSupplyIndicator = renderQuantityIndicator(returnBuy, 'supply')
           const returnDemandIndicator = renderQuantityIndicator(returnSell, 'demand')
-          const indicatorPlaceholder = <span style={{ color: '#666', fontSize: '0.82em' }}>--</span>
+          const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
 
           const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
           const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
@@ -2376,7 +2357,8 @@ function TradeRoutesPanel () {
           return (
             <React.Fragment key={rowKey}>
               <tr
-                style={{ fontSize: '0.95rem', cursor: 'pointer', background: isExpanded ? 'rgba(127, 233, 255, 0.1)' : 'transparent' }}
+                className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
+                style={{ animationDelay: `${index * 0.03}s` }}
                 onClick={() => handleRowToggle(rowKey)}
                 onKeyDown={event => handleRowKeyDown(event, rowKey)}
                 role='button'
@@ -2384,11 +2366,11 @@ function TradeRoutesPanel () {
                 aria-expanded={isExpanded}
                 aria-controls={isExpanded ? detailsId : undefined}
               >
-                <td style={{ padding: '.6rem .35rem', textAlign: 'center', verticalAlign: 'top', color: '#ffb347', fontSize: '1.1rem', lineHeight: 1 }} aria-hidden='true'>
+                <td className={styles.tableCellCaret} aria-hidden='true'>
                   {expansionSymbol}
                 </td>
-                <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                  <div className={styles.tableCellInline}>
                     {originIconName && <StationIcon icon={originIconName} color={originStationColor} />}
                     <span
                       style={{ fontWeight: 600, color: originStationColor }}
@@ -2399,8 +2381,8 @@ function TradeRoutesPanel () {
                     </span>
                   </div>
                 </td>
-                <td style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                  <div className={styles.tableCellInline}>
                     {destinationIconName && <StationIcon icon={destinationIconName} color={destinationStationColor} />}
                     <span
                       style={{ fontWeight: 600, color: destinationStationColor }}
@@ -2411,27 +2393,27 @@ function TradeRoutesPanel () {
                     </span>
                   </div>
                 </td>
-                <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
+                <td className={`hidden-small text-left text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>
                   <strong>{outboundCommodity || '--'}</strong>
                 </td>
-                <td className='hidden-small text-left text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', whiteSpace: 'normal', fontSize: '0.9rem' }}>
+                <td className={`hidden-small text-left text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>
                   <strong>{returnCommodity || '--'}</strong>
                 </td>
-                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerTon || '--'}</td>
-                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerTrip || '--'}</td>
-                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{profitPerHour || '--'}</td>
-                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{routeDistanceDisplay || '--'}</td>
-                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{systemDistanceDisplay || '--'}</td>
-                <td className='hidden-small text-right text-no-transform' style={{ padding: '.6rem .65rem', verticalAlign: 'top', fontSize: '0.9rem' }}>{updatedDisplay || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{profitPerTon || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{profitPerTrip || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{profitPerHour || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{routeDistanceDisplay || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{systemDistanceDisplay || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{updatedDisplay || '--'}</td>
               </tr>
               {isExpanded && (
                 <tr
                   id={detailsId}
-                  style={{ background: 'rgba(127, 233, 255, 0.1)' }}
+                  className={styles.tableDetailRow}
                 >
                   <td style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
+                    <div className={styles.tableDetailSection}>
                       <span
                         style={originStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
                         className={originStationClassName}
@@ -2472,7 +2454,7 @@ function TradeRoutesPanel () {
                     </div>
                   </td>
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--ghostnet-muted)' }}>
+                    <div className={styles.tableDetailSection}>
                       <span
                         style={destinationStationClassName ? undefined : { color: 'var(--ghostnet-subdued)' }}
                         className={destinationStationClassName}
@@ -2536,7 +2518,8 @@ function TradeRoutesPanel () {
           )
         })}
       </tbody>
-    </table>
+      </table>
+    </div>
   )
 
   return (
@@ -2669,10 +2652,10 @@ function TradeRoutesPanel () {
       <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
           {message && status !== 'idle' && status !== 'loading' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid rgba(127, 233, 255, 0.18)' : 'none' }}>{message}</div>
+            <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
           )}
           {status === 'idle' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>Tune the filters and pulse refresh to surface profitable corridors.</div>
+            <div className={styles.tableIdleState}>Tune the filters and pulse refresh to surface profitable corridors.</div>
           )}
           {status === 'loading' && (
             <LoadingSpinner label='Loading trade routes…' />
@@ -2688,10 +2671,10 @@ function TradeRoutesPanel () {
             </div>
           )}
           {status === 'error' && (
-            <div style={{ color: '#ff4d4f', padding: '2rem' }}>{error || 'Unable to fetch trade routes.'}</div>
+            <div className={styles.tableErrorState}>{error || 'Unable to fetch trade routes.'}</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>No profitable routes detected near {selectedSystemName || 'Unknown System'}.</div>
+            <div className={styles.tableEmptyState}>No profitable routes detected near {selectedSystemName || 'Unknown System'}.</div>
           )}
           {status === 'populated' && renderRoutesTable()}
         </div>
@@ -2934,56 +2917,46 @@ function PristineMiningPanel () {
           style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}
         >
           {(status === 'populated' || status === 'empty') && lastUpdatedAt && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '.75rem',
-                color: 'var(--ghostnet-subdued)',
-                padding: '.75rem 1rem',
-                borderBottom: '1px solid rgba(127, 233, 255, 0.18)',
-                fontSize: '.9rem',
-                background: 'rgba(5, 8, 13, 0.6)'
-              }}
-            >
-              <span style={{ marginLeft: 'auto', fontSize: '.85rem' }}>
+            <div className={styles.tableStatusBar}>
+              <span className={styles.tableStatusTimestamp}>
                 Updated {formatRelativeTime(lastUpdatedAt)}
               </span>
             </div>
           )}
           {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '1.25rem 2rem', borderBottom: status === 'populated' ? '1px solid rgba(127, 233, 255, 0.18)' : 'none' }}>
+            <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
             </div>
           )}
           {status === 'idle' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
+            <div className={styles.tableIdleState}>
               Waiting for current system information...
             </div>
           )}
           {status === 'loading' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>Triangulating pristine reserves…</div>
+            <div className={styles.tableIdleState}>Triangulating pristine reserves…</div>
           )}
           {status === 'error' && !error && (
-            <div style={{ color: '#ff4d4f', padding: '2rem' }}>Unable to load pristine mining locations.</div>
+            <div className={styles.tableErrorState}>Unable to load pristine mining locations.</div>
           )}
           {status === 'empty' && (
-            <div style={{ color: 'var(--ghostnet-muted)', padding: '2rem' }}>
+            <div className={styles.tableEmptyState}>
               No pristine signatures detected near {displaySystemName || 'your current system'}.
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
-            <table className='table--animated fx-fade-in' style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>Body</th>
-                  <th style={{ textAlign: 'left', padding: '.75rem 1rem' }}>System</th>
-                  <th className='hidden-small text-right' style={{ padding: '.75rem 1rem' }}>Body Distance</th>
-                  <th className='text-right' style={{ padding: '.75rem 1rem' }}>Distance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {locations.map((location, index) => {
+            <div className={styles.dataTableContainer}>
+              <table className={`${styles.dataTable} table--animated fx-fade-in`}>
+                <thead>
+                  <tr>
+                    <th>Body</th>
+                    <th>System</th>
+                    <th className='hidden-small text-right'>Body Distance</th>
+                    <th className='text-right'>Distance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {locations.map((location, index) => {
                   const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
                   const detailParts = []
                   if (location.bodyType) detailParts.push(location.bodyType)
@@ -2997,27 +2970,24 @@ function PristineMiningPanel () {
                   return (
                     <Fragment key={key}>
                       <tr
-                        style={{
-                          animationDelay: `${index * 0.03}s`,
-                          background: isExpanded ? 'rgba(127, 233, 255, 0.12)' : undefined,
-                          cursor: 'pointer'
-                        }}
+                        className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
+                        style={{ animationDelay: `${index * 0.03}s` }}
                         role='button'
                         tabIndex={0}
                         aria-expanded={isExpanded}
                         onClick={() => handleLocationToggle(location, key)}
                         onKeyDown={event => handleLocationKeyDown(event, location, key)}
                       >
-                        <td style={{ padding: '.65rem 1rem' }}>
+                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span className='text-primary'>{location.body || '--'}</span>
                             {detailText && (
-                              <span style={{ color: 'var(--ghostnet-muted)', fontSize: '0.95rem', marginTop: '.25rem' }}>{detailText}</span>
+                              <span className={styles.tableSubtext}>{detailText}</span>
                             )}
                           </div>
                         </td>
-                        <td style={{ padding: '.65rem 1rem' }}>
-                          <div className='text-no-wrap' style={{ display: 'flex', alignItems: 'center' }}>
+                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                          <div className={`${styles.tableCellInline} text-no-wrap`}>
                             {location.isTargetSystem
                               ? (
                                 <i className='icon system-object-icon icarus-terminal-location-filled text-primary' style={{ marginRight: '.5rem' }} />
@@ -3028,11 +2998,11 @@ function PristineMiningPanel () {
                             <span className='text-primary'>{location.system || '--'}</span>
                           </div>
                         </td>
-                        <td className='hidden-small text-right text-no-wrap' style={{ padding: '.65rem 1rem' }}>{bodyDistanceDisplay || '--'}</td>
-                        <td className='text-right text-no-wrap' style={{ padding: '.65rem 1rem' }}>{distanceDisplay || '--'}</td>
+                        <td className={`hidden-small text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{bodyDistanceDisplay || '--'}</td>
+                        <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
                       </tr>
                       {isExpanded && (
-                        <tr>
+                        <tr className={styles.tableDetailRow}>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
@@ -3070,8 +3040,9 @@ function PristineMiningPanel () {
                     </Fragment>
                   )
                 })}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
         <div className={`pristine-mining__inspector${inspectorReserved ? ' pristine-mining__inspector--reserved' : ''}`}>
