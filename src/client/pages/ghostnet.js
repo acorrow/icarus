@@ -1300,6 +1300,12 @@ function normaliseCommodityKey (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
 
+const NON_COMMODITY_KEYS = new Set(
+  ['drones', 'limpet', 'limpets']
+    .map(normaliseCommodityKey)
+    .filter(Boolean)
+)
+
 function CommodityTradePanel () {
   const { connected, ready } = useSocket()
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
@@ -1365,11 +1371,17 @@ function CommodityTradePanel () {
     setError('')
 
     const payload = {
-      commodities: cargo.map(item => ({
-        name: item?.name || item?.symbol,
-        symbol: item?.symbol || item?.name,
-        count: item?.count || 0
-      }))
+      commodities: cargo
+        .filter(item => {
+          const symbolKey = normaliseCommodityKey(item?.symbol)
+          const nameKey = normaliseCommodityKey(item?.name)
+          return !NON_COMMODITY_KEYS.has(symbolKey) && !NON_COMMODITY_KEYS.has(nameKey)
+        })
+        .map(item => ({
+          name: item?.name || item?.symbol,
+          symbol: item?.symbol || item?.name,
+          count: item?.count || 0
+        }))
     }
 
     fetch('/api/ghostnet-commodity-values', {
@@ -1455,9 +1467,33 @@ function CommodityTradePanel () {
   const rows = useMemo(() => {
     if (!Array.isArray(cargo)) return []
     return cargo.map(item => {
-      const key = normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)
+      const symbolKey = normaliseCommodityKey(item?.symbol)
+      const nameKey = normaliseCommodityKey(item?.name)
+      const key = symbolKey || nameKey
+      const nonCommodity = NON_COMMODITY_KEYS.has(symbolKey) || NON_COMMODITY_KEYS.has(nameKey)
       const entry = key ? valuationMap.get(key) : null
       const quantity = Number(item?.count) || 0
+
+      if (nonCommodity) {
+        return {
+          key: `${key || 'unknown'}-${quantity}`,
+          item,
+          quantity,
+          nonCommodity: true,
+          entry: null,
+          bestPrice: null,
+          bestSource: null,
+          bestValue: null,
+          localBestEntry: null,
+          localBestPrice: null,
+          localBestSource: null,
+          historyEntries: [],
+          marketEntry: null,
+          ghostnetPrice: null,
+          ghostnetValue: null,
+          localValue: null
+        }
+      }
 
       const marketEntry = entry?.market && typeof entry.market === 'object' ? entry.market : null
       const ghostnetEntry = entry?.ghostnet && typeof entry.ghostnet === 'object' ? entry.ghostnet : null
@@ -1528,13 +1564,18 @@ function CommodityTradePanel () {
         marketEntry,
         ghostnetPrice,
         ghostnetValue,
-        localValue
+        localValue,
+        nonCommodity: false
       }
     })
   }, [cargo, valuationMap])
 
+  const commodityRows = useMemo(() => rows.filter(row => !row.nonCommodity), [rows])
+  const nonCommodityRows = useMemo(() => rows.filter(row => row.nonCommodity), [rows])
+
   const hasCargo = Array.isArray(cargo) && cargo.length > 0
-  const hasRows = rows.some(row => typeof row.bestPrice === 'number')
+  const hasPricedRows = commodityRows.some(row => typeof row.bestPrice === 'number')
+  const hasDisplayableRows = hasPricedRows || nonCommodityRows.length > 0
 
   const renderSourceBadge = source => {
     if (source === 'ghostnet') {
@@ -1589,7 +1630,7 @@ function CommodityTradePanel () {
     if (status === 'error') {
       return <div className={styles.inlineNotice}>{error || 'Unable to load commodity valuations.'}</div>
     }
-    if ((status === 'empty' || (status === 'ready' && !hasRows)) && hasCargo) {
+    if ((status === 'empty' || (status === 'ready' && !hasPricedRows && nonCommodityRows.length === 0)) && hasCargo) {
       return <div className={styles.inlineNoticeMuted}>No price data available for your current cargo.</div>
     }
     if (!hasCargo) {
@@ -1666,7 +1707,7 @@ function CommodityTradePanel () {
 
       {renderStatusBanner()}
 
-      {status === 'ready' && hasCargo && hasRows && (
+      {status === 'ready' && hasCargo && hasDisplayableRows && (
         <div className={styles.dataTableContainer}>
           <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
             <colgroup>
@@ -1686,7 +1727,7 @@ function CommodityTradePanel () {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, index) => {
+              {commodityRows.map((row, index) => {
               const {
                 item,
                 entry,
@@ -1798,6 +1839,21 @@ function CommodityTradePanel () {
                 </tr>
               )
             })}
+              {nonCommodityRows.map((row, index) => {
+                const animationDelay = (commodityRows.length + index) * 0.03
+                const quantityDisplay = Number(row.quantity) || 0
+                return (
+                  <tr key={`${row.key}-non-${index}`} className={styles.nonCommodityRow} style={{ animationDelay: `${animationDelay}s` }}>
+                    <td colSpan={5}>
+                      <div className={styles.nonCommodityRowContent}>
+                        <span className={styles.nonCommodityLabel}>{row.item?.name || row.item?.symbol || 'Unknown'}</span>
+                        <span className={styles.nonCommodityTag}>Not a Commodity</span>
+                        <span className={styles.nonCommodityQuantity}>{quantityDisplay.toLocaleString()} in cargo</span>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

@@ -516,6 +516,45 @@
   vertical-align: middle;
 }
 
+.nonCommodityRow {
+  background: rgba(16, 9, 38, 0.7);
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.nonCommodityRow td {
+  padding: 0.45rem 0.75rem;
+}
+
+.nonCommodityRowContent {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.nonCommodityLabel {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.nonCommodityTag {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 255, 0.7);
+  border: 1px solid rgba(140, 92, 255, 0.45);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  background: rgba(93, 46, 255, 0.18);
+}
+
+.nonCommodityQuantity {
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  margin-left: auto;
+  color: var(--ghostnet-muted);
+}
+
 .dataTable :global([data-ghostnet-table-row]) {
   opacity: 0;
   transform: translateY(14px);
