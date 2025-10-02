@@ -1620,10 +1620,11 @@ function CommodityTradePanel () {
 
   const handleRowActivate = useCallback(row => {
     if (!row) return
-    if (selectedCommodityKey === row.key && listingsDrawerOpen) {
-      setListingsDrawerOpen(false)
-      setSelectedCommodityKey('')
-      setMinListingPrice(0)
+
+    if (selectedCommodityKey === row.key) {
+      if (!listingsDrawerOpen) {
+        setListingsDrawerOpen(true)
+      }
       return
     }
 
@@ -1733,7 +1734,7 @@ function CommodityTradePanel () {
   const historyStatus = valuation?.metadata?.historyStatus || 'idle'
 
   return (
-    <div>
+    <div className={styles.commodityTrade}>
       <h2>Commodity Trade</h2>
       <div className={styles.metricGrid}>
         <div className={styles.metricItem}>
