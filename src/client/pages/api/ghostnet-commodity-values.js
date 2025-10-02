@@ -381,6 +381,37 @@ function parseFirstNumber (text) {
   return Number.isFinite(number) ? number : null
 }
 
+function normaliseFactionDetails (value) {
+  if (!value) return null
+
+  if (typeof value === 'string') {
+    const name = cleanText(value)
+    return name ? { name } : null
+  }
+
+  if (typeof value === 'object') {
+    const name = cleanText(value.Name || value.name || value.Faction || value.faction || value.MinorFaction || value.minorFaction || value.title)
+    const state = cleanText(value.State || value.state || value.FactionState || value.factionState)
+    const allegiance = cleanText(value.Allegiance || value.allegiance)
+    const government = cleanText(value.Government || value.government)
+
+    const details = {
+      name: name || null,
+      state: state || null,
+      allegiance: allegiance || null,
+      government: government || null
+    }
+
+    if (!details.name && !details.state && !details.allegiance && !details.government) {
+      return null
+    }
+
+    return details
+  }
+
+  return null
+}
+
 function resolveLogDir () {
   if (global.LOG_DIR && fs.existsSync(global.LOG_DIR)) return global.LOG_DIR
 
@@ -440,12 +471,28 @@ function buildMarketLookup (marketData) {
     if (symbolKey) lookup[symbolKey] = entry
     if (nameKey) lookup[nameKey] = entry
   })
+
+  const stationType = cleanText(marketData?.StationType)
+  const distanceCandidates = [
+    marketData?.DistFromStarLS,
+    marketData?.DistanceFromStarLS,
+    marketData?.distanceFromStarLs
+  ]
+  const distanceValue = distanceCandidates
+    .map(value => Number(value))
+    .find(value => Number.isFinite(value))
+
   return {
     lookup,
     stationName: marketData?.StationName || null,
     systemName: marketData?.StarSystem || null,
     marketId: marketData?.MarketID || null,
-    timestamp: marketData?.timestamp || null
+    timestamp: marketData?.timestamp || null,
+    stationType: stationType || null,
+    distanceLs: Number.isFinite(distanceValue) ? distanceValue : null,
+    stationFaction: normaliseFactionDetails(marketData?.StationFaction),
+    controllingFaction: normaliseFactionDetails(marketData?.Faction || marketData?.ControllingFaction),
+    systemFaction: normaliseFactionDetails(marketData?.SystemFaction)
   }
 }
 
@@ -783,7 +830,14 @@ export default async function handler (req, res) {
           demand: candidate.demand,
           meanPrice: candidate.meanPrice,
           buyPrice: candidate.buyPrice,
-          source: 'market'
+          source: 'market',
+          stationType: marketData.stationType || null,
+          distanceLs: typeof marketData.distanceLs === 'number' && Number.isFinite(marketData.distanceLs)
+            ? marketData.distanceLs
+            : null,
+          stationFaction: marketData.stationFaction || null,
+          controllingFaction: marketData.controllingFaction || null,
+          systemFaction: marketData.systemFaction || null
         }
       }
     }
@@ -815,6 +869,7 @@ export default async function handler (req, res) {
       count: commodity.count,
       market: marketEntry,
       ghostnet: bestGhostnetListing,
+      ghostnetListings: Array.isArray(resolvedEntry.listings) ? resolvedEntry.listings : [],
       localHistory: {
         best: historyBestEntry,
         entries: historyEntries
@@ -822,7 +877,10 @@ export default async function handler (req, res) {
       errors: {
         market: !marketEntry && marketStatus !== 'missing' ? 'Commodity not found in latest market data.' : null,
         ghostnet: resolvedEntry.error || null
-      }
+      },
+      stationFaction: marketData?.stationFaction || null,
+      controllingFaction: marketData?.controllingFaction || null,
+      systemFaction: marketData?.systemFaction || null
     })
   })
 
