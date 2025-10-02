@@ -647,11 +647,11 @@ export default function Header ({ connected, active }) {
           ]
 
           if (navRevealState === 'glitchOut' && !isGhostNet) {
-            buttonClasses.push('ghostnet-assimilation-target', 'ghostnet-assimilation-remove', 'ghostnet-nav-button--glitch-out')
+            buttonClasses.push('ghostnet-nav-button--glitch-phase', 'ghostnet-nav-button--glitch-out')
           }
 
           if (navRevealState === 'glitchIn') {
-            buttonClasses.push('ghostnet-assimilation-target', 'ghostnet-nav-button--glitch-in')
+            buttonClasses.push('ghostnet-nav-button--glitch-phase', 'ghostnet-nav-button--glitch-in')
           }
 
           const buttonStyle = { fontSize: '1.5rem' }

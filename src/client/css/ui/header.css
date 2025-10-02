@@ -257,17 +257,46 @@
   pointer-events: none;
 }
 
+.ghostnet-nav-button--glitch-phase {
+  position: relative;
+  color: rgba(245, 241, 255, 0.84) !important;
+  border-color: rgba(140, 92, 255, 0.35) !important;
+  background: rgba(28, 22, 51, 0.72) !important;
+  box-shadow: 0 0 var(--ghostnet-assimilation-glow-radius, 1.5rem)
+    rgba(93, 46, 255, var(--ghostnet-assimilation-glow-opacity, 0.45));
+  filter: saturate(var(--ghostnet-assimilation-saturation, 1.25)) hue-rotate(-6deg);
+  transition: color 0.3s ease, background 0.4s ease, border-color 0.4s ease, opacity 0.45s ease, transform 0.4s ease,
+    filter 0.45s ease, box-shadow 0.45s ease;
+  overflow: hidden;
+  --ghostnet-assimilation-loop: 280ms;
+  --ghostnet-assimilation-ghost-loop: 360ms;
+  --ghostnet-assimilation-ghost-opacity: 0.4;
+  --ghostnet-assimilation-saturation: 1.25;
+}
+
+.ghostnet-nav-button--glitch-phase::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 1px solid rgba(93, 46, 255, 0.2);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: var(--ghostnet-assimilation-ghost-opacity, 0.4);
+  animation: ghostnet-assimilation-ghost var(--ghostnet-assimilation-ghost-loop, 360ms) steps(2, end) infinite;
+}
+
 .ghostnet-nav-button--glitch-out {
   --ghostnet-assimilation-glow-radius: 1.9rem;
   --ghostnet-assimilation-glow-opacity: 0.5;
   --ghostnet-assimilation-shift-x: 4px;
   --ghostnet-assimilation-shift-y: -6px;
   --ghostnet-assimilation-tilt: -1.6deg;
-  animation: ghostnet-nav-button-glitch-out 0.72s steps(2, end) forwards;
+  animation:
+    ghostnet-nav-button-glitch-out 0.72s steps(2, end) forwards,
+    ghostnet-assimilation-jitter var(--ghostnet-assimilation-loop, 280ms) steps(2, end) infinite;
 }
 
 .ghostnet-nav-button--glitch-in {
-  position: relative;
   opacity: 0;
   filter: blur(2.4px) saturate(0.72) hue-rotate(-10deg);
   clip-path: inset(50% 0 40% 0);
