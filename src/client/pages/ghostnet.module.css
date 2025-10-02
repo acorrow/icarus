@@ -271,6 +271,15 @@
   color: rgba(140, 92, 255, 0.95);
 }
 
+.terminalPromptGlitch {
+  color: rgba(140, 92, 255, 0.85);
+  text-shadow: 0 0 18px rgba(93, 46, 255, 0.48);
+}
+
+.terminalPromptSystem {
+  color: rgba(245, 241, 255, 0.72);
+}
+
 .terminalText {
   color: rgba(245, 241, 255, 0.82);
 }
@@ -292,6 +301,16 @@
 
 .terminalTextDecrypt {
   color: rgba(245, 241, 255, 0.95);
+}
+
+.terminalTextGlitch {
+  color: rgba(245, 241, 255, 0.7);
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 22px rgba(93, 46, 255, 0.45);
+}
+
+.terminalTextSystem {
+  color: rgba(245, 241, 255, 0.92);
 }
 
 @keyframes terminalLineReveal {

@@ -3141,6 +3141,15 @@ function generateCipherString (length = 48) {
   return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
 }
 
+function generateGlitchString (length = 64) {
+  const glyphs = [
+    'Δ', 'Λ', 'Ψ', 'Φ', 'Ω', '∴', '∵', '≛', '⌁', '⌖', '⌬', '⚚', '⚙', '✦', '✧', '✺', '✶', '☍', '☌', '☠', '☣', '☢', '☤',
+    '☥', '☧', '☽', '☾', '☿', '⚘', '⚡', '⚛', '⚜', '▓', '▒', '░', '█', 'Æ', 'Ø', 'Ξ', 'Ж', '₳', '₧', '₭', '₮', '₯', '⟁', '◬',
+    '◈', '◉', '◇', '⬡', '⬢', '⬣', '▰', '▱', '▮', '▯', '▩', '▣', '▥', '▨', '▧', '▦'
+  ]
+  return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
+}
+
 function generateBinaryString (bytes = 8) {
   return Array.from({ length: bytes }).map(() => randomInteger(0, 255).toString(2).padStart(8, '0')).join(' ')
 }
@@ -3202,8 +3211,8 @@ function generateTerminalLine () {
   return generators[type]()
 }
 
-function createTerminalLineWithId (seed = '') {
-  const line = generateTerminalLine()
+function createTerminalLineWithId (seed = '', baseLine) {
+  const line = baseLine || generateTerminalLine()
   const unique = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}${seed ? `-${seed}` : ''}`
   return { ...line, id: unique }
 }
@@ -3213,22 +3222,132 @@ function GhostnetTerminalOverlay () {
   const [terminalLines, setTerminalLines] = useState(() =>
     Array.from({ length: TERMINAL_BUFFER }).map((_, index) => createTerminalLineWithId(index))
   )
+  const cadenceRef = useRef()
+  const timeoutRef = useRef(null)
+
+  if (!cadenceRef.current) {
+    cadenceRef.current = {
+      mode: 'normal',
+      queue: [],
+      floodCountdown: randomInteger(24, 48),
+      recoveryCountdown: 0
+    }
+  }
+
+  const advanceCadence = useCallback(() => {
+    const state = cadenceRef.current
+    const lines = []
+
+    const pushLine = base => {
+      lines.push(createTerminalLineWithId('', base))
+    }
+
+    const buildFloodLine = () => ({
+      type: 'glitch',
+      label: '####',
+      text: generateGlitchString(randomInteger(56, 92))
+    })
+
+    if (state.queue.length > 0) {
+      const base = state.queue.shift()
+      pushLine(base)
+
+      if (state.mode === 'flood' && state.queue.length <= state.recoveryCountdown) {
+        state.mode = 'recovery'
+      }
+
+      if (state.mode === 'recovery' && state.queue.length === 0) {
+        state.mode = 'normal'
+        state.recoveryCountdown = 0
+      }
+    } else {
+      if (state.mode !== 'normal') {
+        state.mode = 'normal'
+      }
+
+      state.floodCountdown -= 1
+
+      if (state.floodCountdown <= 0) {
+        const floodLength = randomInteger(12, 20)
+        const floodLines = Array.from({ length: floodLength }).map(() => buildFloodLine())
+        const recoveryMessages = [
+          { type: 'alert', label: '!!!', text: 'FOREIGN INTRUDER DETECTED · mesh anomaly quarantined' },
+          { type: 'system', label: 'system', text: 'GhostNet encrypted your console on the fly to prevent unauthorize access.' },
+          { type: 'system', label: 'system', text: 'Returning to standard level ATLAS Protocol encryption.' }
+        ]
+
+        state.queue = [...floodLines, ...recoveryMessages]
+        state.mode = 'flood'
+        state.recoveryCountdown = recoveryMessages.length
+        state.floodCountdown = randomInteger(28, 54)
+
+        const base = state.queue.shift()
+        if (base) {
+          pushLine(base)
+          if (state.queue.length <= state.recoveryCountdown) {
+            state.mode = 'recovery'
+          }
+        }
+      } else {
+        const triggerBurst = Math.random() < 0.24
+
+        if (triggerBurst) {
+          const burstLength = randomInteger(3, 6)
+          pushLine(generateTerminalLine())
+          const burstQueue = Array.from({ length: burstLength - 1 }).map(() => generateTerminalLine())
+          state.queue = burstQueue
+          state.mode = 'burst'
+          state.recoveryCountdown = 0
+        } else {
+          pushLine(generateTerminalLine())
+          state.recoveryCountdown = 0
+        }
+      }
+    }
+
+    if (lines.length === 0) {
+      pushLine(generateTerminalLine())
+    }
+
+    let delay
+    if (state.mode === 'flood') {
+      delay = randomInteger(28, 90)
+    } else if (state.mode === 'burst') {
+      delay = randomInteger(90, 210)
+    } else if (state.mode === 'recovery' || state.queue.length > 0) {
+      delay = randomInteger(260, 560)
+    } else {
+      delay = randomInteger(480, 1800)
+    }
+
+    return { lines, delay }
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
 
-    const interval = window.setInterval(() => {
-      setTerminalLines(previous => {
-        const nextLine = createTerminalLineWithId()
-        const trimmed = previous.length >= TERMINAL_BUFFER ? previous.slice(1) : previous
-        return [...trimmed, nextLine]
-      })
-    }, 1400)
+    const schedule = delay => {
+      timeoutRef.current = window.setTimeout(() => {
+        const { lines, delay: nextDelay } = advanceCadence()
+        setTerminalLines(previous => {
+          let next = [...previous, ...lines]
+          if (next.length > TERMINAL_BUFFER) {
+            next = next.slice(next.length - TERMINAL_BUFFER)
+          }
+          return next
+        })
+        schedule(nextDelay)
+      }, delay)
+    }
+
+    schedule(randomInteger(360, 1200))
 
     return () => {
-      window.clearInterval(interval)
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current)
+      }
     }
-  }, [])
+  }, [advanceCadence])
 
   const visibleLines = useMemo(() => {
     return terminalLines.slice(-TERMINAL_WINDOW)
@@ -3267,12 +3386,16 @@ function GhostnetTerminalOverlay () {
               else if (line.type === 'cipher') promptClassNames.push(styles.terminalPromptCipher)
               else if (line.type === 'binary') promptClassNames.push(styles.terminalPromptBinary)
               else if (line.type === 'decrypt') promptClassNames.push(styles.terminalPromptDecrypt)
+              else if (line.type === 'glitch') promptClassNames.push(styles.terminalPromptGlitch)
+              else if (line.type === 'system') promptClassNames.push(styles.terminalPromptSystem)
 
               const textClassNames = [styles.terminalText]
               if (line.type === 'alert') textClassNames.push(styles.terminalTextAlert)
               if (line.type === 'cipher') textClassNames.push(styles.terminalTextCipher)
               if (line.type === 'binary') textClassNames.push(styles.terminalTextBinary)
               if (line.type === 'decrypt') textClassNames.push(styles.terminalTextDecrypt)
+              if (line.type === 'glitch') textClassNames.push(styles.terminalTextGlitch)
+              if (line.type === 'system') textClassNames.push(styles.terminalTextSystem)
 
               return (
                 <li key={line.id} className={styles.terminalLine}>
