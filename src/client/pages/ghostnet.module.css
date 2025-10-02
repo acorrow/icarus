@@ -107,7 +107,8 @@
 }
 
 .terminalShell {
-  width: min(960px, calc(100% - 2.5rem));
+  width: 100%;
+  max-width: none;
   background: linear-gradient(180deg, rgba(28, 22, 51, 0.92) 0%, rgba(13, 11, 26, 0.94) 100%);
   border: 1px solid rgba(140, 92, 255, 0.35);
   border-bottom: none;
@@ -150,32 +151,64 @@
 }
 
 .terminalToggle {
-  background: rgba(93, 46, 255, 0.24);
-  border: 1px solid rgba(93, 46, 255, 0.55);
-  color: #f5f1ff;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.1rem;
   border-radius: 999px;
-  padding: 0.35rem 0.85rem;
-  font-size: 0.75rem;
+  border: 1px solid rgba(140, 92, 255, 0.6);
+  background: linear-gradient(135deg, rgba(93, 46, 255, 0.72), rgba(140, 92, 255, 0.48));
+  color: #f5f1ff;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.24em;
+  font-size: 0.72rem;
   cursor: pointer;
-  transition: background 200ms ease, transform 200ms ease;
+  text-shadow: 0 0 12px rgba(93, 46, 255, 0.55);
+  box-shadow: 0 0 0 rgba(93, 46, 255, 0);
+  transition: background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
 }
 
 .terminalToggle:hover,
 .terminalToggle:focus-visible {
-  background: rgba(93, 46, 255, 0.45);
+  background: linear-gradient(135deg, rgba(93, 46, 255, 0.88), rgba(140, 92, 255, 0.62));
   transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(93, 46, 255, 0.38);
 }
 
 .terminalToggle:focus-visible {
   outline: 2px solid #29f3c3;
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 .terminalToggle:active {
-  background: rgba(42, 14, 130, 0.62);
+  background: linear-gradient(135deg, rgba(42, 14, 130, 0.78), rgba(93, 46, 255, 0.52));
   transform: translateY(1px);
+  box-shadow: 0 0 10px rgba(42, 14, 130, 0.48);
+}
+
+.terminalToggleIcon {
+  font-size: 0.95rem;
+  line-height: 1;
+  color: #f5f1ff;
+  text-shadow: 0 0 14px rgba(245, 241, 255, 0.6);
+  transition: transform 200ms ease, color 200ms ease;
+}
+
+.terminalToggleLabel {
+  font-size: 0.68rem;
+  letter-spacing: 0.3em;
+  display: inline-flex;
+  align-items: center;
+}
+
+.terminalToggleCollapsed {
+  background: linear-gradient(135deg, rgba(42, 14, 130, 0.82), rgba(93, 46, 255, 0.48));
+  box-shadow: 0 0 14px rgba(42, 14, 130, 0.36);
+}
+
+.terminalToggleCollapsed .terminalToggleIcon {
+  color: #29f3c3;
 }
 
 .terminalBody {
@@ -274,7 +307,7 @@
 
 @media (max-width: 720px) {
   .terminalShell {
-    width: calc(100% - 1.5rem);
+    width: 100%;
   }
 
   .terminal {
