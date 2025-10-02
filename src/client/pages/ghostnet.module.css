@@ -388,6 +388,118 @@
   padding: 1.5rem;
 }
 
+.detailContextSummary {
+  margin-top: 1.5rem;
+  padding: 1.35rem 1.6rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(140, 92, 255, 0.32);
+  background: linear-gradient(135deg, rgba(40, 22, 82, 0.68), rgba(24, 15, 52, 0.78));
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.detailContextSummaryHeader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.detailContextSummaryHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.detailContextSummaryLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.64rem;
+  color: rgba(245, 241, 255, 0.65);
+}
+
+.detailContextSummaryTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.detailContextSummarySymbol {
+  font-size: 0.85rem;
+  color: rgba(245, 241, 255, 0.6);
+}
+
+.detailContextSummaryMeta {
+  font-size: 0.82rem;
+  color: rgba(245, 241, 255, 0.72);
+}
+
+.detailContextAction {
+  border: 1px solid rgba(140, 92, 255, 0.55);
+  background: linear-gradient(135deg, rgba(93, 46, 255, 0.6), rgba(140, 92, 255, 0.45));
+  color: #f5f1ff;
+  padding: 0.55rem 1.4rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 0.66rem;
+  cursor: pointer;
+  transition: background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  text-shadow: 0 0 12px rgba(93, 46, 255, 0.45);
+}
+
+.detailContextAction:hover,
+.detailContextAction:focus-visible {
+  background: linear-gradient(135deg, rgba(117, 70, 255, 0.78), rgba(140, 92, 255, 0.55));
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(93, 46, 255, 0.35);
+}
+
+.detailContextAction:focus-visible {
+  outline: 2px solid #29f3c3;
+  outline-offset: 3px;
+}
+
+.detailContextAction:active {
+  background: linear-gradient(135deg, rgba(42, 14, 130, 0.75), rgba(93, 46, 255, 0.5));
+  transform: translateY(1px);
+}
+
+.detailContextSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+}
+
+.detailContextSummaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.detailContextSummaryItemLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.62rem;
+  color: rgba(245, 241, 255, 0.6);
+}
+
+.detailContextSummaryItemValue {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.detailContextSummaryItemMeta {
+  font-size: 0.78rem;
+  color: rgba(245, 241, 255, 0.68);
+}
+
 .sectionHint {
   margin: 0;
   color: var(--ghostnet-muted);
@@ -587,6 +699,29 @@
 
 .tableRowInteractive:hover {
   background: rgba(93, 46, 255, 0.2);
+}
+
+.tableRowSelectable {
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tableRowSelectable:hover {
+  background: rgba(93, 46, 255, 0.18);
+}
+
+.tableRowSelectable:focus-visible {
+  outline: 2px solid #29f3c3;
+  outline-offset: -2px;
+}
+
+.tableRowSelected {
+  background: rgba(93, 46, 255, 0.28) !important;
+  box-shadow: inset 0 0 0 1px rgba(140, 92, 255, 0.45);
+}
+
+.tableRowSelected:hover {
+  background: rgba(117, 70, 255, 0.32) !important;
 }
 
 .tableRowExpanded {
@@ -811,6 +946,60 @@
   font-size: 0.98rem;
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
   color: #f5f1ff;
+}
+
+.routeDetailContextBar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+  margin-top: 1.35rem;
+}
+
+.routeDetailContextItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  background: rgba(24, 15, 54, 0.72);
+  border: 1px solid rgba(140, 92, 255, 0.32);
+  min-height: 120px;
+}
+
+.routeDetailContextLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.62rem;
+  color: rgba(245, 241, 255, 0.62);
+}
+
+.routeDetailContextPrimary {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #f5f1ff;
+}
+
+.routeDetailContextValue {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.routeDetailContextMeta {
+  font-size: 0.78rem;
+  color: rgba(245, 241, 255, 0.68);
+}
+
+.routeDetailContextEmpty {
+  grid-column: 1 / -1;
+  padding: 1.1rem 1.4rem;
+  border-radius: 1rem;
+  border: 1px dashed rgba(140, 92, 255, 0.4);
+  background: rgba(30, 16, 58, 0.6);
+  color: rgba(245, 241, 255, 0.74);
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .routeDetailMetrics {
