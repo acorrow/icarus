@@ -1,11 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import { socketOptions } from 'lib/socket'
 import { isWindowFullScreen, isWindowPinned, toggleFullScreen, togglePinWindow } from 'lib/window'
 import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
-import { initiateGhostnetAssimilation, isGhostnetAssimilationActive } from 'lib/ghostnet-assimilation'
+import { initiateGhostnetAssimilation, isGhostnetAssimilationActive, GHOSTNET_ASSIMILATION_EVENT } from 'lib/ghostnet-assimilation'
+
+const ORIGINAL_TITLE = 'ICARUS TERMINAL'
+const TARGET_TITLE = 'GHOSTNET-ATLAS'
+const TITLE_PREFIX_LENGTH = 7
+const TITLE_MIN_WIDTH = `${ORIGINAL_TITLE.length}ch`
+const TITLE_GLYPHS = ['Λ', 'Ξ', 'Ψ', 'Ø', 'Σ', '✦', '✧', '☍', '⌁', '⌖', '◬', '◈', '★', '✶', '⋆']
 
 const NAV_BUTTONS = [
   {
@@ -44,6 +50,67 @@ export default function Header ({ connected, active }) {
   const [isPinned, setIsPinned] = useState(false)
   const [notificationsVisible, setNotificationsVisible] = useState(socketOptions.notifications)
   const [settingsVisible, setSettingsVisible] = useState(false)
+  const [titleChars, setTitleChars] = useState(ORIGINAL_TITLE.split(''))
+  const titleAnimationState = useRef({ running: false, completed: false })
+  const titleAnimationTimeouts = useRef([])
+
+  const clearTitleAnimationTimeouts = useCallback(() => {
+    const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
+    titleAnimationTimeouts.current.forEach(timeoutId => clearTimeoutFn(timeoutId))
+    titleAnimationTimeouts.current = []
+  }, [])
+
+  const startTitleMorph = useCallback(() => {
+    if (titleAnimationState.current.running || titleAnimationState.current.completed) return
+    clearTitleAnimationTimeouts()
+    titleAnimationState.current.running = true
+    const targetChars = TARGET_TITLE.padEnd(ORIGINAL_TITLE.length, ' ').split('')
+    const totalChars = ORIGINAL_TITLE.length
+    const stepDelay = 180
+    const glyphDuration = 120
+
+    for (let index = 0; index < totalChars; index++) {
+      const delay = index * stepDelay
+      const targetChar = targetChars[index]
+
+      if (targetChar !== ' ') {
+        const glyphTimeout = window.setTimeout(() => {
+          const glyph = TITLE_GLYPHS[Math.floor(Math.random() * TITLE_GLYPHS.length)]
+          setTitleChars(prev => {
+            const next = [...prev]
+            next[index] = glyph
+            return next
+          })
+        }, delay)
+        titleAnimationTimeouts.current.push(glyphTimeout)
+
+        const finalizeTimeout = window.setTimeout(() => {
+          setTitleChars(prev => {
+            const next = [...prev]
+            next[index] = targetChar
+            return next
+          })
+        }, delay + glyphDuration)
+        titleAnimationTimeouts.current.push(finalizeTimeout)
+      } else {
+        const finalizeSpaceTimeout = window.setTimeout(() => {
+          setTitleChars(prev => {
+            const next = [...prev]
+            next[index] = targetChar
+            return next
+          })
+        }, delay)
+        titleAnimationTimeouts.current.push(finalizeSpaceTimeout)
+      }
+    }
+
+    const completionTimeout = window.setTimeout(() => {
+      setTitleChars(targetChars)
+      titleAnimationState.current.running = false
+      titleAnimationState.current.completed = true
+    }, (totalChars - 1) * stepDelay + glyphDuration + 200)
+    titleAnimationTimeouts.current.push(completionTimeout)
+  }, [clearTitleAnimationTimeouts])
 
   async function fullScreen () {
     const newFullScreenState = await toggleFullScreen()
@@ -100,6 +167,26 @@ export default function Header ({ connected, active }) {
     return () => clearInterval(dateTimeInterval)
   }, [])
 
+  useEffect(() => {
+    return () => {
+      clearTitleAnimationTimeouts()
+    }
+  }, [clearTitleAnimationTimeouts])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const handleAssimilation = () => {
+      startTitleMorph()
+    }
+    window.addEventListener(GHOSTNET_ASSIMILATION_EVENT, handleAssimilation)
+    if (isGhostnetAssimilationActive()) {
+      startTitleMorph()
+    }
+    return () => {
+      window.removeEventListener(GHOSTNET_ASSIMILATION_EVENT, handleAssimilation)
+    }
+  }, [startTitleMorph])
+
   let signalClassName = 'icon icarus-terminal-signal '
   if (!connected) {
     signalClassName += 'text-primary'
@@ -110,6 +197,9 @@ export default function Header ({ connected, active }) {
   }
 
   const currentPath = `/${router.pathname.split('/')[1].toLowerCase()}`
+  const accessibleTitle = (titleChars.join('').trimEnd()) || ORIGINAL_TITLE
+  const assimilationComplete = titleAnimationState.current.completed
+  const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
 
   function handleNavigate (path) {
     if (path === '/ghostnet') {
@@ -124,7 +214,29 @@ export default function Header ({ connected, active }) {
     <header>
       <hr className='small' />
       <h1 className='text-info' style={{ padding: '.6rem 0 .25rem 3.75rem' }}>
-        <i className='icon icarus-terminal-logo' style={{ position: 'absolute', fontSize: '3rem', left: 0 }} />ICARUS <span className='hidden-small'>Terminal</span>
+        <i className='icon icarus-terminal-logo' style={{ position: 'absolute', fontSize: '3rem', left: 0 }} />
+        <span
+          className='ghostnet-title-morph'
+          aria-label={accessibleTitle}
+          style={{ minWidth: TITLE_MIN_WIDTH }}
+        >
+          <span className='ghostnet-title-morph__characters' aria-hidden='true'>
+            {titleChars.map((char, index) => {
+              const displayChar = char === ' ' ? ' ' : char
+              const charClasses = ['ghostnet-title-morph__char']
+              if (char === ' ') charClasses.push('ghostnet-title-morph__char--space')
+              if (index >= smallVisibleLimit) charClasses.push('hidden-small')
+              return (
+                <span
+                  key={`title-char-${index}`}
+                  className={charClasses.join(' ')}
+                >
+                  {displayChar}
+                </span>
+              )
+            })}
+          </span>
+        </span>
       </h1>
       <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
         <p

@@ -1,0 +1,23 @@
+.ghostnet-title-morph {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0;
+  white-space: nowrap;
+}
+
+.ghostnet-title-morph__characters {
+  display: inline-flex;
+}
+
+.ghostnet-title-morph__char {
+  display: inline-block;
+  width: 1ch;
+  max-width: 1ch;
+  text-align: center;
+  white-space: pre;
+  transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.ghostnet-title-morph__char--space {
+  width: 1ch;
+}
