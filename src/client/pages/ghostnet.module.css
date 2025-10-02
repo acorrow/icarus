@@ -199,6 +199,12 @@
   backdrop-filter: blur(12px);
 }
 
+.sectionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .sectionFrameElevated {
   border-radius: 1.5rem;
   background: var(--ghostnet-panel);
@@ -382,6 +388,18 @@
 
 .tableDetailSection span {
   line-height: 1.4;
+}
+
+.tableTextNeutral {
+  color: var(--ghostnet-accent);
+}
+
+.tableTextSuccess {
+  color: #29f3c3;
+}
+
+.tableTextDanger {
+  color: #ff5fc1;
 }
 
 .tableStatusBar {
@@ -684,11 +702,11 @@
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-links span) {
-  color: var(--ghostnet-ink);
+  color: var(--ghostnet-accent);
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-status--error) {
-  color: #ff7b7b;
+  color: #ff5fc1;
 }
 
 .ghostnet :global(.ghostnet-panel-table .text-primary) {

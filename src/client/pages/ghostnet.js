@@ -345,13 +345,16 @@ function getFactionStandingDisplay(factionName, standings) {
 
   const normalizedStanding = typeof info.standing === 'string' ? info.standing.trim().toLowerCase() : ''
   let className = null
-  let color = '#ffb347'
+  let color = 'var(--ghostnet-subdued)'
   if (normalizedStanding === 'ally') {
-    className = 'text-success'
-    color = 'var(--color-success)'
+    className = styles.tableTextSuccess
+    color = '#29f3c3'
   } else if (normalizedStanding === 'hostile') {
-    className = 'text-danger'
-    color = 'var(--color-danger)'
+    className = styles.tableTextDanger
+    color = '#ff5fc1'
+  } else if (normalizedStanding) {
+    className = styles.tableTextNeutral
+    color = 'var(--ghostnet-accent)'
   }
 
   const reputationLabel = typeof info.reputation === 'number'
@@ -1179,25 +1182,27 @@ function MissionsPanel () {
   }, [status, missions])
 
   return (
-    <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
-      <h2>Mining Missions</h2>
-      <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
-      <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-        <div>
-          <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-          <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
-        </div>
-        {sourceUrl && (
-          <div className='ghostnet__data-source ghostnet-muted'>
-            Ghost Net intercept feed compiled from GHOSTNET community relays.
+    <div className={styles.sectionGroup}>
+      <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
+        <h2>Mining Missions</h2>
+        <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
+        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
+          <div>
+            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+            <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
           </div>
-        )}
+          {sourceUrl && (
+            <div className='ghostnet__data-source ghostnet-muted'>
+              Ghost Net intercept feed compiled from GHOSTNET community relays.
+            </div>
+          )}
+        </div>
+        <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+          Availability signals originate from GHOSTNET contributors and may trail live mission boards.
+        </p>
+        {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       </div>
-      <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-        Availability signals originate from GHOSTNET contributors and may trail live mission boards.
-      </p>
-      {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
+      <div className='ghostnet-panel-table' style={{ overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
@@ -1250,10 +1255,10 @@ function MissionsPanel () {
                   const factionKey = normaliseFactionKey(mission.faction)
                   const factionInfo = factionKey ? factionStandings[factionKey] : null
                   const standingClass = factionInfo?.standing === 'ally'
-                    ? 'text-success'
+                    ? styles.tableTextSuccess
                     : factionInfo?.standing === 'hostile'
-                      ? 'text-danger'
-                      : 'text-primary'
+                      ? styles.tableTextDanger
+                      : styles.tableTextNeutral
                   const standingLabel = factionInfo?.relation || (factionInfo?.standing
                     ? `${factionInfo.standing.charAt(0).toUpperCase()}${factionInfo.standing.slice(1)}`
                     : null)
@@ -2523,23 +2528,24 @@ function TradeRoutesPanel () {
   )
 
   return (
-    <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
-      <h2>Find Trade Routes</h2>
-      <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
-      <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-        <div>
-          <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-          <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>
-            {selectedSystemName || 'Unknown'}
+    <div className={styles.sectionGroup}>
+      <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
+        <h2>Find Trade Routes</h2>
+        <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
+        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
+          <div>
+            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+            <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>
+              {selectedSystemName || 'Unknown'}
+            </div>
           </div>
         </div>
-      </div>
-      <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', flexGrow: 1 }}>
-            <button
-              type='button'
-              onClick={() => setFiltersCollapsed(prev => !prev)}
+        <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', flexGrow: 1 }}>
+              <button
+                type='button'
+                onClick={() => setFiltersCollapsed(prev => !prev)}
               style={FILTER_TOGGLE_BUTTON_STYLE}
               aria-expanded={!filtersCollapsed}
               aria-controls='trade-route-filters'
@@ -2648,8 +2654,9 @@ function TradeRoutesPanel () {
             </div>
           </div>
         )}
-      </form>
-      <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
+        </form>
+      </div>
+      <div className='ghostnet-panel-table' style={{ overflow: 'hidden' }}>
         <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
           {message && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
@@ -2891,24 +2898,26 @@ function PristineMiningPanel () {
   }, [handleLocationToggle])
 
   return (
-    <div className={`${styles.sectionFrameElevated} ${styles.sectionPadding}`}>
-      <h2>Pristine Mining Locations</h2>
-      <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
-      <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-        <div>
-          <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-          <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
-        </div>
-        {sourceUrl && (
-          <div className='ghostnet__data-source ghostnet-muted'>
-            Ghost Net prospecting relays aligned with GHOSTNET survey intel.
+    <div className={styles.sectionGroup}>
+      <div className={`${styles.sectionFrameElevated} ${styles.sectionPadding}`}>
+        <h2>Pristine Mining Locations</h2>
+        <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
+        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
+          <div>
+            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+            <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
           </div>
-        )}
+          {sourceUrl && (
+            <div className='ghostnet__data-source ghostnet-muted'>
+              Ghost Net prospecting relays aligned with GHOSTNET survey intel.
+            </div>
+          )}
+        </div>
+        <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+          Geological echoes are sourced from volunteer GHOSTNET submissions and may lag in-system discoveries.
+        </p>
+        {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       </div>
-      <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-        Geological echoes are sourced from volunteer GHOSTNET submissions and may lag in-system discoveries.
-      </p>
-      {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       <div
         className={`pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
       >
