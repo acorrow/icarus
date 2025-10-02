@@ -9,81 +9,6 @@
   display: inline-flex;
 }
 
-.header-utility-tray {
-  position: absolute;
-  top: 0.65rem;
-  right: 1.5rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
-  pointer-events: none;
-}
-
-.header-utility-tray > * {
-  pointer-events: auto;
-}
-
-.header-utility-clock {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.35rem;
-  font-size: 0.95rem;
-  letter-spacing: 0.18em;
-  text-align: right;
-  color: rgba(245, 241, 255, 0.82);
-}
-
-.header-utility-clock__time {
-  font-size: 2.25rem;
-  line-height: 1;
-  letter-spacing: 0.2em;
-  text-shadow: 0 0 0.6rem rgba(93, 46, 255, 0.4);
-}
-
-.header-utility-clock__date {
-  font-size: 1.05rem;
-  line-height: 1;
-  letter-spacing: 0.32em;
-}
-
-.header-utility-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.header-utility-button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.2rem;
-  height: 3.2rem;
-  padding: 0.25rem;
-  border-radius: 50%;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-
-.header-utility-button .icon {
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.header-utility-button--signal .icon {
-  font-size: 2.6rem;
-  transition: opacity 0.2s ease, filter 0.2s ease;
-}
-
-.header-utility-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 0.2rem rgba(41, 243, 195, 0.4);
-}
-
-.header-utility-button:disabled {
-  cursor: default;
-}
-
 .ghostnet-title-morph__char {
   display: inline-block;
   width: 1ch;
@@ -101,41 +26,6 @@
 .ghostnet-title-morph__char--glitch {
   text-shadow: 0 0 0.32rem rgba(93, 46, 255, 0.55), 0 0 0.14rem rgba(41, 243, 195, 0.35);
   filter: blur(0.038rem) contrast(1.06) saturate(1.05);
-}
-
-.pirate-access-button {
-  color: #F5F1FF;
-  transition: color 0.18s ease, transform 0.2s ease;
-}
-
-.pirate-access-button:hover,
-.pirate-access-button:focus-visible {
-  color: #5D2EFF;
-  transform: translateY(-0.1rem);
-}
-
-.pirate-access-icon {
-  display: inline-block;
-  font-size: 2.8rem;
-  line-height: 1;
-  transition: text-shadow 0.18s ease;
-}
-
-.pirate-access-button:hover .pirate-access-icon,
-.pirate-access-button:focus-visible .pirate-access-icon {
-  text-shadow: 0 0 0.75rem rgba(93, 46, 255, 0.55);
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 .pirate-password-overlay {
@@ -368,59 +258,83 @@
 }
 
 .ghostnet-nav-button--glitch-out {
-  --ghostnet-assimilation-glow-radius: 2.1rem;
-  --ghostnet-assimilation-glow-opacity: 0.62;
-  --ghostnet-assimilation-shift-x: 8px;
-  --ghostnet-assimilation-shift-y: -12px;
-  --ghostnet-assimilation-tilt: -2.4deg;
+  --ghostnet-assimilation-glow-radius: 1.9rem;
+  --ghostnet-assimilation-glow-opacity: 0.5;
+  --ghostnet-assimilation-shift-x: 4px;
+  --ghostnet-assimilation-shift-y: -6px;
+  --ghostnet-assimilation-tilt: -1.6deg;
+  animation: ghostnet-nav-button-glitch-out 0.72s steps(2, end) forwards;
 }
 
 .ghostnet-nav-button--glitch-in {
   position: relative;
   opacity: 0;
-  transform: scale(0.9) translate3d(0, -26px, 0);
-  filter: blur(3.2px) saturate(0.68) hue-rotate(-14deg);
-  --ghostnet-assimilation-glow-radius: 2.6rem;
-  --ghostnet-assimilation-glow-opacity: 0.7;
-  --ghostnet-assimilation-shift-x: 5px;
-  --ghostnet-assimilation-shift-y: -6px;
-  --ghostnet-assimilation-tilt: 1.8deg;
+  filter: blur(2.4px) saturate(0.72) hue-rotate(-10deg);
+  clip-path: inset(50% 0 40% 0);
+  --ghostnet-assimilation-glow-radius: 2.35rem;
+  --ghostnet-assimilation-glow-opacity: 0.65;
+  --ghostnet-assimilation-shift-x: 3px;
+  --ghostnet-assimilation-shift-y: -4px;
+  --ghostnet-assimilation-tilt: 1deg;
   animation:
-    ghostnet-nav-button-glitch-in 1.45s cubic-bezier(0.28, 0.73, 0.26, 1.02) forwards,
+    ghostnet-nav-button-glitch-in 1.15s cubic-bezier(0.3, 0.74, 0.24, 1.02) forwards,
     ghostnet-assimilation-jitter var(--ghostnet-assimilation-loop, 280ms) steps(2, end) infinite;
   animation-delay:
     var(--ghostnet-nav-glitch-delay, 0ms),
-    calc(var(--ghostnet-nav-glitch-delay, 0ms) + 1.1s);
+    calc(var(--ghostnet-nav-glitch-delay, 0ms) + 0.95s);
 }
 
 .ghostnet-nav-button--glitch-in::before {
-  opacity: 0.55;
+  opacity: 0.45;
+}
+
+@keyframes ghostnet-nav-button-glitch-out {
+  0% {
+    opacity: 1;
+    filter: none;
+  }
+  18% {
+    opacity: 0.35;
+    filter: blur(1.4px) saturate(1.2);
+  }
+  36% {
+    opacity: 0.82;
+    filter: blur(0.6px) saturate(1.08);
+  }
+  58% {
+    opacity: 0.2;
+    filter: blur(1.8px) saturate(0.74) hue-rotate(-4deg);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(2.6px) saturate(0.62) hue-rotate(-6deg);
+  }
 }
 
 @keyframes ghostnet-nav-button-glitch-in {
   0% {
     opacity: 0;
-    transform: scale(0.9) translate3d(0, -26px, 0);
-    filter: blur(3.2px) saturate(0.68) hue-rotate(-14deg);
+    filter: blur(2.4px) saturate(0.72) hue-rotate(-10deg);
+    clip-path: inset(52% 0 42% 0);
   }
-  32% {
-    opacity: 0.38;
-    transform: scale(1.02) translate3d(0, -8px, 0);
-    filter: blur(2.1px) saturate(0.82) hue-rotate(-4deg);
+  24% {
+    opacity: 0.45;
+    filter: blur(1.6px) saturate(0.86) hue-rotate(-5deg);
+    clip-path: inset(0 0 38% 0);
   }
-  58% {
-    opacity: 0.85;
-    transform: scale(0.98) translate3d(0, 4px, 0);
-    filter: blur(1px) saturate(1.08) hue-rotate(3deg);
+  46% {
+    opacity: 0.88;
+    filter: blur(0.9px) saturate(1.12) hue-rotate(3deg);
+    clip-path: inset(12% 0 0 0);
   }
-  75% {
-    opacity: 0.95;
-    transform: scale(1.01) translate3d(0, -2px, 0);
-    filter: blur(0.42px) saturate(1.04) hue-rotate(0deg);
+  64% {
+    opacity: 0.6;
+    filter: blur(1.1px) saturate(1.18) hue-rotate(-2deg);
+    clip-path: inset(0 0 50% 0);
   }
   100% {
     opacity: 1;
-    transform: scale(1) translate3d(0, 0, 0);
     filter: none;
+    clip-path: inset(0);
   }
 }

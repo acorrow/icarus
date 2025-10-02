@@ -78,6 +78,7 @@ export default function Header ({ connected, active }) {
   }
   const [navUnlocked, setNavUnlocked] = useState(initialNavUnlockStateRef.current)
   const [navRevealState, setNavRevealState] = useState(initialNavUnlockStateRef.current ? 'complete' : 'locked')
+  const [pendingNavReveal, setPendingNavReveal] = useState(false)
   const navRevealTimeouts = useRef([])
   const SECRET_PASSWORD = 'ATLAS'
 
@@ -185,7 +186,7 @@ export default function Header ({ connected, active }) {
     const sanitizedPassword = piratePassword.trim().toUpperCase()
     if (sanitizedPassword === SECRET_PASSWORD) {
       if (!navUnlocked && navRevealState === 'locked') {
-        startNavUnlockSequence()
+        setPendingNavReveal(true)
       } else {
         setNavRevealState('complete')
       }
@@ -212,7 +213,7 @@ export default function Header ({ connected, active }) {
     }
 
     setPirateStatus('error')
-  }, [SECRET_PASSWORD, closePirateModal, navRevealState, navUnlocked, pirateAttempts, piratePassword, pirateGlitch, pirateStatus, registerPirateTimeout, startNavUnlockSequence])
+  }, [SECRET_PASSWORD, closePirateModal, navRevealState, navUnlocked, pirateAttempts, piratePassword, pirateGlitch, pirateStatus, registerPirateTimeout, setPendingNavReveal])
 
   const runTitleGlitch = useCallback(() => {
     if (typeof window === 'undefined') return
@@ -486,6 +487,20 @@ export default function Header ({ connected, active }) {
   }, [clearNavRevealTimeouts])
 
   useEffect(() => {
+    if (!pendingNavReveal) return undefined
+    if (pirateModalVisible) return undefined
+    if (navRevealState !== 'locked') {
+      setPendingNavReveal(false)
+      return undefined
+    }
+
+    startNavUnlockSequence()
+    setPendingNavReveal(false)
+
+    return undefined
+  }, [navRevealState, pendingNavReveal, pirateModalVisible, setPendingNavReveal, startNavUnlockSequence])
+
+  useEffect(() => {
     if (!pirateModalVisible || pirateGlitch) return undefined
     const setTimeoutFn = typeof window !== 'undefined' ? window.setTimeout : setTimeout
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -511,7 +526,6 @@ export default function Header ({ connected, active }) {
   const accessibleTitle = (titleChars.join('').trimEnd()) || ORIGINAL_TITLE
   const assimilationComplete = titleAnimationState.current.completed
   const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
-  const dateTimeLabel = `${dateTime.day} ${dateTime.month} ${dateTime.year} ${dateTime.time}`
   const navUnlockAnimating = navRevealState === 'glitchOut' || navRevealState === 'glitchIn'
   const ghostnetButtonVisible = navRevealState === 'glitchIn' || navRevealState === 'complete'
   const navigationButtons = NAV_BUTTONS.filter(button => {
@@ -567,55 +581,56 @@ export default function Header ({ connected, active }) {
           </span>
         </span>
       </h1>
-      <div className='header-utility-tray'>
-        <time className='header-utility-clock text-uppercase' aria-label={dateTimeLabel}>
-          <span className='header-utility-clock__time text-primary'>{dateTime.time}</span>
-          <span className='header-utility-clock__date text-muted'>
+      <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
+        <p
+          className='text-primary text-center text-uppercase'
+          style={{ display: 'inline-block', padding: 0, margin: 0, lineHeight: '1rem', minWidth: '7.5rem' }}
+        >
+           <span style={{ position: 'relative', top: '.3rem', fontSize: '2.4rem', paddingTop: '.25rem' }}>
+           {dateTime.time}
+          </span>
+          <br />
+          <span style={{ fontSize: '1.1rem', position: 'relative', top: '.4rem' }}>
             {dateTime.day} {dateTime.month} {dateTime.year}
           </span>
-        </time>
+        </p>
 
-        <div className='header-utility-controls'>
-          <button
-            tabIndex='1'
-            onClick={() => { openPirateModal(); document.activeElement?.blur?.() }}
-            className='button--icon button--transparent pirate-access-button header-utility-button'
-            aria-haspopup='dialog'
-            aria-expanded={pirateModalVisible}
-          >
-            <i className='icon icarus-terminal-shield pirate-access-icon' aria-hidden='true' />
-            <span className='sr-only'>Open encrypted access challenge</span>
-          </button>
+        <button disabled className='button--icon button--transparent' style={{ marginRight: '.5rem', opacity: active ? 1 : 0.25, transition: 'all .25s ease-out' }}>
+          <i className={signalClassName} style={{ position: 'relative', transition: 'all .25s ease', fontSize: '3rem', lineHeight: '1.8rem', top: '.5rem', right: '.25rem' }} />
+        </button>
 
-          <button disabled className='button--icon button--transparent header-utility-button header-utility-button--signal' style={{ opacity: active ? 1 : 0.25 }}>
-            <i className={signalClassName} />
-          </button>
+        <button
+          tabIndex='1'
+          onClick={() => { openPirateModal(); document.activeElement.blur() }}
+          className='button--icon'
+          style={{ marginRight: '.5rem' }}
+          aria-haspopup='dialog'
+          aria-expanded={pirateModalVisible}
+          aria-label='Open encrypted access challenge'
+        >
+          <i className='icon icarus-terminal-shield' style={{ fontSize: '2rem' }} />
+        </button>
 
-          {IS_WINDOWS_APP &&
-            <button
-              tabIndex='1'
-              onClick={pinWindow}
-              className={`button--icon header-utility-button ${isPinned ? 'button--transparent' : ''}`.trim()}
-              disabled={isFullScreen}
-            >
-              <i className='icon icarus-terminal-pin-window' />
-            </button>}
+        {IS_WINDOWS_APP &&
+          <button tabIndex='1' onClick={pinWindow} className={`button--icon ${isPinned ? 'button--transparent' : ''}`} style={{ marginRight: '.5rem' }} disabled={isFullScreen}>
+            <i className='icon icarus-terminal-pin-window' style={{ fontSize: '2rem' }} />
+          </button>}
 
-          <button tabIndex='1' onClick={toggleNotifications} className='button--icon header-utility-button'>
-            <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} />
-          </button>
+        <button tabIndex='1' onClick={toggleNotifications} className='button--icon' style={{ marginRight: '.5rem' }}>
+          <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} style={{ fontSize: '2rem' }} />
+        </button>
 
-          <button
-            tabIndex='1'
-            className='button--icon header-utility-button'
-            onClick={() => { setSettingsVisible(!settingsVisible); document.activeElement.blur() }}
-          >
-            <i className='icon icarus-terminal-settings' />
-          </button>
-          <button tabIndex='1' onClick={fullScreen} className='button--icon header-utility-button'>
-            <i className='icon icarus-terminal-fullscreen' />
-          </button>
-        </div>
+        <button
+          tabIndex='1'
+          className='button--icon'
+          style={{ marginRight: '.5rem' }}
+          onClick={() => { setSettingsVisible(!settingsVisible); document.activeElement.blur() }}
+        >
+          <i className='icon icarus-terminal-settings' style={{ fontSize: '2rem' }} />
+        </button>
+        <button tabIndex='1' onClick={fullScreen} className='button--icon'>
+          <i className='icon icarus-terminal-fullscreen' style={{ fontSize: '2rem' }} />
+        </button>
       </div>
       <hr />
       <div
