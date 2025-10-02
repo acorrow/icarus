@@ -11,7 +11,8 @@ export const GHOSTNET_ASSIMILATION_EVENT = 'ghostnet-assimilation-start'
 const ARRIVAL_FLAG_KEY = 'ghostnet.assimilationArrival'
 const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
-const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'])
+const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HTML', 'BODY'])
+const NAVIGATION_EXCLUSION_SELECTOR = '#primaryNavigation'
 const FORCED_FADE_CLEANUP_DELAY = 720
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
 const MAX_ACTIVE_TARGETS = 160
@@ -19,9 +20,23 @@ const MAX_CHARACTER_ANIMATIONS = 3200
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
+function isWithinExcludedRegion (element) {
+  if (!element) return false
+  if (element.closest(NAVIGATION_EXCLUSION_SELECTOR)) return true
+  return false
+}
+
+function isForbiddenFallbackCandidate (element) {
+  if (!element) return true
+  if (EXCLUDED_TAGS.has(element.tagName)) return true
+  if (isWithinExcludedRegion(element)) return true
+  return false
+}
+
 function isEligibleTarget (element) {
   if (!element) return false
   if (EXCLUDED_TAGS.has(element.tagName)) return false
+  if (isWithinExcludedRegion(element)) return false
   if (typeof element.getBoundingClientRect !== 'function') return false
   const rect = element.getBoundingClientRect()
   if (!rect) return false
@@ -199,7 +214,7 @@ function findFallbackTarget (element, primarySet, fallbackSet, root) {
       return null
     }
 
-    if (isEligibleTarget(current)) {
+    if (!isForbiddenFallbackCandidate(current) && isEligibleTarget(current)) {
       candidates.push(current)
     }
 
@@ -212,12 +227,12 @@ function findFallbackTarget (element, primarySet, fallbackSet, root) {
 
   for (let i = candidates.length - 1; i >= 0; i--) {
     const candidate = candidates[i]
-    if (!primarySet.has(candidate) && !fallbackSet.has(candidate)) {
+    if (!isForbiddenFallbackCandidate(candidate) && !primarySet.has(candidate) && !fallbackSet.has(candidate)) {
       return candidate
     }
   }
 
-  if (isEligibleTarget(rootElement) && !primarySet.has(rootElement) && !fallbackSet.has(rootElement)) {
+  if (!isForbiddenFallbackCandidate(rootElement) && isEligibleTarget(rootElement) && !primarySet.has(rootElement) && !fallbackSet.has(rootElement)) {
     return rootElement
   }
 
