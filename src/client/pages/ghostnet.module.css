@@ -183,8 +183,12 @@
   min-height: 100%;
   --ghostnet-terminal-height: clamp(180px, 18vh, 220px);
   padding: 2.5rem 3rem calc(3.5rem + var(--ghostnet-terminal-height));
-  background: radial-gradient(circle at 20% 15%, var(--ghostnet-color-rgba-216-180-254-0-14), transparent 55%),
-    radial-gradient(circle at 85% 10%, var(--ghostnet-color-rgba-167-139-250-0-22), transparent 60%),
+  background: linear-gradient(
+      180deg,
+      var(--ghostnet-color-rgba-28-22-51-0-92) 0%,
+      var(--ghostnet-color-rgba-42-14-130-0-82) 55%,
+      var(--ghostnet-color-rgba-16-9-38-0-76) 100%
+    ),
     var(--ghostnet-color-hex-05080d);
   color: var(--ghostnet-ink);
   overflow: hidden;
@@ -394,7 +398,11 @@
 .terminalBody {
   flex: 1;
   padding: 1.25rem 1.5rem 1.5rem;
-  background: radial-gradient(circle at 20% 0%, var(--ghostnet-color-rgba-93-46-255-0-18), transparent 55%);
+  background: linear-gradient(
+    180deg,
+    var(--ghostnet-color-rgba-42-14-130-0-78) 0%,
+    var(--ghostnet-color-rgba-16-9-38-0-76) 100%
+  );
   overflow: hidden;
   display: flex;
 }
@@ -603,7 +611,12 @@
   position: relative;
   border: 1px solid var(--ghostnet-color-rgba-140-92-255-0-38);
   border-radius: 1.25rem;
-  background: radial-gradient(circle at 50% 0%, var(--ghostnet-color-rgba-93-46-255-0-18), transparent 65%),
+  background:
+    linear-gradient(
+      180deg,
+      var(--ghostnet-color-rgba-93-46-255-0-22) 0%,
+      transparent 45%
+    ),
     linear-gradient(180deg, var(--ghostnet-color-rgba-9-8-26-0-95) 0%, var(--ghostnet-color-rgba-7-11-20-0-94) 100%);
   box-shadow: 0 1.65rem 3.75rem var(--ghostnet-color-rgba-3-7-12-0-78);
   overflow: hidden;
@@ -1512,8 +1525,12 @@
     --ghostnet-subdued: var(--ghostnet-color-rgba-255-173-108-0-72);
     --ghostnet-accent: var(--ghostnet-color-hex-ffb874);
     --ghostnet-highlight: var(--ghostnet-color-rgba-255-173-108-0-38);
-    background: radial-gradient(circle at 20% 15%, var(--ghostnet-color-rgba-255-184-116-0-2), transparent 55%),
-      radial-gradient(circle at 85% 10%, var(--ghostnet-color-rgba-255-140-92-0-24), transparent 60%),
+    background: linear-gradient(
+        180deg,
+        var(--ghostnet-color-rgba-255-173-102-0-55) 0%,
+        var(--ghostnet-color-rgba-255-140-92-0-24) 45%,
+        var(--ghostnet-color-hex-120804) 100%
+      ),
       var(--ghostnet-color-hex-120804);
     filter: saturate(1.08) contrast(1.05) hue-rotate(-12deg);
     transform: scale(1.01);
@@ -1527,22 +1544,34 @@
     --ghostnet-subdued: var(--ghostnet-color-rgba-178-153-255-0-56);
     --ghostnet-accent: var(--ghostnet-color-hex-f0b8ff);
     --ghostnet-highlight: var(--ghostnet-color-rgba-216-180-254-0-2);
-    background: radial-gradient(circle at 22% 18%, var(--ghostnet-color-rgba-228-175-255-0-2), transparent 55%),
-      radial-gradient(circle at 80% 12%, var(--ghostnet-color-rgba-120-192-255-0-16), transparent 60%),
+    background: linear-gradient(
+        180deg,
+        var(--ghostnet-color-rgba-228-175-255-0-26) 0%,
+        var(--ghostnet-color-rgba-120-192-255-0-18) 45%,
+        var(--ghostnet-color-hex-080711) 100%
+      ),
       var(--ghostnet-color-hex-080711);
     filter: saturate(1.12) contrast(1.02) hue-rotate(4deg);
     transform: scale(1.006);
   }
   62% {
-    background: radial-gradient(circle at 24% 17%, var(--ghostnet-color-rgba-228-175-255-0-26), transparent 55%),
-      radial-gradient(circle at 78% 12%, var(--ghostnet-color-rgba-120-192-255-0-18), transparent 60%),
+    background: linear-gradient(
+        180deg,
+        var(--ghostnet-color-rgba-228-175-255-0-32) 0%,
+        var(--ghostnet-color-rgba-120-192-255-0-18) 50%,
+        var(--ghostnet-color-hex-0a0718) 100%
+      ),
       var(--ghostnet-color-hex-0a0718);
     filter: saturate(1.28) hue-rotate(10deg);
     transform: scale(1.004) translate3d(-3px, 1px, 0);
   }
   72% {
-    background: radial-gradient(circle at 26% 19%, var(--ghostnet-color-rgba-120-192-255-0-22), transparent 55%),
-      radial-gradient(circle at 82% 14%, var(--ghostnet-color-rgba-228-175-255-0-28), transparent 60%),
+    background: linear-gradient(
+        180deg,
+        var(--ghostnet-color-rgba-120-192-255-0-22) 0%,
+        var(--ghostnet-color-rgba-228-175-255-0-28) 50%,
+        var(--ghostnet-color-hex-060611) 100%
+      ),
       var(--ghostnet-color-hex-060611);
     filter: saturate(0.92) hue-rotate(-6deg);
     transform: scale(1.002) translate3d(2px, -1px, 0);
@@ -1556,8 +1585,12 @@
     --ghostnet-subdued: var(--ghostnet-color-hex-6c7c92);
     --ghostnet-accent: var(--ghostnet-color-hex-d8b4fe);
     --ghostnet-highlight: var(--ghostnet-color-rgba-216-180-254-0-12);
-    background: radial-gradient(circle at 20% 15%, var(--ghostnet-color-rgba-216-180-254-0-14), transparent 55%),
-      radial-gradient(circle at 85% 10%, var(--ghostnet-color-rgba-167-139-250-0-22), transparent 60%),
+    background: linear-gradient(
+        180deg,
+        var(--ghostnet-color-rgba-216-180-254-0-14) 0%,
+        var(--ghostnet-color-rgba-167-139-250-0-22) 55%,
+        var(--ghostnet-color-hex-05080d) 100%
+      ),
       var(--ghostnet-color-hex-05080d);
     filter: none;
     transform: none;
