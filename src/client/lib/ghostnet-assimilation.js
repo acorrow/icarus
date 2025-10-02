@@ -15,7 +15,6 @@ const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HTML'
 const NAVIGATION_EXCLUSION_SELECTOR = '#primaryNavigation'
 const FORCED_FADE_CLEANUP_DELAY = 720
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
-const MAX_ACTIVE_TARGETS = 160
 const MAX_CHARACTER_ANIMATIONS = 3200
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
@@ -265,13 +264,6 @@ function isWithinExcludedRegion (element) {
   return false
 }
 
-function isForbiddenFallbackCandidate (element) {
-  if (!element) return true
-  if (EXCLUDED_TAGS.has(element.tagName)) return true
-  if (isWithinExcludedRegion(element)) return true
-  return false
-}
-
 function isEligibleTarget (element) {
   if (!element) return false
   if (EXCLUDED_TAGS.has(element.tagName)) return false
@@ -280,6 +272,61 @@ function isEligibleTarget (element) {
   const rect = element.getBoundingClientRect()
   if (!rect) return false
   return rect.width !== 0 || rect.height !== 0
+}
+
+function getElementRect (element) {
+  if (!element || typeof element.getBoundingClientRect !== 'function') return null
+  try {
+    return element.getBoundingClientRect()
+  } catch (err) {
+    return null
+  }
+}
+
+function getLowerHalfThreshold (root) {
+  const rootRect = getElementRect(root)
+  if (rootRect) {
+    return rootRect.top + (rootRect.height / 2)
+  }
+
+  if (typeof window !== 'undefined' && typeof window.innerHeight === 'number') {
+    return window.innerHeight / 2
+  }
+
+  return 0
+}
+
+function resolveGroupAnchor (element, root, threshold) {
+  if (!element) return null
+
+  let current = element
+  let anchor = element
+
+  while (current && current !== document.body) {
+    if (!isEligibleTarget(current)) {
+      break
+    }
+
+    const rect = getElementRect(current)
+    if (!rect) {
+      break
+    }
+
+    if (rect.top < threshold) {
+      break
+    }
+
+    anchor = current
+
+    const parent = current.parentElement
+    if (!parent || parent === document.body || parent === root) {
+      break
+    }
+
+    current = parent
+  }
+
+  return anchor
 }
 
 function clearJitterTimer (element) {
@@ -352,6 +399,45 @@ function shuffle (array) {
   return array
 }
 
+function buildAssimilationPlan () {
+  const root = document.querySelector('.layout__main') || document.body
+
+  if (!root) {
+    return { root: null, groups: [], targets: [] }
+  }
+
+  const eligibleElements = Array.from(root.querySelectorAll('*')).filter((element) => isEligibleTarget(element))
+
+  if (root !== document.body && root instanceof HTMLElement && isEligibleTarget(root)) {
+    eligibleElements.push(root)
+  }
+
+  if (eligibleElements.length === 0) {
+    return { root, groups: [], targets: [] }
+  }
+
+  const threshold = getLowerHalfThreshold(root)
+  const groupMap = new Map()
+
+  eligibleElements
+    .map((element) => ({ element, rect: getElementRect(element) }))
+    .filter(({ rect }) => rect && rect.bottom >= threshold)
+    .forEach(({ element }) => {
+      const anchor = resolveGroupAnchor(element, root, threshold) || element
+      if (!groupMap.has(anchor)) {
+        groupMap.set(anchor, new Set())
+      }
+      const members = groupMap.get(anchor)
+      members.add(anchor)
+      members.add(element)
+    })
+
+  const groups = shuffle(Array.from(groupMap.values()).map((members) => shuffle(Array.from(members))))
+  const targets = Array.from(new Set(groups.flat()))
+
+  return { root, groups, targets }
+}
+
 function upgradeElement (element, baseDelay) {
   if (!element || element.dataset.ghostnetAssimilated === 'true') return
   if (remainingCharacterAnimations <= 0) return
@@ -410,7 +496,7 @@ function upgradeElement (element, baseDelay) {
   })
 
   const safeWindow = Math.max(180, effectDurationMs - baseDelay - 120)
-  const removalDelay = Math.max(180, Math.min(safeWindow, 900 + Math.random() * 450))
+  const removalDelay = Math.max(180, Math.min(safeWindow, effectDurationMs - baseDelay - 240))
 
   window.setTimeout(() => {
     element.classList.add('ghostnet-assimilation-remove')
@@ -425,88 +511,33 @@ function upgradeElement (element, baseDelay) {
   }, removalDelay)
 }
 
-function buildElementList () {
-  const root = document.querySelector('.layout__main') || document.body
-  if (!root) {
-    return { root: null, elements: [] }
-  }
-  const elements = Array.from(root.querySelectorAll('*')).filter((element) => isEligibleTarget(element))
-
-  if (root !== document.body && root instanceof HTMLElement && isEligibleTarget(root)) {
-    elements.push(root)
-  }
-
-  return {
-    root,
-    elements: shuffle(elements)
-  }
-}
-
-function findFallbackTarget (element, primarySet, fallbackSet, root) {
-  if (!element) return null
-  const rootElement = root || document.body
-  const candidates = []
-  let current = element.parentElement
-
-  while (current) {
-    if (primarySet.has(current) || fallbackSet.has(current)) {
-      return null
-    }
-
-    if (!isForbiddenFallbackCandidate(current) && isEligibleTarget(current)) {
-      candidates.push(current)
-    }
-
-    if (current === rootElement || current === document.body) {
-      break
-    }
-
-    current = current.parentElement
-  }
-
-  for (let i = candidates.length - 1; i >= 0; i--) {
-    const candidate = candidates[i]
-    if (!isForbiddenFallbackCandidate(candidate) && !primarySet.has(candidate) && !fallbackSet.has(candidate)) {
-      return candidate
-    }
-  }
-
-  if (!isForbiddenFallbackCandidate(rootElement) && isEligibleTarget(rootElement) && !primarySet.has(rootElement) && !fallbackSet.has(rootElement)) {
-    return rootElement
-  }
-
-  return null
-}
-
 function beginAssimilationEffect () {
-  const { root, elements: shuffledElements } = buildElementList()
-  const primaryTargets = shuffledElements.slice(0, MAX_ACTIVE_TARGETS)
-  const primarySet = new Set(primaryTargets)
-  const overflowTargets = shuffledElements.slice(MAX_ACTIVE_TARGETS)
-  const fallbackSet = new Set()
-
-  overflowTargets.forEach((element) => {
-    const fallback = findFallbackTarget(element, primarySet, fallbackSet, root)
-    if (fallback) {
-      fallbackSet.add(fallback)
-    }
-  })
-
-  const targets = shuffle(Array.from(new Set([...primaryTargets, ...fallbackSet])))
+  const { groups, targets } = buildAssimilationPlan()
   assimilationStartTime = performance.now()
   document.body.classList.add('ghostnet-assimilation-mode')
   showAssimilationOverlay()
 
-  targets.forEach((element) => {
-    const delay = Math.random() * (effectDurationMs * 0.55)
-    window.setTimeout(() => {
-      upgradeElement(element, delay)
-    }, delay)
-  })
+  if (groups.length > 0) {
+    const delayStep = Math.min(320, effectDurationMs / Math.max(1, groups.length))
+    const scheduler = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
+      ? window.requestAnimationFrame.bind(window)
+      : (callback) => window.setTimeout(callback, 16)
+
+    scheduler(() => {
+      groups.forEach((group, index) => {
+        const baseDelay = index * delayStep
+        group.forEach((element) => {
+          upgradeElement(element, baseDelay)
+        })
+      })
+    })
+  }
+
+  const uniqueTargets = Array.from(new Set(targets))
 
   const cleanup = () => {
     document.body.classList.remove('ghostnet-assimilation-mode')
-    targets.forEach((element) => {
+    uniqueTargets.forEach((element) => {
       if (!element) return
       element.classList.remove('ghostnet-assimilation-target', 'ghostnet-assimilation-remove', 'ghostnet-assimilation-force-fade')
       clearJitterTimer(element)
@@ -525,7 +556,7 @@ function beginAssimilationEffect () {
     document.body.classList.remove('ghostnet-assimilation-forced')
   }
 
-  return { cleanup, targets }
+  return { cleanup, targets: uniqueTargets }
 }
 
 export function initiateGhostnetAssimilation (callback) {
