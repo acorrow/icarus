@@ -58,11 +58,12 @@ LoadingSpinner.defaultProps = {
 }
 
 const STARTUP_SPINNER_SESSION_KEY = 'ghostnet.session.startupSpinner.v1'
+const STARTUP_SPINNER_ALWAYS_SHOW_KEY = 'ghostnetAlwaysShowHandshake'
 const STARTUP_SPINNER_ORBIT_ICONS = ['cargo', 'route', 'asteroid-base', 'megaship']
 const STARTUP_SPINNER_TELEMETRY = [
-  { icon: 'route', label: 'Corsair handshake', value: 'Authenticated' },
-  { icon: 'cargo', label: 'Contraband uplink', value: 'Synchronized' },
-  { icon: 'megaship', label: 'Ghost flag signature', value: 'Verified' }
+  { icon: 'route', label: 'ATLAS vector sync', value: 'Aligned' },
+  { icon: 'cargo', label: 'Protocol cipher', value: 'Authenticated' },
+  { icon: 'megaship', label: 'GhostNet uplink', value: 'Stabilized' }
 ]
 
 function StartupSpinnerIcon ({ name, size = 48, color = 'var(--ghostnet-accent)' }) {
@@ -95,12 +96,12 @@ function StartupSpinnerOverlay ({ active }) {
       className={`${styles.startupSpinner} ${active ? styles.startupSpinnerActive : ''}`}
       role='status'
       aria-live='assertive'
-      aria-label='Ghost Net pirate link initializing'
+      aria-label='ATLAS protocol handshake establishing'
     >
       <div className={styles.startupSpinnerContent}>
         <span className={styles.startupSpinnerBadge}>
           <i className='icon icarus-terminal-warning' aria-hidden='true' />
-          GhostNet Corsair Link
+          ATLAS Protocol // Handshake
         </span>
         <div className={styles.startupSpinnerCore}>
           <div className={styles.startupSpinnerRings} aria-hidden='true'>
@@ -130,12 +131,12 @@ function StartupSpinnerOverlay ({ active }) {
           <div className={styles.startupSpinnerGlyph} aria-hidden='true'>
             <StartupSpinnerIcon name='fleet-carrier' size={84} color='var(--ghostnet-ink)' />
           </div>
-          <span className={styles.startupSpinnerSymbol} aria-hidden='true'>☠</span>
+          <span className={styles.startupSpinnerSymbol} aria-hidden='true'>⟁</span>
         </div>
         <div className={styles.startupSpinnerText}>
-          <p className={styles.startupSpinnerHeadline}>Decrypting pirate relays…</p>
+          <p className={styles.startupSpinnerHeadline}>Handshaking with the ATLAS network…</p>
           <p className={styles.startupSpinnerSubline}>
-            Splicing hidden buccaneer beacons into the GhostNet mesh.
+            Routing GhostNet intercepts through the ATLAS protocol exchange.
           </p>
         </div>
         <ul className={styles.startupSpinnerTelemetry}>
@@ -3198,7 +3199,25 @@ export default function GhostnetPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [startupSpinnerVisible, setStartupSpinnerVisible] = useState(false)
   const [startupSpinnerActive, setStartupSpinnerActive] = useState(false)
+  const startupSpinnerTimers = useRef({ frame: null, hideTimer: null, cleanupTimer: null })
   const { connected, ready, active: socketActive } = useSocket()
+  const clearStartupSpinnerTimers = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const { frame, hideTimer, cleanupTimer } = startupSpinnerTimers.current
+    if (frame) window.cancelAnimationFrame(frame)
+    if (hideTimer) window.clearTimeout(hideTimer)
+    if (cleanupTimer) window.clearTimeout(cleanupTimer)
+    startupSpinnerTimers.current = { frame: null, hideTimer: null, cleanupTimer: null }
+  }, [])
+  const playStartupSpinner = useCallback(() => {
+    if (typeof window === 'undefined') return
+    clearStartupSpinnerTimers()
+    setStartupSpinnerVisible(true)
+    const frame = window.requestAnimationFrame(() => setStartupSpinnerActive(true))
+    const hideTimer = window.setTimeout(() => setStartupSpinnerActive(false), 2600)
+    const cleanupTimer = window.setTimeout(() => setStartupSpinnerVisible(false), 3200)
+    startupSpinnerTimers.current = { frame, hideTimer, cleanupTimer }
+  }, [clearStartupSpinnerTimers])
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
 
@@ -3211,43 +3230,52 @@ export default function GhostnetPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
 
-    let shouldShow = false
+    let alwaysShow = false
     try {
-      shouldShow = window.sessionStorage.getItem(STARTUP_SPINNER_SESSION_KEY) !== 'seen'
-      if (shouldShow) {
-        window.sessionStorage.setItem(STARTUP_SPINNER_SESSION_KEY, 'seen')
-      }
+      alwaysShow = window.localStorage.getItem(STARTUP_SPINNER_ALWAYS_SHOW_KEY) === 'true'
     } catch (err) {
-      if (!window.__ghostnetStartupPlayed) {
-        shouldShow = true
-        window.__ghostnetStartupPlayed = true
+      alwaysShow = false
+    }
+
+    let shouldShow = alwaysShow
+    if (!alwaysShow) {
+      try {
+        shouldShow = window.sessionStorage.getItem(STARTUP_SPINNER_SESSION_KEY) !== 'seen'
+        if (shouldShow) {
+          window.sessionStorage.setItem(STARTUP_SPINNER_SESSION_KEY, 'seen')
+        }
+      } catch (err) {
+        if (!window.__ghostnetStartupPlayed) {
+          shouldShow = true
+          window.__ghostnetStartupPlayed = true
+        }
       }
     }
 
     if (!shouldShow) return undefined
 
-    let cancelled = false
-    setStartupSpinnerVisible(true)
-
-    const animationFrame = window.requestAnimationFrame(() => {
-      if (!cancelled) setStartupSpinnerActive(true)
-    })
-
-    const hideTimer = window.setTimeout(() => {
-      if (!cancelled) setStartupSpinnerActive(false)
-    }, 2600)
-
-    const cleanupTimer = window.setTimeout(() => {
-      if (!cancelled) setStartupSpinnerVisible(false)
-    }, 3200)
+    playStartupSpinner()
 
     return () => {
-      cancelled = true
-      window.cancelAnimationFrame(animationFrame)
-      window.clearTimeout(hideTimer)
-      window.clearTimeout(cleanupTimer)
+      clearStartupSpinnerTimers()
     }
-  }, [])
+  }, [playStartupSpinner, clearStartupSpinnerTimers])
+  useEffect(() => () => {
+    clearStartupSpinnerTimers()
+  }, [clearStartupSpinnerTimers])
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const handlePlayRequest = () => {
+      playStartupSpinner()
+    }
+
+    window.addEventListener('ghostnet:startupHandshake:play', handlePlayRequest)
+
+    return () => {
+      window.removeEventListener('ghostnet:startupHandshake:play', handlePlayRequest)
+    }
+  }, [playStartupSpinner])
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
     if (!startupSpinnerVisible) return undefined
@@ -3272,9 +3300,9 @@ export default function GhostnetPage() {
     [navigationItems]
   )
   const tickerMessages = useMemo(() => ([
-    'Intercept feed authenticated',
-    'GHOSTNET mesh handshake complete',
-    'Signal hygiene nominal'
+    'ATLAS protocol handshake verified',
+    'GhostNet intercept buffer encrypted',
+    'Telemetry lattice holding steady'
   ]), [])
   const uplinkStatus = connected && ready ? 'Stable' : 'Linking…'
   const relayStatus = socketActive ? 'Streaming' : 'Idle'
@@ -3289,10 +3317,10 @@ export default function GhostnetPage() {
           <div className={styles.shell}>
             <section className={styles.header} aria-labelledby='ghostnet-heading'>
               <div>
-                <span className={styles.kicker}>Underground Intelligence Mesh</span>
+                <span className={styles.kicker}>ATLAS Protocol Integration Mesh</span>
                 <h1 id='ghostnet-heading' className={styles.title}>Ghost Net</h1>
                 <p className={styles.subtitle}>
-                  Ghost Net stitches GHOSTNET intercepts into a clandestine command surface, revealing trade corridors, syndicate missions, and pristine deposits hidden from official channels.
+                  Ghost Net weaves intercepted intelligence through the ATLAS protocol handshake, exposing covert trade corridors, syndicate missions, and pristine deposits hidden from official channels.
                 </p>
                 <div className={styles.ghostnetScroller} aria-hidden='true'>
                   <div className={styles.ghostnetTicker}>
@@ -3305,10 +3333,10 @@ export default function GhostnetPage() {
               <aside
                 className={styles.statusCard}
                 role='complementary'
-                aria-label='Signal Brief'
+                aria-label='ATLAS Handshake Brief'
                 aria-labelledby='ghostnet-status-heading'
               >
-                <h2 id='ghostnet-status-heading' className={styles.statusHeading}>Signal Brief</h2>
+                <h2 id='ghostnet-status-heading' className={styles.statusHeading}>ATLAS Handshake Brief</h2>
                 <ul className={styles.metaList} aria-live='polite'>
                   <li className={styles.metaItem}>
                     <span className={styles.metaLabel}>Uplink</span>

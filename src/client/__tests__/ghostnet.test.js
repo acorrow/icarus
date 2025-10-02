@@ -33,7 +33,7 @@ describe('Ghost Net page', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: /ghost net/i })).toBeInTheDocument()
 
-    const statusPanel = await screen.findByRole('complementary', { name: /signal brief/i })
+    const statusPanel = await screen.findByRole('complementary', { name: /handshake brief/i })
     expect(within(statusPanel).getByText(/uplink/i)).toBeInTheDocument()
     expect(within(statusPanel).getByText(/linking/i)).toBeInTheDocument()
     expect(within(statusPanel).getByText(/focus/i)).toBeInTheDocument()

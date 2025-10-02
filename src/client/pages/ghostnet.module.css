@@ -2,19 +2,22 @@
   position: relative;
   min-height: 100%;
   padding: 2.5rem 3rem 3.5rem;
-  background: radial-gradient(circle at 20% 15%, rgba(216, 180, 254, 0.14), transparent 55%),
-    radial-gradient(circle at 85% 10%, rgba(167, 139, 250, 0.22), transparent 60%),
-    #05080d;
-  color: var(--ghostnet-ink);
+  background: radial-gradient(circle at 20% 15%, rgba(93, 46, 255, 0.24), transparent 55%),
+    radial-gradient(circle at 82% 10%, rgba(41, 243, 195, 0.14), transparent 60%),
+    #0d0b1a;
+  color: var(--ghostnet-muted);
   overflow: hidden;
-  --ghostnet-bg: #05080d;
-  --ghostnet-panel: rgba(10, 15, 22, 0.88);
-  --ghostnet-panel-border: rgba(216, 180, 254, 0.28);
-  --ghostnet-ink: #d8e9ff;
-  --ghostnet-muted: #8da2bf;
-  --ghostnet-subdued: #6c7c92;
-  --ghostnet-accent: #d8b4fe;
-  --ghostnet-highlight: rgba(216, 180, 254, 0.12);
+  --ghostnet-bg: #0d0b1a;
+  --ghostnet-panel: rgba(28, 22, 51, 0.88);
+  --ghostnet-panel-border: rgba(140, 92, 255, 0.35);
+  --ghostnet-ink: #f5f1ff;
+  --ghostnet-muted: rgba(245, 241, 255, 0.84);
+  --ghostnet-subdued: rgba(245, 241, 255, 0.64);
+  --ghostnet-accent: #5d2eff;
+  --ghostnet-highlight: rgba(93, 46, 255, 0.18);
+  --ghostnet-glow: rgba(93, 46, 255, 0.45);
+  --ghostnet-success: #29f3c3;
+  --ghostnet-matrix-font: 'Share Tech Mono', 'IBM Plex Mono', 'Roboto Mono', monospace;
 }
 
 .ghostnet::before {
@@ -61,6 +64,7 @@
   letter-spacing: 0.38em;
   font-size: 0.85rem;
   color: var(--ghostnet-accent);
+  font-family: var(--ghostnet-matrix-font);
 }
 
 .title {
@@ -69,6 +73,7 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ghostnet-ink);
+  text-shadow: 0 0 32px rgba(93, 46, 255, 0.35);
 }
 
 .subtitle {
@@ -76,15 +81,16 @@
   color: var(--ghostnet-muted);
   font-size: 1.1rem;
   line-height: 1.7;
+  max-width: 64ch;
 }
 
 .statusCard {
-  background: linear-gradient(160deg, rgba(216, 180, 254, 0.14), rgba(5, 8, 13, 0.65));
+  background: linear-gradient(160deg, rgba(42, 14, 130, 0.88), rgba(13, 11, 26, 0.7));
   border: 1px solid var(--ghostnet-panel-border);
   border-radius: 1rem;
   padding: 1.25rem 1.5rem;
   color: var(--ghostnet-ink);
-  box-shadow: 0 1.5rem 3.5rem rgba(5, 8, 13, 0.65);
+  box-shadow: 0 1.5rem 3.5rem rgba(13, 11, 26, 0.75), 0 0 32px rgba(93, 46, 255, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -93,8 +99,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 15% 20%, rgba(216, 180, 254, 0.26), transparent 55%);
-  opacity: 0.75;
+  background: radial-gradient(circle at 15% 20%, rgba(93, 46, 255, 0.3), transparent 55%);
+  opacity: 0.7;
   pointer-events: none;
 }
 
@@ -103,7 +109,8 @@
   font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.22em;
-  color: var(--ghostnet-muted);
+  color: var(--ghostnet-accent);
+  font-family: var(--ghostnet-matrix-font);
 }
 
 .metaList {
@@ -131,11 +138,12 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--ghostnet-subdued);
+  font-family: var(--ghostnet-matrix-font);
 }
 
 .metaValue {
   font-size: 1.05rem;
-  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  font-family: var(--ghostnet-matrix-font);
   color: var(--ghostnet-ink);
 }
 
@@ -207,10 +215,10 @@
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle at 20% 20%, rgba(93, 46, 255, 0.32), transparent 65%),
-    radial-gradient(circle at 80% 15%, rgba(41, 243, 195, 0.18), transparent 60%),
-    rgba(5, 8, 13, 0.96);
-  backdrop-filter: blur(14px) saturate(1.1);
+    radial-gradient(circle at 18% 18%, rgba(93, 46, 255, 0.32), transparent 65%),
+    radial-gradient(circle at 78% 12%, rgba(41, 243, 195, 0.2), transparent 60%),
+    rgba(13, 11, 26, 0.95);
+  backdrop-filter: blur(18px) saturate(1.1);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -223,13 +231,13 @@
   inset: 0;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(93, 46, 255, 0.12) 0,
-    rgba(93, 46, 255, 0.12) 2px,
+    rgba(93, 46, 255, 0.16) 0,
+    rgba(93, 46, 255, 0.16) 2px,
     rgba(13, 11, 26, 0) 2px,
     rgba(13, 11, 26, 0) 6px
   );
   mix-blend-mode: screen;
-  opacity: 0.65;
+  opacity: 0.7;
   pointer-events: none;
   animation: ghostnetStartupScan 2.7s linear infinite;
 }
@@ -238,7 +246,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, rgba(5, 8, 13, 0.65), transparent 55%);
+  background: linear-gradient(120deg, rgba(13, 11, 26, 0.6), transparent 55%);
   pointer-events: none;
 }
 
@@ -256,9 +264,9 @@
   gap: 1.75rem;
   padding: 2.75rem 3.25rem;
   border-radius: 1.75rem;
-  border: 1px solid rgba(140, 92, 255, 0.4);
-  background: linear-gradient(180deg, rgba(13, 11, 26, 0.85), rgba(13, 11, 26, 0.7));
-  box-shadow: 0 40px 80px rgba(5, 8, 13, 0.85), 0 0 45px rgba(93, 46, 255, 0.25);
+  border: 1px solid rgba(140, 92, 255, 0.45);
+  background: linear-gradient(180deg, rgba(28, 22, 51, 0.92), rgba(13, 11, 26, 0.78));
+  box-shadow: 0 40px 90px rgba(13, 11, 26, 0.85), 0 0 60px rgba(93, 46, 255, 0.32);
   text-align: center;
   max-width: min(640px, 92vw);
 }
@@ -269,18 +277,19 @@
   gap: 0.65rem;
   padding: 0.45rem 0.95rem;
   border-radius: 999px;
-  border: 1px solid rgba(140, 92, 255, 0.45);
-  background: rgba(93, 46, 255, 0.18);
-  color: #f5f1ff;
+  border: 1px solid rgba(140, 92, 255, 0.55);
+  background: rgba(93, 46, 255, 0.26);
+  color: var(--ghostnet-ink);
   font-size: 0.75rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
+  font-family: var(--ghostnet-matrix-font);
 }
 
 .startupSpinnerBadge .icon {
   font-size: 1.05rem;
-  color: #29f3c3;
-  text-shadow: 0 0 12px rgba(41, 243, 195, 0.45);
+  color: var(--ghostnet-success);
+  text-shadow: 0 0 12px rgba(41, 243, 195, 0.55);
 }
 
 .startupSpinnerCore {
@@ -288,12 +297,12 @@
   width: min(20rem, 68vw);
   aspect-ratio: 1 / 1;
   border-radius: 50%;
-  border: 1px solid rgba(140, 92, 255, 0.4);
+  border: 1px solid rgba(140, 92, 255, 0.45);
   background:
-    radial-gradient(circle at 50% 35%, rgba(93, 46, 255, 0.42), rgba(93, 46, 255, 0.05) 65%),
-    radial-gradient(circle at 50% 65%, rgba(41, 243, 195, 0.28), rgba(41, 243, 195, 0.05) 70%),
-    rgba(10, 13, 23, 0.85);
-  box-shadow: inset 0 0 45px rgba(93, 46, 255, 0.28), 0 0 55px rgba(41, 243, 195, 0.25);
+    radial-gradient(circle at 50% 30%, rgba(93, 46, 255, 0.55), rgba(93, 46, 255, 0.08) 68%),
+    radial-gradient(circle at 48% 70%, rgba(41, 243, 195, 0.32), rgba(41, 243, 195, 0.06) 70%),
+    rgba(13, 11, 26, 0.88);
+  box-shadow: inset 0 0 55px rgba(93, 46, 255, 0.32), 0 0 65px rgba(41, 243, 195, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -356,8 +365,8 @@
   padding: 0.4rem;
   border-radius: 999px;
   background: rgba(93, 46, 255, 0.24);
-  border: 1px solid rgba(140, 92, 255, 0.35);
-  box-shadow: 0 0 20px rgba(41, 243, 195, 0.35);
+  border: 1px solid rgba(140, 92, 255, 0.4);
+  box-shadow: 0 0 24px rgba(41, 243, 195, 0.35);
   animation: ghostnetStartupPulse 2.6s ease-in-out infinite;
 }
 
@@ -374,8 +383,8 @@
   width: 6rem;
   height: 6rem;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(93, 46, 255, 0.35), rgba(93, 46, 255, 0));
-  box-shadow: inset 0 0 25px rgba(93, 46, 255, 0.45);
+  background: radial-gradient(circle, rgba(93, 46, 255, 0.38), rgba(93, 46, 255, 0));
+  box-shadow: inset 0 0 28px rgba(93, 46, 255, 0.45);
   animation: ghostnetStartupGlyph 3.4s ease-in-out infinite;
 }
 
@@ -391,8 +400,8 @@
 .startupSpinnerSymbol {
   position: absolute;
   font-size: 2.75rem;
-  color: #29f3c3;
-  text-shadow: 0 0 18px rgba(41, 243, 195, 0.6);
+  color: var(--ghostnet-success);
+  text-shadow: 0 0 18px rgba(41, 243, 195, 0.65);
   animation: ghostnetStartupGlitch 1.4s steps(2, end) infinite;
 }
 
@@ -407,13 +416,16 @@
   font-size: 1.15rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #f5f1ff;
+  color: var(--ghostnet-ink);
+  font-family: var(--ghostnet-matrix-font);
+  text-shadow: 0 0 20px rgba(93, 46, 255, 0.45);
 }
 
 .startupSpinnerSubline {
   margin: 0;
   font-size: 0.95rem;
-  color: rgba(245, 241, 255, 0.72);
+  color: rgba(245, 241, 255, 0.78);
+  font-family: var(--ghostnet-matrix-font);
 }
 
 .startupSpinnerTelemetry {
@@ -431,10 +443,10 @@
   gap: 0.75rem;
   align-items: center;
   padding: 0.65rem 0.85rem;
-  background: rgba(13, 11, 26, 0.85);
+  background: rgba(13, 11, 26, 0.88);
   border-radius: 0.85rem;
   border: 1px solid rgba(140, 92, 255, 0.25);
-  box-shadow: inset 0 0 18px rgba(93, 46, 255, 0.18);
+  box-shadow: inset 0 0 20px rgba(93, 46, 255, 0.2);
 }
 
 .startupSpinnerTelemetryIcon {
@@ -446,9 +458,9 @@
   border-radius: 50%;
   border: 1px solid rgba(41, 243, 195, 0.4);
   background: rgba(41, 243, 195, 0.12);
-  color: #29f3c3;
+  color: var(--ghostnet-success);
   font-size: 1rem;
-  text-shadow: 0 0 12px rgba(41, 243, 195, 0.5);
+  text-shadow: 0 0 12px rgba(41, 243, 195, 0.55);
 }
 
 .startupSpinnerTelemetryLabel {
@@ -456,13 +468,16 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgba(245, 241, 255, 0.72);
+  font-family: var(--ghostnet-matrix-font);
 }
 
 .startupSpinnerTelemetryValue {
-  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  font-family: var(--ghostnet-matrix-font);
   font-size: 0.9rem;
-  color: #f5f1ff;
-  text-shadow: 0 0 10px rgba(93, 46, 255, 0.45);
+  color: var(--ghostnet-ink);
+  text-shadow: 0 0 16px rgba(93, 46, 255, 0.4);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 @keyframes ghostnetStartupScan {
@@ -578,7 +593,7 @@
   gap: 1.25rem;
   overflow: hidden;
   white-space: nowrap;
-  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  font-family: var(--ghostnet-matrix-font);
   font-size: 0.85rem;
 }
 

@@ -3,6 +3,9 @@ import { sendEvent, eventListener } from 'lib/socket'
 import { SettingsNavItems } from 'lib/navigation-items'
 import packageJson from '../../../package.json'
 
+const GHOSTNET_ALWAYS_SHOW_HANDSHAKE_KEY = 'ghostnetAlwaysShowHandshake'
+const GHOSTNET_STARTUP_HANDSHAKE_SESSION_KEY = 'ghostnet.session.startupSpinner.v1'
+
 function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPanel = 'Theme' }) {
   const [activeSettingsPanel, setActiveSettingsPanel] = useState(defaultActiveSettingsPanel)
 
@@ -52,11 +55,13 @@ function GhostnetSettings () {
   const patreonUrl = 'https://www.patreon.com/artieghostnet'
   const patreonWindowFeatures = 'noopener,noreferrer'
   const [useMockData, setUseMockData] = useState(false)
+  const [alwaysShowHandshake, setAlwaysShowHandshake] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setUseMockData(window.localStorage.getItem('ghostnetUseMockData') === 'true')
+      setAlwaysShowHandshake(window.localStorage.getItem(GHOSTNET_ALWAYS_SHOW_HANDSHAKE_KEY) === 'true')
     }
   }, [])
 
@@ -64,6 +69,24 @@ function GhostnetSettings () {
     e.preventDefault()
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('ghostnetUseMockData', useMockData ? 'true' : 'false')
+      window.localStorage.setItem(GHOSTNET_ALWAYS_SHOW_HANDSHAKE_KEY, alwaysShowHandshake ? 'true' : 'false')
+      try {
+        if (alwaysShowHandshake) {
+          window.sessionStorage.removeItem(GHOSTNET_STARTUP_HANDSHAKE_SESSION_KEY)
+        } else {
+          window.sessionStorage.setItem(GHOSTNET_STARTUP_HANDSHAKE_SESSION_KEY, 'seen')
+        }
+      } catch (err) {
+        // Ignore session storage restrictions
+      }
+      window.dispatchEvent(new CustomEvent('ghostnet:startupHandshake:preferenceChanged', {
+        detail: { alwaysShowHandshake }
+      }))
+      if (alwaysShowHandshake) {
+        window.dispatchEvent(new CustomEvent('ghostnet:startupHandshake:play', {
+          detail: { source: 'settings' }
+        }))
+      }
       setSaved(true)
       setTimeout(() => setSaved(false), 1500)
     }
@@ -82,6 +105,16 @@ function GhostnetSettings () {
           />
           <span>
             Enable Trade Route Layout Sandbox (use mock data)
+          </span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.75rem', fontSize: '1rem' }}>
+          <input
+            type='checkbox'
+            checked={alwaysShowHandshake}
+            onChange={event => setAlwaysShowHandshake(event.target.checked)}
+          />
+          <span>
+            Always display GhostNet ↔ ATLAS handshake sequence
           </span>
         </label>
         <button type='submit' style={{ fontSize: '1.1rem' }}>Save</button>
