@@ -21,3 +21,7 @@
 .ghostnet-title-morph__char--space {
   width: 1ch;
 }
+
+.ghostnet-title-morph--assimilated .ghostnet-title-morph__char {
+  color: #5D2EFF;
+}

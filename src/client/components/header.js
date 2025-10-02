@@ -9,6 +9,8 @@ import { initiateGhostnetAssimilation, isGhostnetAssimilationActive, GHOSTNET_AS
 
 const ORIGINAL_TITLE = 'ICARUS TERMINAL'
 const TARGET_TITLE = 'GHOSTNET-ATLAS'
+const TARGET_TITLE_PADDED = TARGET_TITLE.padEnd(ORIGINAL_TITLE.length, ' ')
+const getTargetTitleChars = () => TARGET_TITLE_PADDED.split('')
 const TITLE_PREFIX_LENGTH = 7
 const TITLE_MIN_WIDTH = `${ORIGINAL_TITLE.length}ch`
 const TITLE_GLYPHS = ['Λ', 'Ξ', 'Ψ', 'Ø', 'Σ', '✦', '✧', '☍', '⌁', '⌖', '◬', '◈', '★', '✶', '⋆']
@@ -51,6 +53,7 @@ export default function Header ({ connected, active }) {
   const [notificationsVisible, setNotificationsVisible] = useState(socketOptions.notifications)
   const [settingsVisible, setSettingsVisible] = useState(false)
   const [titleChars, setTitleChars] = useState(ORIGINAL_TITLE.split(''))
+  const [titleAssimilated, setTitleAssimilated] = useState(false)
   const titleAnimationState = useRef({ running: false, completed: false })
   const titleAnimationTimeouts = useRef([])
 
@@ -64,7 +67,7 @@ export default function Header ({ connected, active }) {
     if (titleAnimationState.current.running || titleAnimationState.current.completed) return
     clearTitleAnimationTimeouts()
     titleAnimationState.current.running = true
-    const targetChars = TARGET_TITLE.padEnd(ORIGINAL_TITLE.length, ' ').split('')
+    const targetChars = getTargetTitleChars()
     const totalChars = ORIGINAL_TITLE.length
     const stepDelay = 180
     const glyphDuration = 120
@@ -108,6 +111,7 @@ export default function Header ({ connected, active }) {
       setTitleChars(targetChars)
       titleAnimationState.current.running = false
       titleAnimationState.current.completed = true
+      setTitleAssimilated(true)
     }, (totalChars - 1) * stepDelay + glyphDuration + 200)
     titleAnimationTimeouts.current.push(completionTimeout)
   }, [clearTitleAnimationTimeouts])
@@ -175,6 +179,16 @@ export default function Header ({ connected, active }) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
+    try {
+      if (window.sessionStorage && window.sessionStorage.getItem('ghostnet.assimilationArrival')) {
+        const targetChars = getTargetTitleChars()
+        setTitleChars(targetChars)
+        titleAnimationState.current.completed = true
+        setTitleAssimilated(true)
+      }
+    } catch (err) {
+      // Ignore storage read issues
+    }
     const handleAssimilation = () => {
       startTitleMorph()
     }
@@ -216,7 +230,7 @@ export default function Header ({ connected, active }) {
       <h1 className='text-info' style={{ padding: '.6rem 0 .25rem 3.75rem' }}>
         <i className='icon icarus-terminal-logo' style={{ position: 'absolute', fontSize: '3rem', left: 0 }} />
         <span
-          className='ghostnet-title-morph'
+          className={['ghostnet-title-morph', titleAssimilated ? 'ghostnet-title-morph--assimilated' : ''].filter(Boolean).join(' ')}
           aria-label={accessibleTitle}
           style={{ minWidth: TITLE_MIN_WIDTH }}
         >
