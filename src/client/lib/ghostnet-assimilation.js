@@ -12,10 +12,12 @@ const ARRIVAL_FLAG_KEY = 'ghostnet.assimilationArrival'
 const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'])
-const ASSIMILATION_TIME_CAP_MS = 8000
 const FORCED_FADE_CLEANUP_DELAY = 720
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
+const MAX_ACTIVE_TARGETS = 160
+const MAX_CHARACTER_ANIMATIONS = 3200
 let effectDurationMs = DEFAULT_EFFECT_DURATION
+let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
 function clearJitterTimer (element) {
   if (!element) return
@@ -89,6 +91,7 @@ function shuffle (array) {
 
 function upgradeElement (element, baseDelay) {
   if (!element || element.dataset.ghostnetAssimilated === 'true') return
+  if (remainingCharacterAnimations <= 0) return
 
   element.dataset.ghostnetAssimilated = 'true'
   element.classList.add('ghostnet-assimilation-target')
@@ -111,12 +114,17 @@ function upgradeElement (element, baseDelay) {
   }
 
   textNodes.forEach((node) => {
+    if (remainingCharacterAnimations <= 0) {
+      return
+    }
     const original = node.textContent
     const spanWrapper = document.createElement('span')
     spanWrapper.className = 'ghostnet-assimilation-text'
     const fragment = document.createDocumentFragment()
-    for (let i = 0; i < original.length; i++) {
-      const char = original[i]
+    const characters = Array.from(original)
+    const allowedCharacters = Math.min(characters.length, remainingCharacterAnimations)
+    for (let i = 0; i < allowedCharacters; i++) {
+      const char = characters[i]
       const charSpan = document.createElement('span')
       charSpan.className = 'ghostnet-assimilation-char'
       if (char === ' ') {
@@ -128,7 +136,14 @@ function upgradeElement (element, baseDelay) {
       fragment.appendChild(charSpan)
     }
     spanWrapper.appendChild(fragment)
+
+    if (allowedCharacters < characters.length) {
+      const remainder = characters.slice(allowedCharacters).join('')
+      spanWrapper.appendChild(document.createTextNode(remainder))
+    }
+
     node.parentNode.replaceChild(spanWrapper, node)
+    remainingCharacterAnimations -= allowedCharacters
   })
 
   const safeWindow = Math.max(180, effectDurationMs - baseDelay - 120)
@@ -167,7 +182,8 @@ function buildElementList () {
 }
 
 function beginAssimilationEffect () {
-  const targets = buildElementList()
+  const allTargets = buildElementList()
+  const targets = allTargets.slice(0, MAX_ACTIVE_TARGETS)
   assimilationStartTime = performance.now()
   document.body.classList.add('ghostnet-assimilation-mode')
 
@@ -217,7 +233,8 @@ export function initiateGhostnetAssimilation (callback) {
   const sanitizedDuration = Number.isFinite(configuredDurationMs) && configuredDurationMs > 0
     ? configuredDurationMs
     : DEFAULT_EFFECT_DURATION
-  effectDurationMs = Math.min(sanitizedDuration, ASSIMILATION_TIME_CAP_MS)
+  effectDurationMs = sanitizedDuration
+  remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
   assimilationInProgress = true
   if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
@@ -262,7 +279,7 @@ export function initiateGhostnetAssimilation (callback) {
   }
 
   const completionTimer = window.setTimeout(() => finalize(false), effectDurationMs)
-  const capTimer = window.setTimeout(() => finalize(true), ASSIMILATION_TIME_CAP_MS)
+  const capTimer = window.setTimeout(() => finalize(true), effectDurationMs)
 }
 
 export function isGhostnetAssimilationActive () {
