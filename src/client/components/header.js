@@ -6,7 +6,7 @@ import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
 import { initiateGhostnetAssimilation, isGhostnetAssimilationActive, GHOSTNET_ASSIMILATION_EVENT } from 'lib/ghostnet-assimilation'
-import { isGhostnetNavUnlocked, setGhostnetNavUnlocked } from 'lib/ghostnet-settings'
+import { isGhostnetNavUnlocked } from 'lib/ghostnet-settings'
 
 const ORIGINAL_TITLE = 'ICARUS TERMINAL'
 const TARGET_TITLE = 'GHOSTNET-ATLAS'
@@ -57,42 +57,51 @@ const createNavButtonGlitchProfile = ({ outDelay, outDuration, inDelay, inDurati
   const jitterLoop = Math.round(randomBetween(emphasizeUnlock ? 180 : 220, emphasizeUnlock ? 260 : 360))
   const ghostLoop = Math.round(randomBetween(emphasizeUnlock ? 280 : 320, emphasizeUnlock ? 440 : 520))
   const ghostOpacity = randomBetween(0.28, emphasizeUnlock ? 0.6 : 0.5).toFixed(2)
-  const shiftX = formatPx(randomBetween(-6, 6))
-  const shiftY = formatPx(randomBetween(-6, 5))
-  const tilt = `${randomBetween(-2.4, 2.4).toFixed(2)}deg`
+  const shiftX = formatPx(randomBetween(-8, 8))
+  const shiftY = formatPx(randomBetween(-2.5, 2.5))
+  const tilt = `${randomBetween(-2.1, 2.1).toFixed(2)}deg`
   const glowRadius = `${randomBetween(emphasizeUnlock ? 2.1 : 1.7, emphasizeUnlock ? 3.05 : 2.5).toFixed(2)}rem`
   const glowOpacity = randomBetween(emphasizeUnlock ? 0.6 : 0.45, emphasizeUnlock ? 0.88 : 0.68).toFixed(2)
   const saturation = randomBetween(emphasizeUnlock ? 1.22 : 1.12, emphasizeUnlock ? 1.46 : 1.36).toFixed(2)
 
-  const outScaleA = randomBetween(0.88, 0.96).toFixed(3)
-  const outScaleB = randomBetween(0.78, 0.9).toFixed(3)
-  const outScaleC = randomBetween(0.68, 0.82).toFixed(3)
-  const outScaleD = randomBetween(0.62, 0.76).toFixed(3)
-  const outTranslateA = formatPx(randomBetween(-12, -4))
-  const outTranslateB = formatPx(randomBetween(-10, -2))
-  const outTranslateC = formatPx(randomBetween(-15, -5))
-  const outTranslateD = formatPx(randomBetween(-18, -8))
+  const horizontalBias = Math.random() > 0.5 ? 1 : -1
+  const outScaleA = randomBetween(0.9, 0.97).toFixed(3)
+  const outScaleB = randomBetween(0.82, 0.92).toFixed(3)
+  const outScaleC = randomBetween(0.72, 0.86).toFixed(3)
+  const outScaleD = randomBetween(0.64, 0.8).toFixed(3)
+  const outTranslateXA = formatPx(randomBetween(6, 18) * horizontalBias)
+  const outTranslateXB = formatPx(randomBetween(10, 22) * horizontalBias)
+  const outTranslateXC = formatPx(randomBetween(18, 32) * horizontalBias)
+  const outTranslateXD = formatPx(randomBetween(26, 38) * horizontalBias)
+  const outTranslateYA = formatPx(randomBetween(-2.5, 2.5))
+  const outTranslateYB = formatPx(randomBetween(-2, 2))
+  const outTranslateYC = formatPx(randomBetween(-1.5, 1.5))
+  const outTranslateYD = formatPx(randomBetween(-1, 1))
   const outOpacityA = randomBetween(0.25, 0.45).toFixed(2)
   const outOpacityB = randomBetween(0.55, 0.88).toFixed(2)
   const outOpacityC = randomBetween(0.18, 0.42).toFixed(2)
 
-  const inScaleStart = randomBetween(0.52, 0.68).toFixed(3)
-  const inScaleMidA = randomBetween(0.68, 0.86).toFixed(3)
-  const inScaleMidB = randomBetween(0.82, 0.98).toFixed(3)
-  const inScaleMidC = randomBetween(0.72, 0.94).toFixed(3)
-  const inTranslateStart = formatPx(randomBetween(9, 18))
-  const inTranslateA = formatPx(randomBetween(3, 11))
-  const inTranslateB = formatPx(randomBetween(-3, 6))
-  const inTranslateC = formatPx(randomBetween(-7, 2))
+  const inScaleStart = randomBetween(0.6, 0.74).toFixed(3)
+  const inScaleMidA = randomBetween(0.75, 0.9).toFixed(3)
+  const inScaleMidB = randomBetween(0.88, 1.01).toFixed(3)
+  const inScaleMidC = randomBetween(0.8, 0.96).toFixed(3)
+  const inTranslateStartX = formatPx(randomBetween(-26, 26))
+  const inTranslateAX = formatPx(randomBetween(-18, 18))
+  const inTranslateBX = formatPx(randomBetween(-9, 12))
+  const inTranslateCX = formatPx(randomBetween(-6, 8))
+  const inTranslateStartY = formatPx(randomBetween(-2.2, 2.2))
+  const inTranslateAY = formatPx(randomBetween(-1.8, 1.8))
+  const inTranslateBY = formatPx(randomBetween(-1.2, 1.2))
+  const inTranslateCY = formatPx(randomBetween(-0.8, 0.8))
 
-  const clipStartTop = formatPercent(randomBetween(44, 58))
-  const clipStartBottom = formatPercent(randomBetween(34, 48))
-  const clipMidTopA = formatPercent(randomBetween(0, 6))
-  const clipMidBottomA = formatPercent(randomBetween(28, 44))
+  const clipStartTop = formatPercent(randomBetween(38, 56))
+  const clipStartBottom = formatPercent(randomBetween(32, 48))
+  const clipMidTopA = formatPercent(randomBetween(0, 8))
+  const clipMidBottomA = formatPercent(randomBetween(26, 44))
   const clipMidTopB = formatPercent(randomBetween(6, 18))
-  const clipMidBottomB = formatPercent(clamp(randomBetween(-2, 14), 0, 50))
-  const clipMidTopC = formatPercent(randomBetween(0, 12))
-  const clipMidBottomC = formatPercent(randomBetween(32, 54))
+  const clipMidBottomB = formatPercent(clamp(randomBetween(-2, 16), 0, 50))
+  const clipMidTopC = formatPercent(randomBetween(0, 14))
+  const clipMidBottomC = formatPercent(randomBetween(30, 52))
 
   return {
     outDelay,
@@ -112,10 +121,14 @@ const createNavButtonGlitchProfile = ({ outDelay, outDuration, inDelay, inDurati
     outScaleB,
     outScaleC,
     outScaleD,
-    outTranslateA,
-    outTranslateB,
-    outTranslateC,
-    outTranslateD,
+    outTranslateXA,
+    outTranslateXB,
+    outTranslateXC,
+    outTranslateXD,
+    outTranslateYA,
+    outTranslateYB,
+    outTranslateYC,
+    outTranslateYD,
     outOpacityA,
     outOpacityB,
     outOpacityC,
@@ -123,10 +136,14 @@ const createNavButtonGlitchProfile = ({ outDelay, outDuration, inDelay, inDurati
     inScaleMidA,
     inScaleMidB,
     inScaleMidC,
-    inTranslateStart,
-    inTranslateA,
-    inTranslateB,
-    inTranslateC,
+    inTranslateStartX,
+    inTranslateAX,
+    inTranslateBX,
+    inTranslateCX,
+    inTranslateStartY,
+    inTranslateAY,
+    inTranslateBY,
+    inTranslateCY,
     clipStartTop,
     clipStartBottom,
     clipMidTopA,
@@ -190,10 +207,14 @@ const applyNavGlitchOut = (style, profile) => {
   style['--ghostnet-nav-glitch-out-scale-b'] = profile.outScaleB
   style['--ghostnet-nav-glitch-out-scale-c'] = profile.outScaleC
   style['--ghostnet-nav-glitch-out-scale-d'] = profile.outScaleD
-  style['--ghostnet-nav-glitch-out-translate-a'] = profile.outTranslateA
-  style['--ghostnet-nav-glitch-out-translate-b'] = profile.outTranslateB
-  style['--ghostnet-nav-glitch-out-translate-c'] = profile.outTranslateC
-  style['--ghostnet-nav-glitch-out-translate-d'] = profile.outTranslateD
+  style['--ghostnet-nav-glitch-out-translate-x-a'] = profile.outTranslateXA
+  style['--ghostnet-nav-glitch-out-translate-x-b'] = profile.outTranslateXB
+  style['--ghostnet-nav-glitch-out-translate-x-c'] = profile.outTranslateXC
+  style['--ghostnet-nav-glitch-out-translate-x-d'] = profile.outTranslateXD
+  style['--ghostnet-nav-glitch-out-translate-y-a'] = profile.outTranslateYA
+  style['--ghostnet-nav-glitch-out-translate-y-b'] = profile.outTranslateYB
+  style['--ghostnet-nav-glitch-out-translate-y-c'] = profile.outTranslateYC
+  style['--ghostnet-nav-glitch-out-translate-y-d'] = profile.outTranslateYD
   style['--ghostnet-nav-glitch-out-opacity-a'] = profile.outOpacityA
   style['--ghostnet-nav-glitch-out-opacity-b'] = profile.outOpacityB
   style['--ghostnet-nav-glitch-out-opacity-c'] = profile.outOpacityC
@@ -208,10 +229,14 @@ const applyNavGlitchIn = (style, profile) => {
   style['--ghostnet-nav-glitch-in-scale-mid-a'] = profile.inScaleMidA
   style['--ghostnet-nav-glitch-in-scale-mid-b'] = profile.inScaleMidB
   style['--ghostnet-nav-glitch-in-scale-mid-c'] = profile.inScaleMidC
-  style['--ghostnet-nav-glitch-in-translate-start'] = profile.inTranslateStart
-  style['--ghostnet-nav-glitch-in-translate-a'] = profile.inTranslateA
-  style['--ghostnet-nav-glitch-in-translate-b'] = profile.inTranslateB
-  style['--ghostnet-nav-glitch-in-translate-c'] = profile.inTranslateC
+  style['--ghostnet-nav-glitch-in-translate-start-x'] = profile.inTranslateStartX
+  style['--ghostnet-nav-glitch-in-translate-x-a'] = profile.inTranslateAX
+  style['--ghostnet-nav-glitch-in-translate-x-b'] = profile.inTranslateBX
+  style['--ghostnet-nav-glitch-in-translate-x-c'] = profile.inTranslateCX
+  style['--ghostnet-nav-glitch-in-translate-start-y'] = profile.inTranslateStartY
+  style['--ghostnet-nav-glitch-in-translate-y-a'] = profile.inTranslateAY
+  style['--ghostnet-nav-glitch-in-translate-y-b'] = profile.inTranslateBY
+  style['--ghostnet-nav-glitch-in-translate-y-c'] = profile.inTranslateCY
   style['--ghostnet-nav-glitch-in-clip-start-top'] = profile.clipStartTop
   style['--ghostnet-nav-glitch-in-clip-start-bottom'] = profile.clipStartBottom
   style['--ghostnet-nav-glitch-in-clip-mid-top-a'] = profile.clipMidTopA
@@ -385,7 +410,6 @@ export default function Header ({ connected, active }) {
       } else {
         setNavRevealState('complete')
       }
-      setGhostnetNavUnlocked(true)
       setNavUnlocked(true)
       setPirateStatus('success')
       registerPirateTimeout(() => {

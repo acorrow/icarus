@@ -293,10 +293,14 @@
   --ghostnet-nav-glitch-out-scale-b: 0.85;
   --ghostnet-nav-glitch-out-scale-c: 0.74;
   --ghostnet-nav-glitch-out-scale-d: 0.68;
-  --ghostnet-nav-glitch-out-translate-a: -6px;
-  --ghostnet-nav-glitch-out-translate-b: -3px;
-  --ghostnet-nav-glitch-out-translate-c: -10px;
-  --ghostnet-nav-glitch-out-translate-d: -14px;
+  --ghostnet-nav-glitch-out-translate-x-a: -6px;
+  --ghostnet-nav-glitch-out-translate-x-b: -12px;
+  --ghostnet-nav-glitch-out-translate-x-c: -20px;
+  --ghostnet-nav-glitch-out-translate-x-d: -28px;
+  --ghostnet-nav-glitch-out-translate-y-a: 0px;
+  --ghostnet-nav-glitch-out-translate-y-b: 0px;
+  --ghostnet-nav-glitch-out-translate-y-c: 0px;
+  --ghostnet-nav-glitch-out-translate-y-d: 0px;
   --ghostnet-nav-glitch-out-opacity-a: 0.35;
   --ghostnet-nav-glitch-out-opacity-b: 0.82;
   --ghostnet-nav-glitch-out-opacity-c: 0.2;
@@ -305,10 +309,14 @@
   --ghostnet-nav-glitch-in-scale-mid-a: 0.74;
   --ghostnet-nav-glitch-in-scale-mid-b: 0.92;
   --ghostnet-nav-glitch-in-scale-mid-c: 0.84;
-  --ghostnet-nav-glitch-in-translate-start: 12px;
-  --ghostnet-nav-glitch-in-translate-a: 6px;
-  --ghostnet-nav-glitch-in-translate-b: 2px;
-  --ghostnet-nav-glitch-in-translate-c: -2px;
+  --ghostnet-nav-glitch-in-translate-start-x: 0px;
+  --ghostnet-nav-glitch-in-translate-x-a: 0px;
+  --ghostnet-nav-glitch-in-translate-x-b: 0px;
+  --ghostnet-nav-glitch-in-translate-x-c: 0px;
+  --ghostnet-nav-glitch-in-translate-start-y: 0px;
+  --ghostnet-nav-glitch-in-translate-y-a: 0px;
+  --ghostnet-nav-glitch-in-translate-y-b: 0px;
+  --ghostnet-nav-glitch-in-translate-y-c: 0px;
   --ghostnet-nav-glitch-in-clip-start-top: 52%;
   --ghostnet-nav-glitch-in-clip-start-bottom: 42%;
   --ghostnet-nav-glitch-in-clip-mid-top-a: 0%;
@@ -333,10 +341,8 @@
 .ghostnet-nav-button--glitch-out {
   --ghostnet-assimilation-glow-radius: 1.9rem;
   --ghostnet-assimilation-glow-opacity: 0.5;
-  --ghostnet-assimilation-shift-x: 4px;
-  --ghostnet-assimilation-shift-y: -6px;
   --ghostnet-assimilation-tilt: -1.6deg;
-  transform: scale(0.94) translateY(0);
+  transform: scale(0.94) translate3d(0, 0, 0);
   animation:
     ghostnet-nav-button-glitch-out var(--ghostnet-nav-glitch-out-duration, 720ms) steps(2, end) forwards,
     ghostnet-assimilation-jitter var(--ghostnet-assimilation-loop, 280ms) steps(2, end) infinite;
@@ -350,11 +356,13 @@
   filter: blur(2.4px) saturate(0.72) hue-rotate(-10deg);
   clip-path: inset(var(--ghostnet-nav-glitch-in-clip-start-top, 52%) 0 var(--ghostnet-nav-glitch-in-clip-start-bottom, 42%) 0);
   transform: scale(var(--ghostnet-nav-glitch-in-scale-start, 0.6))
-    translateY(var(--ghostnet-nav-glitch-in-translate-start, 12px));
+    translate3d(
+      var(--ghostnet-nav-glitch-in-translate-start-x, 0px),
+      var(--ghostnet-nav-glitch-in-translate-start-y, 0px),
+      0
+    );
   --ghostnet-assimilation-glow-radius: 2.35rem;
   --ghostnet-assimilation-glow-opacity: 0.65;
-  --ghostnet-assimilation-shift-x: 3px;
-  --ghostnet-assimilation-shift-y: -4px;
   --ghostnet-assimilation-tilt: 1deg;
   animation:
     ghostnet-nav-button-glitch-in var(--ghostnet-nav-glitch-in-duration, 1150ms) cubic-bezier(0.3, 0.74, 0.24, 1.02) forwards,
@@ -380,31 +388,47 @@
   0% {
     opacity: 1;
     filter: none;
-    transform: scale(1) translateY(0);
+    transform: scale(1) translate3d(0, 0, 0);
   }
   18% {
     opacity: var(--ghostnet-nav-glitch-out-opacity-a, 0.35);
     filter: blur(1.4px) saturate(1.2);
     transform: scale(var(--ghostnet-nav-glitch-out-scale-a, 0.92))
-      translateY(var(--ghostnet-nav-glitch-out-translate-a, -6px));
+      translate3d(
+        var(--ghostnet-nav-glitch-out-translate-x-a, -6px),
+        var(--ghostnet-nav-glitch-out-translate-y-a, 0px),
+        0
+      );
   }
   36% {
     opacity: var(--ghostnet-nav-glitch-out-opacity-b, 0.82);
     filter: blur(0.6px) saturate(1.08);
     transform: scale(var(--ghostnet-nav-glitch-out-scale-b, 0.85))
-      translateY(var(--ghostnet-nav-glitch-out-translate-b, -3px));
+      translate3d(
+        var(--ghostnet-nav-glitch-out-translate-x-b, -12px),
+        var(--ghostnet-nav-glitch-out-translate-y-b, 0px),
+        0
+      );
   }
   58% {
     opacity: var(--ghostnet-nav-glitch-out-opacity-c, 0.2);
     filter: blur(1.8px) saturate(0.74) hue-rotate(-4deg);
     transform: scale(var(--ghostnet-nav-glitch-out-scale-c, 0.74))
-      translateY(var(--ghostnet-nav-glitch-out-translate-c, -10px));
+      translate3d(
+        var(--ghostnet-nav-glitch-out-translate-x-c, -20px),
+        var(--ghostnet-nav-glitch-out-translate-y-c, 0px),
+        0
+      );
   }
   100% {
     opacity: var(--ghostnet-nav-glitch-out-opacity-d, 0);
     filter: blur(2.6px) saturate(0.62) hue-rotate(-6deg);
     transform: scale(var(--ghostnet-nav-glitch-out-scale-d, 0.68))
-      translateY(var(--ghostnet-nav-glitch-out-translate-d, -14px));
+      translate3d(
+        var(--ghostnet-nav-glitch-out-translate-x-d, -28px),
+        var(--ghostnet-nav-glitch-out-translate-y-d, 0px),
+        0
+      );
   }
 }
 
@@ -416,7 +440,11 @@
       var(--ghostnet-nav-glitch-in-clip-start-top, 52%) 0 var(--ghostnet-nav-glitch-in-clip-start-bottom, 42%) 0
     );
     transform: scale(var(--ghostnet-nav-glitch-in-scale-start, 0.6))
-      translateY(var(--ghostnet-nav-glitch-in-translate-start, 12px));
+      translate3d(
+        var(--ghostnet-nav-glitch-in-translate-start-x, 0px),
+        var(--ghostnet-nav-glitch-in-translate-start-y, 0px),
+        0
+      );
   }
   24% {
     opacity: 0.45;
@@ -425,7 +453,11 @@
       var(--ghostnet-nav-glitch-in-clip-mid-top-a, 0%) 0 var(--ghostnet-nav-glitch-in-clip-mid-bottom-a, 38%) 0
     );
     transform: scale(var(--ghostnet-nav-glitch-in-scale-mid-a, 0.74))
-      translateY(var(--ghostnet-nav-glitch-in-translate-a, 6px));
+      translate3d(
+        var(--ghostnet-nav-glitch-in-translate-x-a, 0px),
+        var(--ghostnet-nav-glitch-in-translate-y-a, 0px),
+        0
+      );
   }
   46% {
     opacity: 0.88;
@@ -434,7 +466,11 @@
       var(--ghostnet-nav-glitch-in-clip-mid-top-b, 12%) 0 var(--ghostnet-nav-glitch-in-clip-mid-bottom-b, 0%) 0
     );
     transform: scale(var(--ghostnet-nav-glitch-in-scale-mid-b, 0.92))
-      translateY(var(--ghostnet-nav-glitch-in-translate-b, 2px));
+      translate3d(
+        var(--ghostnet-nav-glitch-in-translate-x-b, 0px),
+        var(--ghostnet-nav-glitch-in-translate-y-b, 0px),
+        0
+      );
   }
   64% {
     opacity: 0.6;
@@ -443,12 +479,16 @@
       var(--ghostnet-nav-glitch-in-clip-mid-top-c, 0%) 0 var(--ghostnet-nav-glitch-in-clip-mid-bottom-c, 50%) 0
     );
     transform: scale(var(--ghostnet-nav-glitch-in-scale-mid-c, 0.84))
-      translateY(var(--ghostnet-nav-glitch-in-translate-c, -2px));
+      translate3d(
+        var(--ghostnet-nav-glitch-in-translate-x-c, 0px),
+        var(--ghostnet-nav-glitch-in-translate-y-c, 0px),
+        0
+      );
   }
   100% {
     opacity: 1;
     filter: none;
     clip-path: inset(0);
-    transform: scale(1) translateY(0);
+    transform: scale(1) translate3d(0, 0, 0);
   }
 }
