@@ -2230,29 +2230,6 @@ function CommodityTradePanel () {
         </div>
 
         <div className={styles.dataTableContainer}>
-          <div className={styles.commodityDetailStickyHeader}>
-            <button type='button' className={styles.routeDetailBackButton} onClick={handleDetailClose}>
-              {String.fromCharCode(0x2190)} Back to Commodities
-            </button>
-            <div className={styles.commodityDetailHeading}>
-              <span className={styles.commodityDetailLabel}>Commodity Intel</span>
-              <div className={styles.commodityDetailTitle}>
-                {commodityName}
-                {commoditySymbol ? <span className={styles.commodityDetailSymbol}>({commoditySymbol})</span> : null}
-              </div>
-            </div>
-            <div className={styles.commodityDetailMeta}>
-              <div className={styles.commodityDetailMetaItem}>
-                <span className={styles.commodityDetailMetaLabel}>GHOSTNET Update</span>
-                <span className={styles.commodityDetailMetaValue}>{ghostnetUpdatedDisplay || '--'}</span>
-              </div>
-              <div className={styles.commodityDetailMetaItem}>
-                <span className={styles.commodityDetailMetaLabel}>Listings</span>
-                <span className={styles.commodityDetailMetaValue}>{listingsCountDisplay}</span>
-              </div>
-            </div>
-          </div>
-
           {detailListings.length > 0 ? (
             <table className={`${styles.dataTable} ${styles.dataTableFixed}`}>
               <colgroup>
@@ -2265,8 +2242,34 @@ function CommodityTradePanel () {
                 <col style={{ width: '10%' }} />
                 <col style={{ width: '8%' }} />
               </colgroup>
-              <thead>
-                <tr>
+              <thead className={styles.commodityDetailTableHead}>
+                <tr className={styles.commodityDetailHeaderRow}>
+                  <th colSpan='8' className={styles.commodityDetailHeaderCell}>
+                    <div className={styles.commodityDetailHeader}>
+                      <button type='button' className={styles.routeDetailBackButton} onClick={handleDetailClose}>
+                        {String.fromCharCode(0x2190)} Back to Commodities
+                      </button>
+                      <div className={styles.commodityDetailHeading}>
+                        <span className={styles.commodityDetailLabel}>Commodity Intel</span>
+                        <div className={styles.commodityDetailTitle}>
+                          {commodityName}
+                          {commoditySymbol ? <span className={styles.commodityDetailSymbol}>({commoditySymbol})</span> : null}
+                        </div>
+                      </div>
+                      <div className={styles.commodityDetailMeta}>
+                        <div className={styles.commodityDetailMetaItem}>
+                          <span className={styles.commodityDetailMetaLabel}>GHOSTNET Update</span>
+                          <span className={styles.commodityDetailMetaValue}>{ghostnetUpdatedDisplay || '--'}</span>
+                        </div>
+                        <div className={styles.commodityDetailMetaItem}>
+                          <span className={styles.commodityDetailMetaLabel}>Listings</span>
+                          <span className={styles.commodityDetailMetaValue}>{listingsCountDisplay}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                </tr>
+                <tr className={styles.commodityDetailColumnsRow}>
                   <th>Station</th>
                   <th>System</th>
                   <th>Pad</th>

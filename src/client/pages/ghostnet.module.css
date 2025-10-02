@@ -1026,28 +1026,42 @@
   color: #f5f1ff;
 }
 
-.commodityDetailStickyHeader {
+
+.commodityDetailTableHead {
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 6;
+}
+
+.dataTable thead tr.commodityDetailHeaderRow {
+  background: transparent;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+.commodityDetailHeaderCell {
+  padding: 0;
+  border: 0;
+}
+
+.commodityDetailHeader {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1.35rem;
-  padding: 1.15rem 1.6rem 1.25rem;
-  background: linear-gradient(135deg, rgba(35, 20, 68, 0.94), rgba(18, 10, 44, 0.92));
-  border-bottom: 1px solid rgba(140, 92, 255, 0.45);
-  box-shadow: 0 1rem 2.5rem rgba(5, 8, 13, 0.55);
-  border-radius: 1.25rem 1.25rem 1rem 1rem;
-  margin: -1px -1px 1.1rem;
+  gap: 1.1rem;
+  padding: 0.85rem 1.35rem 0.95rem;
+  background: linear-gradient(135deg, rgba(35, 20, 68, 0.94), rgba(18, 10, 44, 0.9));
+  border-bottom: 1px solid rgba(140, 92, 255, 0.38);
+  box-shadow: 0 0.85rem 2.35rem rgba(5, 8, 13, 0.52);
 }
+
 
 .commodityDetailHeading {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.3rem;
   min-width: 200px;
-  flex: 1 1 240px;
+  flex: 1 1 220px;
 }
 
 .commodityDetailLabel {
@@ -1074,33 +1088,41 @@
 .commodityDetailMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.65rem;
   margin-left: auto;
-  padding: 0.55rem 0.85rem;
-  border-radius: 0.9rem;
-  border: 1px solid rgba(140, 92, 255, 0.32);
-  background: rgba(24, 15, 54, 0.7);
-  box-shadow: inset 0 0 0 rgba(0, 0, 0, 0);
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(140, 92, 255, 0.28);
+  background: rgba(24, 15, 54, 0.68);
 }
 
 .commodityDetailMetaItem {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  min-width: 120px;
+  gap: 0.2rem;
+  min-width: 110px;
 }
 
 .commodityDetailMetaLabel {
   text-transform: uppercase;
   letter-spacing: 0.22em;
-  font-size: 0.58rem;
-  color: rgba(245, 241, 255, 0.62);
+  font-size: 0.55rem;
+  color: rgba(245, 241, 255, 0.6);
 }
 
 .commodityDetailMetaValue {
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: #f5f1ff;
+}
+
+.dataTable thead tr.commodityDetailColumnsRow {
+  background: var(--ghostnet-table-header);
+  border-bottom: 1px solid rgba(140, 92, 255, 0.45);
+}
+
+.dataTable thead tr.commodityDetailColumnsRow th {
+  padding: 0.7rem 1rem;
 }
 
 .routeDetailMetrics {
