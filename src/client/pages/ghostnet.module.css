@@ -35,6 +35,53 @@
   pointer-events: none;
 }
 
+.arrival {
+  animation: ghostnetArrivalSurface 4.2s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+}
+
+.arrival::before {
+  animation: ghostnetArrivalMesh 4.2s steps(3, end) forwards;
+}
+
+.arrival::after {
+  animation: ghostnetArrivalVignette 4.2s ease-out forwards;
+}
+
+.arrival .shell {
+  animation: ghostnetArrivalShell 4.1s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+
+.arrival .kicker,
+.arrival .title,
+.arrival .subtitle,
+.arrival .statusHeading,
+.arrival .metaLabel,
+.arrival .metaValue,
+.arrival .sectionHint,
+.arrival .ghostnetAlert,
+.arrival :global(.ghostnet-inline-accent),
+.arrival :global(.ghostnet-muted),
+.arrival :global(.ghostnet-accent) {
+  animation: ghostnetArrivalChromatic 4.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.arrival .statusCard {
+  animation: ghostnetArrivalStatusCard 4.2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
+}
+
+.arrival .sectionFrame,
+.arrival .sectionFrameElevated {
+  animation: ghostnetArrivalPanel 4.2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
+}
+
+.arrival .badge {
+  animation: ghostnetArrivalBadge 4.2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
+}
+
+.arrival .ghostnetTicker {
+  animation: ticker 24s linear infinite, ghostnetArrivalTicker 4s ease-out forwards;
+}
+
 .shell {
   position: relative;
   z-index: 1;
@@ -723,4 +770,264 @@
 .ghostnet :global(.ghostnet-inline-accent) {
   color: var(--ghostnet-accent);
   font-weight: 500;
+}
+
+@keyframes ghostnetArrivalSurface {
+  0% {
+    --ghostnet-bg: #150a02;
+    --ghostnet-panel: rgba(45, 23, 9, 0.92);
+    --ghostnet-panel-border: rgba(255, 173, 102, 0.6);
+    --ghostnet-ink: #ffe8c9;
+    --ghostnet-muted: rgba(255, 207, 156, 0.9);
+    --ghostnet-subdued: rgba(255, 173, 108, 0.72);
+    --ghostnet-accent: #ffb874;
+    --ghostnet-highlight: rgba(255, 173, 108, 0.38);
+    background: radial-gradient(circle at 20% 15%, rgba(255, 184, 116, 0.2), transparent 55%),
+      radial-gradient(circle at 85% 10%, rgba(255, 140, 92, 0.24), transparent 60%),
+      #120804;
+    filter: saturate(1.08) contrast(1.05) hue-rotate(-12deg);
+    transform: scale(1.01);
+  }
+  42% {
+    --ghostnet-bg: #0f0720;
+    --ghostnet-panel: rgba(22, 16, 40, 0.9);
+    --ghostnet-panel-border: rgba(228, 175, 255, 0.42);
+    --ghostnet-ink: #f6e9ff;
+    --ghostnet-muted: rgba(220, 198, 255, 0.78);
+    --ghostnet-subdued: rgba(178, 153, 255, 0.56);
+    --ghostnet-accent: #f0b8ff;
+    --ghostnet-highlight: rgba(216, 180, 254, 0.2);
+    background: radial-gradient(circle at 22% 18%, rgba(228, 175, 255, 0.2), transparent 55%),
+      radial-gradient(circle at 80% 12%, rgba(120, 192, 255, 0.16), transparent 60%),
+      #080711;
+    filter: saturate(1.12) contrast(1.02) hue-rotate(4deg);
+    transform: scale(1.006);
+  }
+  62% {
+    background: radial-gradient(circle at 24% 17%, rgba(228, 175, 255, 0.26), transparent 55%),
+      radial-gradient(circle at 78% 12%, rgba(120, 192, 255, 0.18), transparent 60%),
+      #0a0718;
+    filter: saturate(1.28) hue-rotate(10deg);
+    transform: scale(1.004) translate3d(-3px, 1px, 0);
+  }
+  72% {
+    background: radial-gradient(circle at 26% 19%, rgba(120, 192, 255, 0.22), transparent 55%),
+      radial-gradient(circle at 82% 14%, rgba(228, 175, 255, 0.28), transparent 60%),
+      #060611;
+    filter: saturate(0.92) hue-rotate(-6deg);
+    transform: scale(1.002) translate3d(2px, -1px, 0);
+  }
+  100% {
+    --ghostnet-bg: #05080d;
+    --ghostnet-panel: rgba(10, 15, 22, 0.88);
+    --ghostnet-panel-border: rgba(216, 180, 254, 0.28);
+    --ghostnet-ink: #d8e9ff;
+    --ghostnet-muted: #8da2bf;
+    --ghostnet-subdued: #6c7c92;
+    --ghostnet-accent: #d8b4fe;
+    --ghostnet-highlight: rgba(216, 180, 254, 0.12);
+    background: radial-gradient(circle at 20% 15%, rgba(216, 180, 254, 0.14), transparent 55%),
+      radial-gradient(circle at 85% 10%, rgba(167, 139, 250, 0.22), transparent 60%),
+      #05080d;
+    filter: none;
+    transform: none;
+  }
+}
+
+@keyframes ghostnetArrivalMesh {
+  0% {
+    opacity: 0.55;
+    transform: scale(1.05) skewX(-3deg);
+    filter: hue-rotate(-18deg);
+  }
+  45% {
+    opacity: 0.42;
+    transform: scale(1.03) skewX(2deg);
+    filter: hue-rotate(-4deg);
+  }
+  70% {
+    opacity: 0.5;
+    transform: scale(1.02) skewX(-1deg);
+    filter: hue-rotate(6deg);
+  }
+  100% {
+    opacity: 0.24;
+    transform: scale(1) skewX(0deg);
+    filter: none;
+  }
+}
+
+@keyframes ghostnetArrivalVignette {
+  0% {
+    opacity: 0.85;
+    background: linear-gradient(180deg, rgba(24, 12, 6, 0.4) 0%, rgba(10, 6, 2, 0.94) 100%);
+  }
+  40% {
+    opacity: 0.7;
+    background: linear-gradient(180deg, rgba(10, 6, 18, 0.3) 0%, rgba(8, 7, 16, 0.92) 100%);
+  }
+  70% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+    background: linear-gradient(180deg, rgba(5, 8, 13, 0) 0%, rgba(5, 8, 13, 0.9) 100%);
+  }
+}
+
+@keyframes ghostnetArrivalShell {
+  0% {
+    opacity: 0.2;
+    filter: blur(6px);
+    transform: translate3d(0, 28px, 0);
+  }
+  35% {
+    opacity: 0.6;
+    filter: blur(3px);
+    transform: translate3d(0, 10px, 0);
+  }
+  55% {
+    opacity: 0.9;
+    filter: blur(1.5px);
+    transform: translate3d(-4px, 4px, 0);
+  }
+  72% {
+    opacity: 1;
+    filter: blur(0.75px);
+    transform: translate3d(2px, -2px, 0);
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes ghostnetArrivalChromatic {
+  0% {
+    color: rgba(255, 200, 140, 0.95);
+    text-shadow: 0 0 1.35rem rgba(255, 126, 59, 0.55);
+    transform: translate3d(0, 0, 0);
+  }
+  35% {
+    color: rgba(255, 215, 170, 0.9);
+    text-shadow: 0 0 1.15rem rgba(255, 160, 86, 0.45);
+  }
+  55% {
+    color: rgba(255, 150, 220, 0.9);
+    text-shadow: 0 0 1.35rem rgba(255, 88, 172, 0.6);
+    transform: translate3d(-2px, 1px, 0);
+  }
+  68% {
+    color: rgba(195, 168, 255, 0.92);
+    text-shadow: 0 0 1.35rem rgba(93, 46, 255, 0.65);
+    transform: translate3d(2px, -1px, 0);
+  }
+  100% {
+    color: inherit;
+    text-shadow: none;
+    transform: none;
+  }
+}
+
+@keyframes ghostnetArrivalStatusCard {
+  0% {
+    background: linear-gradient(160deg, rgba(255, 188, 120, 0.32), rgba(32, 18, 7, 0.86));
+    border-color: rgba(255, 173, 102, 0.55);
+    box-shadow: 0 1.6rem 3.6rem rgba(30, 12, 4, 0.72);
+    filter: saturate(1.05);
+    transform: translate3d(0, 6px, 0);
+  }
+  40% {
+    background: linear-gradient(162deg, rgba(255, 168, 176, 0.28), rgba(24, 13, 32, 0.88));
+    border-color: rgba(233, 182, 255, 0.4);
+    box-shadow: 0 1.75rem 3.8rem rgba(15, 8, 24, 0.7);
+    transform: translate3d(-2px, 2px, 0);
+  }
+  65% {
+    background: linear-gradient(160deg, rgba(255, 140, 220, 0.24), rgba(18, 12, 28, 0.9));
+    border-color: rgba(188, 148, 255, 0.38);
+    box-shadow: 0 1.85rem 4rem rgba(6, 5, 20, 0.75);
+    transform: translate3d(2px, -2px, 0);
+  }
+  100% {
+    background: linear-gradient(160deg, rgba(216, 180, 254, 0.14), rgba(5, 8, 13, 0.65));
+    border-color: var(--ghostnet-panel-border);
+    box-shadow: 0 1.5rem 3.5rem rgba(5, 8, 13, 0.65);
+    filter: none;
+    transform: none;
+  }
+}
+
+@keyframes ghostnetArrivalPanel {
+  0% {
+    background: rgba(45, 23, 9, 0.92);
+    border-color: rgba(255, 173, 102, 0.5);
+    box-shadow: 0 1.85rem 3.9rem rgba(30, 12, 4, 0.7);
+    filter: saturate(1.05);
+    transform: translate3d(0, 8px, 0);
+  }
+  40% {
+    background: rgba(28, 18, 42, 0.9);
+    border-color: rgba(228, 175, 255, 0.38);
+    box-shadow: 0 1.95rem 4rem rgba(14, 8, 26, 0.75);
+    transform: translate3d(-2px, 2px, 0);
+  }
+  68% {
+    background: rgba(22, 16, 33, 0.92);
+    border-color: rgba(188, 148, 255, 0.34);
+    transform: translate3d(2px, -2px, 0);
+  }
+  100% {
+    background: var(--ghostnet-panel);
+    border-color: var(--ghostnet-panel-border);
+    box-shadow: 0 1.75rem 3.5rem rgba(3, 7, 11, 0.8);
+    filter: none;
+    transform: none;
+  }
+}
+
+@keyframes ghostnetArrivalBadge {
+  0% {
+    background: rgba(255, 183, 120, 0.28);
+    border-color: rgba(255, 173, 102, 0.55);
+    color: rgba(255, 198, 140, 0.92);
+    transform: translate3d(0, 4px, 0);
+  }
+  55% {
+    background: rgba(255, 150, 220, 0.22);
+    border-color: rgba(222, 178, 255, 0.42);
+    color: rgba(228, 175, 255, 0.85);
+    transform: translate3d(-2px, 0, 0);
+  }
+  70% {
+    background: rgba(130, 220, 255, 0.2);
+    border-color: rgba(188, 148, 255, 0.38);
+    transform: translate3d(1px, -1px, 0);
+  }
+  100% {
+    background: rgba(216, 180, 254, 0.12);
+    border: 1px solid rgba(216, 180, 254, 0.42);
+    color: var(--ghostnet-accent);
+    transform: none;
+  }
+}
+
+@keyframes ghostnetArrivalTicker {
+  0% {
+    filter: hue-rotate(-22deg) saturate(1.35);
+    opacity: 0.65;
+  }
+  45% {
+    filter: hue-rotate(-8deg) saturate(1.2);
+    opacity: 0.82;
+  }
+  70% {
+    filter: hue-rotate(12deg) saturate(0.95);
+    opacity: 0.9;
+  }
+  100% {
+    filter: none;
+    opacity: 1;
+  }
 }

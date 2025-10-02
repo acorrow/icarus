@@ -3066,6 +3066,7 @@ function PristineMiningPanel () {
 
 export default function GhostnetPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
+  const [arrivalMode, setArrivalMode] = useState(false)
   const { connected, ready, active: socketActive } = useSocket()
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
@@ -3074,6 +3075,28 @@ export default function GhostnetPage() {
 
     return () => {
       document.body.classList.remove('ghostnet-theme')
+    }
+  }, [])
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    let timeoutId
+    try {
+      const stored = window.sessionStorage?.getItem('ghostnet.assimilationArrival')
+      if (stored) {
+        const timestamp = Number(stored)
+        if (!Number.isNaN(timestamp) && Date.now() - timestamp < 8000) {
+          setArrivalMode(true)
+          timeoutId = window.setTimeout(() => setArrivalMode(false), 5200)
+        }
+        window.sessionStorage.removeItem('ghostnet.assimilationArrival')
+      }
+    } catch (err) {
+      // Ignore storage read errors
+    }
+    return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId)
+      }
     }
   }, [])
   const navigationItems = useMemo(() => ([
@@ -3096,10 +3119,12 @@ export default function GhostnetPage() {
   const uplinkStatus = connected && ready ? 'Stable' : 'Linking…'
   const relayStatus = socketActive ? 'Streaming' : 'Idle'
 
+  const ghostnetClassName = [styles.ghostnet, arrivalMode ? styles.arrival : ''].filter(Boolean).join(' ')
+
   return (
     <Layout connected active ready loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
-        <div className={styles.ghostnet}>
+        <div className={ghostnetClassName}>
           <div className={styles.shell}>
             <section className={styles.header} aria-labelledby='ghostnet-heading'>
               <div>
