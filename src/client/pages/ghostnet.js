@@ -1312,6 +1312,9 @@ function CommodityTradePanel () {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
   const [valuation, setValuation] = useState({ results: [], metadata: { ghostnetStatus: 'idle', marketStatus: 'idle' } })
+  const [selectedCommodityKey, setSelectedCommodityKey] = useState('')
+  const [listingsDrawerOpen, setListingsDrawerOpen] = useState(false)
+  const [minListingPrice, setMinListingPrice] = useState(0)
 
   const cargoKey = useMemo(() => {
     if (!Array.isArray(cargo) || cargo.length === 0) return ''
@@ -1522,6 +1525,7 @@ function CommodityTradePanel () {
         item,
         entry,
         quantity,
+        ghostnetListings: Array.isArray(entry?.ghostnetListings) ? entry.ghostnetListings : [],
         bestPrice,
         bestSource,
         bestValue,
@@ -1539,6 +1543,124 @@ function CommodityTradePanel () {
 
   const hasCargo = Array.isArray(cargo) && cargo.length > 0
   const hasRows = rows.some(row => typeof row.bestPrice === 'number')
+
+  const selectedCommodityRow = useMemo(() => {
+    if (!selectedCommodityKey) return null
+    return rows.find(row => row.key === selectedCommodityKey) || null
+  }, [rows, selectedCommodityKey])
+
+  const sortedGhostnetListings = useMemo(() => {
+    if (!selectedCommodityRow || !Array.isArray(selectedCommodityRow.ghostnetListings)) return []
+
+    return selectedCommodityRow.ghostnetListings
+      .filter(Boolean)
+      .map(listing => ({ ...listing }))
+      .sort((a, b) => {
+        const aDistance = typeof a?.distanceLy === 'number' ? a.distanceLy : Number.POSITIVE_INFINITY
+        const bDistance = typeof b?.distanceLy === 'number' ? b.distanceLy : Number.POSITIVE_INFINITY
+        if (aDistance !== bDistance) return aDistance - bDistance
+
+        const aPrice = typeof a?.price === 'number' ? a.price : -Infinity
+        const bPrice = typeof b?.price === 'number' ? b.price : -Infinity
+        if (bPrice !== aPrice) return bPrice - aPrice
+
+        const aUpdated = getTimestampValue(a?.updatedAt) || 0
+        const bUpdated = getTimestampValue(b?.updatedAt) || 0
+        return bUpdated - aUpdated
+      })
+  }, [selectedCommodityRow])
+
+  const listingsMaxPrice = useMemo(() => {
+    if (sortedGhostnetListings.length === 0) return 0
+    return sortedGhostnetListings.reduce((max, listing) => {
+      const price = typeof listing?.price === 'number' ? listing.price : null
+      if (price !== null && price > max) return price
+      return max
+    }, 0)
+  }, [sortedGhostnetListings])
+
+  useEffect(() => {
+    if (!listingsDrawerOpen) return
+    setMinListingPrice(prev => {
+      if (listingsMaxPrice <= 0) return 0
+      if (typeof prev !== 'number' || Number.isNaN(prev)) return 0
+      return Math.min(prev, listingsMaxPrice)
+    })
+  }, [listingsMaxPrice, listingsDrawerOpen])
+
+  const filteredGhostnetListings = useMemo(() => {
+    const threshold = typeof minListingPrice === 'number' && !Number.isNaN(minListingPrice)
+      ? minListingPrice
+      : 0
+
+    return sortedGhostnetListings.filter(listing => {
+      const price = typeof listing?.price === 'number' ? listing.price : null
+      if (price === null) return threshold <= 0
+      return price >= threshold
+    })
+  }, [sortedGhostnetListings, minListingPrice])
+
+  const sliderStep = useMemo(() => {
+    if (listingsMaxPrice <= 0) return 1
+    const calculated = Math.round(listingsMaxPrice / 100)
+    return Math.max(1, calculated)
+  }, [listingsMaxPrice])
+
+  const sliderMaxValue = useMemo(() => {
+    if (listingsMaxPrice <= 0) return 0
+    return Math.ceil(listingsMaxPrice)
+  }, [listingsMaxPrice])
+
+  const sliderDisabled = listingsMaxPrice <= 0
+
+  const selectedCommodityName = selectedCommodityRow?.item?.name || selectedCommodityRow?.item?.symbol || ''
+  const selectedCommodityQuantity = Number(selectedCommodityRow?.quantity) || 0
+  const filteredListingsCount = filteredGhostnetListings.length
+  const sliderValue = sliderDisabled ? 0 : Math.min(Math.max(Math.round(minListingPrice), 0), sliderMaxValue)
+
+  const handleRowActivate = useCallback(row => {
+    if (!row) return
+    if (selectedCommodityKey === row.key && listingsDrawerOpen) {
+      setListingsDrawerOpen(false)
+      setSelectedCommodityKey('')
+      setMinListingPrice(0)
+      return
+    }
+
+    setSelectedCommodityKey(row.key)
+    setMinListingPrice(0)
+    setListingsDrawerOpen(true)
+  }, [selectedCommodityKey, listingsDrawerOpen])
+
+  const handleCommodityRowKeyDown = useCallback((event, row) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      handleRowActivate(row)
+    }
+  }, [handleRowActivate])
+
+  const handleCloseListingsDrawer = useCallback(() => {
+    setListingsDrawerOpen(false)
+    setSelectedCommodityKey('')
+    setMinListingPrice(0)
+  }, [])
+
+  useEffect(() => {
+    if (!listingsDrawerOpen) return
+    if (typeof document === 'undefined') return
+
+    const handleKeyDown = event => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        handleCloseListingsDrawer()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [listingsDrawerOpen, handleCloseListingsDrawer])
 
   const renderSourceBadge = source => {
     if (source === 'ghostnet') {
@@ -1706,6 +1828,12 @@ function CommodityTradePanel () {
                 localValue
               } = row
 
+              const isSelected = listingsDrawerOpen && selectedCommodityKey === row.key
+              const rowClassName = [
+                styles.tableRowInteractive,
+                isSelected ? styles.tableRowSelected : ''
+              ].filter(Boolean).join(' ')
+
               const ghostnetStation = entry?.ghostnet?.stationName
               const ghostnetSystem = entry?.ghostnet?.systemName
               const ghostnetDemand = entry?.ghostnet?.demandText
@@ -1750,7 +1878,17 @@ function CommodityTradePanel () {
               const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
 
               return (
-                <tr key={`${row.key}-${index}`} style={{ animationDelay: `${index * 0.03}s` }}>
+                <tr
+                  key={`${row.key}-${index}`}
+                  style={{ animationDelay: `${index * 0.03}s` }}
+                  className={rowClassName}
+                  onClick={() => handleRowActivate(row)}
+                  onKeyDown={event => handleCommodityRowKeyDown(event, row)}
+                  tabIndex={0}
+                  role='button'
+                  aria-label={`View GHOSTNET listings for ${item?.name || item?.symbol || 'commodity'}`}
+                  aria-expanded={isSelected}
+                >
                   <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                     <div>{item?.name || item?.symbol || 'Unknown'}</div>
                     {item?.symbol && item?.symbol !== item?.name && (
@@ -1806,6 +1944,122 @@ function CommodityTradePanel () {
           </table>
         </div>
       )}
+
+      <div
+        className={[styles.listingDrawerOverlay, listingsDrawerOpen ? styles.listingDrawerOverlayVisible : '']
+          .filter(Boolean)
+          .join(' ')}
+        onClick={handleCloseListingsDrawer}
+        role='presentation'
+        aria-hidden={!listingsDrawerOpen}
+      />
+
+      <aside
+        className={[styles.listingDrawer, listingsDrawerOpen ? styles.listingDrawerOpen : '']
+          .filter(Boolean)
+          .join(' ')}
+        aria-hidden={!listingsDrawerOpen}
+        aria-label='GHOSTNET station listings'
+      >
+        <div className={styles.listingDrawerHeader}>
+          <div>
+            <div className={styles.listingDrawerKicker}>GHOSTNET Stations</div>
+            <h3 className={styles.listingDrawerTitle}>
+              {selectedCommodityName || 'Select a commodity'}
+            </h3>
+            <div className={styles.listingDrawerSubtitle}>
+              {selectedCommodityRow
+                ? `Sorted by proximity · ${filteredListingsCount.toLocaleString()} location${filteredListingsCount === 1 ? '' : 's'}`
+                : 'Tap a commodity row to explore station offers sourced from GHOSTNET.'}
+            </div>
+            {selectedCommodityRow && selectedCommodityQuantity > 0 && (
+              <div className={styles.listingDrawerMeta}>
+                Cargo onboard: {selectedCommodityQuantity.toLocaleString()} t
+              </div>
+            )}
+          </div>
+          <button
+            type='button'
+            onClick={handleCloseListingsDrawer}
+            className={styles.listingDrawerClose}
+            aria-label='Close GHOSTNET listings panel'
+          >
+            <span aria-hidden='true'>×</span>
+          </button>
+        </div>
+
+        <div className={styles.listingDrawerFilters}>
+          <label htmlFor='ghostnet-min-price-slider' className={styles.listingDrawerFilterLabel}>
+            Minimum price filter
+          </label>
+          <div className={styles.listingDrawerFilterControl}>
+            <input
+              id='ghostnet-min-price-slider'
+              type='range'
+              min='0'
+              max={sliderMaxValue}
+              step={sliderStep}
+              value={sliderValue}
+              onChange={event => setMinListingPrice(Number(event.target.value) || 0)}
+              disabled={sliderDisabled || !selectedCommodityRow}
+            />
+            <span className={styles.listingDrawerFilterValue}>{formatCredits(sliderValue, '0 Cr')}</span>
+          </div>
+        </div>
+
+        <div className={styles.listingDrawerBody}>
+          {selectedCommodityRow
+            ? (
+                filteredGhostnetListings.length > 0
+                  ? filteredGhostnetListings.map((listing, index) => {
+                      const priceDisplay = typeof listing?.price === 'number'
+                        ? formatCredits(listing.price, '--')
+                        : (listing?.priceText || '--')
+                      const distanceLyDisplay = formatSystemDistance(listing?.distanceLy, listing?.distanceLyText)
+                      const distanceLsDisplay = formatStationDistance(listing?.distanceLs, listing?.distanceLsText)
+                      const demandDisplay = listing?.demandText
+                        || (typeof listing?.demand === 'number' ? `${listing.demand.toLocaleString()} demand` : '')
+                      const padDisplay = listing?.pad || ''
+                      const updatedDisplay = listing?.updatedAt
+                        ? formatRelativeTime(listing.updatedAt)
+                        : (listing?.updatedText || '')
+
+                      return (
+                        <article key={`${listing?.stationName || 'station'}-${index}`} className={styles.listingCard}>
+                          <div className={styles.listingCardHeader}>
+                            <div>
+                              <div className={styles.listingCardTitle}>{listing?.stationName || 'Unknown Station'}</div>
+                              <div className={styles.listingCardSubtitle}>{listing?.systemName || 'Unknown System'}</div>
+                            </div>
+                            <div className={styles.listingCardPrice}>{priceDisplay}</div>
+                          </div>
+                          <div className={styles.listingCardMetaRow}>
+                            {distanceLyDisplay ? <span>Distance: {distanceLyDisplay}</span> : null}
+                            {distanceLsDisplay ? <span>Station orbit: {distanceLsDisplay}</span> : null}
+                          </div>
+                          <div className={styles.listingCardMetaRow}>
+                            {padDisplay ? <span>Pad: {padDisplay}</span> : null}
+                            {demandDisplay ? <span>Demand: {demandDisplay}</span> : null}
+                          </div>
+                          {updatedDisplay ? (
+                            <div className={styles.listingCardFooter}>Updated {updatedDisplay}</div>
+                          ) : null}
+                        </article>
+                      )
+                    })
+                  : (
+                    <div className={styles.listingDrawerEmpty}>
+                      No stations meet the current minimum price of {formatCredits(sliderValue, '0 Cr')}.
+                    </div>
+                    )
+              )
+            : (
+              <div className={styles.listingDrawerEmpty}>
+                Select a commodity row to inspect nearby buyers sourced from the GHOSTNET mesh.
+              </div>
+              )}
+        </div>
+      </aside>
 
       <div className={styles.tableFootnote}>
         In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
