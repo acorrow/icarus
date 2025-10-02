@@ -388,6 +388,196 @@
   padding: 1.5rem;
 }
 
+.detailContextSummary {
+  margin-top: 1.5rem;
+  padding: 1.35rem 1.6rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(140, 92, 255, 0.32);
+  background: linear-gradient(135deg, rgba(40, 22, 82, 0.68), rgba(24, 15, 52, 0.78));
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.detailContextSummaryHeader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.detailContextSummaryTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.detailContextSummaryHeadingText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.detailContextSummaryIcon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  background: radial-gradient(circle at 30% 30%, rgba(93, 46, 255, 0.4), rgba(42, 14, 130, 0.6));
+  border: 1px solid rgba(140, 92, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 18px rgba(93, 46, 255, 0.35);
+}
+
+.detailContextSummaryIcon svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  fill: #f5f1ff;
+}
+
+.detailContextSummaryLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.64rem;
+  color: rgba(245, 241, 255, 0.65);
+}
+
+.detailContextSummaryTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.detailContextSummarySymbol {
+  font-size: 0.85rem;
+  color: rgba(245, 241, 255, 0.6);
+}
+
+.detailContextSummaryMeta {
+  font-size: 0.82rem;
+  color: rgba(245, 241, 255, 0.72);
+}
+
+.detailContextAction {
+  border: 1px solid rgba(140, 92, 255, 0.55);
+  background: linear-gradient(135deg, rgba(93, 46, 255, 0.6), rgba(140, 92, 255, 0.45));
+  color: #f5f1ff;
+  padding: 0.55rem 1.4rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 0.66rem;
+  cursor: pointer;
+  transition: background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  text-shadow: 0 0 12px rgba(93, 46, 255, 0.45);
+}
+
+.detailContextAction:hover,
+.detailContextAction:focus-visible {
+  background: linear-gradient(135deg, rgba(117, 70, 255, 0.78), rgba(140, 92, 255, 0.55));
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(93, 46, 255, 0.35);
+}
+
+.detailContextAction:focus-visible {
+  outline: 2px solid #29f3c3;
+  outline-offset: 3px;
+}
+
+.detailContextAction:active {
+  background: linear-gradient(135deg, rgba(42, 14, 130, 0.75), rgba(93, 46, 255, 0.5));
+  transform: translateY(1px);
+}
+
+.detailContextAction[disabled],
+.detailContextAction[aria-disabled='true'] {
+  cursor: default;
+  opacity: 0.6;
+  box-shadow: none;
+  transform: none;
+  pointer-events: none;
+}
+
+.detailContextSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+}
+
+.detailContextSummaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.detailContextSummaryStation {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.detailContextSummaryStationIcon {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(140, 92, 255, 0.32);
+  background: radial-gradient(circle at 20% 20%, rgba(93, 46, 255, 0.35), rgba(24, 15, 52, 0.75));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(93, 46, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.detailContextSummaryStationIcon svg {
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.detailContextSummaryStationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.detailContextSummaryFaction {
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: rgba(245, 241, 255, 0.72);
+}
+
+.detailContextSummaryFactionStatus {
+  font-size: 0.7rem;
+  color: rgba(245, 241, 255, 0.62);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.detailContextSummaryItemLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.62rem;
+  color: rgba(245, 241, 255, 0.6);
+}
+
+.detailContextSummaryItemValue {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.detailContextSummaryItemMeta {
+  font-size: 0.78rem;
+  color: rgba(245, 241, 255, 0.68);
+}
+
 .sectionHint {
   margin: 0;
   color: var(--ghostnet-muted);
@@ -587,6 +777,29 @@
 
 .tableRowInteractive:hover {
   background: rgba(93, 46, 255, 0.2);
+}
+
+.tableRowSelectable {
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tableRowSelectable:hover {
+  background: rgba(93, 46, 255, 0.18);
+}
+
+.tableRowSelectable:focus-visible {
+  outline: 2px solid #29f3c3;
+  outline-offset: -2px;
+}
+
+.tableRowSelected {
+  background: rgba(93, 46, 255, 0.28) !important;
+  box-shadow: inset 0 0 0 1px rgba(140, 92, 255, 0.45);
+}
+
+.tableRowSelected:hover {
+  background: rgba(117, 70, 255, 0.32) !important;
 }
 
 .tableRowExpanded {
@@ -813,6 +1026,111 @@
   color: #f5f1ff;
 }
 
+
+.commodityDetailTableHead {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+}
+
+.dataTable thead tr.commodityDetailHeaderRow {
+  background: transparent;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+.dataTable thead tr.commodityDetailHeaderRow th {
+  position: sticky;
+  top: 0;
+  z-index: 7;
+}
+
+.commodityDetailHeaderCell {
+  padding: 0;
+  border: 0;
+}
+
+.commodityDetailHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 1.35rem 0.8rem;
+  background: linear-gradient(135deg, rgba(35, 20, 68, 0.94), rgba(18, 10, 44, 0.9));
+  border-bottom: 1px solid rgba(140, 92, 255, 0.38);
+  box-shadow: 0 0.85rem 2.35rem rgba(5, 8, 13, 0.52);
+}
+
+
+.commodityDetailHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 200px;
+  flex: 1 1 220px;
+}
+
+.commodityDetailLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.62rem;
+  color: rgba(245, 241, 255, 0.65);
+}
+
+.commodityDetailTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1.42rem;
+  font-weight: 600;
+  color: #f5f1ff;
+}
+
+.commodityDetailSymbol {
+  font-size: 0.85rem;
+  color: rgba(245, 241, 255, 0.72);
+}
+
+.commodityDetailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(140, 92, 255, 0.28);
+  background: rgba(24, 15, 54, 0.68);
+}
+
+.commodityDetailMetaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 104px;
+}
+
+.commodityDetailMetaLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.52rem;
+  color: rgba(245, 241, 255, 0.6);
+}
+
+.commodityDetailMetaValue {
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  font-size: 0.84rem;
+  color: #f5f1ff;
+}
+
+.dataTable thead tr.commodityDetailColumnsRow {
+  background: var(--ghostnet-table-header);
+  border-bottom: 1px solid rgba(140, 92, 255, 0.45);
+}
+
+.dataTable thead tr.commodityDetailColumnsRow th {
+  padding: 0.7rem 1rem;
+}
+
 .routeDetailMetrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -841,6 +1159,30 @@
   font-size: 1.05rem;
   color: #f5f1ff;
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+}
+
+.routeDetailMetricFootnote {
+  font-size: 0.75rem;
+  color: rgba(245, 241, 255, 0.64);
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  letter-spacing: 0.08em;
+}
+
+.routeDetailLink {
+  color: var(--ghostnet-accent);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.routeDetailLink:hover,
+.routeDetailLink:focus-visible {
+  color: #f5f1ff;
+  text-decoration: underline;
+}
+
+.routeDetailLink:focus-visible {
+  outline: 2px solid #29f3c3;
+  outline-offset: 2px;
 }
 
 .routeDetailGrid {
