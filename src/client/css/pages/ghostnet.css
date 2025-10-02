@@ -30,31 +30,6 @@
   font-size: 0.95rem;
 }
 
-.trade-routes__refresh-indicator {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.85rem;
-  padding: 0.75rem 1.25rem;
-  background: rgba(16, 16, 16, 0.92);
-  border-bottom: 1px solid #222;
-  color: #888;
-  font-size: 0.85rem;
-}
-
-.trade-routes__refresh-indicator .ghostnet-spinner__label {
-  color: #888;
-  font-size: 0.85rem;
-}
-.trade-routes__refresh-timestamp {
-  margin-left: auto;
-  color: #b7c4d8;
-  font-size: 0.82rem;
-}
-
 @keyframes ghostnet-spinner-rotate {
   to {
     transform: rotate(360deg);
@@ -67,13 +42,7 @@
   align-items: stretch;
   gap: 0;
   padding: 0;
-  border-radius: 1.25rem;
   box-sizing: border-box;
-  border: 1px solid rgba(216, 180, 254, 0.24);
-  background: rgba(7, 10, 18, 0.9);
-  box-shadow: 0 1.65rem 3.75rem rgba(3, 7, 12, 0.78);
-  backdrop-filter: blur(12px);
-  overflow: hidden;
 }
 
 .pristine-mining__container--inspector {

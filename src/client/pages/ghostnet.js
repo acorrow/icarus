@@ -63,6 +63,7 @@ function normaliseName (value) {
 
 const MISSIONS_CACHE_KEY = 'icarus.ghostnetMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
+const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
 
 function getMissionsCacheStorage () {
   if (typeof window === 'undefined') {
@@ -1182,9 +1183,9 @@ function MissionsPanel () {
   }, [status, missions])
 
   return (
-    <div className={styles.sectionGroup}>
-      <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
-        <h2>Mining Missions</h2>
+    <section className={styles.tableSection}>
+      <div className={styles.tableSectionHeader}>
+        <h2 className={styles.tableSectionTitle}>Mining Missions</h2>
         <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
@@ -1202,8 +1203,8 @@ function MissionsPanel () {
         </p>
         {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       </div>
-      <div className='ghostnet-panel-table' style={{ overflow: 'hidden' }}>
-        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+      <div className='ghostnet-panel-table'>
+        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
@@ -1217,16 +1218,6 @@ function MissionsPanel () {
           {status === 'loading' && (
             <div className={styles.tableIdleState}>Linking mission beacons…</div>
           )}
-          {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
-            <div className={styles.tableStatusBar}>
-              {isRefreshing && <span>Refreshing missions...</span>}
-              {lastUpdatedAt && (
-                <span className={styles.tableStatusTimestamp}>
-                  Updated {formatRelativeTime(lastUpdatedAt)}
-                </span>
-              )}
-            </div>
-          )}
           {status === 'error' && !error && (
             <div className={styles.tableErrorState}>Unable to load missions.</div>
           )}
@@ -1237,7 +1228,7 @@ function MissionsPanel () {
           )}
           {status === 'populated' && missions.length > 0 && (
             <div className={styles.dataTableContainer}>
-              <table className={`${styles.dataTable} table--animated fx-fade-in`}>
+              <table className={styles.dataTable}>
                 <thead>
                   <tr>
                   <th>Faction</th>
@@ -1270,7 +1261,7 @@ function MissionsPanel () {
                     .join(' · ') || undefined
 
                   return (
-                    <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
+                    <tr key={key} data-ghostnet-table-row='pending'>
                       <td className={`${styles.tableCellTop}`}>
                         {mission.faction
                           ? (
@@ -1301,7 +1292,7 @@ function MissionsPanel () {
           )}
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -1718,7 +1709,7 @@ function CommodityTradePanel () {
 
       {status === 'ready' && hasCargo && hasDisplayableRows && (
         <div className={styles.dataTableContainer}>
-          <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense} table--animated fx-fade-in`}>
+          <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
             <colgroup>
               <col style={{ width: '32%' }} />
               <col style={{ width: '8%' }} />
@@ -1796,7 +1787,7 @@ function CommodityTradePanel () {
               const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
 
               return (
-                <tr key={`${row.key}-${index}`} style={{ animationDelay: `${index * 0.03}s` }}>
+                <tr key={`${row.key}-${index}`} data-ghostnet-table-row='pending'>
                   <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                     <div>{item?.name || item?.symbol || 'Unknown'}</div>
                     {item?.symbol && item?.symbol !== item?.name && (
@@ -2310,9 +2301,11 @@ function TradeRoutesPanel () {
     refreshRoutes(currentName)
   }, [currentSystem?.name, refreshRoutes])
 
+  useEffect(() => animateTableEffect(), [routes, expandedRouteKey])
+
   const renderRoutesTable = () => (
     <div className={styles.dataTableContainer}>
-      <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense} table--interactive table--animated`}>
+      <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
       <colgroup>
         <col style={{ width: '4%' }} />
         <col style={{ width: '20%' }} />
@@ -2419,7 +2412,7 @@ function TradeRoutesPanel () {
             <React.Fragment key={rowKey}>
               <tr
                 className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
-                style={{ animationDelay: `${index * 0.03}s` }}
+                data-ghostnet-table-row='pending'
                 onClick={() => handleRowToggle(rowKey)}
                 onKeyDown={event => handleRowKeyDown(event, rowKey)}
                 role='button'
@@ -2471,6 +2464,7 @@ function TradeRoutesPanel () {
                 <tr
                   id={detailsId}
                   className={styles.tableDetailRow}
+                  data-ghostnet-table-row='pending'
                 >
                   <td style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
@@ -2584,9 +2578,9 @@ function TradeRoutesPanel () {
   )
 
   return (
-    <div className={styles.sectionGroup}>
-      <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
-        <h2>Find Trade Routes</h2>
+    <section className={styles.tableSection}>
+      <div className={styles.tableSectionHeader}>
+        <h2 className={styles.tableSectionTitle}>Find Trade Routes</h2>
         <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
@@ -2602,118 +2596,117 @@ function TradeRoutesPanel () {
               <button
                 type='button'
                 onClick={() => setFiltersCollapsed(prev => !prev)}
-              style={FILTER_TOGGLE_BUTTON_STYLE}
-              aria-expanded={!filtersCollapsed}
-              aria-controls='trade-route-filters'
-            >
-              {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
-            </button>
-            {filtersCollapsed && (
-              <div style={FILTER_SUMMARY_STYLE}>
-                <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
-                <button
-                  type='submit'
-                  style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
-                  title='Refresh trade routes'
-                  aria-label='Refresh trade routes'
-                >
-                  <svg
-                    viewBox='0 0 24 24'
-                    focusable='false'
-                    aria-hidden='true'
-                    style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
+                style={FILTER_TOGGLE_BUTTON_STYLE}
+                aria-expanded={!filtersCollapsed}
+                aria-controls='trade-route-filters'
+              >
+                {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
+              </button>
+              {filtersCollapsed && (
+                <div style={FILTER_SUMMARY_STYLE}>
+                  <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
+                  <button
+                    type='submit'
+                    style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
+                    title='Refresh trade routes'
+                    aria-label='Refresh trade routes'
                   >
-                    <path
-                      fill='currentColor'
-                      d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      viewBox='0 0 24 24'
+                      focusable='false'
+                      aria-hidden='true'
+                      style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
+                    >
+                      <path
+                        fill='currentColor'
+                        d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          {!filtersCollapsed && (
+            <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Route Distance</label>
+                <select
+                  value={routeDistance}
+                  onChange={event => setRouteDistance(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {routeDistanceOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
               </div>
-            )}
-          </div>
-        </div>
-
-        {!filtersCollapsed && (
-          <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Route Distance</label>
-              <select
-                value={routeDistance}
-                onChange={event => setRouteDistance(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {routeDistanceOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Max Price Age</label>
+                <select
+                  value={priceAge}
+                  onChange={event => setPriceAge(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {priceAgeOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Min Supply</label>
+                <select
+                  value={minSupply}
+                  onChange={event => setMinSupply(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {supplyOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Min Demand</label>
+                <select
+                  value={minDemand}
+                  onChange={event => setMinDemand(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {demandOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Surface Stations</label>
+                <select
+                  value={surfacePreference}
+                  onChange={event => setSurfacePreference(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {surfaceOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ ...FILTER_FIELD_STYLE }}>
+                <label style={FILTER_LABEL_STYLE}>Station Distance</label>
+                <select
+                  value={stationDistance}
+                  onChange={event => setStationDistance(event.target.value)}
+                  style={{ ...FILTER_CONTROL_STYLE }}
+                >
+                  {stationDistanceOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Max Price Age</label>
-              <select
-                value={priceAge}
-                onChange={event => setPriceAge(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {priceAgeOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Min Supply</label>
-              <select
-                value={minSupply}
-                onChange={event => setMinSupply(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {supplyOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Min Demand</label>
-              <select
-                value={minDemand}
-                onChange={event => setMinDemand(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {demandOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Surface Stations</label>
-              <select
-                value={surfacePreference}
-                onChange={event => setSurfacePreference(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {surfaceOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ ...FILTER_FIELD_STYLE }}>
-              <label style={FILTER_LABEL_STYLE}>Station Distance</label>
-              <select
-                value={stationDistance}
-                onChange={event => setStationDistance(event.target.value)}
-                style={{ ...FILTER_CONTROL_STYLE }}
-              >
-                {stationDistanceOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
+          )}
         </form>
       </div>
-      <div className='ghostnet-panel-table' style={{ overflow: 'hidden' }}>
-        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+      <div className='ghostnet-panel-table'>
+        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
           {message && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
           )}
@@ -2722,16 +2715,6 @@ function TradeRoutesPanel () {
           )}
           {status === 'loading' && (
             <LoadingSpinner label='Loading trade routes…' />
-          )}
-          {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
-            <div className='trade-routes__refresh-indicator'>
-              {isRefreshing && <LoadingSpinner inline label='Refreshing trade routes…' />}
-              {lastUpdatedAt && (
-                <span className='trade-routes__refresh-timestamp'>
-                  Last refreshed {formatRelativeTime(lastUpdatedAt)}
-                </span>
-              )}
-            </div>
           )}
           {status === 'error' && (
             <div className={styles.tableErrorState}>{error || 'Unable to fetch trade routes.'}</div>
@@ -2742,7 +2725,7 @@ function TradeRoutesPanel () {
           {status === 'populated' && renderRoutesTable()}
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -2954,9 +2937,9 @@ function PristineMiningPanel () {
   }, [handleLocationToggle])
 
   return (
-    <div className={styles.sectionGroup}>
-      <div className={`${styles.sectionFrameElevated} ${styles.sectionPadding}`}>
-        <h2>Pristine Mining Locations</h2>
+    <section className={styles.tableSection}>
+      <div className={styles.tableSectionHeader}>
+        <h2 className={styles.tableSectionTitle}>Pristine Mining Locations</h2>
         <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
@@ -2975,19 +2958,12 @@ function PristineMiningPanel () {
         {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       </div>
       <div
-        className={`pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
+        className={`ghostnet-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
       >
         <div
           className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
-          style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}
+          style={TABLE_SCROLL_AREA_STYLE}
         >
-          {(status === 'populated' || status === 'empty') && lastUpdatedAt && (
-            <div className={styles.tableStatusBar}>
-              <span className={styles.tableStatusTimestamp}>
-                Updated {formatRelativeTime(lastUpdatedAt)}
-              </span>
-            </div>
-          )}
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
@@ -3011,7 +2987,7 @@ function PristineMiningPanel () {
           )}
           {status === 'populated' && locations.length > 0 && (
             <div className={styles.dataTableContainer}>
-              <table className={`${styles.dataTable} table--animated fx-fade-in`}>
+              <table className={styles.dataTable}>
                 <thead>
                   <tr>
                     <th>Body</th>
@@ -3036,7 +3012,7 @@ function PristineMiningPanel () {
                     <Fragment key={key}>
                       <tr
                         className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
-                        style={{ animationDelay: `${index * 0.03}s` }}
+                        data-ghostnet-table-row='pending'
                         role='button'
                         tabIndex={0}
                         aria-expanded={isExpanded}
@@ -3067,7 +3043,7 @@ function PristineMiningPanel () {
                         <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
                       </tr>
                       {isExpanded && (
-                        <tr className={styles.tableDetailRow}>
+                        <tr className={styles.tableDetailRow} data-ghostnet-table-row='pending'>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
@@ -3123,6 +3099,84 @@ function PristineMiningPanel () {
               setSystemObjectByName={handleInspectorSelection}
             />
           )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function GhostnetTerminalOverlay () {
+  const [collapsed, setCollapsed] = useState(false)
+  const [offset, setOffset] = useState(0)
+
+  const terminalLines = useMemo(() => ([
+    { type: 'command', label: 'ghostnet@ship', text: 'uplink --channel "VEGA-9" --handshake mesh://relay-04' },
+    { type: 'response', label: 'mesh', text: 'Handshake acknowledged · encryption lattice stable · latency 42ms' },
+    { type: 'command', label: 'ghostnet@ship', text: 'stream manifest ping://drydock --burst 32kb --checksum' },
+    { type: 'response', label: 'ship', text: 'Payload queued · 12 telemetry frames buffered for dispatch' },
+    { type: 'command', label: 'ghostnet@ship', text: 'listen mesh://syndicate.radar --filter "convoy:aurora"' },
+    { type: 'response', label: 'mesh', text: 'Intercepted 3 convoy packets · decrypting spectral bands' },
+    { type: 'response', label: 'mesh', text: 'Return vector mapped · ghost corridor aligned to Perseus Reach' },
+    { type: 'command', label: 'ghostnet@ship', text: 'send burst://outpost-ix --file navmap.dat --repeat 2' },
+    { type: 'response', label: 'ship', text: 'Uplink thrusters trimming · data stream locked at 8.4 kb/s' },
+    { type: 'response', label: 'mesh', text: 'Outpost IX confirms receipt · requesting follow-on diagnostics' },
+    { type: 'command', label: 'ghostnet@ship', text: 'monitor relay://ghostnet.delta --mode passive --squelch 3' },
+    { type: 'response', label: 'mesh', text: 'Passive net cast · spectral noise floor nominal' }
+  ]), [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const interval = window.setInterval(() => {
+      setOffset(previous => (previous + 1) % terminalLines.length)
+    }, 3200)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [terminalLines.length])
+
+  const visibleLines = useMemo(() => {
+    const windowSize = 7
+    return Array.from({ length: windowSize }).map((_, index) => {
+      const currentIndex = (offset + index) % terminalLines.length
+      return { ...terminalLines[currentIndex], id: `${currentIndex}-${index}` }
+    })
+  }, [offset, terminalLines])
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed(previous => !previous)
+  }, [])
+
+  return (
+    <div className={`${styles.terminal} ${collapsed ? styles.terminalCollapsed : ''}`}>
+      <div className={styles.terminalShell} role='region' aria-label='Ghost Net ship uplink activity log'>
+        <div className={styles.terminalHeader}>
+          <div className={styles.terminalHeaderContent}>
+            <span className={styles.terminalTitle}>Ship Uplink Console</span>
+            <span className={styles.terminalStatus}>Channel mesh://ghostnet</span>
+          </div>
+          <button
+            type='button'
+            className={styles.terminalToggle}
+            onClick={toggleCollapsed}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? 'Expand uplink console' : 'Minimize uplink console'}
+          >
+            {collapsed ? 'Expand' : 'Minimize'}
+          </button>
+        </div>
+        <div className={styles.terminalBody}>
+          <ul className={styles.terminalFeed}>
+            {visibleLines.map(line => (
+              <li key={line.id} className={styles.terminalLine}>
+                <span className={`${styles.terminalPrompt} ${line.type === 'command' ? styles.terminalPromptCommand : styles.terminalPromptResponse}`}>
+                  {line.label}
+                </span>
+                <span className={styles.terminalText}>{line.text}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
@@ -3248,6 +3302,7 @@ export default function GhostnetPage() {
               </div>
             </div>
           </div>
+          <GhostnetTerminalOverlay />
         </div>
       </Panel>
     </Layout>

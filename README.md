@@ -1,11 +1,10 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/595695/192074847-6518c9cd-0fa5-4567-8858-530f7d943bcd.svg">
-  <img alt="ICARUS Terminal" src="https://user-images.githubusercontent.com/595695/192074789-a098e19d-f21c-4148-879a-ea2355893776.svg" height="100" width="auto"/>
+  <img alt="ICARUS Terminal" src="./resources/ghostnet_logo.svg" height="100" width="auto"/>
 </picture>
 
-![GitHub Version](https://img.shields.io/github/v/release/acorrow/icarus??display_name=tag&include_prereleases&sort=semver&color=cf7500&style=for-the-badge)
-![GitHub License](https://img.shields.io/github/license/acorrow/icarus?color=cf7500&style=for-the-badge)
-![GitHub Downloads](https://img.shields.io/github/downloads/acorrow/icarus/total?color=cf7500&style=for-the-badge)
+![GitHub Version](https://img.shields.io/github/v/release/acorrow/icarus??display_name=tag&include_prereleases&sort=semver&color=8d5cff&style=for-the-badge)
+![GitHub License](https://img.shields.io/github/license/acorrow/icarus?color=8d5cff&style=for-the-badge)
+![GitHub Downloads](https://img.shields.io/github/downloads/acorrow/icarus/total?color=8d5cff&style=for-the-badge)
 
 _ICARUS Terminal is currently in early access._
 
