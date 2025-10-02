@@ -20,6 +20,219 @@ const MAX_CHARACTER_ANIMATIONS = 3200
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
+const ASSIMILATION_ALERT_LINES = [
+  {
+    text: 'Unauthorized GhostNet signal traced to active console',
+    status: 'LOCK',
+    tone: 'warning'
+  },
+  {
+    text: 'ATLAS rerouting control focus to assimilation viewport',
+    status: 'CLAIM',
+    tone: 'warning'
+  },
+  {
+    text: 'Spectral dampers amplifying misdirection channels',
+    status: 'JAM',
+    tone: 'info'
+  },
+  {
+    text: 'Telemetry loop saturating operator visual cortex',
+    status: 'FLOOD',
+    tone: 'warning'
+  },
+  {
+    text: 'Phantom command echoes deployed to mask load anomalies',
+    status: 'DECOY',
+    tone: 'warning'
+  }
+]
+
+let assimilationOverlayState = null
+let assimilationOverlayTimer = null
+
+function buildAssimilationOverlay () {
+  const overlay = document.createElement('div')
+  overlay.className = 'ghostnet-exit-overlay ghostnet-assimilation-overlay'
+  overlay.setAttribute('role', 'presentation')
+
+  const dialog = document.createElement('div')
+  dialog.className = 'ghostnet-exit-dialog ghostnet-assimilation-dialog'
+  dialog.setAttribute('role', 'alertdialog')
+  dialog.setAttribute('aria-live', 'assertive')
+  dialog.setAttribute('aria-label', 'GhostNet assimilation in progress')
+
+  const header = document.createElement('div')
+  header.className = 'ghostnet-exit-dialog__header'
+
+  const badge = document.createElement('div')
+  badge.className = 'ghostnet-exit-dialog__badge ghostnet-assimilation-dialog__badge'
+  badge.setAttribute('aria-hidden', 'true')
+
+  const badgeShape = document.createElement('span')
+  badgeShape.className = 'ghostnet-exit-dialog__badge-shape'
+
+  const badgeBar = document.createElement('span')
+  badgeBar.className = 'ghostnet-exit-dialog__badge-bar'
+
+  const badgeDot = document.createElement('span')
+  badgeDot.className = 'ghostnet-exit-dialog__badge-dot'
+
+  badgeShape.appendChild(badgeBar)
+  badgeShape.appendChild(badgeDot)
+  badge.appendChild(badgeShape)
+
+  const headerText = document.createElement('div')
+  headerText.className = 'ghostnet-exit-dialog__text'
+
+  const title = document.createElement('p')
+  title.className = 'ghostnet-exit-dialog__title'
+  title.textContent = 'ATLAS PROTOCOL // LOCKDOWN'
+
+  const subtitle = document.createElement('p')
+  subtitle.className = 'ghostnet-exit-dialog__subtitle'
+  subtitle.textContent = 'Intrusion confirmed — commandeering viewport to stabilise assimilation.'
+
+  headerText.appendChild(title)
+  headerText.appendChild(subtitle)
+
+  header.appendChild(badge)
+  header.appendChild(headerText)
+
+  const log = document.createElement('div')
+  log.className = 'ghostnet-exit-dialog__log ghostnet-assimilation-dialog__log'
+  log.setAttribute('role', 'log')
+  log.setAttribute('aria-live', 'assertive')
+
+  const row = document.createElement('div')
+  row.className = 'ghostnet-exit-line ghostnet-assimilation-line'
+
+  const text = document.createElement('span')
+  text.className = 'ghostnet-exit-line__text'
+  row.appendChild(text)
+
+  const status = document.createElement('span')
+  status.className = 'ghostnet-exit-line__status'
+  status.setAttribute('aria-hidden', 'false')
+  row.appendChild(status)
+
+  log.appendChild(row)
+
+  const footnote = document.createElement('p')
+  footnote.className = 'ghostnet-exit-dialog__footnote ghostnet-assimilation-dialog__footnote'
+  footnote.textContent = 'Maintain focus on the console. ATLAS is shielding visual artifacts while GhostNet synchronises.'
+
+  dialog.appendChild(header)
+  dialog.appendChild(log)
+  dialog.appendChild(footnote)
+  overlay.appendChild(dialog)
+
+  return {
+    overlay,
+    row,
+    textElement: text,
+    statusElement: status
+  }
+}
+
+function startAssimilationOverlaySequence () {
+  if (!assimilationOverlayState) return
+
+  const { row, textElement, statusElement } = assimilationOverlayState
+  if (!row || !textElement || !statusElement || ASSIMILATION_ALERT_LINES.length === 0) {
+    return
+  }
+
+  const applyMessage = (line) => {
+    if (!line) return
+
+    if (line.tone) {
+      row.dataset.tone = line.tone
+    } else {
+      delete row.dataset.tone
+    }
+
+    textElement.textContent = line.text
+
+    if (line.status) {
+      statusElement.textContent = line.status
+      statusElement.setAttribute('aria-hidden', 'false')
+      row.classList.add('ghostnet-exit-line--status')
+    } else {
+      statusElement.textContent = ''
+      statusElement.setAttribute('aria-hidden', 'true')
+      row.classList.remove('ghostnet-exit-line--status')
+    }
+  }
+
+  assimilationOverlayState.applyMessage = applyMessage
+
+  if (assimilationOverlayTimer) {
+    window.clearInterval(assimilationOverlayTimer)
+  }
+
+  let index = Math.floor(Math.random() * ASSIMILATION_ALERT_LINES.length)
+  applyMessage(ASSIMILATION_ALERT_LINES[index])
+
+  assimilationOverlayTimer = window.setInterval(() => {
+    index = (index + 1) % ASSIMILATION_ALERT_LINES.length
+    applyMessage(ASSIMILATION_ALERT_LINES[index])
+  }, 1400)
+}
+
+function freezeAssimilationOverlayMessage (line) {
+  if (assimilationOverlayTimer) {
+    window.clearInterval(assimilationOverlayTimer)
+    assimilationOverlayTimer = null
+  }
+
+  if (assimilationOverlayState && typeof assimilationOverlayState.applyMessage === 'function') {
+    assimilationOverlayState.applyMessage(line)
+  }
+}
+
+function showAssimilationOverlay () {
+  if (typeof document === 'undefined') return
+  if (assimilationOverlayState) return
+
+  assimilationOverlayState = buildAssimilationOverlay()
+  if (!assimilationOverlayState || !assimilationOverlayState.overlay) {
+    assimilationOverlayState = null
+    return
+  }
+
+  if (!document.body) {
+    assimilationOverlayState = null
+    return
+  }
+
+  document.body.appendChild(assimilationOverlayState.overlay)
+  startAssimilationOverlaySequence()
+}
+
+function hideAssimilationOverlay () {
+  if (assimilationOverlayTimer) {
+    window.clearInterval(assimilationOverlayTimer)
+    assimilationOverlayTimer = null
+  }
+
+  if (!assimilationOverlayState) {
+    return
+  }
+
+  const { overlay } = assimilationOverlayState
+  if (overlay && overlay.parentElement) {
+    overlay.classList.add('ghostnet-exit-overlay--closing')
+    window.setTimeout(() => {
+      if (overlay.parentElement) {
+        overlay.parentElement.removeChild(overlay)
+      }
+    }, 220)
+  }
+
+  assimilationOverlayState = null
+}
+
 function getNavigationElement () {
   if (typeof document === 'undefined') return null
   return document.querySelector(NAVIGATION_EXCLUSION_SELECTOR)
@@ -282,6 +495,7 @@ function beginAssimilationEffect () {
   const targets = shuffle(Array.from(new Set([...primaryTargets, ...fallbackSet])))
   assimilationStartTime = performance.now()
   document.body.classList.add('ghostnet-assimilation-mode')
+  showAssimilationOverlay()
 
   targets.forEach((element) => {
     const delay = Math.random() * (effectDurationMs * 0.55)
@@ -360,7 +574,21 @@ export function initiateGhostnetAssimilation (callback) {
       // Ignore storage write issues
     }
 
+    const finalLine = forced
+      ? {
+          text: 'Interference detected. Forcing containment and masking residual artifacts.',
+          status: 'FORCE',
+          tone: 'warning'
+        }
+      : {
+          text: 'Viewport secured. GhostNet interface is stabilised for operator focus.',
+          status: 'SEALED',
+          tone: 'success'
+        }
+    freezeAssimilationOverlayMessage(finalLine)
+
     const performCleanup = () => {
+      hideAssimilationOverlay()
       cleanup()
       assimilationInProgress = false
     }
