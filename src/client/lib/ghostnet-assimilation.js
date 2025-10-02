@@ -12,6 +12,7 @@ const ARRIVAL_FLAG_KEY = 'ghostnet.assimilationArrival'
 const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HTML', 'BODY'])
+const EFFECT_BLOCKED_TAGS = new Set(['DIV'])
 const NAVIGATION_EXCLUSION_SELECTOR = '#primaryNavigation'
 const FORCED_FADE_CLEANUP_DELAY = 720
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
@@ -273,6 +274,10 @@ function isEligibleTarget (element) {
   const rect = element.getBoundingClientRect()
   if (!rect) return false
   return rect.width !== 0 || rect.height !== 0
+}
+
+function isEffectPermitted (element) {
+  return Boolean(element) && !EFFECT_BLOCKED_TAGS.has(element.tagName)
 }
 
 function getElementRect (element) {
@@ -585,7 +590,9 @@ function buildAssimilationPlan () {
     }
   })
 
-  const leaves = candidates.filter((element) => !parentCandidates.has(element))
+  const leaves = candidates
+    .filter((element) => !parentCandidates.has(element))
+    .filter((element) => isEffectPermitted(element))
 
   if (leaves.length === 0) {
     return { root, topLevelGroups: [], targets: [] }
@@ -622,7 +629,11 @@ function buildAssimilationPlan () {
   const targetsSet = new Set()
   topLevelGroups.forEach((group) => {
     group.childGroups.forEach((child) => {
-      child.forEach((element) => targetsSet.add(element))
+      child.forEach((element) => {
+        if (isEffectPermitted(element)) {
+          targetsSet.add(element)
+        }
+      })
     })
   })
 
@@ -631,6 +642,7 @@ function buildAssimilationPlan () {
 
 function upgradeElement (element, baseDelay) {
   if (!element || element.dataset.ghostnetAssimilated === 'true') return
+  if (!isEffectPermitted(element)) return
   if (remainingCharacterAnimations <= 0) return
 
   element.dataset.ghostnetAssimilated = 'true'
