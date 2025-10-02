@@ -1190,7 +1190,7 @@ function MissionsPanel () {
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
             <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
+            <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
           </div>
           {sourceUrl && (
             <div className='ghostnet__data-source ghostnet-muted'>
@@ -1655,7 +1655,7 @@ function CommodityTradePanel () {
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
             <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{currentSystemName || 'Unknown'}</div>
+            <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{currentSystemName || 'Unknown'}</div>
           </div>
         </div>
       </div>
@@ -2730,7 +2730,7 @@ function TradeRoutesPanel () {
             <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
               <div>
                 <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-                <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>
+                <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>
                   {selectedSystemName || 'Unknown'}
                 </div>
               </div>
@@ -3099,7 +3099,7 @@ function PristineMiningPanel () {
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
             <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='text-primary' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
+            <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
           </div>
           {sourceUrl && (
             <div className='ghostnet__data-source ghostnet-muted'>
@@ -3176,7 +3176,7 @@ function PristineMiningPanel () {
                       >
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span className='text-primary'>{location.body || '--'}</span>
+                            <span className='ghostnet-accent'>{location.body || '--'}</span>
                             {detailText && (
                               <span className={styles.tableSubtext}>{detailText}</span>
                             )}
@@ -3186,12 +3186,12 @@ function PristineMiningPanel () {
                           <div className={`${styles.tableCellInline} text-no-wrap`}>
                             {location.isTargetSystem
                               ? (
-                                <i className='icon system-object-icon icarus-terminal-location-filled text-primary' style={{ marginRight: '.5rem' }} />
+                                <i className='icon system-object-icon icarus-terminal-location-filled ghostnet-accent' style={{ marginRight: '.5rem' }} />
                                 )
                               : (
                                 <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
                                 )}
-                            <span className='text-primary'>{location.system || '--'}</span>
+                            <span className='ghostnet-accent'>{location.system || '--'}</span>
                           </div>
                         </td>
                         <td className={`hidden-small text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{bodyDistanceDisplay || '--'}</td>
@@ -3204,8 +3204,8 @@ function PristineMiningPanel () {
                               <div className='pristine-mining__detail-info'>
                                 <div className='pristine-mining__detail-summary'>
                                   {detailText && <span>{detailText}</span>}
-                                  {bodyDistanceDisplay && <span>Body Distance: <span className='text-primary'>{bodyDistanceDisplay}</span></span>}
-                                  {distanceDisplay && <span>System Distance: <span className='text-primary'>{distanceDisplay}</span></span>}
+                                  {bodyDistanceDisplay && <span>Body Distance: <span className='ghostnet-accent'>{bodyDistanceDisplay}</span></span>}
+                                  {distanceDisplay && <span>System Distance: <span className='ghostnet-accent'>{distanceDisplay}</span></span>}
                                 </div>
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
