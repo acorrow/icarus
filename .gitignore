@@ -6,3 +6,4 @@ temp/
 .env
 .next
 *.log
+resources/cache/*
