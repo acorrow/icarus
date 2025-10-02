@@ -616,6 +616,39 @@ body.ghostnet-assimilation-forced .ghostnet-assimilation-target,
   animation: ghostnet-assimilation-ghost var(--ghostnet-assimilation-ghost-loop, 360ms) steps(2, end) infinite;
 }
 
+#primaryNavigation.ghostnet-assimilation-target--navigation {
+  animation: none !important;
+  background: rgba(28, 22, 51, 0.78) !important;
+  border-radius: 0.85rem;
+  box-shadow: 0 0 1.45rem rgba(93, 46, 255, 0.35);
+  padding: clamp(0.25rem, 1vw, 0.5rem) clamp(0.4rem, 1.2vw, 0.85rem);
+  gap: clamp(0.35rem, 0.8vw, 0.75rem);
+  filter: saturate(var(--ghostnet-assimilation-saturation, 1.12)) hue-rotate(-4deg);
+}
+
+#primaryNavigation.ghostnet-assimilation-target--navigation::before {
+  display: none;
+}
+
+#primaryNavigation.ghostnet-assimilation-target--navigation button {
+  background: rgba(28, 22, 51, 0.45);
+  border-color: rgba(140, 92, 255, 0.4);
+  color: rgba(245, 241, 255, 0.88);
+  box-shadow: inset 0 0 1.35rem rgba(73, 27, 115, 0.35);
+}
+
+#primaryNavigation.ghostnet-assimilation-target--navigation button.button--active {
+  border-color: rgba(41, 243, 195, 0.65);
+  color: #29f3c3;
+  box-shadow: 0 0 1.55rem rgba(41, 243, 195, 0.4), inset 0 0 0.65rem rgba(41, 243, 195, 0.55);
+}
+
+#primaryNavigation.ghostnet-assimilation-target--navigation.ghostnet-assimilation-remove {
+  opacity: 0;
+  transform: scale(0.97) translate3d(0, -10px, 0);
+  filter: blur(2px) saturate(0.75);
+}
+
 body.ghostnet-assimilation-forced .ghostnet-assimilation-target::before,
 .ghostnet-assimilation-force-fade::before {
   opacity: 0;

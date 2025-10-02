@@ -21,6 +21,7 @@ const MAX_ACTIVE_TARGETS = 160
 const MAX_CHARACTER_ANIMATIONS = 3200
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
+let navigationStabilizationCleanup = null
 
 const ASSIMILATION_ALERT_LINES = [
   {
@@ -238,6 +239,54 @@ function hideAssimilationOverlay () {
 function getNavigationElement () {
   if (typeof document === 'undefined') return null
   return document.querySelector(NAVIGATION_EXCLUSION_SELECTOR)
+}
+
+function clearNavigationStabilization () {
+  if (typeof navigationStabilizationCleanup === 'function') {
+    navigationStabilizationCleanup()
+    navigationStabilizationCleanup = null
+  }
+}
+
+function stabilizeNavigationElement (element) {
+  if (typeof window === 'undefined') return
+  if (!element) return
+
+  clearNavigationStabilization()
+
+  element.classList.add('ghostnet-assimilation-target', 'ghostnet-assimilation-target--navigation')
+  element.style.setProperty('--ghostnet-assimilation-intensity', '0.35')
+  element.style.setProperty('--ghostnet-assimilation-saturation', '1.12')
+  element.style.setProperty('--ghostnet-assimilation-glow-radius', '1.25rem')
+  element.style.setProperty('--ghostnet-assimilation-glow-opacity', '0.26')
+
+  const removeTimer = window.setTimeout(() => {
+    element.classList.add('ghostnet-assimilation-remove')
+  }, 28)
+
+  let cleanupTimer = null
+  const cleanup = () => {
+    window.clearTimeout(removeTimer)
+    if (cleanupTimer) window.clearTimeout(cleanupTimer)
+    element.classList.remove(
+      'ghostnet-assimilation-target',
+      'ghostnet-assimilation-target--navigation',
+      'ghostnet-assimilation-remove'
+    )
+    element.style.removeProperty('--ghostnet-assimilation-intensity')
+    element.style.removeProperty('--ghostnet-assimilation-saturation')
+    element.style.removeProperty('--ghostnet-assimilation-glow-radius')
+    element.style.removeProperty('--ghostnet-assimilation-glow-opacity')
+    if (navigationStabilizationCleanup === cleanup) {
+      navigationStabilizationCleanup = null
+    }
+  }
+
+  cleanupTimer = window.setTimeout(() => {
+    cleanup()
+  }, 640)
+
+  navigationStabilizationCleanup = cleanup
 }
 
 function isWithinExcludedRegion (element) {
@@ -481,6 +530,7 @@ function findFallbackTarget (element, primarySet, fallbackSet, root) {
 }
 
 function beginAssimilationEffect () {
+  clearNavigationStabilization()
   const { root, elements: shuffledElements } = buildElementList()
   const primaryTargets = shuffledElements.slice(0, MAX_ACTIVE_TARGETS)
   const primarySet = new Set(primaryTargets)
@@ -525,6 +575,7 @@ function beginAssimilationEffect () {
       element.style.removeProperty('--ghostnet-assimilation-ghost-loop')
     })
     document.body.classList.remove('ghostnet-assimilation-forced')
+    clearNavigationStabilization()
   }
 
   return { cleanup, targets }
@@ -593,6 +644,7 @@ export function initiateGhostnetAssimilation (callback) {
     const stabilizeViewport = () => {
       if (viewportStabilized) return
       viewportStabilized = true
+      stabilizeNavigationElement(getNavigationElement())
       cleanup()
       assimilationInProgress = false
     }
