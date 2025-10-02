@@ -3117,68 +3117,253 @@ function PristineMiningPanel () {
   )
 }
 
+const GREEK_SYMBOLS = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega']
+const TERMINAL_BUFFER = 36
+const TERMINAL_WINDOW = 7
+
+function randomChoice (items) {
+  return items[Math.floor(Math.random() * items.length)]
+}
+
+function randomInteger (min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function randomFloat (min, max, precision = 2) {
+  const value = Math.random() * (max - min) + min
+  return Number.parseFloat(value.toFixed(precision))
+}
+
+function randomCallsign () {
+  return `${randomChoice(GREEK_SYMBOLS).toUpperCase()}-${randomInteger(1, 99)}`
+}
+
+function randomEndpoint () {
+  const protocol = randomChoice(['mesh', 'flux', 'relay', 'beacon', 'packet', 'datastream'])
+  const host = `${randomChoice(['ghostnet', 'syndicate', 'perseus', 'umbra', 'aurora', 'dusk'])}.${randomChoice(['alpha', 'beta', 'gamma', 'delta', 'kappa', 'lambda'])}`
+  return `${protocol}://${host}.${randomChoice(['io', 'net', 'grid', 'node'])}`
+}
+
+function randomGreekPhrase () {
+  return `${randomChoice(GREEK_SYMBOLS)}-${randomChoice(['lattice', 'corridor', 'bloom', 'echo', 'vector', 'aperture'])}`
+}
+
+function generateCipherString (length = 48) {
+  const glyphs = ['▓', '▒', '░', '█']
+  return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
+}
+
+function generateGlitchString (length = 64) {
+  const glyphs = [
+    'Δ', 'Λ', 'Ψ', 'Φ', 'Ω', '∴', '∵', '≛', '⌁', '⌖', '⌬', '⚚', '⚙', '✦', '✧', '✺', '✶', '☍', '☌', '☠', '☣', '☢', '☤',
+    '☥', '☧', '☽', '☾', '☿', '⚘', '⚡', '⚛', '⚜', '▓', '▒', '░', '█', 'Æ', 'Ø', 'Ξ', 'Ж', '₳', '₧', '₭', '₮', '₯', '⟁', '◬',
+    '◈', '◉', '◇', '⬡', '⬢', '⬣', '▰', '▱', '▮', '▯', '▩', '▣', '▥', '▨', '▧', '▦'
+  ]
+  return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
+}
+
+function generateBinaryString (bytes = 8) {
+  return Array.from({ length: bytes }).map(() => randomInteger(0, 255).toString(2).padStart(8, '0')).join(' ')
+}
+
+function generateCommandText () {
+  const templates = [
+    () => `uplink --channel "${randomCallsign()}" --handshake ${randomEndpoint()} --entropy ${randomInteger(256, 4096)}`,
+    () => `listen ${randomEndpoint()} --filter "${randomChoice(GREEK_SYMBOLS)}:${randomChoice(GREEK_SYMBOLS)}" --prism ${randomChoice(['triad', 'nova', 'umbra'])}`,
+    () => `trace ${randomEndpoint()} --return-hop ${randomInteger(2, 9)} --mask "${randomChoice(['ghost-netting', 'veil', 'umbra'])}"`,
+    () => `stream manifest ${randomEndpoint()} --burst ${randomInteger(16, 96)}kb --checksum ${randomChoice(['delta', 'sigma', 'omega'])}`,
+    () => `seed beacon://${randomGreekPhrase()} --prompt "${randomGreekPhrase()}" --variance ${randomFloat(0.01, 0.2, 3)}`,
+    () => `siphon datacube://${randomGreekPhrase()} --offset ${randomInteger(1024, 8192)} --chunks ${randomInteger(2, 6)}`
+  ]
+  return randomChoice(templates)()
+}
+
+function generateResponseText () {
+  const phrases = [
+    () => `Handshake acknowledged · lattice ${randomChoice(['stabilised', 'resonant', 'phasing'])} · latency ${randomInteger(18, 95)}ms`,
+    () => `Convoy packets intercepted · ${randomChoice(['Sigma', 'Kappa', 'Delta'])} drift trimmed to ${randomFloat(0.01, 0.9, 2)}°`,
+    () => `Return vector aligned · ${randomChoice(['gamma', 'kappa', 'omega'])} corridor integrity ${randomInteger(80, 99)}%`,
+    () => `Spectral sweep normalized · ${randomInteger(12, 64)} spikes flagged for review`,
+    () => `Archive sync complete · security halo steady at ${randomInteger(90, 100)}%`,
+    () => `Beacon echo ${randomChoice(['lambda', 'theta', 'rho'])} · coherence ${randomFloat(88, 99, 1)}%`
+  ]
+  return randomChoice(phrases)()
+}
+
+function generateDecryptText () {
+  const vector = [randomFloat(-1.5, 1.5, 2), randomFloat(-1.5, 1.5, 2), randomFloat(-1.5, 1.5, 2)]
+  const keys = [randomChoice(GREEK_SYMBOLS).toUpperCase(), randomChoice(GREEK_SYMBOLS).toUpperCase()]
+  const payload = {
+    signal: randomCallsign(),
+    vector,
+    payload: {
+      keys,
+      seed: randomInteger(100000, 999999)
+    }
+  }
+  return JSON.stringify(payload)
+}
+
+function generateAlertText () {
+  return `${randomChoice(['ANOMALY', 'INTRUSION', 'SIGNAL'])} ${randomChoice(['DELTA', 'OMEGA', 'SIGMA'])} DETECTED · cascade ${randomInteger(1000, 9999)}`
+}
+
+function generateTerminalLine () {
+  const generators = {
+    command: () => ({ type: 'command', label: 'ghostnet@ship', text: generateCommandText() }),
+    response: () => ({ type: 'response', label: randomChoice(['mesh', 'telemetry', 'analysis']), text: generateResponseText() }),
+    cipher: () => ({ type: 'cipher', label: 'cipher', text: generateCipherString(randomInteger(32, 64)) }),
+    binary: () => ({ type: 'binary', label: 'payload', text: generateBinaryString(randomInteger(6, 10)) }),
+    decrypt: () => ({ type: 'decrypt', label: randomChoice(['mesh', 'analysis']), text: generateDecryptText() }),
+    alert: () => ({ type: 'alert', label: '!!!', text: generateAlertText() })
+  }
+
+  const weightedTypes = ['command', 'command', 'response', 'response', 'response', 'cipher', 'binary', 'decrypt', 'response', 'command', 'alert', 'decrypt', 'response', 'cipher']
+  const type = randomChoice(weightedTypes)
+  return generators[type]()
+}
+
+function createTerminalLineWithId (seed = '', baseLine) {
+  const line = baseLine || generateTerminalLine()
+  const unique = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}${seed ? `-${seed}` : ''}`
+  return { ...line, id: unique }
+}
+
 function GhostnetTerminalOverlay () {
   const [collapsed, setCollapsed] = useState(false)
-  const [offset, setOffset] = useState(0)
+  const [terminalLines, setTerminalLines] = useState(() =>
+    Array.from({ length: TERMINAL_BUFFER }).map((_, index) => createTerminalLineWithId(index))
+  )
+  const cadenceRef = useRef()
+  const timeoutRef = useRef(null)
 
-  const terminalLines = useMemo(() => ([
-    { type: 'command', label: 'ghostnet@ship', text: 'uplink --channel "VEGA-9" --handshake mesh://relay-04 --entropy 512' },
-    { type: 'response', label: 'mesh', text: 'Handshake acknowledged · encryption lattice stable · latency 42ms' },
-    { type: 'command', label: 'ghostnet@ship', text: 'stream manifest ping://drydock --burst 32kb --checksum' },
-    { type: 'response', label: 'telemetry', text: 'Payload queued · 12 telemetry frames buffered for dispatch' },
-    { type: 'command', label: 'ghostnet@ship', text: 'listen mesh://syndicate.radar --filter "convoy:aurora" --prism triad' },
-    { type: 'response', label: 'mesh', text: 'Intercepted 3 convoy packets · decrypting spectral bands' },
-    { type: 'response', label: 'mesh', text: 'Return vector mapped · ghost corridor aligned to Perseus Reach' },
-    { type: 'command', label: 'ghostnet@ship', text: 'send burst://outpost-ix --file navmap.dat --repeat 2 --compress delta' },
-    { type: 'response', label: 'ship', text: 'Uplink thrusters trimming · data stream locked at 8.4 kb/s' },
-    { type: 'response', label: 'mesh', text: 'Outpost IX confirms receipt · requesting follow-on diagnostics' },
-    { type: 'command', label: 'ghostnet@ship', text: 'monitor relay://ghostnet.delta --mode passive --squelch 3' },
-    { type: 'response', label: 'mesh', text: 'Passive net cast · spectral noise floor nominal' },
-    { type: 'command', label: 'ghostnet@ship', text: 'trace flux://nx-113 --return-hop 5 --mask "ghost-netting"' },
-    { type: 'response', label: 'analysis', text: 'Foreign hash mapped to rogue relay NX-113 · patching firewall weaves' },
-    { type: 'alert', label: '!!!', text: 'ANOMOLY DETECTED - INTERCEPTING FOREIGN SIGNAL' },
-    { type: 'cipher', label: 'cipher', text: '▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓' },
-    { type: 'cipher', label: 'cipher', text: '{▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓' },
-    { type: 'decrypt', label: 'mesh', text: '{"signal":"VX-77","vector":[▓▓▓▓▓▓▓▓▓▓▓▓▓▓],"payload":▓▓▓}' },
-    { type: 'decrypt', label: 'mesh', text: '{"signal":"VX-77","vector":[-0.72,1.12,0.04],"payload":{"keys":["Φ-3","KAPPA"],"seed":917402}}' },
-    { type: 'response', label: 'mesh', text: 'Anomaly quarantined · redirecting foreign signal residue into sandbox' },
-    { type: 'command', label: 'ghostnet@ship', text: 'capture relay://buoy.kite --mode spectral --spread 512khz' },
-    { type: 'response', label: 'telemetry', text: 'Spectral sweep normalized · 42 spikes flagged for review' },
-    { type: 'binary', label: 'payload', text: '01100110 01110010 01100001 01100011 01110100 01100001 01101100' },
-    { type: 'command', label: 'ghostnet@ship', text: 'open packet://perseus/cache.xml --decrypt --channel dusk' },
-    { type: 'cipher', label: 'cipher', text: '<▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒>' },
-    { type: 'decrypt', label: 'mesh', text: '<cache><node id="dusk"><route>β-17→γ-02</route><ttl>04:22</ttl></node></cache>' },
-    { type: 'command', label: 'ghostnet@ship', text: 'queue datagram --body @cargo-manifest.json --burst-mode scatter' },
-    { type: 'cipher', label: 'cipher', text: '▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓' },
-    { type: 'decrypt', label: 'ship', text: '{"manifest":["meta-alloys","ancient-relay-shards","quantum-lattice"],"eta":"04:19:08"}' },
-    { type: 'response', label: 'mesh', text: 'Broadcast complete · watchers asleep · proceed unseen' },
-    { type: 'command', label: 'ghostnet@ship', text: 'seed beacon://echo-nine --prompt "signal bloom" --variance 0.012' },
-    { type: 'response', label: 'mesh', text: 'Beacon echo returns · coherence 98.6% · drift compensated' },
-    { type: 'command', label: 'ghostnet@ship', text: 'siphon datacube://vault.theta --offset 8441 --chunks 3' },
-    { type: 'cipher', label: 'cipher', text: '█▓▒░█▒░▓▒░█▒░▓▒░█▒░▓▒░█▒░▓▒░█▒░▓▒░' },
-    { type: 'decrypt', label: 'mesh', text: '<log entry="7772">Δwave@841Hz;phase-shift=0.14π;auth=ghostnet</log>' },
-    { type: 'response', label: 'mesh', text: 'Archive sync complete · security halo steady at 99%' }
-  ]), [])
+  if (!cadenceRef.current) {
+    cadenceRef.current = {
+      mode: 'normal',
+      queue: [],
+      floodCountdown: randomInteger(24, 48),
+      recoveryCountdown: 0
+    }
+  }
+
+  const advanceCadence = useCallback(() => {
+    const state = cadenceRef.current
+    const lines = []
+
+    const pushLine = base => {
+      lines.push(createTerminalLineWithId('', base))
+    }
+
+    const buildFloodLine = () => ({
+      type: 'glitch',
+      label: '####',
+      text: generateGlitchString(randomInteger(56, 92))
+    })
+
+    if (state.queue.length > 0) {
+      const base = state.queue.shift()
+      pushLine(base)
+
+      if (state.mode === 'flood' && state.queue.length <= state.recoveryCountdown) {
+        state.mode = 'recovery'
+      }
+
+      if (state.mode === 'recovery' && state.queue.length === 0) {
+        state.mode = 'normal'
+        state.recoveryCountdown = 0
+      }
+    } else {
+      if (state.mode !== 'normal') {
+        state.mode = 'normal'
+      }
+
+      state.floodCountdown -= 1
+
+      if (state.floodCountdown <= 0) {
+        const floodLength = randomInteger(12, 20)
+        const floodLines = Array.from({ length: floodLength }).map(() => buildFloodLine())
+        const recoveryMessages = [
+          { type: 'alert', label: '!!!', text: 'FOREIGN INTRUDER DETECTED · mesh anomaly quarantined' },
+          { type: 'system', label: 'system', text: 'GhostNet encrypted your console on the fly to prevent unauthorize access.' },
+          { type: 'system', label: 'system', text: 'Returning to standard level ATLAS Protocol encryption.' }
+        ]
+
+        state.queue = [...floodLines, ...recoveryMessages]
+        state.mode = 'flood'
+        state.recoveryCountdown = recoveryMessages.length
+        state.floodCountdown = randomInteger(28, 54)
+
+        const base = state.queue.shift()
+        if (base) {
+          pushLine(base)
+          if (state.queue.length <= state.recoveryCountdown) {
+            state.mode = 'recovery'
+          }
+        }
+      } else {
+        const triggerBurst = Math.random() < 0.24
+
+        if (triggerBurst) {
+          const burstLength = randomInteger(3, 6)
+          pushLine(generateTerminalLine())
+          const burstQueue = Array.from({ length: burstLength - 1 }).map(() => generateTerminalLine())
+          state.queue = burstQueue
+          state.mode = 'burst'
+          state.recoveryCountdown = 0
+        } else {
+          pushLine(generateTerminalLine())
+          state.recoveryCountdown = 0
+        }
+      }
+    }
+
+    if (lines.length === 0) {
+      pushLine(generateTerminalLine())
+    }
+
+    let delay
+    if (state.mode === 'flood') {
+      delay = randomInteger(28, 90)
+    } else if (state.mode === 'burst') {
+      delay = randomInteger(90, 210)
+    } else if (state.mode === 'recovery' || state.queue.length > 0) {
+      delay = randomInteger(260, 560)
+    } else {
+      delay = randomInteger(480, 1800)
+    }
+
+    return { lines, delay }
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
 
-    const interval = window.setInterval(() => {
-      setOffset(previous => (previous + 1) % terminalLines.length)
-    }, 3200)
+    const schedule = delay => {
+      timeoutRef.current = window.setTimeout(() => {
+        const { lines, delay: nextDelay } = advanceCadence()
+        setTerminalLines(previous => {
+          let next = [...previous, ...lines]
+          if (next.length > TERMINAL_BUFFER) {
+            next = next.slice(next.length - TERMINAL_BUFFER)
+          }
+          return next
+        })
+        schedule(nextDelay)
+      }, delay)
+    }
+
+    schedule(randomInteger(360, 1200))
 
     return () => {
-      window.clearInterval(interval)
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current)
+      }
     }
-  }, [terminalLines.length])
+  }, [advanceCadence])
 
   const visibleLines = useMemo(() => {
-    const windowSize = 7
-    return Array.from({ length: windowSize }).map((_, index) => {
-      const currentIndex = (offset + index) % terminalLines.length
-      return { ...terminalLines[currentIndex], id: `${currentIndex}-${index}` }
-    })
-  }, [offset, terminalLines])
+    return terminalLines.slice(-TERMINAL_WINDOW)
+  }, [terminalLines])
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed(previous => !previous)
@@ -3194,12 +3379,13 @@ function GhostnetTerminalOverlay () {
           </div>
           <button
             type='button'
-            className={styles.terminalToggle}
+            className={[styles.terminalToggle, collapsed ? styles.terminalToggleCollapsed : ''].filter(Boolean).join(' ')}
             onClick={toggleCollapsed}
             aria-expanded={!collapsed}
-            aria-label={collapsed ? 'Expand uplink console' : 'Minimize uplink console'}
+            aria-label={collapsed ? 'Expand uplink console' : 'Collapse uplink console'}
           >
-            {collapsed ? 'Expand' : 'Minimize'}
+            <span aria-hidden='true' className={styles.terminalToggleIcon}>{collapsed ? '▵' : '▿'}</span>
+            <span className={styles.terminalToggleLabel}>{collapsed ? 'Expand' : 'Collapse'}</span>
           </button>
         </div>
         <div className={styles.terminalBody}>
@@ -3212,18 +3398,20 @@ function GhostnetTerminalOverlay () {
               else if (line.type === 'cipher') promptClassNames.push(styles.terminalPromptCipher)
               else if (line.type === 'binary') promptClassNames.push(styles.terminalPromptBinary)
               else if (line.type === 'decrypt') promptClassNames.push(styles.terminalPromptDecrypt)
+              else if (line.type === 'glitch') promptClassNames.push(styles.terminalPromptGlitch)
+              else if (line.type === 'system') promptClassNames.push(styles.terminalPromptSystem)
 
               const textClassNames = [styles.terminalText]
               if (line.type === 'alert') textClassNames.push(styles.terminalTextAlert)
               if (line.type === 'cipher') textClassNames.push(styles.terminalTextCipher)
               if (line.type === 'binary') textClassNames.push(styles.terminalTextBinary)
               if (line.type === 'decrypt') textClassNames.push(styles.terminalTextDecrypt)
+              if (line.type === 'glitch') textClassNames.push(styles.terminalTextGlitch)
+              if (line.type === 'system') textClassNames.push(styles.terminalTextSystem)
 
               return (
                 <li key={line.id} className={styles.terminalLine}>
-                  <span className={promptClassNames.join(' ')}>
-                    {line.label}
-                  </span>
+                  <span className={promptClassNames.join(' ')}>{line.label}</span>
                   <span className={textClassNames.join(' ')}>{line.text}</span>
                 </li>
               )
