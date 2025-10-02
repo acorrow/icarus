@@ -9,6 +9,28 @@ const WT2PT = require('wikitext2plaintext')
 const xmlParser = new xml2js.Parser()
 const wikiTextParser = new WT2PT()
 
+function sanitizeScrapedText (text) {
+  if (typeof text !== 'string') return text == null ? '' : String(text)
+  if (text.length === 0) return ''
+
+  const sanitized = Array.from(text)
+    .filter(character => {
+      const codePoint = character.codePointAt(0)
+
+      // Allow basic formatting control characters (tab, line feed, carriage return)
+      if (codePoint === 0x09 || codePoint === 0x0a || codePoint === 0x0d) return true
+
+      // Strip other C0/C1 control characters and the Unicode replacement character
+      if (codePoint <= 0x1f || (codePoint >= 0x7f && codePoint <= 0x9f)) return false
+      if (codePoint === 0xfffd) return false
+
+      return true
+    })
+    .join('')
+
+  return sanitized
+}
+
 const { RESOURCES_DIR } = require('./lib/build-options')
 
 const ROOT_INPUT_DATA_DIR = path.join(RESOURCES_DIR, 'data')
@@ -236,8 +258,10 @@ async function codexArticles () {
     // Ignore Talk and User pages
     if (title.startsWith('Talk:') || title.startsWith('User:')) return response
 
-    const rawText = page.revision[0].text[0]._
-    const parsedText = wikiTextParser.parse(rawText || '').replace(/\r/g, '')
+    const rawText = sanitizeScrapedText(page.revision[0].text[0]._ ?? '')
+    const parsedText = sanitizeScrapedText(
+      wikiTextParser.parse(rawText || '').replace(/\r/g, '')
+    )
 
     // Ignore blank pages
     if (!rawText || !parsedText) return response
@@ -266,29 +290,34 @@ async function codexArticles () {
       .match(/{{quote(.*?)}}/img)
 
     const quote = rawQuotes?.[0]
-      .replace(/^{{(.*?)\|/, '')
-      .replace(/\|(.*?)}}$/, '')
-      .replace(/<!--(.*?)-->/, '')
-      .replace(/\[\[/, '')
-      .replace(/\]\]/, '')
-      .replace(/(<br>+)/img, ' ')
-      .replace(/(<br\/>+)/img, ' ')
-      .replace(/[ ]{2,}/img, ' ') // Turn two or more spaces into a single space
-      .replace(/Painite,CaZrAl<sub>9<\/sub>O<sub>15<\/sub>\(BO<sub>3<\/sub>\)\./, '') // This is just garbage data in the entry for Panite
-      .trim()
-      ?? null
+      ? sanitizeScrapedText(
+          rawQuotes[0]
+            .replace(/^{{(.*?)\|/, '')
+            .replace(/\|(.*?)}}$/, '')
+            .replace(/<!--(.*?)-->/, '')
+            .replace(/\[\[/, '')
+            .replace(/\]\]/, '')
+            .replace(/(<br>+)/img, ' ')
+            .replace(/(<br\/>+)/img, ' ')
+            .replace(/[ ]{2,}/img, ' ') // Turn two or more spaces into a single space
+            .replace(/Painite,CaZrAl<sub>9<\/sub>O<sub>15<\/sub>\(BO<sub>3<\/sub>\)\./, '') // This is just garbage data in the entry for Panite
+            .trim()
+        )
+      : null
 
     // Clean up text / omit certain sections
-    const text = parsedText
-      .replace(/\n\n- /img, '\n- ')
-      .replace(/\n\nGallery\n(.*?)\n/im, '\n')
-      .replace(/\n\nVideos\n(.*?)\n/im, '\n')
-      .replace(/\n\nReferences\n(.*?)\n/im, '\n')
-      .replace(/\nCategory:(.*?)\n/img, '\n')
-      .replace(/\nCategory:(.*?)$/img, '\n')
-      .replace(/\n([a-z]{2}):(.*?)\n/img, '\n')
-      .replace(/\n([a-z]{2}):(.*?)$/img, '\n')
-      .trim()
+    const text = sanitizeScrapedText(
+      parsedText
+        .replace(/\n\n- /img, '\n- ')
+        .replace(/\n\nGallery\n(.*?)\n/im, '\n')
+        .replace(/\n\nVideos\n(.*?)\n/im, '\n')
+        .replace(/\n\nReferences\n(.*?)\n/im, '\n')
+        .replace(/\nCategory:(.*?)\n/img, '\n')
+        .replace(/\nCategory:(.*?)$/img, '\n')
+        .replace(/\n([a-z]{2}):(.*?)\n/img, '\n')
+        .replace(/\n([a-z]{2}):(.*?)$/img, '\n')
+        .trim()
+    )
 
     // Experiment at extracting information about promiment systems
     //if (rawText.includes('| power      = ')) console.log(title.trim(), '-', text.split("\n")?.[0]?.replace(/[ ]{2,}/img, ' ')?.trim())

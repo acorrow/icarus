@@ -19,6 +19,13 @@
 - Table rows must never expand inline like a drawer. Selecting a row should always open a dedicated full-page view in the workspace, mirroring the behavior on the Find Trade Routes page. This ensures a clean experience on smaller displays.
 - Full-page workspace detail views should follow the existing `routeDetail` layout in `ghostnet.module.css`: the purple back button anchors on the left, the heading/subhead stay centered, and key stats render in the detail metrics grid ahead of any tables.
 
+### Palette hygiene
+- Keep the GhostNet palette constrained to the core tokens defined in `src/client/css/pages/ghostnet.css`.
+- When a design needs subtle variation, derive it with opacity or other modifiers from the shared tokens instead of introducing new hex values.
+- Avoid dumping long lists of bespoke color variables into module files; rely on the shared palette for consistency and easier maintenance.
+- Declare each palette token with a single color format (hex **or** rgb, not both) and document its primary usage with a block comment so future contributors understand the intent.
+- Keep gradients lightweight—prefer blending a small number of shared tokens with transparency rather than stacking many distinct color stops.
+
 ### GhostNet Purple Theme Specification
 - **Primary hue:** GhostNet surfaces should lean on a rich royal purple (`#5D2EFF`) for primary actions, interactive accents, and key highlights.
 - **Gradient treatments:** When gradients are needed, blend from the primary hue into a deeper indigo (`#2A0E82`) and finish with a soft ultraviolet (`#8C5CFF`) to preserve depth.
