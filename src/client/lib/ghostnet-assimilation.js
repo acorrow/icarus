@@ -284,13 +284,13 @@ function getElementRect (element) {
 }
 
 function getLowerHalfThreshold (root) {
+  if (typeof window !== 'undefined' && typeof window.innerHeight === 'number' && window.innerHeight > 0) {
+    return window.innerHeight / 2
+  }
+
   const rootRect = getElementRect(root)
   if (rootRect) {
     return rootRect.top + (rootRect.height / 2)
-  }
-
-  if (typeof window !== 'undefined' && typeof window.innerHeight === 'number') {
-    return window.innerHeight / 2
   }
 
   return 0
@@ -399,6 +399,45 @@ function shuffle (array) {
   return array
 }
 
+function partitionGroupMembers (anchor, membersSet) {
+  const members = Array.from(membersSet).filter(Boolean)
+  if (members.length === 0) {
+    return []
+  }
+
+  const anchorElement = members.includes(anchor) ? anchor : members[0]
+  const remainingMembers = members.filter((member) => member !== anchorElement)
+
+  if (remainingMembers.length === 0) {
+    return [[anchorElement]]
+  }
+
+  shuffle(remainingMembers)
+
+  const groups = []
+  let anchorAdded = false
+  let pending = remainingMembers.slice()
+
+  while (pending.length > 0) {
+    const maxChunk = Math.min(4, pending.length)
+    const chunkSize = Math.max(1, Math.floor(Math.random() * maxChunk) + 1)
+    const chunk = pending.splice(0, chunkSize)
+
+    if (!anchorAdded) {
+      chunk.unshift(anchorElement)
+      anchorAdded = true
+    }
+
+    groups.push(chunk)
+  }
+
+  if (!anchorAdded) {
+    groups.push([anchorElement])
+  }
+
+  return groups
+}
+
 function buildAssimilationPlan () {
   const root = document.querySelector('.layout__main') || document.body
 
@@ -432,7 +471,8 @@ function buildAssimilationPlan () {
       members.add(element)
     })
 
-  const groups = shuffle(Array.from(groupMap.values()).map((members) => shuffle(Array.from(members))))
+  const randomizedAnchors = shuffle(Array.from(groupMap.entries()))
+  const groups = shuffle(randomizedAnchors.flatMap(([anchor, members]) => partitionGroupMembers(anchor, members)))
   const targets = Array.from(new Set(groups.flat()))
 
   return { root, groups, targets }
