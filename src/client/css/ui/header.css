@@ -269,6 +269,40 @@
   transition: flex-basis 0.45s ease, width 0.45s ease;
 }
 
+.ghostnet-nav-stack {
+  position: relative;
+  width: 100%;
+  min-height: 3.8rem;
+}
+
+.ghostnet-nav-track {
+  display: flex;
+  gap: inherit;
+  width: 100%;
+}
+
+.ghostnet-nav-track--overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ghostnet-nav-track--overlay button {
+  pointer-events: none;
+}
+
+.ghostnet-nav-track--post {
+  position: relative;
+}
+
+.ghostnet-nav-track--glitching {
+  pointer-events: none;
+}
+
+.ghostnet-nav-track--glitching button {
+  pointer-events: none;
+}
+
 .ghostnet-nav-button--glitch-phase {
   position: relative;
   color: rgba(245, 241, 255, 0.84) !important;

@@ -48,6 +48,8 @@ const NAV_BUTTONS = [
   }
 ]
 
+const NAV_LOCKED_BUTTONS = NAV_BUTTONS.filter(button => button.path !== GHOSTNET_NAV_PATH)
+
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 const randomBetween = (min, max) => min + Math.random() * (max - min)
 const formatPx = value => `${value.toFixed(1)}px`
@@ -157,7 +159,7 @@ const createNavButtonGlitchProfile = ({ outDelay, outDuration, inDelay, inDurati
 
 const createNavGlitchProfiles = () => {
   const profiles = {}
-  const nonGhostButtons = NAV_BUTTONS.filter(button => button.path !== GHOSTNET_NAV_PATH)
+  const nonGhostButtons = NAV_LOCKED_BUTTONS
 
   nonGhostButtons.forEach((button, index) => {
     const baseDelay = 90 + index * 120
@@ -359,8 +361,7 @@ export default function Header ({ connected, active }) {
 
     clearNavRevealTimeouts()
 
-    const nonGhostProfiles = NAV_BUTTONS
-      .filter(button => button.path !== GHOSTNET_NAV_PATH)
+    const nonGhostProfiles = NAV_LOCKED_BUTTONS
       .map(button => profiles[button.path])
       .filter(Boolean)
 
@@ -372,7 +373,7 @@ export default function Header ({ connected, active }) {
     const glitchInStart = longestOut + 180
 
     registerNavRevealTimeout(() => {
-      setNavRevealState(prev => (prev === 'glitchOut' ? 'glitchIn' : prev))
+      setNavRevealState(prev => (prev === 'glitchOut' ? 'glitchOverlap' : prev))
     }, glitchInStart)
 
     const longestIn = allProfiles.reduce((max, profile) => Math.max(max, profile.inDelay + profile.inDuration), 0)
@@ -380,7 +381,7 @@ export default function Header ({ connected, active }) {
 
     registerNavRevealTimeout(() => {
       if (navGlitchInCompletedRef.current.size >= navGlitchInTargetCountRef.current) {
-        setNavRevealState(prev => (prev === 'glitchIn' ? 'complete' : prev))
+        setNavRevealState(prev => (prev === 'glitchOverlap' ? 'complete' : prev))
       }
     }, completionDelay)
   }, [clearNavRevealTimeouts, registerNavRevealTimeout])
@@ -724,17 +725,17 @@ export default function Header ({ connected, active }) {
   }, [navRevealState, pendingNavReveal, pirateModalVisible, setPendingNavReveal, startNavUnlockSequence])
 
   useEffect(() => {
-    if (navRevealState === 'glitchIn') {
+    if (navRevealState === 'glitchOverlap') {
       navGlitchInCompletedRef.current = new Set()
       navGlitchInTargetCountRef.current = NAV_BUTTONS.length
     }
   }, [navRevealState])
 
   useEffect(() => {
-    if (navRevealState !== 'glitchIn') return undefined
+    if (navRevealState !== 'glitchOverlap') return undefined
 
     const cancel = registerNavRevealTimeout(() => {
-      setNavRevealState(prev => (prev === 'glitchIn' ? 'complete' : prev))
+      setNavRevealState(prev => (prev === 'glitchOverlap' ? 'complete' : prev))
     }, 4800)
 
     return cancel
@@ -766,23 +767,22 @@ export default function Header ({ connected, active }) {
   const accessibleTitle = (titleChars.join('').trimEnd()) || ORIGINAL_TITLE
   const assimilationComplete = titleAnimationState.current.completed
   const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
-  const navUnlockAnimating = navRevealState === 'glitchOut' || navRevealState === 'glitchIn'
-  const ghostnetButtonVisible = navRevealState === 'glitchIn' || navRevealState === 'complete'
-  const navigationButtons = NAV_BUTTONS.filter(button => {
-    if (button.path === GHOSTNET_NAV_PATH) {
-      return ghostnetButtonVisible
-    }
-    return true
-  })
+  const navUnlockAnimating = navRevealState === 'glitchOut' || navRevealState === 'glitchOverlap'
+  const disableNavButtons = navUnlockAnimating
+  const navTabIndex = disableNavButtons ? -1 : 1
+  const navPreVisible = navRevealState !== 'complete'
+  const navPreOverlay = navRevealState === 'glitchOverlap'
+  const navPostVisible = navRevealState === 'complete' || navRevealState === 'glitchOverlap'
+  const navPostGlitching = navRevealState === 'glitchOverlap'
 
   const handleNavGlitchAnimationEnd = useCallback((buttonPath, event) => {
-    if (navRevealState !== 'glitchIn') return
+    if (navRevealState !== 'glitchOverlap') return
     if (!event?.animationName || event.animationName !== 'ghostnet-nav-button-glitch-in') return
 
     navGlitchInCompletedRef.current.add(buttonPath)
 
     if (navGlitchInCompletedRef.current.size >= navGlitchInTargetCountRef.current) {
-      setNavRevealState(prev => (prev === 'glitchIn' ? 'complete' : prev))
+      setNavRevealState(prev => (prev === 'glitchOverlap' ? 'complete' : prev))
     }
   }, [navRevealState])
 
@@ -798,6 +798,57 @@ export default function Header ({ connected, active }) {
       return
     }
     router.push(path)
+  }
+
+  const renderNavButton = (button, index, variant) => {
+    const isActive = button.path === currentPath
+    const isGhostNet = button.path === GHOSTNET_NAV_PATH
+    const exitActive = isGhostnetExitTransitionActive()
+    const buttonClasses = [
+      isActive ? 'button--active' : '',
+      isGhostNet ? 'ghostnet-nav-button' : ''
+    ]
+
+    const profile = navGlitchProfiles[button.path]
+    const buttonStyle = { fontSize: '1.5rem' }
+
+    if (variant === 'pre') {
+      if ((navRevealState === 'glitchOut' || navRevealState === 'glitchOverlap') && profile) {
+        buttonClasses.push('ghostnet-nav-button--glitch-phase', 'ghostnet-nav-button--glitch-out')
+        applyNavGlitchOut(buttonStyle, profile)
+      }
+    } else if (variant === 'post') {
+      if (navRevealState === 'glitchOverlap' && profile) {
+        buttonClasses.push('ghostnet-nav-button--glitch-phase', 'ghostnet-nav-button--glitch-in')
+        if (isGhostNet) {
+          buttonClasses.push('ghostnet-nav-button--unlock')
+        }
+        applyNavGlitchIn(buttonStyle, profile)
+      }
+    }
+
+    const disabled = disableNavButtons || isActive || (isGhostNet && isGhostnetAssimilationActive()) || exitActive
+
+    const animationEndHandler = variant === 'post'
+      ? event => handleNavGlitchAnimationEnd(button.path, event)
+      : undefined
+
+    return (
+      <button
+        key={`${variant}-${button.path}`}
+        data-primary-navigation={index + 1}
+        tabIndex={navTabIndex}
+        disabled={disabled}
+        aria-current={isActive ? 'page' : undefined}
+        className={buttonClasses.filter(Boolean).join(' ')}
+        onClick={() => handleNavigate(button.path)}
+        style={buttonStyle}
+        onAnimationEnd={animationEndHandler}
+      >
+        <span className='visible-small'>{button.abbr}</span>
+        <span className='hidden-small'>{button.name}</span>
+      </button>
+    )
   }
 
   return (
@@ -888,53 +939,32 @@ export default function Header ({ connected, active }) {
         id='primaryNavigation'
         className={['button-group', navUnlockAnimating ? 'button-group--nav-unlock-animating' : ''].filter(Boolean).join(' ')}
       >
-        {navigationButtons.map((button, i) => {
-          const isActive = button.path === currentPath
-          const isGhostNet = button.path === GHOSTNET_NAV_PATH
-          const exitActive = isGhostnetExitTransitionActive()
-          const buttonClasses = [
-            isActive ? 'button--active' : '',
-            isGhostNet ? 'ghostnet-nav-button' : ''
-          ]
-
-          const profile = navGlitchProfiles[button.path]
-
-          if (navRevealState === 'glitchOut' && !isGhostNet) {
-            buttonClasses.push('ghostnet-nav-button--glitch-phase', 'ghostnet-nav-button--glitch-out')
-          }
-
-          if (navRevealState === 'glitchIn') {
-            buttonClasses.push('ghostnet-nav-button--glitch-phase', 'ghostnet-nav-button--glitch-in')
-            if (isGhostNet) {
-              buttonClasses.push('ghostnet-nav-button--unlock')
-            }
-          }
-
-          const buttonStyle = { fontSize: '1.5rem' }
-
-          if (navRevealState === 'glitchOut' && profile && !isGhostNet) {
-            applyNavGlitchOut(buttonStyle, profile)
-          } else if (navRevealState === 'glitchIn' && profile) {
-            applyNavGlitchIn(buttonStyle, profile)
-          }
-
-          return (
-            <button
-              key={button.name}
-              data-primary-navigation={i + 1}
-              tabIndex='1'
-              disabled={isActive || (isGhostNet && isGhostnetAssimilationActive()) || exitActive}
-              aria-current={isActive ? 'page' : undefined}
-              className={buttonClasses.filter(Boolean).join(' ')}
-              onClick={() => handleNavigate(button.path)}
-              style={buttonStyle}
-              onAnimationEnd={event => handleNavGlitchAnimationEnd(button.path, event)}
+        <div className='ghostnet-nav-stack'>
+          {navPreVisible && (
+            <div
+              className={[
+                'ghostnet-nav-track',
+                'ghostnet-nav-track--pre',
+                navPreOverlay ? 'ghostnet-nav-track--overlay' : ''
+              ].filter(Boolean).join(' ')}
+              aria-hidden={navPreOverlay ? 'true' : undefined}
             >
-              <span className='visible-small'>{button.abbr}</span>
-              <span className='hidden-small'>{button.name}</span>
-            </button>
-          )
-        })}
+              {NAV_LOCKED_BUTTONS.map((button, i) => renderNavButton(button, i, 'pre'))}
+            </div>
+          )}
+          {navPostVisible && (
+            <div
+              className={[
+                'ghostnet-nav-track',
+                'ghostnet-nav-track--post',
+                navPostGlitching ? 'ghostnet-nav-track--glitching' : ''
+              ].filter(Boolean).join(' ')}
+              aria-hidden={navPostGlitching ? 'true' : undefined}
+            >
+              {NAV_BUTTONS.map((button, i) => renderNavButton(button, i, 'post'))}
+            </div>
+          )}
+        </div>
       </div>
       <hr className='bold' />
       <Settings visible={settingsVisible} toggleVisible={() => setSettingsVisible(!settingsVisible)} />
