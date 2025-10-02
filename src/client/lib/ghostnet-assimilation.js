@@ -24,7 +24,7 @@ const EFFECT_BLOCKED_CLASS_COMBINATIONS = [
 const NAVIGATION_EXCLUSION_SELECTOR = '#primaryNavigation'
 const FORCED_FADE_CLEANUP_DELAY = 720
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
-const MAX_CHARACTER_ANIMATIONS = 3200
+const MAX_CHARACTER_ANIMATIONS = 4800
 const MIN_TOP_LEVEL_GROUPS = 5
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
@@ -364,6 +364,39 @@ function isDivHierarchyTail (element) {
 
   const tailMembers = getHierarchyTailMembers(parent)
   return tailMembers.includes(element)
+}
+
+function shouldIncludeParentCandidate (element, candidateSet) {
+  if (!element || !candidateSet) return false
+  if (!isEffectPermitted(element)) return false
+
+  const childElements = typeof element.children !== 'undefined'
+    ? Array.from(element.children)
+    : []
+
+  if (childElements.length === 0) {
+    return true
+  }
+
+  const eligibleChildren = childElements.filter((child) => candidateSet.has(child) && isEffectPermitted(child))
+
+  if (eligibleChildren.length === 0) {
+    return true
+  }
+
+  if (eligibleChildren.length <= 3) {
+    return true
+  }
+
+  const trimmedText = typeof element.textContent === 'string'
+    ? element.textContent.trim()
+    : ''
+
+  if (trimmedText.length > 0 && trimmedText.length <= 280) {
+    return true
+  }
+
+  return false
 }
 
 function isEffectPermitted (element) {
@@ -718,9 +751,19 @@ function buildAssimilationPlan () {
     }
   })
 
-  const leaves = candidates
-    .filter((element) => !parentCandidates.has(element))
-    .filter((element) => isEffectPermitted(element))
+  const leafSet = new Set(
+    candidates
+      .filter((element) => !parentCandidates.has(element))
+      .filter((element) => isEffectPermitted(element))
+  )
+
+  parentCandidates.forEach((element) => {
+    if (shouldIncludeParentCandidate(element, candidateSet)) {
+      leafSet.add(element)
+    }
+  })
+
+  const leaves = Array.from(leafSet)
 
   if (leaves.length === 0) {
     return { root, topLevelGroups: [], targets: [] }
@@ -802,7 +845,15 @@ function upgradeElement (element, baseDelay) {
     spanWrapper.className = 'ghostnet-assimilation-text'
     const fragment = document.createDocumentFragment()
     const characters = Array.from(original)
-    const allowedCharacters = Math.min(characters.length, remainingCharacterAnimations)
+    const allowedCharacters = Math.min(
+      Math.max(0, Math.floor(characters.length / 2)),
+      remainingCharacterAnimations
+    )
+
+    if (allowedCharacters === 0) {
+      return
+    }
+
     for (let i = 0; i < allowedCharacters; i++) {
       const char = characters[i]
       const charSpan = document.createElement('span')
