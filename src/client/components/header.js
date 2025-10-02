@@ -6,6 +6,7 @@ import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
 import { initiateGhostnetAssimilation, isGhostnetAssimilationActive, GHOSTNET_ASSIMILATION_EVENT } from 'lib/ghostnet-assimilation'
+import { isGhostnetNavUnlocked, setGhostnetNavUnlocked } from 'lib/ghostnet-settings'
 
 const ORIGINAL_TITLE = 'ICARUS TERMINAL'
 const TARGET_TITLE = 'GHOSTNET-ATLAS'
@@ -71,7 +72,14 @@ export default function Header ({ connected, active }) {
   const [pirateGlitch, setPirateGlitch] = useState(false)
   const pirateTimeouts = useRef([])
   const piratePasswordRef = useRef(null)
-  const SECRET_PASSWORD = 'BLACKFLAG'
+  const initialNavUnlockStateRef = useRef(null)
+  if (initialNavUnlockStateRef.current === null) {
+    initialNavUnlockStateRef.current = isGhostnetNavUnlocked()
+  }
+  const [navUnlocked, setNavUnlocked] = useState(initialNavUnlockStateRef.current)
+  const [navRevealState, setNavRevealState] = useState(initialNavUnlockStateRef.current ? 'complete' : 'locked')
+  const navRevealTimeouts = useRef([])
+  const SECRET_PASSWORD = 'ATLAS'
 
   const clearTitleAnimationTimeouts = useCallback(() => {
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -109,6 +117,49 @@ export default function Header ({ connected, active }) {
     }
   }, [])
 
+  const clearNavRevealTimeouts = useCallback(() => {
+    const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
+    navRevealTimeouts.current.forEach(timeoutId => clearTimeoutFn(timeoutId))
+    navRevealTimeouts.current = []
+  }, [])
+
+  const registerNavRevealTimeout = useCallback((callback, delay) => {
+    const setTimeoutFn = typeof window !== 'undefined' ? window.setTimeout : setTimeout
+    const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
+    const timeoutId = setTimeoutFn(() => {
+      navRevealTimeouts.current = navRevealTimeouts.current.filter(id => id !== timeoutId)
+      callback()
+    }, delay)
+    navRevealTimeouts.current.push(timeoutId)
+    return () => {
+      clearTimeoutFn(timeoutId)
+      navRevealTimeouts.current = navRevealTimeouts.current.filter(id => id !== timeoutId)
+    }
+  }, [])
+
+  const startNavUnlockSequence = useCallback(() => {
+    let shouldStart = false
+    setNavRevealState(prev => {
+      if (prev === 'locked') {
+        shouldStart = true
+        return 'glitchOut'
+      }
+      return prev
+    })
+
+    if (!shouldStart) return
+
+    clearNavRevealTimeouts()
+
+    registerNavRevealTimeout(() => {
+      setNavRevealState(prev => (prev === 'glitchOut' ? 'glitchIn' : prev))
+    }, 900)
+
+    registerNavRevealTimeout(() => {
+      setNavRevealState('complete')
+    }, 2400)
+  }, [clearNavRevealTimeouts, registerNavRevealTimeout])
+
   const closePirateModal = useCallback(() => {
     clearPirateTimeouts()
     setPirateModalVisible(false)
@@ -133,6 +184,13 @@ export default function Header ({ connected, active }) {
 
     const sanitizedPassword = piratePassword.trim().toUpperCase()
     if (sanitizedPassword === SECRET_PASSWORD) {
+      if (!navUnlocked && navRevealState === 'locked') {
+        startNavUnlockSequence()
+      } else {
+        setNavRevealState('complete')
+      }
+      setGhostnetNavUnlocked(true)
+      setNavUnlocked(true)
       setPirateStatus('success')
       registerPirateTimeout(() => {
         closePirateModal()
@@ -154,7 +212,7 @@ export default function Header ({ connected, active }) {
     }
 
     setPirateStatus('error')
-  }, [SECRET_PASSWORD, closePirateModal, pirateAttempts, piratePassword, pirateGlitch, pirateStatus, registerPirateTimeout])
+  }, [SECRET_PASSWORD, closePirateModal, navRevealState, navUnlocked, pirateAttempts, piratePassword, pirateGlitch, pirateStatus, registerPirateTimeout, startNavUnlockSequence])
 
   const runTitleGlitch = useCallback(() => {
     if (typeof window === 'undefined') return
@@ -399,6 +457,13 @@ export default function Header ({ connected, active }) {
   }, [startTitleMorph])
 
   useEffect(() => {
+    if (isGhostnetNavUnlocked()) {
+      setNavUnlocked(true)
+      setNavRevealState('complete')
+    }
+  }, [])
+
+  useEffect(() => {
     if (!titleAssimilated) return undefined
 
     if (isGhostnetRouteActive) {
@@ -415,6 +480,10 @@ export default function Header ({ connected, active }) {
   useEffect(() => () => {
     clearPirateTimeouts()
   }, [clearPirateTimeouts])
+
+  useEffect(() => () => {
+    clearNavRevealTimeouts()
+  }, [clearNavRevealTimeouts])
 
   useEffect(() => {
     if (!pirateModalVisible || pirateGlitch) return undefined
@@ -443,6 +512,14 @@ export default function Header ({ connected, active }) {
   const assimilationComplete = titleAnimationState.current.completed
   const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
   const dateTimeLabel = `${dateTime.day} ${dateTime.month} ${dateTime.year} ${dateTime.time}`
+  const navUnlockAnimating = navRevealState === 'glitchOut' || navRevealState === 'glitchIn'
+  const ghostnetButtonVisible = navRevealState === 'glitchIn' || navRevealState === 'complete'
+  const navigationButtons = NAV_BUTTONS.filter(button => {
+    if (button.path === '/ghostnet') {
+      return ghostnetButtonVisible
+    }
+    return true
+  })
 
   function handleNavigate (path) {
     if (path === '/ghostnet') {
@@ -541,11 +618,32 @@ export default function Header ({ connected, active }) {
         </div>
       </div>
       <hr />
-      <div id='primaryNavigation' className='button-group'>
-        {NAV_BUTTONS.filter(button => button).map((button, i) => {
+      <div
+        id='primaryNavigation'
+        className={['button-group', navUnlockAnimating ? 'button-group--nav-unlock-animating' : ''].filter(Boolean).join(' ')}
+      >
+        {navigationButtons.map((button, i) => {
           const isActive = button.path === currentPath
           const isGhostNet = button.path === '/ghostnet'
           const exitActive = isGhostnetExitTransitionActive()
+          const buttonClasses = [
+            isActive ? 'button--active' : '',
+            isGhostNet ? 'ghostnet-nav-button' : ''
+          ]
+
+          if (navRevealState === 'glitchOut' && !isGhostNet) {
+            buttonClasses.push('ghostnet-assimilation-target', 'ghostnet-assimilation-remove', 'ghostnet-nav-button--glitch-out')
+          }
+
+          if (navRevealState === 'glitchIn') {
+            buttonClasses.push('ghostnet-assimilation-target', 'ghostnet-nav-button--glitch-in')
+          }
+
+          const buttonStyle = { fontSize: '1.5rem' }
+          if (navRevealState === 'glitchIn') {
+            buttonStyle['--ghostnet-nav-glitch-delay'] = `${i * 90}ms`
+          }
+
           return (
             <button
               key={button.name}
@@ -553,12 +651,9 @@ export default function Header ({ connected, active }) {
               tabIndex='1'
               disabled={isActive || (isGhostNet && isGhostnetAssimilationActive()) || exitActive}
               aria-current={isActive ? 'page' : undefined}
-              className={[
-                isActive ? 'button--active' : '',
-                isGhostNet ? 'ghostnet-nav-button' : ''
-              ].filter(Boolean).join(' ')}
+              className={buttonClasses.filter(Boolean).join(' ')}
               onClick={() => handleNavigate(button.path)}
-              style={{ fontSize: '1.5rem' }}
+              style={buttonStyle}
             >
               <span className='visible-small'>{button.abbr}</span>
               <span className='hidden-small'>{button.name}</span>

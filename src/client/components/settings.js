@@ -6,7 +6,9 @@ import {
   ASSIMILATION_DURATION_MAX,
   ASSIMILATION_DURATION_DEFAULT,
   getAssimilationDurationSeconds,
-  saveAssimilationDurationSeconds
+  saveAssimilationDurationSeconds,
+  isGhostnetNavUnlocked,
+  setGhostnetNavUnlocked
 } from 'lib/ghostnet-settings'
 import packageJson from '../../../package.json'
 
@@ -60,6 +62,7 @@ function GhostnetSettings () {
   const patreonWindowFeatures = 'noopener,noreferrer'
   const [useMockData, setUseMockData] = useState(false)
   const [assimilationDuration, setAssimilationDuration] = useState(ASSIMILATION_DURATION_DEFAULT)
+  const [persistGhostnetNavUnlock, setPersistGhostnetNavUnlock] = useState(() => isGhostnetNavUnlocked())
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
@@ -67,6 +70,7 @@ function GhostnetSettings () {
       setUseMockData(window.localStorage.getItem('ghostnetUseMockData') === 'true')
     }
     setAssimilationDuration(getAssimilationDurationSeconds())
+    setPersistGhostnetNavUnlock(isGhostnetNavUnlocked())
   }, [])
 
   function handleSave(e) {
@@ -76,6 +80,7 @@ function GhostnetSettings () {
     }
     const sanitizedDuration = saveAssimilationDurationSeconds(assimilationDuration)
     setAssimilationDuration(sanitizedDuration)
+    setGhostnetNavUnlocked(persistGhostnetNavUnlock)
     setSaved(true)
     setTimeout(() => setSaved(false), 1500)
   }
@@ -93,6 +98,20 @@ function GhostnetSettings () {
           />
           <span>
             Enable Trade Route Layout Sandbox (use mock data)
+          </span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '1.5rem', fontSize: '1rem', lineHeight: 1.5 }}>
+          <input
+            type='checkbox'
+            checked={persistGhostnetNavUnlock}
+            onChange={event => setPersistGhostnetNavUnlock(event.target.checked)}
+          />
+          <span>
+            Keep GhostNet navigation unlocked after access is granted
+            <br />
+            <span className='text-muted' style={{ fontSize: '.9rem' }}>
+              Turn this off to re-run the unlock sequence on your next reload.
+            </span>
           </span>
         </label>
         <div style={{ marginBottom: '1.5rem' }}>
