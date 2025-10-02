@@ -1,6 +1,13 @@
 import { useState, useEffect, Fragment } from 'react'
 import { sendEvent, eventListener } from 'lib/socket'
 import { SettingsNavItems } from 'lib/navigation-items'
+import {
+  ASSIMILATION_DURATION_MIN,
+  ASSIMILATION_DURATION_MAX,
+  ASSIMILATION_DURATION_DEFAULT,
+  getAssimilationDurationSeconds,
+  saveAssimilationDurationSeconds
+} from 'lib/ghostnet-settings'
 import packageJson from '../../../package.json'
 
 function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPanel = 'Theme' }) {
@@ -52,21 +59,25 @@ function GhostnetSettings () {
   const patreonUrl = 'https://www.patreon.com/artieghostnet'
   const patreonWindowFeatures = 'noopener,noreferrer'
   const [useMockData, setUseMockData] = useState(false)
+  const [assimilationDuration, setAssimilationDuration] = useState(ASSIMILATION_DURATION_DEFAULT)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setUseMockData(window.localStorage.getItem('ghostnetUseMockData') === 'true')
     }
+    setAssimilationDuration(getAssimilationDurationSeconds())
   }, [])
 
   function handleSave(e) {
     e.preventDefault()
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('ghostnetUseMockData', useMockData ? 'true' : 'false')
-      setSaved(true)
-      setTimeout(() => setSaved(false), 1500)
     }
+    const sanitizedDuration = saveAssimilationDurationSeconds(assimilationDuration)
+    setAssimilationDuration(sanitizedDuration)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 1500)
   }
 
   return (
@@ -84,6 +95,31 @@ function GhostnetSettings () {
             Enable Trade Route Layout Sandbox (use mock data)
           </span>
         </label>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label htmlFor='ghostnet-assimilation-duration' className='text-primary' style={{ display: 'block', marginBottom: '.5rem' }}>
+            GhostNet assimilation transition length
+          </label>
+          <input
+            id='ghostnet-assimilation-duration'
+            type='range'
+            min={ASSIMILATION_DURATION_MIN}
+            max={ASSIMILATION_DURATION_MAX}
+            step='0.25'
+            value={assimilationDuration}
+            onChange={event => {
+              const nextValue = Number.parseFloat(event.target.value)
+              setAssimilationDuration(Number.isFinite(nextValue) ? nextValue : ASSIMILATION_DURATION_DEFAULT)
+            }}
+            style={{ width: '100%' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '.5rem', fontSize: '.95rem' }}>
+            <span className='text-muted'>Current: {assimilationDuration.toFixed(1)}s</span>
+            <span className='text-muted'>Min {ASSIMILATION_DURATION_MIN}s · Max {ASSIMILATION_DURATION_MAX}s</span>
+          </div>
+          <p className='text-muted' style={{ marginTop: '.5rem', fontSize: '.9rem' }}>
+            Controls the duration of the assimilation effect when entering the GhostNet interface.
+          </p>
+        </div>
         <button type='submit' style={{ fontSize: '1.1rem' }}>Save</button>
         {saved && <span className='text-success' style={{ marginLeft: '1rem' }}>Saved!</span>}
       </form>
