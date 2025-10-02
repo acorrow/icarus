@@ -2317,7 +2317,32 @@ function TradeRoutesPanel () {
     refreshRoutes(currentName)
   }, [currentSystem?.name, refreshRoutes])
 
-  useEffect(() => animateTableEffect(), [routes])
+  const detailViewActive = Boolean(selectedRouteContext?.route)
+
+  useEffect(() => {
+    if (detailViewActive) return
+
+    if (typeof window === 'undefined') {
+      animateTableEffect()
+      return
+    }
+
+    if (typeof window.requestAnimationFrame !== 'function') {
+      animateTableEffect()
+      return
+    }
+
+    let frameId = window.requestAnimationFrame(() => {
+      frameId = null
+      animateTableEffect()
+    })
+
+    return () => {
+      if (frameId !== null && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(frameId)
+      }
+    }
+  }, [routes, detailViewActive])
 
   const renderRoutesTable = () => (
     <div className={styles.dataTableContainer}>
@@ -2694,8 +2719,6 @@ function TradeRoutesPanel () {
       </div>
     )
   }
-
-  const detailViewActive = Boolean(selectedRouteContext?.route)
 
   return (
     <section className={styles.tableSection}>
