@@ -332,6 +332,18 @@
   vertical-align: middle;
 }
 
+.dataTable :global([data-ghostnet-table-row]) {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition-delay: var(--ghostnet-row-delay, 0s);
+}
+
+.dataTable :global([data-ghostnet-table-row='visible']) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .tableCellTop {
   vertical-align: top;
 }

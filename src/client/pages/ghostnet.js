@@ -1237,7 +1237,7 @@ function MissionsPanel () {
           )}
           {status === 'populated' && missions.length > 0 && (
             <div className={styles.dataTableContainer}>
-              <table className={`${styles.dataTable} table--animated fx-fade-in`}>
+              <table className={styles.dataTable}>
                 <thead>
                   <tr>
                   <th>Faction</th>
@@ -1270,7 +1270,7 @@ function MissionsPanel () {
                     .join(' · ') || undefined
 
                   return (
-                    <tr key={key} style={{ animationDelay: `${index * 0.03}s` }}>
+                    <tr key={key} data-ghostnet-table-row='pending'>
                       <td className={`${styles.tableCellTop}`}>
                         {mission.faction
                           ? (
@@ -1677,7 +1677,7 @@ function CommodityTradePanel () {
 
       {status === 'ready' && hasCargo && hasRows && (
         <div className={styles.dataTableContainer}>
-          <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense} table--animated fx-fade-in`}>
+          <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
             <colgroup>
               <col style={{ width: '32%' }} />
               <col style={{ width: '8%' }} />
@@ -1755,7 +1755,7 @@ function CommodityTradePanel () {
               const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
 
               return (
-                <tr key={`${row.key}-${index}`} style={{ animationDelay: `${index * 0.03}s` }}>
+                <tr key={`${row.key}-${index}`} data-ghostnet-table-row='pending'>
                   <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                     <div>{item?.name || item?.symbol || 'Unknown'}</div>
                     {item?.symbol && item?.symbol !== item?.name && (
@@ -2254,9 +2254,11 @@ function TradeRoutesPanel () {
     refreshRoutes(currentName)
   }, [currentSystem?.name, refreshRoutes])
 
+  useEffect(() => animateTableEffect(), [routes, expandedRouteKey])
+
   const renderRoutesTable = () => (
     <div className={styles.dataTableContainer}>
-      <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense} table--interactive table--animated`}>
+      <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
       <colgroup>
         <col style={{ width: '4%' }} />
         <col style={{ width: '20%' }} />
@@ -2363,7 +2365,7 @@ function TradeRoutesPanel () {
             <React.Fragment key={rowKey}>
               <tr
                 className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
-                style={{ animationDelay: `${index * 0.03}s` }}
+                data-ghostnet-table-row='pending'
                 onClick={() => handleRowToggle(rowKey)}
                 onKeyDown={event => handleRowKeyDown(event, rowKey)}
                 role='button'
@@ -2415,6 +2417,7 @@ function TradeRoutesPanel () {
                 <tr
                   id={detailsId}
                   className={styles.tableDetailRow}
+                  data-ghostnet-table-row='pending'
                 >
                   <td style={{ borderTop: '1px solid rgba(127, 233, 255, 0.18)' }} aria-hidden='true' />
                   <td style={{ padding: '.5rem .65rem .7rem', borderTop: '1px solid rgba(127, 233, 255, 0.18)', verticalAlign: 'top' }}>
@@ -2955,7 +2958,7 @@ function PristineMiningPanel () {
           )}
           {status === 'populated' && locations.length > 0 && (
             <div className={styles.dataTableContainer}>
-              <table className={`${styles.dataTable} table--animated fx-fade-in`}>
+              <table className={styles.dataTable}>
                 <thead>
                   <tr>
                     <th>Body</th>
@@ -2980,7 +2983,7 @@ function PristineMiningPanel () {
                     <Fragment key={key}>
                       <tr
                         className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
-                        style={{ animationDelay: `${index * 0.03}s` }}
+                        data-ghostnet-table-row='pending'
                         role='button'
                         tabIndex={0}
                         aria-expanded={isExpanded}
@@ -3011,7 +3014,7 @@ function PristineMiningPanel () {
                         <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
                       </tr>
                       {isExpanded && (
-                        <tr className={styles.tableDetailRow}>
+                        <tr className={styles.tableDetailRow} data-ghostnet-table-row='pending'>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
