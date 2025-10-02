@@ -1026,58 +1026,81 @@
   color: #f5f1ff;
 }
 
-.routeDetailContextBar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1.25rem;
-  width: 100%;
-  margin-top: 1.35rem;
+.commodityDetailStickyHeader {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.35rem;
+  padding: 1.15rem 1.6rem 1.25rem;
+  background: linear-gradient(135deg, rgba(35, 20, 68, 0.94), rgba(18, 10, 44, 0.92));
+  border-bottom: 1px solid rgba(140, 92, 255, 0.45);
+  box-shadow: 0 1rem 2.5rem rgba(5, 8, 13, 0.55);
+  border-radius: 1.25rem 1.25rem 1rem 1rem;
+  margin: -1px -1px 1.1rem;
 }
 
-.routeDetailContextItem {
+.commodityDetailHeading {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  padding: 1rem 1.2rem;
-  border-radius: 1rem;
-  background: rgba(24, 15, 54, 0.72);
-  border: 1px solid rgba(140, 92, 255, 0.32);
-  min-height: 120px;
+  min-width: 200px;
+  flex: 1 1 240px;
 }
 
-.routeDetailContextLabel {
+.commodityDetailLabel {
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.28em;
   font-size: 0.62rem;
-  color: rgba(245, 241, 255, 0.62);
+  color: rgba(245, 241, 255, 0.65);
 }
 
-.routeDetailContextPrimary {
-  font-size: 1.05rem;
+.commodityDetailTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1.42rem;
   font-weight: 600;
   color: #f5f1ff;
 }
 
-.routeDetailContextValue {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--ghostnet-ink);
+.commodityDetailSymbol {
+  font-size: 0.85rem;
+  color: rgba(245, 241, 255, 0.72);
 }
 
-.routeDetailContextMeta {
-  font-size: 0.78rem;
-  color: rgba(245, 241, 255, 0.68);
+.commodityDetailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-left: auto;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(140, 92, 255, 0.32);
+  background: rgba(24, 15, 54, 0.7);
+  box-shadow: inset 0 0 0 rgba(0, 0, 0, 0);
 }
 
-.routeDetailContextEmpty {
-  grid-column: 1 / -1;
-  padding: 1.1rem 1.4rem;
-  border-radius: 1rem;
-  border: 1px dashed rgba(140, 92, 255, 0.4);
-  background: rgba(30, 16, 58, 0.6);
-  color: rgba(245, 241, 255, 0.74);
+.commodityDetailMetaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 120px;
+}
+
+.commodityDetailMetaLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.58rem;
+  color: rgba(245, 241, 255, 0.62);
+}
+
+.commodityDetailMetaValue {
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
   font-size: 0.9rem;
-  text-align: center;
+  color: #f5f1ff;
 }
 
 .routeDetailMetrics {

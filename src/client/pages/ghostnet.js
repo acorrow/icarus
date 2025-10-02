@@ -2143,7 +2143,6 @@ function CommodityTradePanel () {
     const commodityName = item?.name || item?.symbol || 'Unknown Commodity'
     const commoditySymbol = item?.symbol && item?.symbol !== item?.name ? item.symbol : ''
     const quantityNumber = Number(quantity) || 0
-    const quantityDisplay = quantityNumber > 0 ? `${quantityNumber.toLocaleString()} units` : '0 units'
     const bestPriceDisplay = formatCredits(bestPrice, '--')
     const bestValueDisplay = formatCredits(bestValue, '--')
     const localBestPriceDisplay = localBestEntry ? formatCredits(localBestEntry.sellPrice, '--') : '--'
@@ -2152,10 +2151,6 @@ function CommodityTradePanel () {
     const targetListing = selectedDetailListing || null
     const targetStationName = targetListing?.stationName || ''
     const targetSystemName = targetListing?.systemName || ''
-    const targetPad = targetListing?.pad || '--'
-    const targetDistanceLy = targetListing?.distanceLyText || formatSystemDistance(targetListing?.distanceLy, '--')
-    const targetDistanceLs = targetListing?.distanceLsText
-      || (Number.isFinite(targetListing?.distanceLs) ? formatStationDistance(targetListing.distanceLs) : '--')
     const targetDemandDisplay = targetListing?.demandText
       || (Number.isFinite(targetListing?.demand) ? targetListing.demand.toLocaleString() : '')
     const targetUpdatedDisplay = targetListing?.updatedText
@@ -2220,61 +2215,6 @@ function CommodityTradePanel () {
 
     return (
       <div className={styles.routeDetailContainer}>
-        <div className={styles.routeDetailHeader}>
-          <button type='button' className={styles.routeDetailBackButton} onClick={handleDetailClose}>
-            {String.fromCharCode(0x2190)} Back to Commodities
-          </button>
-          <div className={styles.routeDetailHeading}>
-            <span className={styles.routeDetailLabel}>Commodity Intel</span>
-            <h3 className={styles.routeDetailTitle}>
-              {commodityName}
-              {commoditySymbol ? <span style={{ fontSize: '0.85rem', color: 'rgba(245, 241, 255, 0.7)' }}> ({commoditySymbol})</span> : null}
-            </h3>
-            <p className={styles.routeDetailSubhead}>
-              {quantityDisplay}
-              <span className={styles.routeDetailArrow} aria-hidden='true'>{String.fromCharCode(0x2022)}</span>
-              {currentSystemName || 'Unknown system'}
-            </p>
-          </div>
-          <div className={styles.routeDetailMeta}>
-            <span className={styles.routeDetailMetaLabel}>GHOSTNET Update</span>
-            <span className={styles.routeDetailMetaValue}>{ghostnetUpdatedDisplay || '--'}</span>
-            <span className={styles.routeDetailMetaLabel}>Listings Captured</span>
-            <span className={styles.routeDetailMetaValue}>{listingsCountDisplay}</span>
-          </div>
-          <div className={styles.routeDetailContextBar}>
-            {targetListing ? (
-              <>
-                <div className={styles.routeDetailContextItem}>
-                  <span className={styles.routeDetailContextLabel}>Target Station</span>
-                  <span className={styles.routeDetailContextPrimary}>{targetStationName}</span>
-                  <span className={styles.routeDetailContextMeta}>{targetSystemName || 'Unknown system'}</span>
-                  <span className={styles.routeDetailContextMeta}>Updated {targetUpdatedDisplay || '--'}</span>
-                </div>
-                <div className={styles.routeDetailContextItem}>
-                  <span className={styles.routeDetailContextLabel}>Distance</span>
-                  <span className={styles.routeDetailContextValue}>{targetDistanceLy || '--'}</span>
-                  <span className={styles.routeDetailContextMeta}>{targetDistanceLs && targetDistanceLs !== '--' ? `${targetDistanceLs}` : 'Star distance unavailable'}</span>
-                </div>
-                <div className={styles.routeDetailContextItem}>
-                  <span className={styles.routeDetailContextLabel}>Pad & Demand</span>
-                  <span className={styles.routeDetailContextValue}>{targetPad || '--'}</span>
-                  <span className={styles.routeDetailContextMeta}>{targetDemandDisplay ? `Demand ${targetDemandDisplay}` : 'No demand data'}</span>
-                </div>
-                <div className={styles.routeDetailContextItem}>
-                  <span className={styles.routeDetailContextLabel}>Sell Price</span>
-                  <span className={styles.routeDetailContextPrimary}>{ghostnetPriceDisplay}</span>
-                  <span className={styles.routeDetailContextMeta}>Value {formatCredits(resolvedGhostnetValue, '--')}</span>
-                </div>
-              </>
-            ) : (
-              <div className={styles.routeDetailContextEmpty}>
-                No intercepted stations selected yet. Choose a listing below to focus your trade planning.
-              </div>
-            )}
-          </div>
-        </div>
-
         {ghostnetError ? (
           <div className={styles.notice} style={{ marginTop: '-0.5rem' }}>{ghostnetError}</div>
         ) : null}
@@ -2290,6 +2230,29 @@ function CommodityTradePanel () {
         </div>
 
         <div className={styles.dataTableContainer}>
+          <div className={styles.commodityDetailStickyHeader}>
+            <button type='button' className={styles.routeDetailBackButton} onClick={handleDetailClose}>
+              {String.fromCharCode(0x2190)} Back to Commodities
+            </button>
+            <div className={styles.commodityDetailHeading}>
+              <span className={styles.commodityDetailLabel}>Commodity Intel</span>
+              <div className={styles.commodityDetailTitle}>
+                {commodityName}
+                {commoditySymbol ? <span className={styles.commodityDetailSymbol}>({commoditySymbol})</span> : null}
+              </div>
+            </div>
+            <div className={styles.commodityDetailMeta}>
+              <div className={styles.commodityDetailMetaItem}>
+                <span className={styles.commodityDetailMetaLabel}>GHOSTNET Update</span>
+                <span className={styles.commodityDetailMetaValue}>{ghostnetUpdatedDisplay || '--'}</span>
+              </div>
+              <div className={styles.commodityDetailMetaItem}>
+                <span className={styles.commodityDetailMetaLabel}>Listings</span>
+                <span className={styles.commodityDetailMetaValue}>{listingsCountDisplay}</span>
+              </div>
+            </div>
+          </div>
+
           {detailListings.length > 0 ? (
             <table className={`${styles.dataTable} ${styles.dataTableFixed}`}>
               <colgroup>
