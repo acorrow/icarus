@@ -12,7 +12,7 @@ const ARRIVAL_FLAG_KEY = 'ghostnet.assimilationArrival'
 const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HTML', 'BODY'])
-const EFFECT_BLOCKED_TAGS = new Set(['DIV'])
+const EFFECT_BLOCKED_TAGS = new Set()
 const EFFECT_BLOCKED_CLASS_NAMES = new Set([
   'layout__full-width',
   'layout__panel--secondary-navigation',
@@ -334,38 +334,6 @@ function isEligibleTarget (element) {
   return isRectVisibleOnScreen(rect)
 }
 
-function getHierarchyTailMembers (parent, limit = 2) {
-  if (!parent || typeof parent.lastElementChild === 'undefined') {
-    return []
-  }
-
-  const tail = []
-  let current = parent.lastElementChild
-
-  while (current && tail.length < limit) {
-    if (isEligibleTarget(current)) {
-      tail.push(current)
-    }
-    current = current.previousElementSibling
-  }
-
-  return tail
-}
-
-function isDivHierarchyTail (element) {
-  if (!element || element.tagName !== 'DIV') {
-    return false
-  }
-
-  const parent = element.parentElement
-  if (!parent) {
-    return false
-  }
-
-  const tailMembers = getHierarchyTailMembers(parent)
-  return tailMembers.includes(element)
-}
-
 function shouldIncludeParentCandidate (element, candidateSet) {
   if (!element || !candidateSet) return false
   if (!isEffectPermitted(element)) return false
@@ -409,15 +377,7 @@ function isEffectPermitted (element) {
     return false
   }
 
-  if (!EFFECT_BLOCKED_TAGS.has(tagName)) {
-    return true
-  }
-
-  if (tagName === 'DIV') {
-    return isDivHierarchyTail(element)
-  }
-
-  return false
+  return !EFFECT_BLOCKED_TAGS.has(tagName)
 }
 
 function hasBlockedEffectClass (element) {
