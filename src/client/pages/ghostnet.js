@@ -59,11 +59,16 @@ LoadingSpinner.defaultProps = {
 
 const STARTUP_SPINNER_SESSION_KEY = 'ghostnet.session.startupSpinner.v1'
 const STARTUP_SPINNER_ALWAYS_SHOW_KEY = 'ghostnetAlwaysShowHandshake'
-const STARTUP_SPINNER_ORBIT_ICONS = ['cargo', 'route', 'asteroid-base', 'megaship']
 const STARTUP_SPINNER_TELEMETRY = [
   { icon: 'route', label: 'ATLAS vector sync', value: 'Aligned' },
   { icon: 'cargo', label: 'Protocol cipher', value: 'Authenticated' },
   { icon: 'megaship', label: 'GhostNet uplink', value: 'Stabilized' }
+]
+const STARTUP_SPINNER_SCRIPT = [
+  '> ORIGIN::ICARUS // bootstrap vector online',
+  '> NEGOTIATE::ATLAS handshake key // crypto resync',
+  '> ROUTE::GhostNet telemetry lattice // channel auth OK',
+  '> FINALISE::ATLAS network // GhostNet link stable'
 ]
 
 function StartupSpinnerIcon ({ name, size = 48, color = 'var(--ghostnet-accent)' }) {
@@ -109,27 +114,19 @@ function StartupSpinnerOverlay ({ active }) {
             <span />
             <span />
           </div>
-          <div className={styles.startupSpinnerOrbit} aria-hidden='true'>
-            {STARTUP_SPINNER_ORBIT_ICONS.map((icon, index) => {
-              const angle = (index / STARTUP_SPINNER_ORBIT_ICONS.length) * 360
-              return (
-                <div
-                  key={`${icon}-${index}`}
-                  className={styles.startupSpinnerOrbitIcon}
-                  style={{ transform: `rotate(${angle}deg) translateY(-7.25rem)` }}
-                >
-                  <div
-                    className={styles.startupSpinnerOrbitIconInner}
-                    style={{ transform: `rotate(${-angle}deg)`, animationDelay: `${index * 0.18}s` }}
-                  >
-                    <StartupSpinnerIcon name={icon} size={40} color='var(--ghostnet-ink)' />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
           <div className={styles.startupSpinnerGlyph} aria-hidden='true'>
-            <StartupSpinnerIcon name='fleet-carrier' size={84} color='var(--ghostnet-ink)' />
+            <StartupSpinnerIcon name='fleet-carrier' size={84} color='currentColor' />
+          </div>
+          <div className={styles.startupSpinnerConsole}>
+            {STARTUP_SPINNER_SCRIPT.map((line, index) => (
+              <div
+                key={line}
+                className={styles.startupSpinnerConsoleLine}
+                style={{ '--line-index': index }}
+              >
+                <span className={styles.startupSpinnerConsoleText}>{line}</span>
+              </div>
+            ))}
           </div>
           <span className={styles.startupSpinnerSymbol} aria-hidden='true'>⟁</span>
         </div>
@@ -140,8 +137,8 @@ function StartupSpinnerOverlay ({ active }) {
           </p>
         </div>
         <ul className={styles.startupSpinnerTelemetry}>
-          {STARTUP_SPINNER_TELEMETRY.map(entry => (
-            <li key={entry.label}>
+          {STARTUP_SPINNER_TELEMETRY.map((entry, index) => (
+            <li key={entry.label} style={{ '--telemetry-index': index }}>
               <span className={styles.startupSpinnerTelemetryIcon} aria-hidden='true'>
                 <i className={`icon icarus-terminal-${entry.icon}`} />
               </span>
