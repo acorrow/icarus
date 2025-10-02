@@ -11,6 +11,7 @@ const BRAND_EVENT = 'ghostnet:brand-mode'
 const GHOSTNET_WORD = 'GHOSTNET'
 const WORD_GLYPHS = 'GHOSTNETΔ#%+*<>/\\|01'
 const LOG_GLYPHS = '01#ΣΩ∴≠⟡ΛΞ/\\<>%+*GHSTNET'
+const MAX_LOG_CHARS = 16
 const LOG_MESSAGES = [
   'ATLAT protocol overriding ship comms...',
   'Scanner wavelengths seized for GHOSTNET relay...',
@@ -224,22 +225,31 @@ export default function Header ({ connected, active }) {
     let reveal = 0
     let hold = 0
     let messageIndex = 0
+    let segmentIndex = 0
 
     const tick = () => {
       const message = LOG_MESSAGES[messageIndex]
+      const segmentCount = Math.max(1, Math.ceil(message.length / MAX_LOG_CHARS))
+      const segmentStart = segmentIndex * MAX_LOG_CHARS
+      const segment = message.slice(segmentStart, segmentStart + MAX_LOG_CHARS)
+      const paddedSegment = segment.padEnd(MAX_LOG_CHARS, ' ')
       iteration += 1
-      if (reveal < message.length) {
-        reveal += Math.max(1, Math.ceil(message.length / 10))
+      if (reveal < paddedSegment.length) {
+        reveal += Math.max(1, Math.ceil(paddedSegment.length / 10))
       } else {
         hold += 1
         if (hold > 6) {
-          messageIndex = (messageIndex + 1) % LOG_MESSAGES.length
+          segmentIndex += 1
+          if (segmentIndex >= segmentCount) {
+            segmentIndex = 0
+            messageIndex = (messageIndex + 1) % LOG_MESSAGES.length
+          }
           reveal = 0
           hold = 0
         }
       }
 
-      const glyphs = message.split('').map((char, index) => {
+      const glyphs = paddedSegment.split('').map((char, index) => {
         const stable = index < reveal
         const variant = stable ? 'stable' : `variant-${(iteration + index) % 4}`
         const renderedChar = stable ? char : randomGlyph(LOG_GLYPHS)
@@ -247,12 +257,12 @@ export default function Header ({ connected, active }) {
           char: renderedChar === ' ' ? '\u00a0' : renderedChar,
           variant,
           stable,
-          key: `log-${messageIndex}-${index}-${iteration}`
+          key: `log-${messageIndex}-${segmentIndex}-${index}-${iteration}`
         }
       })
 
       setLogGlyphs(glyphs)
-      const delay = reveal >= message.length ? 120 : 55
+      const delay = reveal >= paddedSegment.length ? 120 : 55
       logTimerRef.current = window.setTimeout(tick, delay)
     }
 
@@ -294,12 +304,18 @@ export default function Header ({ connected, active }) {
       <h1 className='text-info' style={{ padding: '.6rem 0 .25rem 3.75rem' }}>
         <i className='icon icarus-terminal-logo' style={{ position: 'absolute', fontSize: '3rem', left: 0 }} />
         <span className={brandClassName} data-ghostnet-brand data-brand-mode={brandMode}>
-          <span className='terminal-brand__icarus'>
+          <span
+            className='terminal-brand__icarus'
+            aria-hidden={brandMode !== 'icarus'}
+          >
             <span className='terminal-brand__word'>ICARUS</span>
             <span className='terminal-brand__word terminal-brand__word--terminal hidden-small'>Terminal</span>
           </span>
-          <span className='terminal-brand__ghostnet'>
-            <span className='terminal-brand__ghostnetWord' aria-hidden={brandMode === 'icarus'}>
+          <span
+            className='terminal-brand__ghostnet'
+            aria-hidden={brandMode === 'icarus'}
+          >
+            <span className='terminal-brand__ghostnetWord'>
               {ghostnetGlyphs.map(({ char, variant, key }, index) => (
                 <span
                   key={key || `ghostnet-${index}`}
@@ -312,7 +328,7 @@ export default function Header ({ connected, active }) {
                 </span>
               ))}
             </span>
-            <span className='terminal-brand__logline' aria-live='polite'>
+            <span className='terminal-brand__logline' role='status' aria-live='polite'>
               {logGlyphs.map(({ char, variant, key }, index) => (
                 <span
                   key={key || `log-${index}`}
