@@ -318,16 +318,16 @@ function isRectVisibleOnScreen (rect) {
   return rect.width !== 0 || rect.height !== 0
 }
 
-function isEligibleTarget (element) {
+function isVisibilityCandidate (element, rect) {
   if (!element) return false
+  if (!element.tagName) return false
   if (EXCLUDED_TAGS.has(element.tagName)) return false
   if (isWithinExcludedRegion(element)) return false
   if ('isConnected' in element && !element.isConnected) return false
-  if (hasBlockedEffectClass(element)) return false
   if (typeof element.getBoundingClientRect !== 'function') return false
 
-  const rect = getElementRect(element)
-  if (!rect) return false
+  const boundingRect = rect || getElementRect(element)
+  if (!boundingRect) return false
 
   if (typeof element.getClientRects === 'function') {
     const clientRects = element.getClientRects()
@@ -336,7 +336,18 @@ function isEligibleTarget (element) {
     }
   }
 
-  return isRectVisibleOnScreen(rect)
+  return isRectVisibleOnScreen(boundingRect)
+}
+
+function isEligibleTarget (element) {
+  if (!element) return false
+
+  const rect = getElementRect(element)
+  if (!isVisibilityCandidate(element, rect)) {
+    return false
+  }
+
+  return isEffectPermitted(element)
 }
 
 function shouldIncludeParentCandidate (element, candidateSet) {
@@ -417,53 +428,114 @@ function hasBlockedEffectClass (element) {
   return false
 }
 
-function collectPermittedBlockedDescendants (root, threshold) {
-  if (!root) return []
-
-  const blockedElements = []
-
-  if (root !== document.body && hasBlockedEffectClass(root)) {
-    blockedElements.push(root)
-  }
-
-  if (typeof root.querySelectorAll === 'function') {
-    blockedElements.push(
-      ...Array.from(root.querySelectorAll('*')).filter((element) => hasBlockedEffectClass(element))
-    )
-  }
-
-  if (blockedElements.length === 0) {
+function collectPermittedBlockedDescendants (blockedElements, existingSet) {
+  if (!blockedElements || blockedElements.size === 0) {
     return []
   }
 
   const descendants = new Set()
+  const visited = new Set()
 
   blockedElements.forEach((blocked) => {
-    if (!blocked) return
+    if (!blocked || visited.has(blocked) || !(blocked instanceof HTMLElement)) {
+      return
+    }
 
-    const childNodes = typeof blocked.querySelectorAll === 'function'
-      ? Array.from(blocked.querySelectorAll('*'))
-      : []
+    const queue = [blocked]
 
-    childNodes.forEach((candidate) => {
-      if (!candidate || candidate === blocked) {
-        return
+    while (queue.length > 0) {
+      const current = queue.shift()
+      if (!current || visited.has(current) || !(current instanceof HTMLElement)) {
+        continue
       }
 
-      if (!isEligibleTarget(candidate)) {
-        return
+      visited.add(current)
+
+      const children = typeof current.children !== 'undefined'
+        ? Array.from(current.children)
+        : []
+
+      children.forEach((child) => {
+        if (child && !visited.has(child)) {
+          queue.push(child)
+        }
+      })
+
+      if (current === blocked) {
+        continue
       }
 
-      const rect = getElementRect(candidate)
-      if (!rect || rect.bottom < threshold) {
-        return
+      if (existingSet && existingSet.has(current)) {
+        continue
       }
 
-      descendants.add(candidate)
-    })
+      const rect = getElementRect(current)
+      if (!isVisibilityCandidate(current, rect)) {
+        continue
+      }
+
+      if (isEffectPermitted(current)) {
+        descendants.add(current)
+      }
+    }
   })
 
   return Array.from(descendants)
+}
+
+function collectVisibleEligibleElements (root) {
+  if (!root || !(root instanceof HTMLElement)) {
+    return { candidates: [], candidateSet: new Set() }
+  }
+
+  const queue = [root]
+  const visited = new Set()
+  const candidateSet = new Set()
+  const candidates = []
+  const blockedElements = new Set()
+
+  while (queue.length > 0) {
+    const current = queue.shift()
+    if (!current || visited.has(current) || !(current instanceof HTMLElement)) {
+      continue
+    }
+
+    visited.add(current)
+
+    const children = typeof current.children !== 'undefined'
+      ? Array.from(current.children)
+      : []
+
+    children.forEach((child) => {
+      if (child && !visited.has(child)) {
+        queue.push(child)
+      }
+    })
+
+    const rect = getElementRect(current)
+    if (!isVisibilityCandidate(current, rect)) {
+      continue
+    }
+
+    if (isEffectPermitted(current)) {
+      if (!candidateSet.has(current)) {
+        candidateSet.add(current)
+        candidates.push(current)
+      }
+    } else {
+      blockedElements.add(current)
+    }
+  }
+
+  const forcedDescendants = collectPermittedBlockedDescendants(blockedElements, candidateSet)
+  forcedDescendants.forEach((element) => {
+    if (!candidateSet.has(element)) {
+      candidateSet.add(element)
+      candidates.push(element)
+    }
+  })
+
+  return { candidates, candidateSet }
 }
 
 function shouldAlwaysAnimateElement (element) {
@@ -748,37 +820,17 @@ function buildAssimilationPlan () {
     return { root: null, topLevelGroups: [], targets: [] }
   }
 
-  const eligibleElements = Array.from(root.querySelectorAll('*')).filter((element) => isEligibleTarget(element))
+  const traversalRoot = (typeof document !== 'undefined' && document.body instanceof HTMLElement)
+    ? document.body
+    : root
 
-  if (root !== document.body && root instanceof HTMLElement && isEligibleTarget(root)) {
-    eligibleElements.push(root)
-  }
+  const { candidates, candidateSet } = collectVisibleEligibleElements(traversalRoot)
 
-  if (eligibleElements.length === 0) {
+  if (!candidates || candidates.length === 0) {
     return { root, topLevelGroups: [], targets: [] }
   }
 
   const threshold = getLowerHalfThreshold(root)
-  let candidates = eligibleElements
-    .map((element) => ({ element, rect: getElementRect(element) }))
-    .filter(({ rect }) => rect && rect.bottom >= threshold)
-    .map(({ element }) => element)
-
-  if (candidates.length === 0) {
-    return { root, topLevelGroups: [], targets: [] }
-  }
-
-  const candidateSet = new Set(candidates)
-
-  const forcedDescendants = collectPermittedBlockedDescendants(root, threshold)
-  if (forcedDescendants.length > 0) {
-    forcedDescendants.forEach((element) => {
-      if (!candidateSet.has(element)) {
-        candidateSet.add(element)
-        candidates.push(element)
-      }
-    })
-  }
   const parentCandidates = new Set()
 
   candidates.forEach((element) => {
