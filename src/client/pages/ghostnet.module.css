@@ -553,7 +553,8 @@
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
   margin-left: auto;
   color: var(--ghostnet-muted);
-  
+}
+
 .dataTable :global([data-ghostnet-table-row]) {
   opacity: 0;
   transform: translateY(14px);
