@@ -1,6 +1,7 @@
 .ghostnet {
   position: relative;
   min-height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   padding: 2.5rem 3rem 3.5rem;
@@ -587,6 +588,7 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  height: 100%;
 }
 
 .commodityTradeContent {

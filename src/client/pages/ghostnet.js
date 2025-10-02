@@ -1642,9 +1642,16 @@ function CommodityTradePanel () {
 
   const handleCloseListingsDrawer = useCallback(() => {
     setListingsDrawerOpen(false)
+  }, [])
+
+  useEffect(() => {
+    if (!selectedCommodityKey) return
+    if (selectedCommodityRow) return
+
     setSelectedCommodityKey('')
     setMinListingPrice(0)
-  }, [])
+    setListingsDrawerOpen(false)
+  }, [selectedCommodityKey, selectedCommodityRow])
 
   useEffect(() => {
     if (!listingsDrawerOpen) return
@@ -3430,16 +3437,32 @@ export default function GhostnetPage() {
               </aside>
             </section>
             <div className={styles.tabPanels}>
-              <div className={styles.tabPanel} style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+              <div
+                className={styles.tabPanel}
+                hidden={activeTab !== 'tradeRoutes'}
+                aria-hidden={activeTab !== 'tradeRoutes'}
+              >
                 <TradeRoutesPanel />
               </div>
-              <div className={styles.tabPanel} style={{ display: activeTab === 'commodityTrade' ? 'block' : 'none' }}>
+              <div
+                className={styles.tabPanel}
+                hidden={activeTab !== 'commodityTrade'}
+                aria-hidden={activeTab !== 'commodityTrade'}
+              >
                 <CommodityTradePanel />
               </div>
-              <div className={styles.tabPanel} style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
+              <div
+                className={styles.tabPanel}
+                hidden={activeTab !== 'missions'}
+                aria-hidden={activeTab !== 'missions'}
+              >
                 <MissionsPanel />
               </div>
-              <div className={styles.tabPanel} style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
+              <div
+                className={styles.tabPanel}
+                hidden={activeTab !== 'pristineMining'}
+                aria-hidden={activeTab !== 'pristineMining'}
+              >
                 <PristineMiningPanel />
               </div>
             </div>
