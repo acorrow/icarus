@@ -659,7 +659,7 @@ const FILTER_SUMMARY_STYLE = {
 }
 
 const FILTER_SUMMARY_TEXT_STYLE = {
-  color: '#ffa45b',
+  color: 'var(--ghostnet-accent)',
   fontSize: '0.85rem',
   fontWeight: 500,
   whiteSpace: 'nowrap',
@@ -708,7 +708,7 @@ function getStationIconName (localInfo = {}, remoteInfo = {}) {
   return stationIconFromType(candidates[0])
 }
 
-function StationIcon ({ icon, size = 26, color = '#ffb347' }) {
+function StationIcon ({ icon, size = 26, color = 'var(--ghostnet-accent)' }) {
   if (!icon) return null
   const paths = Icons[icon]
   if (!paths) return null

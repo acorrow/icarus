@@ -473,7 +473,7 @@
   padding: 0.6rem 0.35rem;
   text-align: center;
   vertical-align: top;
-  color: #ffb347;
+  color: var(--ghostnet-accent);
   font-size: 1.1rem;
   line-height: 1;
 }
@@ -499,20 +499,20 @@
 }
 
 .tableRowInteractive:hover {
-  background: rgba(127, 233, 255, 0.2);
+  background: rgba(93, 46, 255, 0.2);
 }
 
 .tableRowExpanded {
-  background: rgba(127, 233, 255, 0.16) !important;
+  background: rgba(93, 46, 255, 0.16) !important;
 }
 
 .tableRowExpanded:hover {
-  background: rgba(127, 233, 255, 0.22) !important;
+  background: rgba(93, 46, 255, 0.22) !important;
 }
 
 .tableDetailRow td {
   background: rgba(5, 8, 13, 0.88);
-  border-top: 1px solid rgba(127, 233, 255, 0.18);
+  border-top: 1px solid rgba(140, 92, 255, 0.25);
   padding: 0 1.5rem 1.5rem;
 }
 
@@ -546,7 +546,7 @@
 }
 
 .tableMessageBorder {
-  border-bottom: 1px solid rgba(127, 233, 255, 0.18);
+  border-bottom: 1px solid rgba(140, 92, 255, 0.25);
 }
 
 .tableIdleState {
@@ -577,7 +577,7 @@
 }
 
 .tableWarning {
-  color: #ffb347;
+  color: #ff5fc1;
   font-size: 0.78rem;
   margin-top: 0.35rem;
 }
@@ -666,7 +666,7 @@
 }
 
 .tableBadgeWarning {
-  color: #ff7c22;
+  color: #ff5fc1;
 }
 
 .tableBadgeSuccess {
@@ -708,7 +708,7 @@
 }
 
 .metricValueWarning {
-  color: #ff7c22;
+  color: #ff5fc1;
 }
 
 .metricValueSuccess {
@@ -718,7 +718,7 @@
 .notice {
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
-  color: #ffb347;
+  color: var(--ghostnet-accent);
 }
 
 .noticeMuted {
