@@ -37,6 +37,20 @@ const ALWAYS_ANIMATE_TAGS = new Set(['H', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'S
 let cachedMainHeaderElement = null
 let attemptedHeaderLookup = false
 
+function isDocumentRootElement (element) {
+  if (!element || typeof document === 'undefined') return false
+
+  if (element === document.body || element === document.documentElement) {
+    return true
+  }
+
+  if (element.tagName && (element.tagName === 'BODY' || element.tagName === 'HTML')) {
+    return true
+  }
+
+  return false
+}
+
 function getMainHeaderElement () {
   if (typeof document === 'undefined') return null
 
@@ -404,6 +418,7 @@ function isVisibilityCandidate (element, rect) {
   if (!element) return false
   if (!element.tagName) return false
   if (EXCLUDED_TAGS.has(element.tagName)) return false
+  if (isDocumentRootElement(element)) return false
   if (isWithinExcludedRegion(element)) return false
   if ('isConnected' in element && !element.isConnected) return false
   if (typeof element.getBoundingClientRect !== 'function') return false
@@ -479,6 +494,10 @@ function isEffectPermitted (element) {
   const { tagName } = element
   if (!tagName) return false
 
+  if (EXCLUDED_TAGS.has(tagName) || isDocumentRootElement(element)) {
+    return false
+  }
+
   if (hasBlockedEffectClass(element)) {
     return false
   }
@@ -551,7 +570,7 @@ function collectPermittedBlockedDescendants (blockedElements, existingSet) {
         }
       })
 
-      if (current === blocked) {
+      if (current === blocked || isDocumentRootElement(current)) {
         continue
       }
 
@@ -605,6 +624,10 @@ function collectVisibleEligibleElements (root) {
         queue.push(child)
       }
     })
+
+    if (isDocumentRootElement(current)) {
+      continue
+    }
 
     const rect = getElementRect(current)
     if (!isVisibilityCandidate(current, rect)) {
@@ -989,7 +1012,11 @@ function buildAssimilationPlan () {
   topLevelGroups.forEach((group) => {
     group.childGroups.forEach((child) => {
       child.forEach((element) => {
-        if (!shouldSkipAssimilationSubtree(element) && isEffectPermitted(element)) {
+        if (
+          !shouldSkipAssimilationSubtree(element) &&
+          isEffectPermitted(element) &&
+          !isDocumentRootElement(element)
+        ) {
           targetsSet.add(element)
         }
       })
@@ -1003,6 +1030,7 @@ function upgradeElement (element, baseDelay) {
   if (!element || element.dataset.ghostnetAssimilated === 'true') return
   if (shouldSkipAssimilationSubtree(element)) return
   if (!isEffectPermitted(element)) return
+  if (isDocumentRootElement(element)) return
   if (remainingCharacterAnimations <= 0) return
 
   element.dataset.ghostnetAssimilated = 'true'
