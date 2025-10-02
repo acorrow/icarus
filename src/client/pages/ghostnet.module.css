@@ -54,6 +54,98 @@
   pointer-events: none;
 }
 
+.hero {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2.5rem;
+  margin-bottom: 2.75rem;
+  padding: 2.4rem 2.8rem;
+  border-radius: 1.5rem;
+  border: 1px solid var(--ghostnet-border-regular);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);
+  box-shadow: 0 24px 48px -32px var(--ghostnet-shadow-deep);
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, color-mix(in srgb, var(--ghostnet-color-primary-light) 32%, transparent) 0%, transparent 55%),
+    radial-gradient(circle at bottom right, color-mix(in srgb, var(--ghostnet-color-primary-dark) 28%, transparent) 0%, transparent 60%);
+  opacity: 0.45;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.heroContent {
+  position: relative;
+  flex: 1 1 420px;
+  max-width: 640px;
+  z-index: 1;
+}
+
+.heroTitle {
+  font-size: clamp(2.4rem, 2.9vw, 3.1rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 1rem;
+  color: var(--ghostnet-ink);
+}
+
+.heroSubtitle {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ghostnet-text-soft);
+}
+
+.heroStatus {
+  position: relative;
+  flex: 0 1 280px;
+  border-radius: 1.1rem;
+  border: 1px solid var(--ghostnet-border-regular);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
+  box-shadow: 0 20px 36px -28px var(--ghostnet-shadow);
+  padding: 1.75rem 1.9rem;
+  z-index: 1;
+}
+
+.heroStatusList {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.heroStatusItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.85rem;
+  row-gap: 0.25rem;
+  align-items: baseline;
+}
+
+.heroStatusLabel {
+  margin: 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ghostnet-text-soft);
+}
+
+.heroStatusValue {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ghostnet-accent);
+}
+
 .arrival {
   animation: ghostnetArrivalSurface 4.2s cubic-bezier(0.45, 0, 0.2, 1) forwards;
 }

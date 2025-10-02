@@ -1,6 +1,7 @@
 import fetch from 'node-fetch'
 import https from 'https'
 import { load } from 'cheerio'
+import { createGhostnetTransmission } from './ghostnet-transmission-utils.js'
 
 const BASE_URL = 'https://inara.cz'
 const MINING_MISSION_TYPE = 7
@@ -109,12 +110,18 @@ export default async function handler (req, res) {
 
     const html = await response.text()
     const missions = parseMissions(html, targetSystem)
+    const ghostnetTransmission = createGhostnetTransmission(html, {
+      url,
+      tag: 'missions',
+      meta: { targetSystem, missionCount: missions.length }
+    })
 
     res.status(200).json({
       missions,
       targetSystem,
       sourceUrl: url,
-      message: `Showing nearby mining mission factions near ${targetSystem}.`
+      message: `Showing nearby mining mission factions near ${targetSystem}.`,
+      ghostnetTransmission
     })
   } catch (error) {
     res.status(500).json({

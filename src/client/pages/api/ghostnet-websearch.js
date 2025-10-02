@@ -9,6 +9,7 @@ import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
 import { appendGhostnetLogEntry } from './ghostnet-log-utils.js'
+import { createGhostnetTransmission } from './ghostnet-transmission-utils.js'
 
 const logPath = path.join(process.cwd(), 'ghostnet-websearch.log')
 function logGhostnetSearch(entry) {
@@ -332,10 +333,15 @@ export default async function handler(req, res) {
     })
     if (!response.ok) throw new Error('GHOSTNET request failed')
     const html = await response.text()
+    const ghostnetTransmission = createGhostnetTransmission(html, {
+      url,
+      tag: 'websearch',
+      meta: { shipId, system }
+    })
 
     if (/No station within [\d,]+ Ly range found/i.test(html)) {
       logGhostnetSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} NO_RESULTS`)
-      res.status(200).json({ results: [], message: 'No station within range found on GHOSTNET.' })
+      res.status(200).json({ results: [], message: 'No station within range found on GHOSTNET.', ghostnetTransmission })
       return
     }
 
@@ -401,7 +407,7 @@ export default async function handler(req, res) {
     const results = detailResults.filter(Boolean)
 
     logGhostnetSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} results=${results.length}`)
-    res.status(200).json({ results })
+    res.status(200).json({ results, ghostnetTransmission })
   } catch (err) {
     logGhostnetSearch(`ERROR: shipId=${shipId} system=${system} url=${url} error=${err}`)
     res.status(500).json({ error: 'Failed to fetch or parse GHOSTNET results', details: err.message })

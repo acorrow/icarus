@@ -6,6 +6,7 @@ import NavigationInspectorPanel from '../components/panels/nav/navigation-inspec
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
+import { beginInaraRequest, completeInaraRequest, failInaraRequest, subscribeToGhostnetTerminal } from '../lib/ghostnet-terminal-feed.js'
 import styles from './ghostnet.module.css'
 
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
@@ -1107,6 +1108,11 @@ function MissionsPanel () {
     const controller = new AbortController()
 
     const loadMissions = async () => {
+      const requestId = beginInaraRequest({
+        label: 'GhostNet Missions',
+        system: targetSystem,
+        endpoint: 'nearest-misc'
+      })
       try {
         const response = await fetch('/api/ghostnet-missions', {
           method: 'POST',
@@ -1116,6 +1122,10 @@ function MissionsPanel () {
         })
 
         const data = await response.json()
+        if (!response.ok) {
+          throw new Error(typeof data?.error === 'string' ? data.error : `Unable to fetch missions (${response.status})`)
+        }
+        completeInaraRequest(requestId, data?.ghostnetTransmission)
         if (cancelled) return
 
         const nextMissions = Array.isArray(data?.missions)
@@ -1149,6 +1159,11 @@ function MissionsPanel () {
           sourceUrl: nextSourceUrl
         })
       } catch (err) {
+        if (err.name === 'AbortError') {
+          failInaraRequest(requestId, { aborted: true })
+          return
+        }
+        failInaraRequest(requestId, { error: err?.message })
         if (cancelled || err.name === 'AbortError') return
 
         if (hasCached) {
@@ -1384,27 +1399,43 @@ function CommodityTradePanel () {
         }))
     }
 
-    fetch('/api/ghostnet-commodity-values', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const requestId = beginInaraRequest({
+      label: 'GhostNet Commodity Values',
+      commodityCount: payload.commodities.length
     })
-      .then(res => res.json())
-      .then(data => {
+
+    ;(async () => {
+      try {
+        const response = await fetch('/api/ghostnet-commodity-values', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(typeof data?.error === 'string' ? data.error : `Unable to load commodity valuations (${response.status})`)
+        }
+        completeInaraRequest(requestId, data?.ghostnetTransmission)
         if (cancelled) return
+
         const results = Array.isArray(data?.results) ? data.results : []
         const metadata = data?.metadata && typeof data.metadata === 'object'
           ? data.metadata
           : { ghostnetStatus: 'idle', marketStatus: 'idle', historyStatus: 'idle' }
         setValuation({ results, metadata })
         setStatus(results.length > 0 ? 'ready' : 'empty')
-      })
-      .catch(err => {
+      } catch (err) {
+        if (err?.name === 'AbortError') {
+          failInaraRequest(requestId, { aborted: true })
+          return
+        }
+        failInaraRequest(requestId, { error: err?.message })
         if (cancelled) return
         setError(err?.message || 'Unable to load commodity valuations.')
         setStatus('error')
         setValuation(prev => ({ ...prev, results: [] }))
-      })
+      }
+    })()
 
     return () => {
       cancelled = true
@@ -2179,7 +2210,7 @@ function TradeRoutesPanel () {
     }
   }, [filterRoutes, sortRoutes])
 
-  const refreshRoutes = useCallback(targetSystem => {
+  const refreshRoutes = useCallback(async targetSystem => {
     const trimmedTargetSystem = typeof targetSystem === 'string' ? targetSystem.trim() : ''
 
     if (!trimmedTargetSystem) {
@@ -2234,32 +2265,46 @@ function TradeRoutesPanel () {
       return
     }
 
-    fetch('/api/ghostnet-trade-routes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const requestId = beginInaraRequest({
+      label: 'GhostNet Trade Routes',
+      system: trimmedTargetSystem,
+      filters
     })
-      .then(res => res.json())
-      .then(data => {
-        const nextRoutes = Array.isArray(data?.routes)
-          ? data.routes
-          : Array.isArray(data?.results)
-            ? data.results
-            : []
 
-        applyResults(nextRoutes, { error: data?.error, message: data?.message })
+    try {
+      const response = await fetch('/api/ghostnet-trade-routes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       })
-      .catch(err => {
-        setError(err.message || 'Unable to fetch trade routes.')
-        setMessage('')
-        setRoutes([])
-        setRawRoutes([])
-        setStatus('error')
-        setLastUpdatedAt(null)
-      })
-      .finally(() => {
-        setIsRefreshing(false)
-      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(typeof data?.error === 'string' ? data.error : `Unable to fetch trade routes (${response.status})`)
+      }
+      completeInaraRequest(requestId, data?.ghostnetTransmission)
+
+      const nextRoutes = Array.isArray(data?.routes)
+        ? data.routes
+        : Array.isArray(data?.results)
+          ? data.results
+          : []
+
+      applyResults(nextRoutes, { error: data?.error, message: data?.message })
+    } catch (err) {
+      if (err?.name === 'AbortError') {
+        failInaraRequest(requestId, { aborted: true })
+      } else {
+        failInaraRequest(requestId, { error: err?.message })
+      }
+      setError(err?.message || 'Unable to fetch trade routes.')
+      setMessage('')
+      setRoutes([])
+      setRawRoutes([])
+      setStatus('error')
+      setLastUpdatedAt(null)
+    } finally {
+      setIsRefreshing(false)
+    }
   }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, status])
 
   useEffect(() => {
@@ -2935,13 +2980,24 @@ function PristineMiningPanel () {
     setMessage('')
     setLastUpdatedAt(null)
 
-    fetch('/api/ghostnet-pristine-mining', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ system: trimmedSystem })
+    const requestId = beginInaraRequest({
+      label: 'GhostNet Pristine Mining',
+      system: trimmedSystem,
+      endpoint: 'nearest-bodies'
     })
-      .then(res => res.json())
-      .then(data => {
+
+    ;(async () => {
+      try {
+        const response = await fetch('/api/ghostnet-pristine-mining', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ system: trimmedSystem })
+        })
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(typeof data?.error === 'string' ? data.error : `Unable to fetch pristine mining data (${response.status})`)
+        }
+        completeInaraRequest(requestId, data?.ghostnetTransmission)
         if (cancelled) return
 
         const nextLocations = Array.isArray(data?.locations)
@@ -2967,16 +3023,21 @@ function PristineMiningPanel () {
         } else {
           setStatus('populated')
         }
-      })
-      .catch(err => {
+      } catch (err) {
+        if (err?.name === 'AbortError') {
+          failInaraRequest(requestId, { aborted: true })
+          return
+        }
+        failInaraRequest(requestId, { error: err?.message })
         if (cancelled) return
         setLocations([])
-        setError(err.message || 'Unable to fetch pristine mining locations.')
+        setError(err?.message || 'Unable to fetch pristine mining locations.')
         setMessage('')
         setSourceUrl('')
         setStatus('error')
         setLastUpdatedAt(null)
-      })
+      }
+    })()
 
     return () => { cancelled = true }
   }, [trimmedSystem])
@@ -3372,6 +3433,134 @@ function createTerminalLineWithId (seed = '', baseLine) {
   return { ...line, id: unique }
 }
 
+const STREAM_GLYPHS = ['#', '@', '%', '&', '+', '?', '/', '\\', '=', '-', '~', '>', '<']
+
+function obfuscateStreamText (text = '', density = 0.5) {
+  if (!text) return ''
+  const limit = Math.max(0, Math.min(1, density))
+  return Array.from(text).map(char => (Math.random() < limit ? randomChoice(STREAM_GLYPHS) : char)).join('')
+}
+
+function chunkArray (items = [], chunkSize = 1) {
+  if (!Array.isArray(items) || chunkSize <= 0) return []
+  const result = []
+  for (let index = 0; index < items.length; index += chunkSize) {
+    result.push(items.slice(index, index + chunkSize))
+  }
+  return result
+}
+
+function chunkString (text = '', chunkSize = 96) {
+  if (typeof text !== 'string' || chunkSize <= 0) return []
+  const result = []
+  for (let index = 0; index < text.length; index += chunkSize) {
+    result.push(text.slice(index, index + chunkSize))
+  }
+  return result
+}
+
+function buildStreamIntroFrames (meta = {}) {
+  const label = typeof meta?.label === 'string' && meta.label.trim() ? meta.label.trim() : 'GhostNet uplink'
+  const system = typeof meta?.system === 'string' && meta.system.trim() ? ` – ${meta.system.trim()}` : ''
+  const endpoint = typeof meta?.endpoint === 'string' && meta.endpoint.trim() ? meta.endpoint.trim() : 'inara.cz'
+  return [{
+    delay: 160,
+    lines: [
+      createTerminalLineWithId('stream-intro', { type: 'system', label: 'ghostnet', text: `${label}${system}.` }),
+      createTerminalLineWithId('stream-link', { type: 'command', label: 'uplink', text: `link://${endpoint}/handshake` }),
+      createTerminalLineWithId('stream-fetch', {
+        type: 'system',
+        label: 'ghostnet',
+        text: 'Routing INARA telemetry — stand by.'
+      })
+    ]
+  }]
+}
+
+function buildStreamFramesFromTransmission (transmission = {}, meta = {}) {
+  if (!transmission || typeof transmission !== 'object') return []
+  const frames = []
+  const segments = Array.isArray(transmission.segments) && transmission.segments.length > 0
+    ? transmission.segments
+    : [transmission]
+
+  segments.forEach((segment, segmentIndex) => {
+    const baseText = typeof segment?.sanitizedText === 'string' ? segment.sanitizedText : ''
+    if (!baseText) return
+    const streamChunks = chunkString(baseText, 120)
+    if (streamChunks.length === 0) return
+    const label = `uplink:${String(segmentIndex + 1).padStart(2, '0')}`
+    const phases = [0.5, 0.35, 0.2, 0.1, 0]
+    phases.forEach((density, phaseIndex) => {
+      frames.push({
+        delay: phaseIndex === 0 ? 150 : 110,
+        lines: streamChunks.map((chunk, chunkIndex) =>
+          createTerminalLineWithId(`stream-${segmentIndex}-${phaseIndex}-${chunkIndex}`, {
+            type: 'decrypt',
+            label,
+            text: obfuscateStreamText(chunk, density)
+          })
+        )
+      })
+    })
+  })
+
+  const xmlPayload = typeof transmission.xml === 'string' ? transmission.xml : ''
+  if (xmlPayload) {
+    const xmlLines = xmlPayload.split('\n')
+    const xmlChunks = chunkArray(xmlLines, 4)
+    xmlChunks.forEach((chunk, index) => {
+      frames.push({
+        delay: index === 0 ? 260 : 200,
+        lines: chunk.map((line, lineIndex) => createTerminalLineWithId(`xml-${index}-${lineIndex}`, {
+          type: 'binary',
+          label: 'xml',
+          text: line
+        }))
+      })
+    })
+  }
+
+  frames.push({
+    delay: 520,
+    lines: [
+      createTerminalLineWithId('stream-complete', {
+        type: 'system',
+        label: 'ghostnet',
+        text: 'Transmission stabilised — ambient chatter resuming.'
+      })
+    ]
+  })
+
+  return frames
+}
+
+function buildStreamFailureFrames (meta = {}, error = '') {
+  const normalizedError = error && typeof error === 'string' ? error.trim() : ''
+  return [
+    {
+      delay: 200,
+      lines: [
+        createTerminalLineWithId('stream-fail', {
+          type: 'alert',
+          label: '!!!',
+          text: normalizedError ? `Signal collapse detected · ${normalizedError}` : 'Signal collapse detected · No payload received.'
+        })
+      ]
+    },
+    {
+      delay: 420,
+      lines: [
+        createTerminalLineWithId('stream-fail-complete', {
+          type: 'system',
+          label: 'ghostnet',
+          text: 'GhostNet fallback engaged — returning to ambient feed.'
+        })
+      ]
+    }
+  ]
+}
+
 function GhostnetTerminalOverlay () {
   const [collapsed, setCollapsed] = useState(false)
   const [terminalLines, setTerminalLines] = useState(() =>
@@ -3379,6 +3568,26 @@ function GhostnetTerminalOverlay () {
   )
   const cadenceRef = useRef()
   const timeoutRef = useRef(null)
+  const ambientControlRef = useRef({ schedule: () => {}, cancel: () => {} })
+  const streamRef = useRef({
+    active: false,
+    queue: [],
+    timer: null,
+    requestId: null,
+    awaitingPayload: false,
+    meta: {}
+  })
+
+  const appendTerminalLines = useCallback(newLines => {
+    if (!Array.isArray(newLines) || newLines.length === 0) return
+    setTerminalLines(previous => {
+      let next = [...previous, ...newLines]
+      if (next.length > TERMINAL_BUFFER) {
+        next = next.slice(next.length - TERMINAL_BUFFER)
+      }
+      return next
+    })
+  }, [])
 
   if (!cadenceRef.current) {
     cadenceRef.current = {
@@ -3481,28 +3690,184 @@ function GhostnetTerminalOverlay () {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
 
-    const schedule = delay => {
-      timeoutRef.current = window.setTimeout(() => {
-        const { lines, delay: nextDelay } = advanceCadence()
-        setTerminalLines(previous => {
-          let next = [...previous, ...lines]
-          if (next.length > TERMINAL_BUFFER) {
-            next = next.slice(next.length - TERMINAL_BUFFER)
-          }
-          return next
-        })
-        schedule(nextDelay)
-      }, delay)
-    }
-
-    schedule(randomInteger(360, 1200))
-
-    return () => {
+    const cancelAmbient = () => {
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
       }
     }
-  }, [advanceCadence])
+
+    const scheduleAmbient = delay => {
+      if (streamRef.current.active) return
+      const safeDelay = typeof delay === 'number' ? Math.max(90, delay) : randomInteger(360, 1200)
+      cancelAmbient()
+      timeoutRef.current = window.setTimeout(() => {
+        const { lines, delay: nextDelay } = advanceCadence()
+        appendTerminalLines(lines)
+        scheduleAmbient(nextDelay)
+      }, safeDelay)
+    }
+
+    ambientControlRef.current.schedule = scheduleAmbient
+    ambientControlRef.current.cancel = cancelAmbient
+
+    scheduleAmbient(randomInteger(360, 1200))
+
+    return () => {
+      cancelAmbient()
+      ambientControlRef.current.schedule = () => {}
+      ambientControlRef.current.cancel = () => {}
+    }
+  }, [advanceCadence, appendTerminalLines])
+
+  const terminateStream = useCallback((resumeAmbient = false) => {
+    const state = streamRef.current
+    if (state.timer) {
+      window.clearTimeout(state.timer)
+    }
+    streamRef.current = {
+      active: false,
+      queue: [],
+      timer: null,
+      requestId: null,
+      awaitingPayload: false,
+      meta: {}
+    }
+    if (resumeAmbient && typeof ambientControlRef.current.schedule === 'function') {
+      ambientControlRef.current.schedule(randomInteger(420, 1500))
+    }
+  }, [])
+
+  const runStreamQueue = useCallback(() => {
+    const state = streamRef.current
+    if (!state.active) return
+    if (state.timer) {
+      window.clearTimeout(state.timer)
+      state.timer = null
+    }
+    const frame = state.queue.shift()
+    if (!frame) {
+      if (state.awaitingPayload) return
+      terminateStream(true)
+      return
+    }
+    if (Array.isArray(frame.lines) && frame.lines.length > 0) {
+      appendTerminalLines(frame.lines)
+    }
+    const delay = typeof frame.delay === 'number' ? Math.max(45, frame.delay) : randomInteger(120, 240)
+    state.timer = window.setTimeout(runStreamQueue, delay)
+  }, [appendTerminalLines, terminateStream])
+
+  const appendStreamFrames = useCallback((frames = []) => {
+    const state = streamRef.current
+    if (!state.active) return
+    const normalized = Array.isArray(frames) ? frames.filter(Boolean) : []
+    if (normalized.length > 0) {
+      state.queue.push(...normalized)
+    }
+    if (!state.timer) {
+      runStreamQueue()
+    }
+  }, [runStreamQueue])
+
+  const startStreamSession = useCallback((id, meta = {}) => {
+    if (!id) return
+    if (typeof ambientControlRef.current.cancel === 'function') {
+      ambientControlRef.current.cancel()
+    }
+    if (streamRef.current.timer) {
+      window.clearTimeout(streamRef.current.timer)
+    }
+    const introFrames = buildStreamIntroFrames(meta)
+    streamRef.current = {
+      active: true,
+      queue: [...introFrames],
+      timer: null,
+      requestId: id,
+      awaitingPayload: true,
+      meta: meta && typeof meta === 'object' ? meta : {}
+    }
+    runStreamQueue()
+  }, [runStreamQueue])
+
+  const completeStreamSession = useCallback((id, payload = {}) => {
+    if (!id) return
+    const state = streamRef.current
+    const payloadMeta = payload && typeof payload === 'object' && payload.meta && typeof payload.meta === 'object'
+      ? payload.meta
+      : {}
+    if (state.active && state.requestId === id) {
+      state.awaitingPayload = false
+      if (Object.keys(payloadMeta).length > 0) {
+        state.meta = { ...state.meta, ...payloadMeta }
+      }
+      appendStreamFrames(buildStreamFramesFromTransmission(payload, state.meta))
+    } else {
+      if (typeof ambientControlRef.current.cancel === 'function') {
+        ambientControlRef.current.cancel()
+      }
+      const meta = Object.keys(payloadMeta).length > 0 ? payloadMeta : {}
+      streamRef.current = {
+        active: true,
+        queue: [...buildStreamIntroFrames(meta), ...buildStreamFramesFromTransmission(payload, meta)],
+        timer: null,
+        requestId: id,
+        awaitingPayload: false,
+        meta
+      }
+      runStreamQueue()
+    }
+  }, [appendStreamFrames, runStreamQueue])
+
+  const failStreamSession = useCallback((id, payload = {}) => {
+    if (!id) return
+    const state = streamRef.current
+    const payloadMeta = payload && typeof payload === 'object' && payload.meta && typeof payload.meta === 'object'
+      ? payload.meta
+      : {}
+    const errorMessage = typeof payload?.error === 'string' && payload.error
+      ? payload.error
+      : (typeof payload?.message === 'string' ? payload.message : '')
+    if (state.active && state.requestId === id) {
+      state.awaitingPayload = false
+      if (Object.keys(payloadMeta).length > 0) {
+        state.meta = { ...state.meta, ...payloadMeta }
+      }
+      appendStreamFrames(buildStreamFailureFrames(state.meta, errorMessage))
+    } else {
+      if (typeof ambientControlRef.current.cancel === 'function') {
+        ambientControlRef.current.cancel()
+      }
+      const meta = Object.keys(payloadMeta).length > 0 ? payloadMeta : {}
+      streamRef.current = {
+        active: true,
+        queue: [...buildStreamIntroFrames(meta), ...buildStreamFailureFrames(meta, errorMessage)],
+        timer: null,
+        requestId: id,
+        awaitingPayload: false,
+        meta
+      }
+      runStreamQueue()
+    }
+  }, [appendStreamFrames, runStreamQueue])
+
+  useEffect(() => () => {
+    terminateStream(false)
+  }, [terminateStream])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    return subscribeToGhostnetTerminal(event => {
+      if (!event || typeof event !== 'object' || !event.id) return
+      if (event.type === 'inara:start') {
+        startStreamSession(event.id, event.meta || {})
+      } else if (event.type === 'inara:stream') {
+        completeStreamSession(event.id, event.payload || {})
+      } else if (event.type === 'inara:fail') {
+        failStreamSession(event.id, event.payload || {})
+      }
+    })
+  }, [startStreamSession, completeStreamSession, failStreamSession])
 
   const visibleLines = useMemo(() => {
     return terminalLines.slice(-TERMINAL_WINDOW)
@@ -3615,6 +3980,34 @@ export default function GhostnetPage() {
   return (
     <Layout connected={connected} active={socketActive} ready={ready} loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
+        <section className={styles.hero} aria-labelledby='ghostnet-hero-heading'>
+          <div className={styles.heroContent}>
+            <h1 id='ghostnet-hero-heading' className={styles.heroTitle}>Ghost Net</h1>
+            <p className={styles.heroSubtitle}>
+              Ghost Net weaves INARA telemetry into a live console so you can audit trade corridors, mining whispers, and outfitting intel without leaving your cockpit.
+            </p>
+          </div>
+          <aside className={styles.heroStatus} role='complementary' aria-label='Signal Brief'>
+            <dl className={styles.heroStatusList}>
+              <div className={styles.heroStatusItem}>
+                <dt className={styles.heroStatusLabel}>Uplink</dt>
+                <dd className={styles.heroStatusValue}>Synchronized</dd>
+              </div>
+              <div className={styles.heroStatusItem}>
+                <dt className={styles.heroStatusLabel}>Linking</dt>
+                <dd className={styles.heroStatusValue}>GhostNet Mesh</dd>
+              </div>
+              <div className={styles.heroStatusItem}>
+                <dt className={styles.heroStatusLabel}>Focus</dt>
+                <dd className={styles.heroStatusValue}>Operator Ready</dd>
+              </div>
+              <div className={styles.heroStatusItem}>
+                <dt className={styles.heroStatusLabel}>Idle</dt>
+                <dd className={styles.heroStatusValue}>Signal Protected</dd>
+              </div>
+            </dl>
+          </aside>
+        </section>
         <div className={ghostnetClassName}>
           <div className={styles.shell}>
             <div className={styles.tabPanels}>

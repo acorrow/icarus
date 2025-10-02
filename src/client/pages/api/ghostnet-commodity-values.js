@@ -4,6 +4,7 @@ import os from 'os'
 import https from 'https'
 import fetch from 'node-fetch'
 import { load } from 'cheerio'
+import { createGhostnetTransmission, mergeGhostnetTransmissions } from './ghostnet-transmission-utils.js'
 
 const GHOSTNET_BASE_URL = 'https://inara.cz'
 const GHOSTNET_COMMODITY_SEARCH_URL = `${GHOSTNET_BASE_URL}/elite/commodities/`
@@ -353,7 +354,14 @@ async function fetchCommoditySearchListings ({ commodityId, commodityName, nearS
     throw new Error(`GHOSTNET commodity search failed with status ${response.status}`)
   }
   const html = await response.text()
-  return parseCommoditySearchResults(html)
+  return {
+    listings: parseCommoditySearchResults(html),
+    transmission: createGhostnetTransmission(html, {
+      url,
+      tag: 'commodity-search',
+      meta: { commodityId, commodityName, nearSystem: nearSystem || null }
+    })
+  }
 }
 
 function cleanText (value) {
@@ -688,6 +696,7 @@ export default async function handler (req, res) {
   const ghostnetSearchCache = loadGhostnetMarketCache()
   let ghostnetCacheDirty = false
   const ghostnetResults = new Map()
+  const transmissions = []
   const results = []
   let ghostnetStatus = 'ok'
 
@@ -718,11 +727,13 @@ export default async function handler (req, res) {
         listings = Array.isArray(cached.listings) ? cached.listings : []
       } else {
         try {
-          listings = await fetchCommoditySearchListings({
+          const searchResult = await fetchCommoditySearchListings({
             commodityId: option.id,
             commodityName: commodity.name,
             nearSystem
           })
+          listings = Array.isArray(searchResult?.listings) ? searchResult.listings : []
+          if (searchResult?.transmission) transmissions.push(searchResult.transmission)
           if (Array.isArray(listings) && listings.length > 0) {
             const didUpdate = setCachedCommoditySearch(ghostnetSearchCache, commodityKey, nearSystem, listings)
             if (didUpdate) ghostnetCacheDirty = true
@@ -826,12 +837,15 @@ export default async function handler (req, res) {
     })
   })
 
+  const ghostnetTransmission = mergeGhostnetTransmissions(transmissions, { tag: 'commodity-batch' })
+
   res.status(200).json({
     results,
     metadata: {
       ghostnetStatus,
       marketStatus,
       historyStatus
-    }
+    },
+    ...(ghostnetTransmission ? { ghostnetTransmission } : {})
   })
 }

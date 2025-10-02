@@ -8,6 +8,7 @@ import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
 import { appendGhostnetLogEntry } from './ghostnet-log-utils.js'
+import { createGhostnetTransmission } from './ghostnet-transmission-utils.js'
 
 const logPath = path.join(process.cwd(), 'ghostnet-trade-routes.log')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -481,9 +482,14 @@ export default async function handler(req, res) {
     const html = await response.text()
 
     const routes = parseTradeRoutes(html)
+    const ghostnetTransmission = createGhostnetTransmission(html, {
+      url,
+      tag: 'trade-routes',
+      meta: { system, routeCount: routes.length }
+    })
     if (!routes.length) {
       logGhostnetTrade(`RESPONSE: system=${system} url=${url} NO_RESULTS`)
-      res.status(200).json({ results: [], message: 'No trade routes found on GHOSTNET.' })
+      res.status(200).json({ results: [], message: 'No trade routes found on GHOSTNET.', ghostnetTransmission })
       return
     }
 
@@ -919,7 +925,7 @@ export default async function handler(req, res) {
     }))
 
     logGhostnetTrade(`RESPONSE: system=${system} url=${url} results=${enrichedResults.length}`)
-    res.status(200).json({ results: enrichedResults })
+    res.status(200).json({ results: enrichedResults, ghostnetTransmission })
   } catch (err) {
     logGhostnetTrade(`ERROR: system=${system} url=${url} error=${err}`)
     res.status(500).json({ error: 'Failed to fetch or parse GHOSTNET results', details: err.message })

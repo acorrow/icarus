@@ -1,6 +1,7 @@
 import fetch from 'node-fetch'
 import https from 'https'
 import { load } from 'cheerio'
+import { createGhostnetTransmission } from './ghostnet-transmission-utils.js'
 
 const BASE_URL = 'https://inara.cz'
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -152,12 +153,18 @@ export default async function handler (req, res) {
 
     const html = await response.text()
     const locations = parseBodies(html, targetSystem)
+    const ghostnetTransmission = createGhostnetTransmission(html, {
+      url,
+      tag: 'pristine-mining',
+      meta: { targetSystem, locationCount: locations.length }
+    })
 
     res.status(200).json({
       locations,
       targetSystem,
       sourceUrl: url,
-      message: `Showing pristine mining locations within ${MAX_DISTANCE_LY} Ly of ${targetSystem}.`
+      message: `Showing pristine mining locations within ${MAX_DISTANCE_LY} Ly of ${targetSystem}.`,
+      ghostnetTransmission
     })
   } catch (error) {
     res.status(500).json({
