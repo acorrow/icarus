@@ -5,6 +5,13 @@ import {
 
 let assimilationInProgress = false
 let assimilationStartTime = 0
+let assimilationCompletionHandled = false
+let assimilationEffectCleanup = null
+let assimilationCallback = null
+let assimilationTimeoutId = null
+let assimilationCleanupTimeoutId = null
+let assimilationDeadlineTimerId = null
+const ASSIMILATION_DEADLINE_BUFFER_MS = 750
 
 export const GHOSTNET_ASSIMILATION_EVENT = 'ghostnet-assimilation-start'
 
@@ -152,6 +159,90 @@ function buildElementList () {
   return shuffle(elements)
 }
 
+function stopAssimilationTimers () {
+  if (assimilationTimeoutId) {
+    window.clearTimeout(assimilationTimeoutId)
+    assimilationTimeoutId = null
+  }
+  if (assimilationCleanupTimeoutId) {
+    window.clearTimeout(assimilationCleanupTimeoutId)
+    assimilationCleanupTimeoutId = null
+  }
+}
+
+function stopDeadlineTimer () {
+  if (assimilationDeadlineTimerId) {
+    window.clearInterval(assimilationDeadlineTimerId)
+    assimilationDeadlineTimerId = null
+  }
+}
+
+function finalizeAssimilation () {
+  stopAssimilationTimers()
+  stopDeadlineTimer()
+  assimilationCompletionHandled = false
+  assimilationCallback = null
+  assimilationStartTime = 0
+
+  if (typeof assimilationEffectCleanup === 'function') {
+    assimilationEffectCleanup()
+  }
+
+  assimilationEffectCleanup = null
+  assimilationInProgress = false
+}
+
+function ensureAssimilationDeadline () {
+  stopDeadlineTimer()
+  assimilationDeadlineTimerId = window.setInterval(() => {
+    if (!assimilationInProgress) {
+      stopDeadlineTimer()
+      return
+    }
+
+    const elapsed = performance.now() - assimilationStartTime
+    if (elapsed >= effectDurationMs + ASSIMILATION_DEADLINE_BUFFER_MS) {
+      handleAssimilationComplete(true)
+    }
+  }, 240)
+}
+
+function handleAssimilationComplete (forced = false) {
+  if (!assimilationInProgress && !forced) return
+  if (assimilationCompletionHandled && !forced) return
+
+  if (!assimilationCompletionHandled) {
+    assimilationCompletionHandled = true
+    if (assimilationTimeoutId) {
+      window.clearTimeout(assimilationTimeoutId)
+      assimilationTimeoutId = null
+    }
+
+    if (typeof assimilationCallback === 'function') {
+      assimilationCallback()
+    }
+
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.setItem(ARRIVAL_FLAG_KEY, String(Date.now()))
+      }
+    } catch (err) {
+      // Ignore storage write issues
+    }
+
+    if (!forced) {
+      assimilationCleanupTimeoutId = window.setTimeout(() => {
+        assimilationCleanupTimeoutId = null
+        finalizeAssimilation()
+      }, 600)
+    }
+  }
+
+  if (forced) {
+    finalizeAssimilation()
+  }
+}
+
 function beginAssimilationEffect () {
   const targets = buildElementList()
   assimilationStartTime = performance.now()
@@ -205,23 +296,14 @@ export function initiateGhostnetAssimilation (callback) {
   if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
     window.dispatchEvent(new CustomEvent(GHOSTNET_ASSIMILATION_EVENT))
   }
-  const cleanup = beginAssimilationEffect()
+  assimilationCallback = typeof callback === 'function' ? callback : null
+  assimilationEffectCleanup = beginAssimilationEffect()
+  assimilationCompletionHandled = false
 
-  window.setTimeout(() => {
-    if (typeof callback === 'function') {
-      callback()
-    }
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        window.sessionStorage.setItem(ARRIVAL_FLAG_KEY, String(Date.now()))
-      }
-    } catch (err) {
-      // Ignore storage write issues
-    }
-    window.setTimeout(() => {
-      cleanup()
-      assimilationInProgress = false
-    }, 600)
+  ensureAssimilationDeadline()
+
+  assimilationTimeoutId = window.setTimeout(() => {
+    handleAssimilationComplete(false)
   }, effectDurationMs)
 }
 
