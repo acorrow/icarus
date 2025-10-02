@@ -29,3 +29,8 @@
 
 ## Scope
 These instructions apply to the entire repository unless a more specific `AGENTS.md` overrides them.
+
+## Image and logo creation workflow
+- When a task requires creating any image or logo, produce the asset in **SVG** format first.
+- After generating the SVG, render it to **PNG**.
+- Always include a view of the exported PNG in the chat response so reviewers can quickly validate the output.
