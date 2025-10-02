@@ -1,8 +1,28 @@
+:root {
+  --ghostnet-spinner-text: #aaa;
+  --ghostnet-spinner-inline-text: #888;
+  --ghostnet-spinner-border: rgba(255, 255, 255, 0.15);
+  --ghostnet-inspector-border: rgba(216, 180, 254, 0.28);
+  --ghostnet-inspector-gradient-start: rgba(12, 16, 26, 0.95);
+  --ghostnet-inspector-gradient-end: rgba(7, 11, 20, 0.92);
+  --ghostnet-inspector-shadow: rgba(3, 7, 12, 0.72);
+  --ghostnet-inspector-header-bg: rgba(41, 24, 89, 0.85);
+  --ghostnet-inspector-header-border: rgba(140, 92, 255, 0.35);
+  --ghostnet-status-background: rgba(5, 8, 13, 0.88);
+  --ghostnet-status-border: rgba(140, 92, 255, 0.28);
+  --ghostnet-status-error-text: #ff5fc1;
+  --ghostnet-status-error-border: rgba(255, 95, 193, 0.45);
+  --ghostnet-status-error-background: rgba(255, 95, 193, 0.12);
+  --ghostnet-belt-ring-outer: rgba(93, 46, 255, 0.35);
+  --ghostnet-belt-ring-inner: rgba(140, 92, 255, 0.28);
+  --ghostnet-belt-dust: rgba(93, 46, 255, 0.18);
+}
+
 .ghostnet-spinner {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: #aaa;
+  color: var(--ghostnet-spinner-text);
 }
 
 .ghostnet-spinner--block {
@@ -14,14 +34,14 @@
   justify-content: flex-start;
   padding: 0;
   font-size: 0.9rem;
-  color: #888;
+  color: var(--ghostnet-spinner-inline-text);
 }
 
 .ghostnet-spinner__icon {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  border: 2px solid var(--ghostnet-spinner-border);
   border-top-color: var(--color-primary);
   animation: ghostnet-spinner-rotate 0.85s linear infinite;
 }
@@ -91,10 +111,14 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  border: 1px solid rgba(216, 180, 254, 0.28);
+  border: 1px solid var(--ghostnet-inspector-border);
   border-radius: 1rem;
-  background: linear-gradient(180deg, rgba(12, 16, 26, 0.95) 0%, rgba(7, 11, 20, 0.92) 100%);
-  box-shadow: 0 1.35rem 3rem rgba(3, 7, 12, 0.72);
+  background: linear-gradient(
+    180deg,
+    var(--ghostnet-inspector-gradient-start) 0%,
+    var(--ghostnet-inspector-gradient-end) 100%
+  );
+  box-shadow: 0 1.35rem 3rem var(--ghostnet-inspector-shadow);
   overflow: hidden;
   padding: 0;
   box-sizing: border-box;
@@ -106,9 +130,9 @@
   width: 100%;
   height: auto;
   padding: 0.75rem 1rem 0.75rem 2.75rem;
-  background: rgba(41, 24, 89, 0.85);
+  background: var(--ghostnet-inspector-header-bg);
   color: var(--ghostnet-ink);
-  border-bottom: 1px solid rgba(140, 92, 255, 0.35);
+  border-bottom: 1px solid var(--ghostnet-inspector-header-border);
   border-radius: 1rem 1rem 0 0;
 }
 
@@ -133,8 +157,8 @@
 .pristine-mining__inspector-status {
   align-self: flex-start;
   width: 100%;
-  background: rgba(5, 8, 13, 0.88);
-  border: 1px solid rgba(140, 92, 255, 0.28);
+  background: var(--ghostnet-status-background);
+  border: 1px solid var(--ghostnet-status-border);
   border-radius: 1rem;
   padding: 1rem 1.25rem;
   color: var(--ghostnet-muted);
@@ -143,9 +167,9 @@
 }
 
 .pristine-mining__inspector-status--error {
-  color: #ff5fc1;
-  border-color: rgba(255, 95, 193, 0.45);
-  background: rgba(255, 95, 193, 0.12);
+  color: var(--ghostnet-status-error-text);
+  border-color: var(--ghostnet-status-error-border);
+  background: var(--ghostnet-status-error-background);
 }
 
 .pristine-mining__inspector .navigation-panel__inspector {
@@ -200,7 +224,7 @@
 }
 
 .pristine-mining__detail-status--error {
-  color: #ff5fc1;
+  color: var(--ghostnet-status-error-text);
 }
 
 .pristine-mining__detail-artwork {
@@ -242,15 +266,15 @@
 }
 
 .pristine-mining__belt-ring {
-  fill: rgba(93, 46, 255, 0.35);
+  fill: var(--ghostnet-belt-ring-outer);
 }
 
 .pristine-mining__belt-ring--inner {
-  fill: rgba(140, 92, 255, 0.28);
+  fill: var(--ghostnet-belt-ring-inner);
 }
 
 .pristine-mining__belt-dust {
-  fill: rgba(93, 46, 255, 0.18);
+  fill: var(--ghostnet-belt-dust);
 }
 
 @media (max-width: 1200px) {
