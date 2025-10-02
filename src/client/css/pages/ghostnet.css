@@ -67,11 +67,13 @@
   align-items: stretch;
   gap: 0;
   padding: 0;
-  border-radius: 0;
+  border-radius: 1.25rem;
   box-sizing: border-box;
-  border: 1px solid #333;
-  background: #101010;
-  margin-top: 1.5rem;
+  border: 1px solid rgba(216, 180, 254, 0.24);
+  background: rgba(7, 10, 18, 0.9);
+  box-shadow: 0 1.65rem 3.75rem rgba(3, 7, 12, 0.78);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
 }
 
 .pristine-mining__container--inspector {
@@ -120,9 +122,10 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  border: 1px solid #1f2430;
-  border-radius: 0.75rem;
-  background: rgba(8, 10, 16, 0.94) var(--linear-gradient-background);
+  border: 1px solid rgba(216, 180, 254, 0.28);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(12, 16, 26, 0.95) 0%, rgba(7, 11, 20, 0.92) 100%);
+  box-shadow: 0 1.35rem 3rem rgba(3, 7, 12, 0.72);
   overflow: hidden;
   padding: 0;
   box-sizing: border-box;
@@ -134,10 +137,10 @@
   width: 100%;
   height: auto;
   padding: 0.75rem 1rem 0.75rem 2.75rem;
-  background: rgba(30, 20, 14, 0.9);
-  color: var(--color-primary);
-  border-bottom: 1px solid rgba(255, 124, 34, 0.25);
-  border-radius: 0.75rem 0.75rem 0 0;
+  background: rgba(41, 24, 89, 0.85);
+  color: var(--ghostnet-ink);
+  border-bottom: 1px solid rgba(140, 92, 255, 0.35);
+  border-radius: 1rem 1rem 0 0;
 }
 
 .pristine-mining__inspector .inspector__close-button {
@@ -161,19 +164,19 @@
 .pristine-mining__inspector-status {
   align-self: flex-start;
   width: 100%;
-  background: rgba(12, 15, 24, 0.92);
-  border: 1px solid #1f2430;
-  border-radius: 0.75rem;
+  background: rgba(5, 8, 13, 0.88);
+  border: 1px solid rgba(140, 92, 255, 0.28);
+  border-radius: 1rem;
   padding: 1rem 1.25rem;
-  color: #bbb;
+  color: var(--ghostnet-muted);
   font-size: 0.95rem;
   line-height: 1.45;
 }
 
 .pristine-mining__inspector-status--error {
-  color: #ffb347;
-  border-color: #553211;
-  background: rgba(38, 18, 6, 0.55);
+  color: #ff5fc1;
+  border-color: rgba(255, 95, 193, 0.45);
+  background: rgba(255, 95, 193, 0.12);
 }
 
 .pristine-mining__inspector .navigation-panel__inspector {
@@ -206,7 +209,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-  color: #bbb;
+  color: var(--ghostnet-muted);
   font-size: 0.95rem;
 }
 
@@ -223,12 +226,12 @@
 }
 
 .pristine-mining__detail-status {
-  color: #aaa;
+  color: var(--ghostnet-subdued);
   font-size: 0.95rem;
 }
 
 .pristine-mining__detail-status--error {
-  color: #ffb347;
+  color: #ff5fc1;
 }
 
 .pristine-mining__detail-artwork {
@@ -270,15 +273,15 @@
 }
 
 .pristine-mining__belt-ring {
-  fill: rgba(255, 124, 34, 0.25);
+  fill: rgba(93, 46, 255, 0.35);
 }
 
 .pristine-mining__belt-ring--inner {
-  fill: rgba(255, 124, 34, 0.18);
+  fill: rgba(140, 92, 255, 0.28);
 }
 
 .pristine-mining__belt-dust {
-  fill: rgba(255, 124, 34, 0.08);
+  fill: rgba(93, 46, 255, 0.18);
 }
 
 @media (max-width: 1200px) {

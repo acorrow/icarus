@@ -15,6 +15,7 @@
 - Ensure every UI adjustment remains responsive and accessible across a wide range of device sizes.
 - Where it adds value, introduce tasteful animations and micro-interactions to help the interface feel vibrant and alive.
 - Mirror the structural patterns and layout conventions of other Icarus pages so the product feels cohesive, while still honoring GhostNet's unique identity.
+- Keep data tables outside of `SectionFrame` containers; tables should rely on GhostNet table shells (`dataTableContainer`, `dataTable`) for structure instead of being nested inside section frames.
 
 ### GhostNet Purple Theme Specification
 - **Primary hue:** GhostNet surfaces should lean on a rich royal purple (`#5D2EFF`) for primary actions, interactive accents, and key highlights.
