@@ -554,6 +554,17 @@ body.ghostnet-assimilation-mode::after {
   z-index: 9999;
 }
 
+body.ghostnet-assimilation-forced {
+  background: #0d0b1a;
+  transition: background 0.35s ease;
+}
+
+body.ghostnet-assimilation-forced::after {
+  opacity: 0;
+  animation: none;
+  transition: opacity 0.45s ease;
+}
+
 @keyframes ghostnet-assimilation-static {
   0% {
     transform: translate3d(0, 0, 0);
@@ -587,6 +598,13 @@ body.ghostnet-assimilation-mode::after {
   animation: ghostnet-assimilation-jitter var(--ghostnet-assimilation-loop, 280ms) steps(2, end) infinite;
 }
 
+body.ghostnet-assimilation-forced .ghostnet-assimilation-target,
+.ghostnet-assimilation-force-fade {
+  opacity: 0;
+  transform: scale(0.95) translate3d(0, -14px, 0);
+  filter: blur(2px) saturate(0.6) hue-rotate(-4deg);
+}
+
 .ghostnet-assimilation-target::before {
   content: '';
   position: absolute;
@@ -596,6 +614,12 @@ body.ghostnet-assimilation-mode::after {
   mix-blend-mode: screen;
   opacity: var(--ghostnet-assimilation-ghost-opacity, 0.4);
   animation: ghostnet-assimilation-ghost var(--ghostnet-assimilation-ghost-loop, 360ms) steps(2, end) infinite;
+}
+
+body.ghostnet-assimilation-forced .ghostnet-assimilation-target::before,
+.ghostnet-assimilation-force-fade::before {
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
 
 @keyframes ghostnet-assimilation-jitter {
