@@ -181,19 +181,19 @@
   transition: background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
 }
 
-.terminalToggle:hover,
-.terminalToggle:focus-visible {
+button.terminalToggle:hover:not([disabled]):not(.button--active),
+button.terminalToggle:focus-visible:not([disabled]):not(.button--active) {
   background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 88%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 62%, transparent));
   transform: translateY(-1px);
   box-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
 }
 
-.terminalToggle:focus-visible {
-  outline: 2px solid var(--ghostnet-color-success);
+button.terminalToggle:focus-visible:not([disabled]):not(.button--active) {
+  outline: 2px solid color-mix(in srgb, var(--ghostnet-color-primary-light) 92%, transparent);
   outline-offset: 3px;
 }
 
-.terminalToggle:active {
+button.terminalToggle:active:not([disabled]):not(.button--active) {
   background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary-dark) 78%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 52%, transparent));
   transform: translateY(1px);
   box-shadow: 0 0 10px color-mix(in srgb, var(--ghostnet-color-primary-dark) 48%, transparent);
