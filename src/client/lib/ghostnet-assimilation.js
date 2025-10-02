@@ -463,7 +463,7 @@ function ensureTopLevelGroups (anchorGroups, minimumCount) {
 
     result.forEach((group, groupIndex) => {
       group.childGroups.forEach((childGroup, childIndex) => {
-        if (childGroup.length > largestSize) {
+        if (childGroup.length > largestSize || (childGroup.length === largestSize && group.childGroups.length > 1)) {
           largestSize = childGroup.length
           donorIndex = groupIndex
           donorChildIndex = childIndex
@@ -471,7 +471,7 @@ function ensureTopLevelGroups (anchorGroups, minimumCount) {
       })
     })
 
-    if (donorIndex === -1 || donorChildIndex === -1 || largestSize <= 1) {
+    if (donorIndex === -1 || donorChildIndex === -1) {
       break
     }
 
@@ -481,7 +481,7 @@ function ensureTopLevelGroups (anchorGroups, minimumCount) {
     if (donor.childGroups.length > 1) {
       donor.childGroups.splice(donorChildIndex, 1)
       result.push(detachChildGroup(donor, childGroup))
-    } else {
+    } else if (childGroup.length > 1) {
       const randomized = shuffle(childGroup.slice())
       const splitPoint = Math.ceil(randomized.length / 2)
       const firstHalf = randomized.slice(0, splitPoint)
@@ -493,10 +493,14 @@ function ensureTopLevelGroups (anchorGroups, minimumCount) {
 
       donor.childGroups[0] = firstHalf
       result.push(detachChildGroup(donor, secondHalf))
+    } else {
+      break
     }
 
     normalizeRepresentative(donor)
   }
+
+  result.forEach((group) => normalizeRepresentative(group))
 
   return result
 }
@@ -558,20 +562,43 @@ function buildAssimilationPlan () {
   }
 
   const threshold = getLowerHalfThreshold(root)
-  const groupMap = new Map()
-
-  eligibleElements
+  const candidates = eligibleElements
     .map((element) => ({ element, rect: getElementRect(element) }))
     .filter(({ rect }) => rect && rect.bottom >= threshold)
-    .forEach(({ element }) => {
-      const anchor = resolveGroupAnchor(element, root, threshold) || element
-      if (!groupMap.has(anchor)) {
-        groupMap.set(anchor, new Set())
+    .map(({ element }) => element)
+
+  if (candidates.length === 0) {
+    return { root, topLevelGroups: [], targets: [] }
+  }
+
+  const candidateSet = new Set(candidates)
+  const parentCandidates = new Set()
+
+  candidates.forEach((element) => {
+    let ancestor = element.parentElement
+    while (ancestor && ancestor !== document.body && ancestor !== root) {
+      if (candidateSet.has(ancestor)) {
+        parentCandidates.add(ancestor)
+        break
       }
-      const members = groupMap.get(anchor)
-      members.add(anchor)
-      members.add(element)
-    })
+      ancestor = ancestor.parentElement
+    }
+  })
+
+  const leaves = candidates.filter((element) => !parentCandidates.has(element))
+
+  if (leaves.length === 0) {
+    return { root, topLevelGroups: [], targets: [] }
+  }
+
+  const groupMap = new Map()
+  leaves.forEach((element) => {
+    const anchor = resolveGroupAnchor(element, root, threshold) || element
+    if (!groupMap.has(anchor)) {
+      groupMap.set(anchor, new Set())
+    }
+    groupMap.get(anchor).add(element)
+  })
 
   const randomizedAnchors = shuffle(Array.from(groupMap.entries()))
   const anchorGroups = randomizedAnchors.map(([anchor, members]) => ({
@@ -597,9 +624,6 @@ function buildAssimilationPlan () {
     group.childGroups.forEach((child) => {
       child.forEach((element) => targetsSet.add(element))
     })
-    if (group.representative) {
-      targetsSet.add(group.representative)
-    }
   })
 
   return { root, topLevelGroups, targets: Array.from(targetsSet) }
