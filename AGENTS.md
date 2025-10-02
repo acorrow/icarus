@@ -28,11 +28,12 @@
 - **Accessibility:** Maintain WCAG AA contrast; when text falls below the ratio, elevate the surface or swap to the lighter ultraviolet tone.
 
 ### GhostNet layout and table styling
-- GhostNet data tables must use the shared `dataTableContainer` and `dataTable` styles from `ghostnet.module.css`. Do **not** wrap tables in additional rounded containers—the existing square-edged frame is the canonical presentation.
+- GhostNet data tables must use the shared `dataTableContainer`, `dataTableStack`, and `dataTable` styles from `ghostnet.module.css`. Use `tableViewport` when a table needs to scroll so that the frame hugs the content with minimal whitespace. Do **not** wrap tables in additional rounded containers—the existing square-edged frame is the canonical presentation.
 - Table headers should sit on the dark indigo gradient, with rows alternating a subtle ultraviolet wash and hover states brightening to the primary hue.
 - Inline indicators (badges, arrows, sparklines) should pull their colors from the constants exported in `ghostnet.js` (`GHOSTNET_ACCENT_HEX`, `GHOSTNET_SUCCESS_HEX`, `GHOSTNET_WARNING_HEX`, and `GHOSTNET_MUTED_HEX`). Introduce new colors only when they extend that palette.
 - When responsive constraints apply, prefer horizontal scrolling (e.g. flex containers with overflow) over stacking elements beneath one another. Only allow items to wrap once horizontal space is fully exhausted.
 - Keep supporting surfaces (status cards, filter controls, secondary panels) on `rgba(28, 22, 51, 0.92)` backgrounds with `rgba(140, 92, 255, 0.35)` borders to preserve cohesion across tabs.
+- Spell the product name as **GhostNet** (no space) across code, copy, and logs.
 
 ## Scope
 These instructions apply to the entire repository unless a more specific `AGENTS.md` overrides them.

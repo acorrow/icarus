@@ -313,7 +313,7 @@ function getFactionStandingDisplay(factionName, standings) {
 
   if (!key || !standings) {
     if (debug && factionName) {
-      console.debug('[Ghost Net] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
+      console.debug('[GhostNet] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
     }
     return defaultResult
   }
@@ -321,7 +321,7 @@ function getFactionStandingDisplay(factionName, standings) {
   const info = standings[key]
   if (!info) {
     if (debug) {
-      console.debug('[Ghost Net] Faction standing missing', {
+      console.debug('[GhostNet] Faction standing missing', {
         factionName,
         key,
         availableCount: Object.keys(standings || {}).length
@@ -331,7 +331,7 @@ function getFactionStandingDisplay(factionName, standings) {
   }
 
   if (debug) {
-    console.debug('[Ghost Net] Faction standing resolved', {
+    console.debug('[GhostNet] Faction standing resolved', {
       factionName,
       key,
       standing: info.standing,
@@ -1186,7 +1186,7 @@ function MissionsPanel () {
   return (
     <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
       <h2>Mining Missions</h2>
-      <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
+      <p className={styles.sectionHint}>GhostNet decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -1194,7 +1194,7 @@ function MissionsPanel () {
         </div>
         {sourceUrl && (
           <div className='ghostnet__data-source ghostnet-muted'>
-            Ghost Net intercept feed compiled from GHOSTNET community relays.
+            GhostNet intercept feed compiled from GHOSTNET community relays.
           </div>
         )}
       </div>
@@ -1202,8 +1202,18 @@ function MissionsPanel () {
         Availability signals originate from GHOSTNET contributors and may trail live mission boards.
       </p>
       {error && <div style={{ color: GHOSTNET_WARNING_HEX, textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
-        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+      <div className={`${styles.dataTableContainer} ${styles.dataTableStack}`}>
+        {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
+          <div className={styles.tableStatusBar}>
+            {isRefreshing && <span>Refreshing missions...</span>}
+            {lastUpdatedAt && (
+              <span className={styles.tableStatusTimestamp}>
+                Updated {formatRelativeTime(lastUpdatedAt)}
+              </span>
+            )}
+          </div>
+        )}
+        <div className={`${styles.tableViewport} scrollable`}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
@@ -1217,16 +1227,6 @@ function MissionsPanel () {
           {status === 'loading' && (
             <div className={styles.tableIdleState}>Linking mission beacons…</div>
           )}
-          {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
-            <div className={styles.tableStatusBar}>
-              {isRefreshing && <span>Refreshing missions...</span>}
-              {lastUpdatedAt && (
-                <span className={styles.tableStatusTimestamp}>
-                  Updated {formatRelativeTime(lastUpdatedAt)}
-                </span>
-              )}
-            </div>
-          )}
           {status === 'error' && !error && (
             <div className={styles.tableErrorState}>Unable to load missions.</div>
           )}
@@ -1236,17 +1236,16 @@ function MissionsPanel () {
             </div>
           )}
           {status === 'populated' && missions.length > 0 && (
-            <div className={styles.dataTableContainer}>
-              <table className={`${styles.dataTable} table--animated fx-fade-in`}>
-                <thead>
-                  <tr>
+            <table className={`${styles.dataTable} table--animated fx-fade-in`}>
+              <thead>
+                <tr>
                   <th>Faction</th>
                   <th>System</th>
                   <th className='hidden-small text-right'>Distance</th>
                   <th className='hidden-small text-right'>Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
+                </tr>
+              </thead>
+              <tbody>
                 {missions.map((mission, index) => {
                   const key = `${mission.system || 'unknown'}-${mission.faction || 'faction'}-${index}`
                   const distanceDisplay = formatSystemDistance(mission.distanceLy, mission.distanceText)
@@ -1547,7 +1546,7 @@ function CommodityTradePanel () {
 
   const renderSourceBadge = source => {
     if (source === 'ghostnet') {
-      return <span className={`${styles.tableBadge} ${styles.tableBadgeWarning}`}>GHOSTNET</span>
+      return <span className={`${styles.tableBadge} ${styles.tableBadgeWarning}`}>GhostNet</span>
     }
     if (source === 'local-station') {
       return <span className={`${styles.tableBadge} ${styles.tableBadgeSuccess}`}>Local Station</span>
@@ -1632,11 +1631,11 @@ function CommodityTradePanel () {
           <span className={styles.metricValue}>{formatCredits(totals.best, '--')}</span>
         </div>
         <div className={styles.metricItem}>
-          <span className={styles.metricLabel}>Hold Value (GHOSTNET)</span>
+          <span className={styles.metricLabel}>Hold Value (GhostNet)</span>
           <span className={`${styles.metricValue} ${styles.metricValueWarning}`}>{formatCredits(totals.ghostnet, '--')}</span>
         </div>
         <div className={styles.metricItem}>
-          <span className={styles.metricLabel}>Hold Value (Local Data)</span>
+          <span className={styles.metricLabel}>Hold Value (Local Markets)</span>
           <span className={`${styles.metricValue} ${styles.metricValueSuccess}`}>{formatCredits(totals.local, '--')}</span>
         </div>
       </div>
@@ -1689,9 +1688,9 @@ function CommodityTradePanel () {
               <tr>
                 <th>Commodity</th>
                 <th className='text-right'>Qty</th>
-                <th>Local Data</th>
-                <th>GHOSTNET Max</th>
-                <th className='text-right'>Value</th>
+                <th>Local Markets</th>
+                <th>GhostNet Max</th>
+                <th className='text-right'>Total Value</th>
               </tr>
             </thead>
             <tbody>
@@ -1800,7 +1799,7 @@ function CommodityTradePanel () {
                     <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
                     {typeof localValue === 'number' && typeof ghostnetValue === 'number' && Math.abs(localValue - ghostnetValue) > 0.01 && (
                       <div className={styles.tableMetaMuted}>
-                        GHOSTNET {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
+                        GhostNet {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
                       </div>
                     )}
                   </td>
@@ -1813,7 +1812,7 @@ function CommodityTradePanel () {
       )}
 
       <div className={styles.tableFootnote}>
-        In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
+        In-game prices are sourced from your latest Market data when available. GhostNet prices are community submitted and may not reflect real-time market conditions.
       </div>
     </div>
   )
@@ -2169,7 +2168,7 @@ function TradeRoutesPanel () {
       })
 
       applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (GHOSTNET) settings to restore live results.'
+        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in GhostNet (GHOSTNET) settings to restore live results.'
       })
       setIsRefreshing(false)
       return
@@ -2654,8 +2653,18 @@ function TradeRoutesPanel () {
           </div>
         )}
       </form>
-      <div className='ghostnet-panel-table' style={{ marginTop: '1.5rem', overflow: 'hidden' }}>
-        <div className='scrollable' style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+      <div className={`${styles.dataTableContainer} ${styles.dataTableStack}`}>
+        {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
+          <div className={styles.tableStatusBar}>
+            {isRefreshing && <LoadingSpinner inline label='Refreshing trade routes…' />}
+            {lastUpdatedAt && (
+              <span className={styles.tableStatusTimestamp}>
+                Last refreshed {formatRelativeTime(lastUpdatedAt)}
+              </span>
+            )}
+          </div>
+        )}
+        <div className={`${styles.tableViewport} scrollable`}>
           {message && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
           )}
@@ -2664,16 +2673,6 @@ function TradeRoutesPanel () {
           )}
           {status === 'loading' && (
             <LoadingSpinner label='Loading trade routes…' />
-          )}
-          {(status === 'populated' || status === 'empty') && (isRefreshing || lastUpdatedAt) && (
-            <div className='trade-routes__refresh-indicator'>
-              {isRefreshing && <LoadingSpinner inline label='Refreshing trade routes…' />}
-              {lastUpdatedAt && (
-                <span className='trade-routes__refresh-timestamp'>
-                  Last refreshed {formatRelativeTime(lastUpdatedAt)}
-                </span>
-              )}
-            </div>
           )}
           {status === 'error' && (
             <div className={styles.tableErrorState}>{error || 'Unable to fetch trade routes.'}</div>
@@ -2898,7 +2897,7 @@ function PristineMiningPanel () {
   return (
     <div className={`${styles.sectionFrameElevated} ${styles.sectionPadding}`}>
       <h2>Pristine Mining Locations</h2>
-      <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
+      <p className={styles.sectionHint}>GhostNet listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
       <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
         <div>
           <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -2906,7 +2905,7 @@ function PristineMiningPanel () {
         </div>
         {sourceUrl && (
           <div className='ghostnet__data-source ghostnet-muted'>
-            Ghost Net prospecting relays aligned with GHOSTNET survey intel.
+            GhostNet prospecting relays aligned with GHOSTNET survey intel.
           </div>
         )}
       </div>
@@ -2917,51 +2916,49 @@ function PristineMiningPanel () {
       <div
         className={`pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
       >
-        <div
-          className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
-          style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}
-        >
-          {(status === 'populated' || status === 'empty') && lastUpdatedAt && (
-            <div className={styles.tableStatusBar}>
-              <span className={styles.tableStatusTimestamp}>
-                Updated {formatRelativeTime(lastUpdatedAt)}
-              </span>
-            </div>
-          )}
-          {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
-              {displayMessage}
-            </div>
-          )}
-          {status === 'idle' && (
-            <div className={styles.tableIdleState}>
-              Waiting for current system information...
-            </div>
-          )}
-          {status === 'loading' && (
-            <div className={styles.tableIdleState}>Triangulating pristine reserves…</div>
-          )}
-          {status === 'error' && !error && (
-            <div className={styles.tableErrorState}>Unable to load pristine mining locations.</div>
-          )}
-          {status === 'empty' && (
-            <div className={styles.tableEmptyState}>
-              No pristine signatures detected near {displaySystemName || 'your current system'}.
-            </div>
-          )}
-          {status === 'populated' && locations.length > 0 && (
-            <div className={styles.dataTableContainer}>
-              <table className={`${styles.dataTable} table--animated fx-fade-in`}>
-                <thead>
-                  <tr>
-                    <th>Body</th>
-                    <th>System</th>
-                    <th className='hidden-small text-right'>Body Distance</th>
-                    <th className='text-right'>Distance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {locations.map((location, index) => {
+        <div className={`pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}>
+          <div className={`${styles.dataTableContainer} ${styles.dataTableStack}`}>
+            {(status === 'populated' || status === 'empty') && lastUpdatedAt && (
+              <div className={styles.tableStatusBar}>
+                <span className={styles.tableStatusTimestamp}>
+                  Updated {formatRelativeTime(lastUpdatedAt)}
+                </span>
+              </div>
+            )}
+            <div className={`${styles.tableViewport} scrollable`}>
+              {displayMessage && status !== 'idle' && status !== 'loading' && (
+                <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
+                  {displayMessage}
+                </div>
+              )}
+              {status === 'idle' && (
+                <div className={styles.tableIdleState}>
+                  Waiting for current system information...
+                </div>
+              )}
+              {status === 'loading' && (
+                <div className={styles.tableIdleState}>Triangulating pristine reserves…</div>
+              )}
+              {status === 'error' && !error && (
+                <div className={styles.tableErrorState}>Unable to load pristine mining locations.</div>
+              )}
+              {status === 'empty' && (
+                <div className={styles.tableEmptyState}>
+                  No pristine signatures detected near {displaySystemName || 'your current system'}.
+                </div>
+              )}
+              {status === 'populated' && locations.length > 0 && (
+                <table className={`${styles.dataTable} table--animated fx-fade-in`}>
+                  <thead>
+                    <tr>
+                      <th>Body</th>
+                      <th>System</th>
+                      <th className='hidden-small text-right'>Body Distance (Ls)</th>
+                      <th className='text-right'>System Distance (Ly)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {locations.map((location, index) => {
                   const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
                   const detailParts = []
                   if (location.bodyType) detailParts.push(location.bodyType)
@@ -3019,10 +3016,10 @@ function PristineMiningPanel () {
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
                                     {location.systemUrl && (
-                                      <span>Ghost Net linked GHOSTNET system dossier</span>
+                                      <span>GhostNet linked GHOSTNET system dossier</span>
                                     )}
                                     {location.bodyUrl && (
-                                      <span>Ghost Net linked GHOSTNET body dossier</span>
+                                      <span>GhostNet linked GHOSTNET body dossier</span>
                                     )}
                                   </div>
                                 )}
@@ -3044,11 +3041,12 @@ function PristineMiningPanel () {
                       )}
                     </Fragment>
                   )
-                })}
-                </tbody>
-              </table>
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
-          )}
+          </div>
         </div>
         <div className={`pristine-mining__inspector${inspectorReserved ? ' pristine-mining__inspector--reserved' : ''}`}>
           {inspectorReserved && detailLoadingKey === expandedLocationKey && (
@@ -3109,9 +3107,9 @@ export default function GhostnetPage() {
             <section className={styles.header} aria-labelledby='ghostnet-heading'>
               <div>
                 <span className={styles.kicker}>Underground Intelligence Mesh</span>
-                <h1 id='ghostnet-heading' className={styles.title}>Ghost Net</h1>
+                <h1 id='ghostnet-heading' className={styles.title}>GhostNet</h1>
                 <p className={styles.subtitle}>
-                  Ghost Net stitches GHOSTNET intercepts into a clandestine command surface, revealing trade corridors, syndicate missions, and pristine deposits hidden from official channels.
+                  GhostNet stitches GHOSTNET intercepts into a clandestine command surface, revealing trade corridors, syndicate missions, and pristine deposits hidden from official channels.
                 </p>
                 <div className={styles.ghostnetScroller} aria-hidden='true'>
                   <div className={styles.ghostnetTicker}>

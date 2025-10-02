@@ -22,13 +22,13 @@ jest.mock('../components/layout', () => ({ children }) => <>{children}</>)
 jest.mock('../components/panel', () => ({ children }) => <div>{children}</div>)
 jest.mock('../components/panels/nav/navigation-inspector-panel', () => () => <div data-testid='navigation-inspector-placeholder' />)
 
-describe('Ghost Net page', () => {
+describe('GhostNet page', () => {
   beforeEach(() => {
     mockSendEvent.mockClear()
     mockEventListener.mockClear()
   })
 
-  it('renders the Ghost Net hero and status summary', async () => {
+  it('renders the GhostNet hero and status summary', async () => {
     await act(async () => { render(<GhostnetPage />) })
 
     expect(await screen.findByRole('heading', { level: 1, name: /ghost net/i })).toBeInTheDocument()
@@ -40,7 +40,7 @@ describe('Ghost Net page', () => {
     expect(within(statusPanel).getByText(/idle/i)).toBeInTheDocument()
   })
 
-  it('exposes key Ghost Net panels for missions and mining', async () => {
+  it('exposes key GhostNet panels for missions and mining', async () => {
     await act(async () => { render(<GhostnetPage />) })
 
     expect(await screen.findByRole('heading', { name: /find trade routes/i })).toBeInTheDocument()

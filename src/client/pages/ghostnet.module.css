@@ -211,6 +211,12 @@
   overflow: hidden;
 }
 
+.dataTableStack {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
 .dataTableContainer::before {
   content: '';
   position: absolute;
@@ -218,6 +224,19 @@
   background: linear-gradient(90deg, rgba(93, 46, 255, 0.45), rgba(93, 46, 255, 0));
   opacity: 0.18;
   pointer-events: none;
+}
+
+.tableViewport {
+  flex: 1 1 auto;
+  max-height: calc(100vh - 360px);
+  overflow-y: auto;
+  background: rgba(21, 17, 39, 0.74);
+  display: flex;
+  flex-direction: column;
+}
+
+.tableViewport > :global(*) {
+  margin: 0;
 }
 
 .dataTable {
@@ -630,98 +649,6 @@
   100% {
     transform: translateX(-50%);
   }
-}
-
-.ghostnet :global(.ghostnet-panel-table) {
-  background: var(--ghostnet-panel);
-  border: 1px solid var(--ghostnet-panel-border);
-  border-radius: 0;
-  overflow: hidden;
-  box-shadow: 0 2.25rem 4rem rgba(13, 11, 26, 0.75);
-  backdrop-filter: blur(10px);
-}
-
-.ghostnet :global(.ghostnet-panel-table > .scrollable) {
-  background: rgba(21, 17, 39, 0.6);
-}
-
-.ghostnet :global(.ghostnet-panel-table table thead tr th) {
-  border-bottom: 1px solid rgba(140, 92, 255, 0.28);
-}
-
-.ghostnet :global(.ghostnet-panel-table tbody tr:nth-child(even)) {
-  background: rgba(93, 46, 255, 0.06);
-}
-
-.ghostnet :global(.ghostnet-panel-table tbody tr:hover) {
-  background: rgba(93, 46, 255, 0.18) !important;
-}
-
-.ghostnet :global(.ghostnet-panel-table .pristine-mining__detail) {
-  background: rgba(18, 15, 34, 0.92);
-  border: 1px solid rgba(140, 92, 255, 0.28);
-}
-
-.ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-status) {
-  color: var(--ghostnet-muted);
-}
-
-.ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-links span) {
-  color: var(--ghostnet-ink);
-}
-
-.ghostnet :global(.ghostnet-panel-table .pristine-mining__detail-status--error) {
-  color: var(--ghostnet-warning);
-}
-
-.ghostnet :global(.ghostnet-panel-table .text-primary) {
-  color: var(--ghostnet-accent);
-}
-
-.ghostnet :global(.ghostnet-panel-table .text-secondary) {
-  color: rgba(245, 241, 255, 0.78);
-}
-
-.ghostnet :global(.ghostnet-panel-table .text-muted) {
-  color: var(--ghostnet-muted);
-}
-
-.ghostnet :global(.ghostnet-panel-table .ghostnet-spinner__label) {
-  color: var(--ghostnet-muted);
-}
-
-.ghostnet :global(.ghostnet-panel-table .ghostnet-spinner__icon) {
-  border-color: var(--ghostnet-accent);
-  border-right-color: transparent;
-}
-
-.ghostnet :global(.ghostnet-panel-table .button--active) {
-  background: rgba(93, 46, 255, 0.18);
-  border-color: rgba(93, 46, 255, 0.45);
-}
-
-.ghostnet :global(.ghostnet-panel-table .button--active:hover) {
-  background: rgba(93, 46, 255, 0.24);
-}
-
-.ghostnet :global(.ghostnet-panel-table .button--icon) {
-  color: var(--ghostnet-ink);
-}
-
-.ghostnet :global(.ghostnet-panel-table .button--icon:hover) {
-  background: rgba(93, 46, 255, 0.16);
-}
-
-.ghostnet :global(.ghostnet-panel-table .button--secondary) {
-  color: var(--ghostnet-accent);
-}
-
-.ghostnet :global(.ghostnet-panel-table .button--secondary:hover) {
-  background: rgba(93, 46, 255, 0.18);
-}
-
-.ghostnet :global(.ghostnet-panel-table .pristine-mining__inspector) {
-  border-left: 1px solid rgba(140, 92, 255, 0.28);
 }
 
 @media (max-width: 640px) {

@@ -34,7 +34,7 @@ The stray signal hit my rig at 0300, a whisper from a station that no longer exi
    npm run build:client
    npm run build
    ```
-5. Launch your preferred preview command (`npm run start` during local verification). Navigate to `/ghostnet`; the UI presents as Ghost Net while retaining the route.
+5. Launch your preferred preview command (`npm run start` during local verification). Navigate to `/ghostnet`; the UI presents as GhostNet while retaining the route.
 
 ### B) Standalone Dev Preview
 > // ghostnet: sandbox relay active
@@ -57,7 +57,7 @@ export default function GhostnetPage(props) {
   return (
     <div className={styles.ghostnet}>
       <header>
-        <h1>Ghost Net</h1>
+        <h1>GhostNet</h1>
         <p className={styles.muted}>Anonymous Telemetry Leak & Archive Service</p>
       </header>
 
@@ -94,7 +94,7 @@ npm run build:client
 npm run build
 ```
 
-Note: keep the `/ghostnet` route identifier intact; surface branding broadcasts Ghost Net while the path remains unchanged to avoid collateral impact.
+Note: keep the `/ghostnet` route identifier intact; surface branding broadcasts GhostNet while the path remains unchanged to avoid collateral impact.
 
 ## Configuration
 > [telemetry intact]
