@@ -1,12 +1,12 @@
 :root {
   /* Base workspace backdrop for the GhostNet canvas */
-  --ghostnet-color-background: #05080d;
+  --ghostnet-color-background: #321234;
   /* Elevated panels and cards that sit above the canvas */
-  --ghostnet-color-surface: #1c1633;
+  --ghostnet-color-surface: #2f214b;
   /* Primary GhostNet accent for CTAs and key highlights */
-  --ghostnet-color-primary: #5d2eff;
+  --ghostnet-color-primary: #7325d9;
   /* Shadowed accent used for depth, pressed, and terminal rails */
-  --ghostnet-color-primary-dark: #2a0e82;
+  --ghostnet-color-primary-dark: #4a0e82;
   /* Highlight accent for edges, glows, and lighter gradient stops */
   --ghostnet-color-primary-light: #8c5cff;
   /* High-contrast text and icon color on dark grounds */
