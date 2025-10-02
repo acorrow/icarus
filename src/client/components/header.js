@@ -572,11 +572,16 @@ export default function Header ({ connected, active }) {
     {pirateModalVisible && (
       <div className='pirate-password-overlay' role='presentation'>
         <section
-          className={`pirate-password-dialog ${pirateGlitch ? 'pirate-password-dialog--glitch' : ''}`.trim()}
+          className={[
+            'pirate-password-dialog',
+            pirateGlitch ? 'pirate-password-dialog--glitch ghostnet-assimilation-target ghostnet-assimilation-remove' : ''
+          ].filter(Boolean).join(' ')}
           role='dialog'
           aria-modal='true'
           aria-labelledby='pirate-password-title'
         >
+          <div className='pirate-password-dialog__inner-frame' aria-hidden='true' />
+          <div className='pirate-password-dialog__surface-glow' aria-hidden='true' />
           <div className='pirate-password-dialog__chrome' aria-hidden='true'>
             <span className='pirate-password-dialog__chrome-light pirate-password-dialog__chrome-light--primary' />
             <span className='pirate-password-dialog__chrome-light pirate-password-dialog__chrome-light--secondary' />
@@ -590,7 +595,7 @@ export default function Header ({ connected, active }) {
               </div>
             )}
             {pirateStatus !== 'success' && (
-              <form onSubmit={handlePirateSubmit}>
+              <form onSubmit={handlePirateSubmit} className='pirate-password-form'>
                 <h2 id='pirate-password-title' className='pirate-password-title text-info text-uppercase'>Ghost Access Gate</h2>
                 <p className='pirate-password-subtitle text-muted'>Whisper the covenant phrase to still the static.</p>
                 <label className='pirate-password-label text-primary text-uppercase' htmlFor='pirate-password-input'>Passphrase</label>

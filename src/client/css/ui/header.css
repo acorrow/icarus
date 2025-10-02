@@ -165,11 +165,24 @@
 }
 
 .pirate-password-dialog--glitch {
-  animation: pirateDialogGlitch 1.1s ease forwards;
+  --ghostnet-assimilation-glow-radius: 2.4rem;
+  --ghostnet-assimilation-glow-opacity: 0.65;
+  --ghostnet-assimilation-shift-x: 6px;
+  --ghostnet-assimilation-shift-y: -5px;
+  --ghostnet-assimilation-tilt: -1.6deg;
+  animation: none !important;
 }
 
-.pirate-password-dialog::before {
-  content: '';
+.pirate-password-dialog--glitch.ghostnet-assimilation-target {
+  animation: none !important;
+}
+
+.pirate-password-dialog--glitch.ghostnet-assimilation-target::before {
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.pirate-password-dialog__inner-frame {
   position: absolute;
   inset: 0.75rem;
   border-radius: 0.95rem;
@@ -181,14 +194,18 @@
   z-index: 0;
 }
 
-.pirate-password-dialog::after {
-  content: '';
+.pirate-password-dialog__surface-glow {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(93, 46, 255, 0.24), transparent 28%);
   opacity: 0.55;
   pointer-events: none;
   z-index: 0;
+  transition: opacity 0.35s ease;
+}
+
+.pirate-password-dialog--glitch .pirate-password-dialog__surface-glow {
+  opacity: 0.2;
 }
 
 .pirate-password-dialog__chrome {
@@ -233,6 +250,12 @@
   gap: 1.4rem;
 }
 
+.pirate-password-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .pirate-password-title {
   font-size: 2.6rem;
   letter-spacing: 0.14em;
@@ -243,18 +266,25 @@
   font-size: 1.2rem;
   margin: 0 0 2rem 0;
   color: rgba(245, 241, 255, 0.68);
+  max-width: 24rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .pirate-password-label {
   display: block;
   font-size: 1rem;
   letter-spacing: 0.3em;
-  margin-bottom: 0.8rem;
+  margin: 0 auto 0.8rem;
+  width: 100%;
+  max-width: 25rem;
 }
 
 
 .pirate-password-input {
   width: 100%;
+  max-width: 25rem;
+  margin: 0 auto;
   padding: 1.1rem 1.5rem;
   font-size: 1.6rem;
   color: #F5F1FF;
@@ -279,6 +309,8 @@
 
 .pirate-password-submit {
   margin-top: 2rem;
+  width: 100%;
+  max-width: 17rem;
   padding: 1rem 2.6rem;
   font-size: 1.2rem;
   letter-spacing: 0.22em;
@@ -287,7 +319,9 @@
 
 .pirate-password-feedback {
   min-height: 2.4rem;
-  margin-top: 1.6rem;
+  margin: 1.6rem auto 0;
+  width: 100%;
+  max-width: 26rem;
   font-size: 1.1rem;
   letter-spacing: 0.12em;
   padding: 0.85rem 1rem;
@@ -327,33 +361,4 @@
   font-size: 1.8rem;
   letter-spacing: 0.2em;
   color: rgba(245, 241, 255, 0.88);
-}
-
-@keyframes pirateDialogGlitch {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-    opacity: 1;
-    filter: none;
-  }
-  20% {
-    transform: translate3d(-4px, 3px, 0) skewX(-3deg);
-  }
-  40% {
-    transform: translate3d(6px, -4px, 0) skewX(2deg);
-    clip-path: inset(0 0 38% 0);
-  }
-  60% {
-    transform: translate3d(-8px, 4px, 0) scale(1.02) skewX(-6deg);
-    opacity: 0.7;
-  }
-  80% {
-    transform: translate3d(10px, -8px, 0) scale(0.96) skewX(4deg);
-    opacity: 0.4;
-    filter: hue-rotate(-40deg) saturate(1.3);
-  }
-  100% {
-    transform: translate3d(-80px, 42px, 0) scale(1.2) skewX(-18deg);
-    opacity: 0;
-    filter: blur(0.4rem);
-  }
 }
