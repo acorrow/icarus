@@ -569,18 +569,14 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 }
 
 .dataTable tbody tr {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--ghostnet-color-background) 86%, transparent) 0%,
-    color-mix(in srgb, var(--ghostnet-color-primary-dark) 35%, transparent) 100%
-  );
+  background: color-mix(in srgb, var(--ghostnet-color-surface) 85%, var(--ghostnet-color-background) 15%);
   border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
   transition: background 0.25s ease, transform 0.25s ease;
   font-size: 0.95rem;
 }
 
-.dataTable tbody tr:nth-child(even):not(.tableDetailRow) {
-  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 45%, transparent);
+.dataTable tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 22%, var(--ghostnet-color-background) 78%);
 }
 
 .dataTable tbody tr:last-child {
@@ -588,7 +584,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 }
 
 .dataTable tbody tr:hover {
-  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 24%, var(--ghostnet-color-surface) 76%);
 }
 
 .dataTable td {
@@ -810,6 +806,158 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   margin-top: 0.45rem;
 }
 
+.opportunityIntro {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.opportunityName {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  font-size: 1.05rem;
+}
+
+.gradeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--ghostnet-border-regular);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  color: var(--ghostnet-accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 0.85rem;
+}
+
+.moduleTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.moduleTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 22%, transparent);
+  color: var(--ghostnet-text-soft);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.materialList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.materialItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.materialName {
+  color: var(--ghostnet-ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.materialCount {
+  color: var(--ghostnet-muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+
+.engineerList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.engineerItem {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.engineerStateLocked .engineerName,
+.engineerStateLocked .engineeringDetailEngineerName {
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 45%, transparent);
+}
+
+.engineerStateLocked .engineerMeta,
+.engineerStateLocked .engineeringDetailMetaValue,
+.engineerStateLocked .engineeringDetailEngineerProgress {
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 35%, transparent);
+}
+
+.engineerStateLocked .engineerStatus {
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 30%, transparent);
+}
+
+.engineerStateUnlocked .engineerStatus,
+.engineerStateUnlocked .engineeringDetailEngineerProgress {
+  color: var(--ghostnet-text-soft);
+}
+
+.engineerStateMastered .engineerName,
+.engineerStateMastered .engineeringDetailEngineerName {
+  color: var(--ghostnet-color-success);
+}
+
+.engineerStateMastered .engineerMeta,
+.engineerStateMastered .engineeringDetailMetaValue,
+.engineerStateMastered .engineeringDetailEngineerProgress {
+  color: color-mix(in srgb, var(--ghostnet-color-success) 70%, transparent);
+}
+
+.engineerStateMastered .engineerStatus {
+  color: var(--ghostnet-color-success);
+}
+
+.engineerName {
+  color: var(--ghostnet-ink);
+  font-weight: 600;
+}
+
+.engineerMeta {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  color: var(--ghostnet-text-soft);
+  font-size: 0.85rem;
+}
+
+.engineerStatus {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ghostnet-muted);
+}
+
+.engineerStatusUnlocked {
+  color: var(--ghostnet-accent);
+}
+
 .tableIndicatorPlaceholder {
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   font-size: 0.82rem;
@@ -882,6 +1030,322 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   box-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-primary-dark) 48%, transparent);
 }
 
+.routeDetailHeading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  flex: 1;
+}
+
+.engineeringDetailContainer {
+  padding: 2.25rem 2.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.engineeringDetailBackRow {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.engineeringDetailStatus {
+  color: var(--ghostnet-text-soft);
+  font-size: 0.92rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent);
+  border-radius: 1.25rem;
+  padding: 1.25rem 1.75rem;
+}
+
+.engineeringDetailContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.engineeringDetailHeader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 2.25rem 2.5rem;
+  border-radius: 1.75rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 35%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 78%, transparent),
+    color-mix(in srgb, var(--ghostnet-color-primary) 65%, transparent)
+  );
+  box-shadow: 0 1.75rem 3.5rem var(--ghostnet-shadow);
+}
+
+.engineeringDetailHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 40rem;
+}
+
+.engineeringDetailLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
+}
+
+.engineeringDetailTitle {
+  font-size: 2.25rem;
+  margin: 0;
+  color: var(--ghostnet-color-text-strong);
+  text-shadow: 0 0 1.5rem color-mix(in srgb, var(--ghostnet-color-primary) 55%, transparent);
+}
+
+.engineeringDetailSubtitle {
+  margin: 0;
+  color: var(--ghostnet-text-soft);
+  font-size: 0.92rem;
+}
+
+.engineeringDetailGrade {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.65rem;
+  text-align: right;
+}
+
+.engineeringDetailGradeLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-size: 0.68rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 68%, transparent);
+}
+
+.engineeringDetailGradeValue {
+  font-size: 2.65rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ghostnet-accent);
+  text-shadow: 0 0 1.65rem color-mix(in srgb, var(--ghostnet-color-primary) 60%, transparent);
+}
+
+.engineeringDetailGrid {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 1100px) {
+  .engineeringDetailGrid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+}
+
+.engineeringDetailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 2rem 2.25rem;
+  border-radius: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 72%, transparent),
+    color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent)
+  );
+  box-shadow: 0 1.35rem 2.75rem color-mix(in srgb, var(--ghostnet-shadow) 85%, transparent);
+}
+
+.engineeringDetailSectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.engineeringDetailSectionTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--ghostnet-color-text-strong);
+}
+
+.engineeringDetailSectionHint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ghostnet-text-soft);
+}
+
+.engineeringDetailMaterialList {
+  gap: 0.6rem;
+}
+
+.engineeringDetailFeatureList {
+  display: grid;
+  gap: 1rem;
+}
+
+.engineeringDetailFeatureItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1.25rem;
+}
+
+.engineeringDetailFeatureName {
+  color: var(--ghostnet-color-text-strong);
+  font-weight: 600;
+}
+
+.engineeringDetailFeatureValue {
+  color: var(--ghostnet-accent);
+  font-size: 0.92rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.engineeringDetailEngineerGrid {
+  display: grid;
+  gap: 1.75rem;
+}
+
+@media (min-width: 900px) {
+  .engineeringDetailEngineerGrid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+.engineeringDetailEngineerCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.75rem 1.9rem;
+  border-radius: 1.4rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);
+  box-shadow: 0 1.25rem 2.25rem color-mix(in srgb, var(--ghostnet-shadow) 75%, transparent);
+}
+
+.engineeringDetailEngineerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.engineeringDetailEngineerIdentity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.engineeringDetailEngineerName {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--ghostnet-color-text-strong);
+  font-weight: 600;
+}
+
+.engineeringDetailEngineerGradeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 35%, transparent);
+  color: var(--ghostnet-text-soft);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.engineeringDetailMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.25rem 1.5rem;
+}
+
+.engineeringDetailMetaBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.engineeringDetailMetaLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.65rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
+}
+
+.engineeringDetailMetaValue {
+  color: var(--ghostnet-color-text-strong);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.engineeringDetailEngineerProgress {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ghostnet-text-soft);
+}
+
+.routeDetailLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-size: 0.68rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
+}
+
+.routeDetailTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  font-size: 1.65rem;
+  color: var(--ghostnet-color-text-strong);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
+  margin: 0;
+}
+
+.routeDetailDivider {
+  color: var(--ghostnet-color-success);
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.routeDetailSubhead {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+  font-size: 0.92rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 74%, transparent);
+}
+
+.routeDetailArrow {
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
+  font-size: 1.1rem;
+}
+
+.routeDetailMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 160px;
+  padding: 0.9rem 1.25rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 35%, transparent);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 78%, transparent);
+}
+
+.routeDetailMetaLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.65rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
+}
 
 .routeDetailSummaryBar {
   flex: 1 1 auto;

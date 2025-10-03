@@ -65,23 +65,7 @@ All GHOSTNET-sourced insights are clearly labelled inside the UI so that command
 
 ### Developer Quickstart
 
-If you are running on Linux and/or looking for quick instructions on how to run from source, if you have [Node.js](https://nodejs.org/en/) this is what you need to do to download and install  ICARUS Terminal:
-
-    git clone git@github.com:acorrow/icarus.git
-    cd icarus
-    npm install
-    
-Next, run `cp .env-example .env` to create an `.env` file and edit it to change the `LOG_DIR` option to point to the location of your Elite Dangerous log files:
-
-    # LOG_DIR can be used to tell the Service where to look for game logs
-    # This option can be used in development and at runtime
-    LOG_DIR=path/to/logs
-
-With that done, anytime you want to start ICARUS Terminal, all you need to do is run:
-
-    npm start
-
-This will run in debug mode which is not quite the same as a production build (it's not as optimised) but should work just fine.
+Looking to run ICARUS Terminal from source? The maintained setup, build, and screenshot workflow now lives in [AGENTS.md](AGENTS.md) so contributors have a single source of truth. Follow that guide for the current development checklist and environment notes.
 
 ## Legal
 
