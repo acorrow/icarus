@@ -149,14 +149,6 @@ export default function GhostnetEngineeringOpportunitiesPage () {
               </div>
 
               <div className={styles.tableSection}>
-                <div className={styles.tableSectionHeader}>
-                  <div>
-                    <h2 className={styles.tableSectionTitle}>Ready for fabrication</h2>
-                    <p className={styles.sectionHint}>
-                      Choose a target blueprint to plan your jump route and confirm material sufficiency before you arrive.
-                    </p>
-                  </div>
-                </div>
 
                 {!componentReady && (
                   <div className={styles.tableIdleState}>Synchronising manifest…</div>

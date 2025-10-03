@@ -43,9 +43,10 @@ describe('Ghost Net page', () => {
   it('exposes key Ghost Net panels for missions and mining', async () => {
     await act(async () => { render(<GhostnetPage />) })
 
-    expect(await screen.findByRole('heading', { name: /find trade routes/i })).toBeInTheDocument()
-    expect(screen.getByText(/cross-reference ghostnet freight whispers/i)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /mining missions/i, hidden: true })).toBeInTheDocument()
-    expect(screen.getByText(/ghost net decrypts volunteer ghostnet manifests/i)).toBeInTheDocument()
+    expect(await screen.findByText(/tune the filters and pulse refresh/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/waiting for current system information/i).length).toBeGreaterThan(0)
+
+    const sections = document.querySelectorAll('section.tableSection')
+    expect(sections.length).toBeGreaterThan(2)
   })
 })

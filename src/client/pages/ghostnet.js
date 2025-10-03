@@ -1330,25 +1330,6 @@ function MissionsPanel () {
 
   return (
     <section className={styles.tableSection}>
-      <div className={styles.tableSectionHeader}>
-        <h2 className={styles.tableSectionTitle}>Mining Missions</h2>
-        <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
-        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-          <div>
-            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
-          </div>
-          {sourceUrl && (
-            <div className='ghostnet__data-source ghostnet-muted'>
-              Ghost Net intercept feed compiled from GHOSTNET community relays.
-            </div>
-          )}
-        </div>
-        <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-          Availability signals originate from GHOSTNET contributors and may trail live mission boards.
-        </p>
-        {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      </div>
       <div className='ghostnet-panel-table'>
         <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
@@ -2486,34 +2467,6 @@ function CargoHoldPanel () {
 
   return (
     <section className={styles.tableSection}>
-      <div className={styles.tableSectionHeader}>
-        <h2 className={styles.tableSectionTitle}>Cargo Hold</h2>
-        <p className={styles.sectionHint}>Monitor mining hauls, track capacity in real time, and surface the most lucrative buyers across nearby systems.</p>
-        <div className={styles.cargoProgress}>
-          <div className={styles.cargoProgressHeader}>
-            <span className={styles.cargoProgressLabel}>Cargo Hold Utilisation</span>
-            <span className={styles.cargoProgressValue}>{cargoFillDescriptor}</span>
-          </div>
-          <div
-            className={styles.cargoProgressTrack}
-            role='progressbar'
-            aria-label='Cargo hold utilisation'
-            aria-valuemin={0}
-            aria-valuemax={cargoMeterMax}
-            aria-valuenow={cargoMeterNow}
-            aria-valuetext={cargoMeterValueText}
-          >
-            <span className={styles.cargoProgressFill} style={{ width: `${cargoFillPercent}%` }} />
-          </div>
-        </div>
-        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-          <div>
-            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{currentSystemName || 'Unknown'}</div>
-          </div>
-        </div>
-      </div>
-
       <div className={`${styles.sectionFrameElevated} ${styles.sectionPaddingTight}`}>
         <div className={styles.metricGrid}>
           <div className={styles.metricItem}>
@@ -4123,136 +4076,6 @@ function TradeRoutesPanel () {
 
   return (
     <section className={styles.tableSection}>
-      <div className={styles.tableSectionHeader}>
-        <h2 className={styles.tableSectionTitle}>Find Trade Routes</h2>
-        <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
-        {!detailViewActive && (
-          <>
-            <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-              <div>
-                <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-                <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>
-                  {selectedSystemName || 'Unknown'}
-                </div>
-              </div>
-            </div>
-            <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', flexGrow: 1 }}>
-                  <button
-                    type='button'
-                    onClick={() => setFiltersCollapsed(prev => !prev)}
-                    style={FILTER_TOGGLE_BUTTON_STYLE}
-                    aria-expanded={!filtersCollapsed}
-                    aria-controls='trade-route-filters'
-                  >
-                    {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
-                  </button>
-                  {filtersCollapsed && (
-                    <div style={FILTER_SUMMARY_STYLE}>
-                      <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
-                      <button
-                        type='submit'
-                        style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
-                        title='Refresh trade routes'
-                        aria-label='Refresh trade routes'
-                      >
-                        <svg
-                          viewBox='0 0 24 24'
-                          focusable='false'
-                          aria-hidden='true'
-                          style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
-                        >
-                          <path
-                            fill='currentColor'
-                            d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              {!filtersCollapsed && (
-                <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Route Distance</label>
-                    <select
-                      value={routeDistance}
-                      onChange={event => setRouteDistance(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {routeDistanceOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Max Price Age</label>
-                    <select
-                      value={priceAge}
-                      onChange={event => setPriceAge(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {priceAgeOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Min Supply</label>
-                    <select
-                      value={minSupply}
-                      onChange={event => setMinSupply(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {supplyOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Min Demand</label>
-                    <select
-                      value={minDemand}
-                      onChange={event => setMinDemand(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {demandOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Surface Stations</label>
-                    <select
-                      value={surfacePreference}
-                      onChange={event => setSurfacePreference(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {surfaceOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Station Distance</label>
-                    <select
-                      value={stationDistance}
-                      onChange={event => setStationDistance(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {stationDistanceOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              )}
-            </form>
-          </>
-        )}
-      </div>
       {detailViewActive ? (
         <div className='ghostnet-panel-table'>
           <div className={`scrollable ${styles.routeDetailScrollArea}`} style={TABLE_SCROLL_AREA_STYLE}>
@@ -4494,25 +4317,6 @@ function PristineMiningPanel () {
 
   return (
     <section className={styles.tableSection}>
-      <div className={styles.tableSectionHeader}>
-        <h2 className={styles.tableSectionTitle}>Pristine Mining Locations</h2>
-        <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
-        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-          <div>
-            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
-          </div>
-          {sourceUrl && (
-            <div className='ghostnet__data-source ghostnet-muted'>
-              Ghost Net prospecting relays aligned with GHOSTNET survey intel.
-            </div>
-          )}
-        </div>
-        <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-          Geological echoes are sourced from volunteer GHOSTNET submissions and may lag in-system discoveries.
-        </p>
-        {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      </div>
       <div
         className={`ghostnet-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
       >
