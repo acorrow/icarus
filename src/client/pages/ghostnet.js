@@ -39,6 +39,14 @@ function formatStationDistance (value, fallback) {
   return fallback || ''
 }
 
+const INARA_ARTIFACT_PATTERN = /[\u25A0-\u25AF\u25FB-\u25FE\uFFFD]/gu
+const DEMAND_ARROW_PATTERN = /[▲△▴▵▼▽▾▿↑↓]/g
+
+function sanitizeInaraText (value) {
+  if (typeof value !== 'string') return ''
+  return value.replace(INARA_ARTIFACT_PATTERN, '').replace(/\s+/g, ' ').trim()
+}
+
 const COMMODITY_CATEGORY_ICON_MAP = {
   chemicals: { icon: 'barrel', color: 'var(--ghostnet-color-warning)' },
   'consumer items': { icon: 'cargo', color: 'var(--ghostnet-accent)' },
@@ -87,16 +95,28 @@ CommodityIcon.defaultProps = {
 }
 
 function renderDemandTrend (label, isLow, { subtle = false } = {}) {
-  if (!label) return null
-  const arrow = isLow ? String.fromCharCode(0x25BC) : String.fromCharCode(0x25B2)
+  const rawLabel = typeof label === 'string' ? label : ''
+  const cleaned = sanitizeInaraText(rawLabel)
+  const arrowMatches = rawLabel.match(DEMAND_ARROW_PATTERN) || []
+  const containsDownArrow = arrowMatches.some(char => /[▼▽▾▿↓]/.test(char))
+  const containsUpArrow = arrowMatches.some(char => /[▲△▴▵↑]/.test(char))
+  const direction = containsDownArrow && !containsUpArrow
+    ? 'down'
+    : (containsUpArrow && !containsDownArrow
+        ? 'up'
+        : (isLow ? 'down' : 'up'))
+  const arrowSymbol = direction === 'down' ? String.fromCharCode(0x25BC) : String.fromCharCode(0x25B2)
+  const arrowCount = Math.min(Math.max(arrowMatches.length || 1, 1), 4)
+  if (!cleaned && arrowMatches.length === 0) return null
+  const displayLabel = cleaned.replace(DEMAND_ARROW_PATTERN, '').trim()
   const containerClassNames = [styles.demandIndicator]
   if (subtle) containerClassNames.push(styles.demandIndicatorSubtle)
   const arrowClassNames = [styles.demandIndicatorArrow]
-  arrowClassNames.push(isLow ? styles.demandIndicatorArrowLow : styles.demandIndicatorArrowHigh)
+  arrowClassNames.push(direction === 'down' ? styles.demandIndicatorArrowLow : styles.demandIndicatorArrowHigh)
   return (
     <span className={containerClassNames.join(' ')}>
-      <span className={arrowClassNames.join(' ')} aria-hidden='true'>{arrow}</span>
-      <span>{label}</span>
+      <span className={arrowClassNames.join(' ')} aria-hidden='true'>{arrowSymbol.repeat(arrowCount)}</span>
+      {displayLabel ? <span>{displayLabel}</span> : null}
     </span>
   )
 }
@@ -1685,6 +1705,14 @@ function CommodityTradePanel () {
 
     const listings = listingsSource.map((listing, index) => ({
       ...listing,
+      stationName: sanitizeInaraText(listing?.stationName) || '',
+      systemName: sanitizeInaraText(listing?.systemName) || '',
+      stationType: sanitizeInaraText(listing?.stationType) || '',
+      demandText: sanitizeInaraText(listing?.demandText) || '',
+      priceText: sanitizeInaraText(listing?.priceText) || '',
+      distanceLyText: sanitizeInaraText(listing?.distanceLyText) || '',
+      distanceLsText: sanitizeInaraText(listing?.distanceLsText) || '',
+      updatedText: sanitizeInaraText(listing?.updatedText) || '',
       __id: `${row.key}-listing-${index}`,
       __order: index
     }))
@@ -1791,43 +1819,45 @@ function CommodityTradePanel () {
         if (listing) {
           setCommodityContext({
             commodityKey: prev.key,
-            commodityName: prev.commodityName,
-            commoditySymbol: prev.commoditySymbol,
+            commodityName: sanitizeInaraText(prev.commodityName) || '',
+            commoditySymbol: sanitizeInaraText(prev.commoditySymbol) || '',
             commodityCategory: prev.commodityCategory,
             quantity: prev.quantity,
-            stationName: listing.stationName || '',
-            systemName: listing.systemName || '',
+            stationName: sanitizeInaraText(listing.stationName) || '',
+            systemName: sanitizeInaraText(listing.systemName) || '',
+            stationType: sanitizeInaraText(listing.stationType) || '',
             price: typeof listing.price === 'number' ? listing.price : null,
-            priceText: listing.priceText || '',
-            demandText: listing.demandText || '',
+            priceText: sanitizeInaraText(listing.priceText) || '',
+            demandText: sanitizeInaraText(listing.demandText) || '',
             demandIsLow: Boolean(listing.demandIsLow),
             distanceLy: typeof listing.distanceLy === 'number' ? listing.distanceLy : null,
-            distanceLyText: listing.distanceLyText || '',
+            distanceLyText: sanitizeInaraText(listing.distanceLyText) || '',
             distanceLs: typeof listing.distanceLs === 'number' ? listing.distanceLs : null,
-            distanceLsText: listing.distanceLsText || '',
+            distanceLsText: sanitizeInaraText(listing.distanceLsText) || '',
             updatedAt: listing.updatedAt || null,
-            updatedText: listing.updatedText || ''
+            updatedText: sanitizeInaraText(listing.updatedText) || ''
           })
         } else if (prev.ghostnetEntry) {
           const fallback = prev.ghostnetEntry
           setCommodityContext({
             commodityKey: prev.key,
-            commodityName: prev.commodityName,
-            commoditySymbol: prev.commoditySymbol,
+            commodityName: sanitizeInaraText(prev.commodityName) || '',
+            commoditySymbol: sanitizeInaraText(prev.commoditySymbol) || '',
             commodityCategory: prev.commodityCategory,
             quantity: prev.quantity,
-            stationName: fallback.stationName || '',
-            systemName: fallback.systemName || '',
+            stationName: sanitizeInaraText(fallback.stationName) || '',
+            systemName: sanitizeInaraText(fallback.systemName) || '',
+            stationType: sanitizeInaraText(fallback.stationType) || '',
             price: typeof fallback.price === 'number' ? fallback.price : null,
-            priceText: fallback.priceText || '',
-            demandText: fallback.demandText || '',
+            priceText: sanitizeInaraText(fallback.priceText) || '',
+            demandText: sanitizeInaraText(fallback.demandText) || '',
             demandIsLow: Boolean(fallback.demandIsLow),
             distanceLy: typeof fallback.distanceLy === 'number' ? fallback.distanceLy : null,
-            distanceLyText: fallback.distanceLyText || '',
+            distanceLyText: sanitizeInaraText(fallback.distanceLyText) || '',
             distanceLs: typeof fallback.distanceLs === 'number' ? fallback.distanceLs : null,
-            distanceLsText: fallback.distanceLsText || '',
+            distanceLsText: sanitizeInaraText(fallback.distanceLsText) || '',
             updatedAt: fallback.updatedAt || null,
-            updatedText: fallback.updatedText || ''
+            updatedText: sanitizeInaraText(fallback.updatedText) || ''
           })
         } else {
           setCommodityContext(null)
@@ -1857,8 +1887,10 @@ function CommodityTradePanel () {
     const resolvedSource = source === 'station'
       ? (entryData?.source === 'journal' ? 'Station Snapshot' : 'Station')
       : 'History'
-    const stationLine = entryData.stationName
-      ? `${entryData.stationName}${entryData.systemName ? ` · ${entryData.systemName}` : ''}`
+    const stationName = sanitizeInaraText(entryData.stationName) || entryData.stationName || ''
+    const systemName = sanitizeInaraText(entryData.systemName) || entryData.systemName || ''
+    const stationLine = stationName
+      ? `${stationName}${systemName ? ` · ${systemName}` : ''}`
       : ''
     const distanceDisplay = typeof entryData.distanceLs === 'number' && !Number.isNaN(entryData.distanceLs)
       ? formatStationDistance(entryData.distanceLs)
@@ -1982,14 +2014,14 @@ function CommodityTradePanel () {
           const selectedValueDisplay = resolvedListing && typeof resolvedListing?.price === 'number'
             ? formatCredits(resolvedListing.price * (detail.quantity || 0), '--')
             : '--'
-          const selectedDemand = resolvedListing?.demandText || (typeof resolvedListing?.demand === 'number' ? resolvedListing.demand.toLocaleString() : '')
-          const selectedSystemDistance = formatSystemDistance(resolvedListing?.distanceLy, resolvedListing?.distanceLyText)
-          const selectedStationDistance = formatStationDistance(resolvedListing?.distanceLs, resolvedListing?.distanceLsText)
+          const selectedDemand = sanitizeInaraText(resolvedListing?.demandText) || (typeof resolvedListing?.demand === 'number' ? resolvedListing.demand.toLocaleString() : '')
+          const selectedSystemDistance = formatSystemDistance(resolvedListing?.distanceLy, sanitizeInaraText(resolvedListing?.distanceLyText) || resolvedListing?.distanceLyText)
+          const selectedStationDistance = formatStationDistance(resolvedListing?.distanceLs, sanitizeInaraText(resolvedListing?.distanceLsText) || resolvedListing?.distanceLsText)
           const selectedUpdated = resolvedListing?.updatedAt
             ? formatRelativeTime(resolvedListing.updatedAt)
-            : (resolvedListing?.updatedText || '')
-          const selectedStationName = resolvedListing?.stationName || '--'
-          const selectedSystemName = resolvedListing?.systemName || ''
+            : (sanitizeInaraText(resolvedListing?.updatedText) || resolvedListing?.updatedText || '')
+          const selectedStationName = sanitizeInaraText(resolvedListing?.stationName) || resolvedListing?.stationName || '--'
+          const selectedSystemName = sanitizeInaraText(resolvedListing?.systemName) || resolvedListing?.systemName || ''
           const selectedDemandIndicator = renderDemandTrend(selectedDemand, Boolean(resolvedListing?.demandIsLow), { subtle: true })
           const defaultSelectedId = detail.selectedListingId || (listings[0]?.__id ?? null)
 
@@ -2074,17 +2106,15 @@ function CommodityTradePanel () {
                     <div className={styles.dataTableContainer}>
                       <table className={`${styles.dataTable} ${styles.dataTableFixed}`}>
                         <colgroup>
-                          <col style={{ width: '34%' }} />
-                          <col style={{ width: '8%' }} />
-                          <col style={{ width: '16%' }} />
-                          <col style={{ width: '16%' }} />
+                          <col style={{ width: '38%' }} />
+                          <col style={{ width: '18%' }} />
+                          <col style={{ width: '18%' }} />
                           <col style={{ width: '12%' }} />
                           <col style={{ width: '14%' }} />
                         </colgroup>
                         <thead>
                           <tr>
                             <th>Station</th>
-                            <th>Pad</th>
                             <th
                               scope='col'
                               aria-sort={getHeaderSortState('distanceLy')}
@@ -2145,7 +2175,7 @@ function CommodityTradePanel () {
                             const stationIcon = stationIconFromType(listing.stationType || '')
                             const systemDistanceDisplay = formatSystemDistance(listing.distanceLy, listing.distanceLyText)
                             const stationDistanceDisplay = formatStationDistance(listing.distanceLs, listing.distanceLsText)
-                            const demandDisplay = listing.demandText || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
+                            const demandDisplay = sanitizeInaraText(listing.demandText) || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
                             const updatedDisplay = listing.updatedAt
                               ? formatRelativeTime(listing.updatedAt)
                               : (listing.updatedText || '')
@@ -2178,13 +2208,15 @@ function CommodityTradePanel () {
                                     <div className={styles.stationCellText}>
                                       <div className={styles.stationName}>{listing.stationName || 'Unknown Station'}</div>
                                       <div className={styles.stationSystem}>{listing.systemName || 'Unknown System'}</div>
+                                      {listing.stationType ? (
+                                        <div className={styles.stationMeta}>{listing.stationType}</div>
+                                      ) : null}
                                       {isSelected ? (
                                         <div className={styles.stationSelectionTag}>In Context</div>
                                       ) : null}
                                     </div>
                                   </div>
                                 </td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellCompact}`}>{listing.pad || '--'}</td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{systemDistanceDisplay || '--'}</td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{stationDistanceDisplay || '--'}</td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{demandIndicator || '--'}</td>
@@ -2212,6 +2244,8 @@ function CommodityTradePanel () {
               <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
                 {commodityContext ? (() => {
                   const summary = commodityContext
+                  const commodityName = sanitizeInaraText(summary.commodityName) || summary.commodityName || 'Unknown Commodity'
+                  const commoditySymbol = sanitizeInaraText(summary.commoditySymbol) || summary.commoditySymbol || ''
                   const summaryValueDisplay = typeof summary.price === 'number'
                     ? formatCredits(summary.price * (summary.quantity || 0), '--')
                     : '--'
@@ -2222,33 +2256,49 @@ function CommodityTradePanel () {
                     ? formatRelativeTime(summary.updatedAt)
                     : (summary.updatedText || '')
                   const summaryDemandIndicator = renderDemandTrend(summary.demandText, Boolean(summary.demandIsLow), { subtle: true })
+                  const stationName = sanitizeInaraText(summary.stationName) || summary.stationName || '--'
+                  const systemName = sanitizeInaraText(summary.systemName) || summary.systemName || ''
+                  const stationType = sanitizeInaraText(summary.stationType) || summary.stationType || ''
+                  const stationIcon = stationIconFromType(stationType || '')
+                  const quantityDisplay = Number(summary.quantity || 0).toLocaleString()
                   return (
                     <div className={styles.contextSummary}>
                       <div className={styles.contextSummaryGroup}>
                         <span className={styles.contextSummaryLabel}>Commodity Context</span>
-                        <div className={styles.contextSummaryCommodity}>
+                        <div className={styles.contextSummaryEntity}>
                           <div className={styles.contextSummaryIcon}>
                             <CommodityIcon category={summary.commodityCategory} size={26} />
                           </div>
                           <div className={styles.contextSummaryHeading}>
-                            <span className={styles.contextSummaryValue}>{summary.commodityName}</span>
-                            {summary.commoditySymbol && summary.commoditySymbol !== summary.commodityName ? (
-                              <span className={styles.contextSummaryFootnote}>{summary.commoditySymbol}</span>
+                            <span className={styles.contextSummaryValue}>{commodityName}</span>
+                            {commoditySymbol && commoditySymbol !== commodityName ? (
+                              <span className={styles.contextSummaryFootnote}>{commoditySymbol}</span>
                             ) : null}
+                            <span className={styles.contextSummaryFootnote}>Qty {quantityDisplay}</span>
                           </div>
                         </div>
                       </div>
                       <div className={styles.contextSummaryGroup}>
-                        <span className={styles.contextSummaryLabel}>Station</span>
-                        <span className={styles.contextSummaryValue}>{summary.stationName || '--'}</span>
-                        {summary.systemName ? (
-                          <span className={styles.contextSummaryFootnote}>{summary.systemName}</span>
-                        ) : null}
+                        <span className={styles.contextSummaryLabel}>Station Context</span>
+                        <div className={styles.contextSummaryEntity}>
+                          <div className={styles.contextSummaryIcon}>
+                            <StationIcon icon={stationIcon} size={24} />
+                          </div>
+                          <div className={styles.contextSummaryHeading}>
+                            <span className={styles.contextSummaryValue}>{stationName}</span>
+                            {systemName ? (
+                              <span className={styles.contextSummaryFootnote}>{systemName}</span>
+                            ) : null}
+                            {stationType ? (
+                              <span className={styles.contextSummaryFootnote}>{stationType}</span>
+                            ) : null}
+                          </div>
+                        </div>
                         {summarySystemDistance ? (
-                          <span className={styles.contextSummaryFootnote}>{summarySystemDistance}</span>
+                          <span className={styles.contextSummaryFootnote}>System Distance: {summarySystemDistance}</span>
                         ) : null}
                         {summaryStationDistance ? (
-                          <span className={styles.contextSummaryFootnote}>{summaryStationDistance}</span>
+                          <span className={styles.contextSummaryFootnote}>Station Distance: {summaryStationDistance}</span>
                         ) : null}
                         {summaryUpdated ? (
                           <span className={styles.contextSummaryFootnote}>Updated {summaryUpdated}</span>
@@ -2262,11 +2312,8 @@ function CommodityTradePanel () {
                       <div className={styles.contextSummaryGroup}>
                         <span className={styles.contextSummaryLabel}>Value</span>
                         <span className={styles.contextSummaryHighlight}>{summaryValueDisplay}</span>
-                        <span className={styles.contextSummaryFootnote}>
-                          @
-                          {' '}
-                          {summaryPriceDisplay} · Qty {Number(summary.quantity || 0).toLocaleString()}
-                        </span>
+                        <span className={styles.contextSummaryFootnote}>@ {summaryPriceDisplay}</span>
+                        <span className={styles.contextSummaryFootnote}>Payload: {quantityDisplay} t</span>
                       </div>
                     </div>
                   )
@@ -2312,10 +2359,13 @@ function CommodityTradePanel () {
                     } = row
 
                     const ghostnetContextEntry = ghostnetEntry || entry?.ghostnet || null
-                    const ghostnetStation = ghostnetContextEntry?.stationName
-                    const ghostnetSystem = ghostnetContextEntry?.systemName
-                    const ghostnetDemand = ghostnetContextEntry?.demandText
-                    const ghostnetUpdated = ghostnetContextEntry?.updatedText
+                    const ghostnetStation = sanitizeInaraText(ghostnetContextEntry?.stationName) || ghostnetContextEntry?.stationName || ''
+                    const ghostnetSystem = sanitizeInaraText(ghostnetContextEntry?.systemName) || ghostnetContextEntry?.systemName || ''
+                    const ghostnetDemand = sanitizeInaraText(ghostnetContextEntry?.demandText) || (typeof ghostnetContextEntry?.demand === 'number' ? ghostnetContextEntry.demand.toLocaleString() : '')
+                    const ghostnetUpdatedText = sanitizeInaraText(ghostnetContextEntry?.updatedText) || ghostnetContextEntry?.updatedText || ''
+                    const ghostnetUpdated = ghostnetContextEntry?.updatedAt
+                      ? formatRelativeTime(ghostnetContextEntry.updatedAt)
+                      : ghostnetUpdatedText
                     const ghostnetPriceDisplay = typeof ghostnetPrice === 'number' ? formatCredits(ghostnetPrice, '--') : '--'
                     const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
 
@@ -3805,7 +3855,7 @@ function PristineMiningPanel () {
                         <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
                       </tr>
                       {isExpanded && (
-                        <tr className={styles.tableDetailRow} data-ghostnet-table-row='pending'>
+                        <tr className={`${styles.tableDetailRow} ghostnet-table-detail-row`} data-ghostnet-table-row='pending'>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
