@@ -1,94 +1,26 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/router'
 import Layout from 'components/layout'
 import Panel from 'components/panel'
 import { useSocket, sendEvent, eventListener } from 'lib/socket'
-import distance from '../../../shared/distance'
+import {
+  MATERIAL_EVENTS,
+  TRAVEL_EVENTS,
+  createCraftableBlueprintSummary,
+  formatNumber,
+  getEngineerDistanceLy,
+  getEngineerProgressState,
+  getEngineeringNavigation
+} from './engineering-utils'
 import styles from '../ghostnet.module.css'
-
-const NAV_ITEMS = [
-  { name: 'Ghost Net', icon: 'route', url: '/ghostnet', active: false },
-  { name: 'Engineering Opportunities', icon: 'engineer', url: '/ghostnet/engineering', active: true },
-  { name: 'Search', icon: 'search', url: '/ghostnet/search', active: false },
-  { name: 'Outfitting', icon: 'wrench', url: '/ghostnet/outfitting', active: false }
-]
-
-const MATERIAL_EVENTS = new Set([
-  'Materials',
-  'MaterialCollected',
-  'MaterialDiscarded',
-  'MaterialTrade',
-  'EngineerCraft'
-])
-
-const TRAVEL_EVENTS = new Set(['Location', 'FSDJump'])
-
-function formatNumber (value) {
-  if (typeof value !== 'number') return '0'
-  return value.toLocaleString(undefined, { maximumFractionDigits: 0 })
-}
-
-function createCraftableBlueprintSummary (blueprints = []) {
-  const summaries = []
-
-  blueprints.forEach(blueprint => {
-    const grades = Array.isArray(blueprint?.grades) ? [...blueprint.grades] : []
-    grades.sort((a, b) => a.grade - b.grade)
-
-    let craftableGrade = null
-    grades.forEach(grade => {
-      if (!Array.isArray(grade.components)) return
-      const canCraft = grade.components.every(component => {
-        const cost = Number(component?.cost) || 0
-        const count = Number(component?.count) || 0
-        return count >= cost
-      })
-
-      if (canCraft) {
-        craftableGrade = {
-          ...grade,
-          components: grade.components.map(component => ({
-            ...component,
-            cost: Number(component?.cost) || 0,
-            count: Number(component?.count) || 0
-          }))
-        }
-      }
-    })
-
-    if (!craftableGrade) return
-
-    const engineerEntries = Object.entries(blueprint?.engineers || {}).map(([name, info]) => ({
-      name,
-      grades: Array.isArray(info?.grades) ? info.grades : [],
-      system: info?.system || '',
-      location: info?.location,
-      progress: info?.progress || '',
-      rank: typeof info?.rank === 'number' ? info.rank : 0
-    }))
-
-    const capableEngineers = engineerEntries.filter(engineer =>
-      engineer.grades.some(grade => grade >= craftableGrade.grade)
-    )
-
-    if (capableEngineers.length === 0) return
-
-    const unlockedEngineers = capableEngineers.filter(engineer => engineer.rank > 0)
-
-    summaries.push({
-      blueprint,
-      grade: craftableGrade,
-      engineers: unlockedEngineers.length > 0 ? unlockedEngineers : capableEngineers
-    })
-  })
-
-  return summaries
-}
 
 export default function GhostnetEngineeringOpportunitiesPage () {
   const { connected, active, ready } = useSocket()
   const [craftable, setCraftable] = useState([])
   const [currentSystem, setCurrentSystem] = useState(null)
   const [componentReady, setComponentReady] = useState(false)
+  const router = useRouter()
+  const navigationItems = useMemo(() => getEngineeringNavigation('engineering'), [])
 
   const recomputeCraftable = useCallback((nextBlueprints) => {
     const summaries = createCraftableBlueprintSummary(nextBlueprints)
@@ -161,9 +93,14 @@ export default function GhostnetEngineeringOpportunitiesPage () {
     return names.size
   }, [craftable])
 
+  const handleRowActivate = useCallback((symbol) => {
+    if (!symbol) return
+    router.push(`/ghostnet/engineering/${encodeURIComponent(symbol)}`)
+  }, [router])
+
   return (
     <Layout connected={connected} active={active} ready={ready} loader={!componentReady}>
-      <Panel layout='full-width' scrollable navigation={NAV_ITEMS}>
+      <Panel layout='full-width' scrollable navigation={navigationItems}>
         <div className={styles.ghostnet}>
           <div className={styles.hero}>
             <div className={styles.heroHeader}>
@@ -241,7 +178,21 @@ export default function GhostnetEngineeringOpportunitiesPage () {
                         {craftable.map(item => {
                           const moduleList = Array.isArray(item.blueprint?.modules) ? item.blueprint.modules : []
                           return (
-                            <tr key={item.blueprint.symbol} data-ghostnet-table-row='visible'>
+                            <tr
+                              key={item.blueprint.symbol}
+                              data-ghostnet-table-row='visible'
+                              className={styles.tableRowInteractive}
+                              role='link'
+                              tabIndex={0}
+                              aria-label={`View engineering detail for ${item.blueprint.name}`}
+                              onClick={() => handleRowActivate(item.blueprint.symbol)}
+                              onKeyDown={event => {
+                                if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                                  event.preventDefault()
+                                  handleRowActivate(item.blueprint.symbol)
+                                }
+                              }}
+                            >
                               <td>
                                 <div className={styles.opportunityName}>{item.blueprint.name}</div>
                                 <div className={styles.tableSubtext}>{item.blueprint.originalName}</div>
@@ -277,26 +228,23 @@ export default function GhostnetEngineeringOpportunitiesPage () {
                               <td>
                                 <ul className={styles.engineerList}>
                                   {item.engineers.map(engineer => {
-                                    const hasLocation = Array.isArray(engineer.location) && engineer.location.length === 3
-                                    const distanceLy = hasLocation && currentSystem?.position
-                                      ? distance(currentSystem.position, engineer.location)
-                                      : 0
+                                    const distanceLy = getEngineerDistanceLy(currentSystem, engineer)
+                                    const { state, label } = getEngineerProgressState(engineer, item.grade.grade)
+                                    const engineerClassName = `${styles.engineerItem} ${state === 'locked'
+                                      ? styles.engineerStateLocked
+                                      : state === 'mastered'
+                                        ? styles.engineerStateMastered
+                                        : styles.engineerStateUnlocked}`
                                     return (
-                                      <li key={`${item.blueprint.symbol}_${engineer.name}`} className={styles.engineerItem}>
+                                      <li key={`${item.blueprint.symbol}_${engineer.name}`} className={engineerClassName}>
                                         <span className={styles.engineerName}>{engineer.name}</span>
                                         <span className={styles.engineerMeta}>
                                           <span>{engineer.system || 'Unknown System'}</span>
-                                          {distanceLy > 0 && (
+                                          {typeof distanceLy === 'number' && distanceLy > 0 && (
                                             <span>{distanceLy.toFixed(1)} Ly</span>
                                           )}
                                         </span>
-                                        <span
-                                          className={`${styles.engineerStatus} ${engineer.rank > 0 ? styles.engineerStatusUnlocked : ''}`}
-                                        >
-                                          {engineer.rank > 0
-                                            ? `Grade ${engineer.rank} unlocked`
-                                            : (engineer.progress || 'Not yet unlocked')}
-                                        </span>
+                                        <span className={styles.engineerStatus}>{label}</span>
                                       </li>
                                     )
                                   })}
@@ -317,4 +265,3 @@ export default function GhostnetEngineeringOpportunitiesPage () {
     </Layout>
   )
 }
-
