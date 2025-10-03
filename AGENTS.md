@@ -7,6 +7,16 @@
   - `npm run start`
 - After starting the app, navigate to the impacted route(s) and capture an updated screenshot using the provided browser tooling.
 - Include the screenshot path in your final notes so reviewers can trace the visual verification.
+- Treat every GUI task as an iterative design exercise. After you collect each screenshot, compare it against the task requirements and ask yourself:
+  - Does this state fulfill the user request, both functionally and visually?
+  - Are there lingering rough edges (spacing, alignment, color usage, accessibility) that would distract a commander interacting with the page?
+  - Would an additional iteration, informed by this screenshot, produce a noticeably better experience? If so, keep iterating and take another screenshot.
+- When iterating:
+  1. Capture a screenshot of the current state.
+  2. Review the screenshot in context of the requirements and jot down concrete adjustments.
+  3. Implement the adjustments, refresh the app, and capture another screenshot.
+  4. Repeat until the screenshots demonstrate a clear, polished improvement that satisfies the original ask.
+- Summarize the outcome of this iterative loop in your final notes by highlighting what changed between the first and final captures and why the result addresses the user's needs.
 - **GhostNet screenshot workflow:**
   1. Run `npm test -- --runInBand --config jest.config.js`.
   2. Run `npm run build:client` to regenerate the static export (requires the bundled `@next/swc-linux-x64-gnu` binary).
