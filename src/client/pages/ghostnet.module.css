@@ -569,18 +569,14 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 }
 
 .dataTable tbody tr {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--ghostnet-color-background) 86%, transparent) 0%,
-    color-mix(in srgb, var(--ghostnet-color-primary-dark) 35%, transparent) 100%
-  );
+  background: color-mix(in srgb, var(--ghostnet-color-surface) 85%, var(--ghostnet-color-background) 15%);
   border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
   transition: background 0.25s ease, transform 0.25s ease;
   font-size: 0.95rem;
 }
 
 .dataTable tbody tr:nth-child(even) {
-  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 45%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 22%, var(--ghostnet-color-background) 78%);
 }
 
 .dataTable tbody tr:last-child {
@@ -588,7 +584,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 }
 
 .dataTable tbody tr:hover {
-  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 24%, var(--ghostnet-color-surface) 76%);
 }
 
 .dataTable td {
