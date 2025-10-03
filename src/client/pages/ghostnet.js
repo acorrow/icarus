@@ -39,6 +39,68 @@ function formatStationDistance (value, fallback) {
   return fallback || ''
 }
 
+const COMMODITY_CATEGORY_ICON_MAP = {
+  chemicals: { icon: 'barrel', color: 'var(--ghostnet-color-warning)' },
+  'consumer items': { icon: 'cargo', color: 'var(--ghostnet-accent)' },
+  foods: { icon: 'plant', color: 'var(--ghostnet-color-success)' },
+  'industrial materials': { icon: 'materials-manufactured', color: 'var(--ghostnet-accent)' },
+  'legal drugs': { icon: 'warning', color: 'var(--ghostnet-color-warning)' },
+  machinery: { icon: 'cogs', color: 'var(--ghostnet-accent)' },
+  medicines: { icon: 'help', color: 'var(--ghostnet-color-success)' },
+  metals: { icon: 'materials-raw', color: 'var(--ghostnet-accent)' },
+  minerals: { icon: 'materials', color: 'var(--ghostnet-accent)' },
+  nonmarketable: { icon: 'inventory', color: 'var(--ghostnet-subdued)' },
+  salvage: { icon: 'cargo-export', color: 'var(--ghostnet-accent)' },
+  slavery: { icon: 'system-authority', color: 'var(--ghostnet-color-warning)' },
+  technology: { icon: 'power', color: 'var(--ghostnet-accent)' },
+  textiles: { icon: 'materials-grade-1', color: 'var(--ghostnet-accent)' },
+  waste: { icon: 'warning', color: 'var(--ghostnet-color-warning)' },
+  weapons: { icon: 'shield', color: 'var(--ghostnet-color-warning)' },
+  default: { icon: 'cargo', color: 'var(--ghostnet-accent)' }
+}
+
+function getCommodityIconConfig (category) {
+  const key = typeof category === 'string' ? category.trim().toLowerCase() : ''
+  return COMMODITY_CATEGORY_ICON_MAP[key] || COMMODITY_CATEGORY_ICON_MAP.default
+}
+
+function CommodityIcon ({ category, size = 26 }) {
+  const config = getCommodityIconConfig(category)
+  const paths = Icons[config.icon]
+  if (!paths) return null
+  const viewBox = config.icon === 'asteroid-base' ? '0 0 2000 2000' : '0 0 1000 1000'
+  return (
+    <svg
+      viewBox={viewBox}
+      focusable='false'
+      aria-hidden='true'
+      style={{ width: size, height: size, fill: config.color, flexShrink: 0 }}
+    >
+      {paths}
+    </svg>
+  )
+}
+
+CommodityIcon.defaultProps = {
+  category: '',
+  size: 26
+}
+
+function renderDemandTrend (label, isLow, { subtle = false } = {}) {
+  if (!label) return null
+  const arrow = isLow ? String.fromCharCode(0x25BC) : String.fromCharCode(0x25B2)
+  const containerClassNames = [styles.demandIndicator]
+  if (subtle) containerClassNames.push(styles.demandIndicatorSubtle)
+  const arrowClassNames = [styles.demandIndicatorArrow]
+  arrowClassNames.push(isLow ? styles.demandIndicatorArrowLow : styles.demandIndicatorArrowHigh)
+  return (
+    <span className={containerClassNames.join(' ')}>
+      <span className={arrowClassNames.join(' ')} aria-hidden='true'>{arrow}</span>
+      <span>{label}</span>
+    </span>
+  )
+}
+
 function LoadingSpinner ({ label, inline = false }) {
   return (
     <div
@@ -1317,6 +1379,8 @@ function CommodityTradePanel () {
   const [valuation, setValuation] = useState({ results: [], metadata: { ghostnetStatus: 'idle', marketStatus: 'idle' } })
   const [activeCommodityDetail, setActiveCommodityDetail] = useState(null)
   const [commodityContext, setCommodityContext] = useState(null)
+  const [stationSortField, setStationSortField] = useState('price')
+  const [stationSortDirection, setStationSortDirection] = useState('desc')
 
   const cargoKey = useMemo(() => {
     if (!Array.isArray(cargo) || cargo.length === 0) return ''
@@ -1328,6 +1392,23 @@ function CommodityTradePanel () {
   useEffect(() => {
     animateTableEffect()
   }, [cargoKey, valuation?.results?.length])
+
+  useEffect(() => {
+    if (!activeCommodityDetail) {
+      if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        const rafId = window.requestAnimationFrame(() => {
+          animateTableEffect()
+        })
+        return () => {
+          if (typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+            window.cancelAnimationFrame(rafId)
+          }
+        }
+      }
+      animateTableEffect()
+    }
+    return undefined
+  }, [activeCommodityDetail])
 
   useEffect(() => {
     if (!connected) return
@@ -1604,7 +1685,8 @@ function CommodityTradePanel () {
 
     const listings = listingsSource.map((listing, index) => ({
       ...listing,
-      __id: `${row.key}-listing-${index}`
+      __id: `${row.key}-listing-${index}`,
+      __order: index
     }))
 
     let selectedIndex = listings.findIndex(listing => {
@@ -1626,12 +1708,73 @@ function CommodityTradePanel () {
       key: row.key,
       commodityName,
       commoditySymbol,
+      commodityCategory: row?.item?.category || '',
       quantity: row.quantity,
       listings,
       selectedListingId: listings[selectedIndex]?.__id || null,
       ghostnetEntry: row.ghostnetEntry || null
     })
   }, [])
+
+  useEffect(() => {
+    if (activeCommodityDetail?.key) {
+      setStationSortField('price')
+      setStationSortDirection('desc')
+    }
+  }, [activeCommodityDetail?.key])
+
+  const activeDetailListings = useMemo(() => {
+    if (!activeCommodityDetail) return []
+    return Array.isArray(activeCommodityDetail.listings) ? activeCommodityDetail.listings : []
+  }, [activeCommodityDetail])
+
+  const sortedDetailListings = useMemo(() => {
+    if (!activeCommodityDetail) return []
+    const entries = [...activeDetailListings]
+    const getSortValue = (listing, field) => {
+      if (!listing) return null
+      if (field === 'price') {
+        if (typeof listing.price === 'number') return listing.price
+        return parseNumberFromText(listing.priceText)
+      }
+      if (field === 'distanceLy') {
+        if (typeof listing.distanceLy === 'number') return listing.distanceLy
+        return parseNumberFromText(listing.distanceLyText)
+      }
+      if (field === 'distanceLs') {
+        if (typeof listing.distanceLs === 'number') return listing.distanceLs
+        return parseNumberFromText(listing.distanceLsText)
+      }
+      return null
+    }
+
+    const directionMultiplier = stationSortDirection === 'asc' ? 1 : -1
+
+    entries.sort((a, b) => {
+      const valueA = getSortValue(a, stationSortField)
+      const valueB = getSortValue(b, stationSortField)
+
+      if (valueA === null && valueB === null) {
+        return (a?.__order || 0) - (b?.__order || 0)
+      }
+      if (valueA === null) return 1
+      if (valueB === null) return -1
+      if (valueA === valueB) {
+        return (a?.__order || 0) - (b?.__order || 0)
+      }
+      return valueA > valueB ? directionMultiplier : -directionMultiplier
+    })
+
+    return entries
+  }, [activeCommodityDetail, activeDetailListings, stationSortDirection, stationSortField])
+
+  const resolvedDetailListing = useMemo(() => {
+    if (!activeCommodityDetail) return null
+    const byId = sortedDetailListings.find(entry => entry.__id === activeCommodityDetail.selectedListingId)
+    if (byId) return byId
+    if (sortedDetailListings.length > 0) return sortedDetailListings[0]
+    return activeCommodityDetail.ghostnetEntry || null
+  }, [activeCommodityDetail, sortedDetailListings])
 
   const handleStationContextSelect = useCallback(listingId => {
     setActiveCommodityDetail(prev => {
@@ -1650,6 +1793,7 @@ function CommodityTradePanel () {
             commodityKey: prev.key,
             commodityName: prev.commodityName,
             commoditySymbol: prev.commoditySymbol,
+            commodityCategory: prev.commodityCategory,
             quantity: prev.quantity,
             stationName: listing.stationName || '',
             systemName: listing.systemName || '',
@@ -1670,6 +1814,7 @@ function CommodityTradePanel () {
             commodityKey: prev.key,
             commodityName: prev.commodityName,
             commoditySymbol: prev.commoditySymbol,
+            commodityCategory: prev.commodityCategory,
             quantity: prev.quantity,
             stationName: fallback.stationName || '',
             systemName: fallback.systemName || '',
@@ -1831,37 +1976,55 @@ function CommodityTradePanel () {
       {activeCommodityDetail
         ? (() => {
           const detail = activeCommodityDetail
-          const listings = Array.isArray(detail.listings) ? detail.listings : []
-          let selectedListing = listings.find(entry => entry.__id === detail.selectedListingId)
-          if (!selectedListing && listings.length > 0) {
-            selectedListing = listings[0]
-          }
-          const resolvedListing = selectedListing || detail.ghostnetEntry || null
+          const listings = sortedDetailListings
+          const resolvedListing = resolvedDetailListing
           const selectedPriceDisplay = resolvedListing ? formatCredits(resolvedListing.price, resolvedListing.priceText || '--') : '--'
           const selectedValueDisplay = resolvedListing && typeof resolvedListing?.price === 'number'
             ? formatCredits(resolvedListing.price * (detail.quantity || 0), '--')
             : '--'
           const selectedDemand = resolvedListing?.demandText || (typeof resolvedListing?.demand === 'number' ? resolvedListing.demand.toLocaleString() : '')
-          const selectedDistanceParts = [
-            formatSystemDistance(resolvedListing?.distanceLy, resolvedListing?.distanceLyText),
-            formatStationDistance(resolvedListing?.distanceLs, resolvedListing?.distanceLsText)
-          ].filter(Boolean)
-          const selectedDistanceDisplay = selectedDistanceParts.join(' / ')
+          const selectedSystemDistance = formatSystemDistance(resolvedListing?.distanceLy, resolvedListing?.distanceLyText)
+          const selectedStationDistance = formatStationDistance(resolvedListing?.distanceLs, resolvedListing?.distanceLsText)
           const selectedUpdated = resolvedListing?.updatedAt
             ? formatRelativeTime(resolvedListing.updatedAt)
             : (resolvedListing?.updatedText || '')
           const selectedStationName = resolvedListing?.stationName || '--'
           const selectedSystemName = resolvedListing?.systemName || ''
+          const selectedDemandIndicator = renderDemandTrend(selectedDemand, Boolean(resolvedListing?.demandIsLow), { subtle: true })
+          const defaultSelectedId = detail.selectedListingId || (listings[0]?.__id ?? null)
+
+          const getHeaderSortState = field => {
+            if (stationSortField !== field) return 'none'
+            return stationSortDirection === 'asc' ? 'ascending' : 'descending'
+          }
+
+          const toggleStationSort = field => {
+            setStationSortField(prevField => {
+              if (prevField === field) {
+                setStationSortDirection(prevDirection => (prevDirection === 'asc' ? 'desc' : 'asc'))
+                return prevField
+              }
+              setStationSortDirection(field === 'price' ? 'desc' : 'asc')
+              return field
+            })
+          }
 
           return (
             <div className={styles.commodityDetailContainer}>
               <div className={styles.commodityDetailContext}>
                 <div className={styles.commodityDetailInfo}>
                   <span className={styles.commodityDetailLabel}>Commodity</span>
-                  <span className={styles.commodityDetailValue}>{detail.commodityName}</span>
-                  {detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName && (
-                    <span className={styles.commodityDetailSubtext}>{detail.commoditySymbol}</span>
-                  )}
+                  <div className={styles.commodityDetailHeader}>
+                    <div className={styles.commodityDetailIcon}>
+                      <CommodityIcon category={detail.commodityCategory} size={28} />
+                    </div>
+                    <div className={styles.commodityDetailHeading}>
+                      <span className={styles.commodityDetailValue}>{detail.commodityName}</span>
+                      {detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName && (
+                        <span className={styles.commodityDetailSubtext}>{detail.commoditySymbol}</span>
+                      )}
+                    </div>
+                  </div>
                   <span className={styles.commodityDetailFootnote}>
                     Quantity in cargo: {Number(detail.quantity || 0).toLocaleString()}
                   </span>
@@ -1870,15 +2033,18 @@ function CommodityTradePanel () {
                   <span className={styles.commodityDetailLabel}>Station Context</span>
                   <span className={styles.commodityDetailValue}>{selectedStationName}</span>
                   {selectedSystemName ? <span className={styles.commodityDetailSubtext}>{selectedSystemName}</span> : null}
-                  {selectedDistanceDisplay ? (
-                    <span className={styles.commodityDetailFootnote}>{selectedDistanceDisplay}</span>
+                  {selectedSystemDistance ? (
+                    <span className={styles.commodityDetailFootnote}>{selectedSystemDistance}</span>
+                  ) : null}
+                  {selectedStationDistance ? (
+                    <span className={styles.commodityDetailFootnote}>{selectedStationDistance}</span>
                   ) : null}
                   {selectedUpdated ? (
                     <span className={styles.commodityDetailFootnote}>Updated {selectedUpdated}</span>
                   ) : null}
-                  {selectedDemand ? (
-                    <span className={`${styles.commodityDetailFootnote} ${styles.commodityDetailDemand}`}>
-                      Demand: {selectedDemand}
+                  {selectedDemandIndicator ? (
+                    <span className={styles.commodityDetailFootnote}>
+                      Demand: {selectedDemandIndicator}
                     </span>
                   ) : null}
                 </div>
@@ -1908,35 +2074,83 @@ function CommodityTradePanel () {
                     <div className={styles.dataTableContainer}>
                       <table className={`${styles.dataTable} ${styles.dataTableFixed}`}>
                         <colgroup>
-                          <col style={{ width: '36%' }} />
+                          <col style={{ width: '34%' }} />
                           <col style={{ width: '8%' }} />
-                          <col style={{ width: '20%' }} />
-                          <col style={{ width: '18%' }} />
-                          <col style={{ width: '18%' }} />
+                          <col style={{ width: '16%' }} />
+                          <col style={{ width: '16%' }} />
+                          <col style={{ width: '12%' }} />
+                          <col style={{ width: '14%' }} />
                         </colgroup>
                         <thead>
                           <tr>
                             <th>Station</th>
                             <th>Pad</th>
-                            <th>Distance</th>
+                            <th
+                              scope='col'
+                              aria-sort={getHeaderSortState('distanceLy')}
+                            >
+                              <button
+                                type='button'
+                                className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLy' ? styles.tableHeaderButtonActive : ''}`}
+                                onClick={() => toggleStationSort('distanceLy')}
+                              >
+                                Distance
+                                {stationSortField === 'distanceLy' && (
+                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
+                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
+                                  </span>
+                                )}
+                              </button>
+                            </th>
+                            <th
+                              scope='col'
+                              aria-sort={getHeaderSortState('distanceLs')}
+                            >
+                              <button
+                                type='button'
+                                className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLs' ? styles.tableHeaderButtonActive : ''}`}
+                                onClick={() => toggleStationSort('distanceLs')}
+                              >
+                                Station Distance
+                                {stationSortField === 'distanceLs' && (
+                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
+                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
+                                  </span>
+                                )}
+                              </button>
+                            </th>
                             <th>Demand</th>
-                            <th>Price</th>
+                            <th
+                              scope='col'
+                              aria-sort={getHeaderSortState('price')}
+                            >
+                              <button
+                                type='button'
+                                className={`${styles.tableHeaderButton} ${stationSortField === 'price' ? styles.tableHeaderButtonActive : ''}`}
+                                onClick={() => toggleStationSort('price')}
+                              >
+                                Price
+                                {stationSortField === 'price' && (
+                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
+                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
+                                  </span>
+                                )}
+                              </button>
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
                           {listings.map((listing, listingIndex) => {
-                            const isSelected = listing.__id === detail.selectedListingId || (!detail.selectedListingId && listingIndex === 0)
+                            const isSelected = listing.__id === defaultSelectedId
                             const stationIcon = stationIconFromType(listing.stationType || '')
-                            const distanceParts = [
-                              formatSystemDistance(listing.distanceLy, listing.distanceLyText),
-                              formatStationDistance(listing.distanceLs, listing.distanceLsText)
-                            ].filter(Boolean)
-                            const distanceDisplay = distanceParts.join(' / ')
+                            const systemDistanceDisplay = formatSystemDistance(listing.distanceLy, listing.distanceLyText)
+                            const stationDistanceDisplay = formatStationDistance(listing.distanceLs, listing.distanceLsText)
                             const demandDisplay = listing.demandText || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
                             const updatedDisplay = listing.updatedAt
                               ? formatRelativeTime(listing.updatedAt)
                               : (listing.updatedText || '')
                             const priceDisplay = formatCredits(listing.price, listing.priceText || '--')
+                            const demandIndicator = renderDemandTrend(demandDisplay, Boolean(listing.demandIsLow))
                             const rowClasses = [styles.tableRowInteractive]
                             if (isSelected) rowClasses.push(styles.stationRowSelected)
 
@@ -1971,10 +2185,9 @@ function CommodityTradePanel () {
                                   </div>
                                 </td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellCompact}`}>{listing.pad || '--'}</td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{distanceDisplay || '--'}</td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  <span className={listing.demandIsLow ? styles.stationDemandLow : ''}>{demandDisplay || '--'}</span>
-                                </td>
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{systemDistanceDisplay || '--'}</td>
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{stationDistanceDisplay || '--'}</td>
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{demandIndicator || '--'}</td>
                                 <td className={`text-right ${styles.tableCellTop} ${styles.tableCellCompact}`}>
                                   <div>{priceDisplay}</div>
                                   {updatedDisplay ? (
@@ -2003,21 +2216,27 @@ function CommodityTradePanel () {
                     ? formatCredits(summary.price * (summary.quantity || 0), '--')
                     : '--'
                   const summaryPriceDisplay = formatCredits(summary.price, summary.priceText || '--')
-                  const summaryDistance = [
-                    formatSystemDistance(summary.distanceLy, summary.distanceLyText),
-                    formatStationDistance(summary.distanceLs, summary.distanceLsText)
-                  ].filter(Boolean).join(' / ')
+                  const summarySystemDistance = formatSystemDistance(summary.distanceLy, summary.distanceLyText)
+                  const summaryStationDistance = formatStationDistance(summary.distanceLs, summary.distanceLsText)
                   const summaryUpdated = summary.updatedAt
                     ? formatRelativeTime(summary.updatedAt)
                     : (summary.updatedText || '')
+                  const summaryDemandIndicator = renderDemandTrend(summary.demandText, Boolean(summary.demandIsLow), { subtle: true })
                   return (
                     <div className={styles.contextSummary}>
                       <div className={styles.contextSummaryGroup}>
                         <span className={styles.contextSummaryLabel}>Commodity Context</span>
-                        <span className={styles.contextSummaryValue}>{summary.commodityName}</span>
-                        {summary.commoditySymbol && summary.commoditySymbol !== summary.commodityName ? (
-                          <span className={styles.contextSummaryFootnote}>{summary.commoditySymbol}</span>
-                        ) : null}
+                        <div className={styles.contextSummaryCommodity}>
+                          <div className={styles.contextSummaryIcon}>
+                            <CommodityIcon category={summary.commodityCategory} size={26} />
+                          </div>
+                          <div className={styles.contextSummaryHeading}>
+                            <span className={styles.contextSummaryValue}>{summary.commodityName}</span>
+                            {summary.commoditySymbol && summary.commoditySymbol !== summary.commodityName ? (
+                              <span className={styles.contextSummaryFootnote}>{summary.commoditySymbol}</span>
+                            ) : null}
+                          </div>
+                        </div>
                       </div>
                       <div className={styles.contextSummaryGroup}>
                         <span className={styles.contextSummaryLabel}>Station</span>
@@ -2025,11 +2244,19 @@ function CommodityTradePanel () {
                         {summary.systemName ? (
                           <span className={styles.contextSummaryFootnote}>{summary.systemName}</span>
                         ) : null}
-                        {summaryDistance ? (
-                          <span className={styles.contextSummaryFootnote}>{summaryDistance}</span>
+                        {summarySystemDistance ? (
+                          <span className={styles.contextSummaryFootnote}>{summarySystemDistance}</span>
+                        ) : null}
+                        {summaryStationDistance ? (
+                          <span className={styles.contextSummaryFootnote}>{summaryStationDistance}</span>
                         ) : null}
                         {summaryUpdated ? (
                           <span className={styles.contextSummaryFootnote}>Updated {summaryUpdated}</span>
+                        ) : null}
+                        {summaryDemandIndicator ? (
+                          <span className={styles.contextSummaryFootnote}>
+                            Demand: {summaryDemandIndicator}
+                          </span>
                         ) : null}
                       </div>
                       <div className={styles.contextSummaryGroup}>
@@ -2154,30 +2381,37 @@ function CommodityTradePanel () {
                         aria-label={`Open ${(item?.name || item?.symbol || 'commodity')} detail`}
                       >
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div>{item?.name || item?.symbol || 'Unknown'}</div>
-                          {item?.symbol && item?.symbol !== item?.name && (
-                            <div className={styles.tableSubtext}>{item.symbol}</div>
-                          )}
-                          {entry?.errors?.ghostnet && !entry?.ghostnet && (
-                            <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
-                          )}
-                          {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
-                            <div className={styles.tableWarning}>{entry.errors.market}</div>
-                          )}
-                          {isContextRow && contextSummary?.stationName && (
-                            <div className={styles.tableContextIndicator}>
-                              <span className={styles.tableContextLabel}>Station Context</span>
-                              <span className={styles.tableContextValue}>
-                                {contextSummary.stationName}
-                                {contextSummary.systemName ? ` · ${contextSummary.systemName}` : ''}
-                              </span>
-                              {(contextSystemDistance || contextDistance) && (
-                                <span className={styles.tableContextFootnote}>
-                                  {[contextSystemDistance, contextDistance].filter(Boolean).join(' / ')}
-                                </span>
+                          <div className={styles.commodityCell}>
+                            <div className={styles.commodityCellIcon}>
+                              <CommodityIcon category={item?.category} size={22} />
+                            </div>
+                            <div className={styles.commodityCellText}>
+                              <div className={styles.commodityCellTitle}>{item?.name || item?.symbol || 'Unknown'}</div>
+                              {item?.symbol && item?.symbol !== item?.name && (
+                                <div className={styles.tableSubtext}>{item.symbol}</div>
+                              )}
+                              {entry?.errors?.ghostnet && !entry?.ghostnet && (
+                                <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
+                              )}
+                              {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
+                                <div className={styles.tableWarning}>{entry.errors.market}</div>
+                              )}
+                              {isContextRow && contextSummary?.stationName && (
+                                <div className={styles.tableContextIndicator}>
+                                  <span className={styles.tableContextLabel}>Station Context</span>
+                                  <span className={styles.tableContextValue}>
+                                    {contextSummary.stationName}
+                                    {contextSummary.systemName ? ` · ${contextSummary.systemName}` : ''}
+                                  </span>
+                                  {(contextSystemDistance || contextDistance) && (
+                                    <span className={styles.tableContextFootnote}>
+                                      {[contextSystemDistance, contextDistance].filter(Boolean).join(' / ')}
+                                    </span>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          )}
+                          </div>
                         </td>
                         <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{quantity.toLocaleString()}</td>
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
@@ -2201,7 +2435,9 @@ function CommodityTradePanel () {
                             </div>
                           )}
                           {ghostnetDemand && (
-                            <div className={styles.tableMetaMuted}>Demand: {ghostnetDemand}</div>
+                            <div className={styles.tableMetaMuted}>
+                              Demand: {renderDemandTrend(ghostnetDemand, Boolean(ghostnetContextEntry?.demandIsLow), { subtle: true }) || ghostnetDemand}
+                            </div>
                           )}
                           {ghostnetUpdated && (
                             <div className={styles.tableMetaMuted}>Updated {ghostnetUpdated}</div>

@@ -686,6 +686,32 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   user-select: none;
 }
 
+.tableHeaderButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tableHeaderButton:focus-visible {
+  outline: 2px solid var(--ghostnet-color-success);
+  outline-offset: 2px;
+}
+
+.tableHeaderButtonActive {
+  color: var(--ghostnet-accent);
+}
+
+.tableSortIndicator {
+  font-size: 0.75rem;
+  color: var(--ghostnet-subdued);
+}
+
 .tableRowInteractive {
   cursor: pointer;
 }
@@ -1239,6 +1265,29 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   color: var(--ghostnet-muted);
 }
 
+.demandIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.demandIndicatorSubtle {
+  font-size: 0.88em;
+}
+
+.demandIndicatorArrow {
+  font-size: 0.85em;
+  line-height: 1;
+}
+
+.demandIndicatorArrowHigh {
+  color: var(--ghostnet-color-success);
+}
+
+.demandIndicatorArrowLow {
+  color: var(--ghostnet-color-warning);
+}
+
 .contextSummary {
   display: flex;
   flex-wrap: wrap;
@@ -1256,6 +1305,34 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   flex-direction: column;
   gap: 0.35rem;
   min-width: 12rem;
+}
+
+.contextSummaryCommodity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.contextSummaryIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  box-shadow: 0 0.9rem 1.8rem color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);
+}
+
+.contextSummaryIcon svg {
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+}
+
+.contextSummaryHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .contextSummaryLabel {
@@ -1307,6 +1384,34 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   gap: 0.4rem;
   min-width: 12rem;
   flex: 1 1 16rem;
+}
+
+.commodityDetailHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.commodityDetailIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.95rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent);
+  box-shadow: 0 1rem 2rem color-mix(in srgb, var(--ghostnet-color-background) 80%, transparent);
+}
+
+.commodityDetailIcon svg {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+}
+
+.commodityDetailHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .commodityDetailLabel {
@@ -1413,6 +1518,39 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 
 .stationDemandLow {
   color: var(--ghostnet-color-warning);
+}
+
+.commodityCell {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.commodityCellIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent);
+  box-shadow: 0 1rem 1.8rem color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);
+}
+
+.commodityCellIcon svg {
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+}
+
+.commodityCellText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.commodityCellTitle {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
 }
 
 .metricGrid {
