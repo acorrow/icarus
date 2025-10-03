@@ -491,6 +491,54 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   line-height: 1.6;
 }
 
+.cargoProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.cargoProgressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--ghostnet-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.cargoProgressLabel {
+  font-weight: 600;
+}
+
+.cargoProgressValue {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  letter-spacing: 0.08em;
+}
+
+.cargoProgressTrack {
+  position: relative;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
+  overflow: hidden;
+}
+
+.cargoProgressFill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ghostnet-accent), color-mix(in srgb, var(--ghostnet-accent) 40%, var(--ghostnet-color-primary)));
+  box-shadow: 0 0 1rem color-mix(in srgb, var(--ghostnet-accent) 65%, transparent);
+  transition: width 240ms ease;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

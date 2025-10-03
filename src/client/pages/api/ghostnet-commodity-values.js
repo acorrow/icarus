@@ -26,8 +26,12 @@ const GHOSTNET_SEARCH_DEFAULT_PARAMS = Object.freeze({
 const GHOSTNET_MARKET_CACHE_DIR = path.join(process.cwd(), 'resources', 'cache')
 const GHOSTNET_MARKET_CACHE_FILE = path.join(GHOSTNET_MARKET_CACHE_DIR, 'ghostnet-market-cache.json')
 const GHOSTNET_MARKET_CACHE_VERSION = 1
-const DEFAULT_GHOSTNET_CACHE_TTL_MS = 2 * 60 * 60 * 1000
-const GHOSTNET_CACHE_TTL_MS = Number(process.env.ICARUS_GHOSTNET_SEARCH_TTL_MS || DEFAULT_GHOSTNET_CACHE_TTL_MS)
+const DEFAULT_GHOSTNET_CACHE_TTL_MS = 15 * 60 * 1000
+const MIN_GHOSTNET_REFRESH_INTERVAL_MS = 15 * 60 * 1000
+const configuredGhostnetCacheTtl = Number(process.env.ICARUS_GHOSTNET_SEARCH_TTL_MS)
+const GHOSTNET_CACHE_TTL_MS = Number.isFinite(configuredGhostnetCacheTtl)
+  ? Math.max(configuredGhostnetCacheTtl, MIN_GHOSTNET_REFRESH_INTERVAL_MS)
+  : DEFAULT_GHOSTNET_CACHE_TTL_MS
 
 const commodityDataPath = path.join(process.cwd(), 'src', 'service', 'data', 'all-commodites.json')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -42,6 +46,7 @@ let cachedCommodityOptionsFetchedAt = 0
 let cachedCommodityOptionsPromise = null
 let cachedCommoditySynonyms = null
 let cachedMarketCache = null
+const inMemoryGhostnetCommodityCache = new Map()
 
 function ensureDirectoryExists (dirPath) {
   if (!dirPath) return
@@ -168,6 +173,38 @@ function setCachedCommoditySearch (cache, commodityKey, systemName, listings) {
   byCommodity.entries = entries
   cache.commodities[commodityKey] = byCommodity
   return true
+}
+
+function buildGhostnetMemoryKey (commodityKey, systemName) {
+  if (!commodityKey) return ''
+  const systemKey = normalise(systemName)
+  return systemKey ? `${commodityKey}::${systemKey}` : commodityKey
+}
+
+function getGhostnetMemoryEntry (commodityKey, systemName) {
+  const key = buildGhostnetMemoryKey(commodityKey, systemName)
+  if (!key) return { key: null, entry: null }
+  const entry = inMemoryGhostnetCommodityCache.get(key)
+  if (!entry) return { key, entry: null }
+  if (entry.fetchedAt && (Date.now() - entry.fetchedAt) > GHOSTNET_CACHE_TTL_MS) {
+    inMemoryGhostnetCommodityCache.delete(key)
+    return { key, entry: null }
+  }
+  return { key, entry }
+}
+
+function setGhostnetMemoryPromise (key, promise) {
+  if (!key || typeof promise?.then !== 'function') return
+  inMemoryGhostnetCommodityCache.set(key, { promise, fetchedAt: Date.now() })
+}
+
+function setGhostnetMemoryResult (key, listings, error = null) {
+  if (!key) return
+  inMemoryGhostnetCommodityCache.set(key, {
+    listings: Array.isArray(listings) ? listings : [],
+    error: error || null,
+    fetchedAt: Date.now()
+  })
 }
 
 function parseEpochSecondsToIso (value) {
@@ -711,22 +748,71 @@ export default async function handler (req, res) {
     }
 
     const nearSystem = marketData?.systemName || null
+    let memoryKey = null
+    let memoryEntry = null
 
     if (!searchError && option) {
-      const cached = getCachedCommoditySearch(ghostnetSearchCache, commodityKey, nearSystem)
-      if (cached) {
-        listings = Array.isArray(cached.listings) ? cached.listings : []
-      } else {
-        try {
-          listings = await fetchCommoditySearchListings({
-            commodityId: option.id,
-            commodityName: commodity.name,
-            nearSystem
-          })
-          if (Array.isArray(listings) && listings.length > 0) {
-            const didUpdate = setCachedCommoditySearch(ghostnetSearchCache, commodityKey, nearSystem, listings)
-            if (didUpdate) ghostnetCacheDirty = true
+      ({ key: memoryKey, entry: memoryEntry } = getGhostnetMemoryEntry(commodityKey, nearSystem))
+
+      if (memoryEntry) {
+        if (Array.isArray(memoryEntry.listings) && memoryEntry.listings.length > 0) {
+          listings = memoryEntry.listings
+          if (!searchError && memoryEntry.error) searchError = memoryEntry.error
+        } else if (memoryEntry.promise && typeof memoryEntry.promise.then === 'function') {
+          try {
+            const result = await memoryEntry.promise
+            if (result && Array.isArray(result.listings) && result.listings.length > 0) {
+              listings = result.listings
+            }
+            if (!searchError && result?.error) searchError = result.error
+          } catch (err) {
+            searchError = err.message || 'Failed to retrieve GHOSTNET listings'
+            hardFailure = true
           }
+
+          const resolvedMemory = getGhostnetMemoryEntry(commodityKey, nearSystem).entry
+          if ((!Array.isArray(listings) || listings.length === 0) && resolvedMemory && Array.isArray(resolvedMemory.listings)) {
+            listings = resolvedMemory.listings
+            if (!searchError && resolvedMemory.error) searchError = resolvedMemory.error
+          }
+        } else if (memoryEntry.error && !searchError) {
+          searchError = memoryEntry.error
+        }
+      }
+
+      if ((!Array.isArray(listings) || listings.length === 0) && !searchError) {
+        const cached = getCachedCommoditySearch(ghostnetSearchCache, commodityKey, nearSystem)
+        if (cached) {
+          listings = Array.isArray(cached.listings) ? cached.listings : []
+          if (memoryKey) setGhostnetMemoryResult(memoryKey, listings, null)
+        }
+      }
+
+      if ((!Array.isArray(listings) || listings.length === 0) && !searchError) {
+        const fetchPromise = fetchCommoditySearchListings({
+          commodityId: option.id,
+          commodityName: commodity.name,
+          nearSystem
+        })
+          .then(freshListings => {
+            if (memoryKey) setGhostnetMemoryResult(memoryKey, freshListings, null)
+            if (Array.isArray(freshListings) && freshListings.length > 0) {
+              const didUpdate = setCachedCommoditySearch(ghostnetSearchCache, commodityKey, nearSystem, freshListings)
+              if (didUpdate) ghostnetCacheDirty = true
+            }
+            return { listings: freshListings, error: null }
+          })
+          .catch(err => {
+            const message = err.message || 'Failed to retrieve GHOSTNET listings'
+            if (memoryKey) setGhostnetMemoryResult(memoryKey, [], message)
+            throw new Error(message)
+          })
+
+        if (memoryKey) setGhostnetMemoryPromise(memoryKey, fetchPromise)
+
+        try {
+          const result = await fetchPromise
+          listings = Array.isArray(result?.listings) ? result.listings : []
         } catch (err) {
           searchError = err.message || 'Failed to retrieve GHOSTNET listings'
           hardFailure = true
@@ -738,6 +824,10 @@ export default async function handler (req, res) {
 
     if (!searchError && Array.isArray(listings) && listings.length === 0) {
       searchError = 'No GHOSTNET listings found'
+    }
+
+    if (memoryKey && searchError) {
+      setGhostnetMemoryResult(memoryKey, Array.isArray(listings) ? listings : [], searchError)
     }
 
     if (searchError) {

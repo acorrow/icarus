@@ -1821,7 +1821,7 @@ function createMockCommodityValuations (cargoItems = []) {
   }, [])
 }
 
-function CommodityTradePanel () {
+function CargoHoldPanel () {
   const { connected, ready } = useSocket()
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [ship, setShip] = useState(null)
@@ -1834,6 +1834,7 @@ function CommodityTradePanel () {
   const [stationSortField, setStationSortField] = useState('price')
   const [stationSortDirection, setStationSortDirection] = useState('desc')
   const [usingMockCargo, setUsingMockCargo] = useState(false)
+  const tableContainerRef = useRef(null)
 
   const applyCargoInventory = useCallback(inventory => {
     const manifest = Array.isArray(inventory)
@@ -1905,7 +1906,7 @@ function CommodityTradePanel () {
         setShip(shipStatus)
         applyCargoInventory(shipStatus?.cargo?.inventory)
       } catch (err) {
-        console.error('Failed to load ship status for commodity trade panel', err)
+        console.error('Failed to load ship status for cargo hold panel', err)
       }
     })()
   }, [connected, ready, applyCargoInventory])
@@ -2168,6 +2169,27 @@ function CommodityTradePanel () {
   const hasCargo = Array.isArray(cargo) && cargo.length > 0
   const hasPricedRows = commodityRows.some(row => typeof row.bestPrice === 'number')
   const hasDisplayableRows = hasPricedRows || nonCommodityRows.length > 0
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    if (status !== 'ready') return undefined
+    const container = tableContainerRef.current
+    if (!container) return undefined
+
+    const timeoutId = window.setTimeout(() => {
+      container.querySelectorAll('[data-ghostnet-table-row]').forEach(element => {
+        if (element.getAttribute('data-ghostnet-table-row') !== 'visible') {
+          element.setAttribute('data-ghostnet-table-row', 'visible')
+        }
+      })
+    }, 600)
+
+    return () => {
+      if (typeof window !== 'undefined' && typeof window.clearTimeout === 'function') {
+        window.clearTimeout(timeoutId)
+      }
+    }
+  }, [status, cargoKey, valuation?.results?.length])
 
   useEffect(() => {
     if (!activeCommodityDetail) return
@@ -2440,8 +2462,23 @@ function CommodityTradePanel () {
   }
 
   const currentSystemName = currentSystem?.name || 'Unknown'
-  const cargoCount = Number(ship?.cargo?.count) || 0
-  const cargoCapacity = Number(ship?.cargo?.capacity) || 0
+  const cargoCapacityRaw = Number(ship?.cargo?.capacity)
+  const cargoCountRaw = Number(ship?.cargo?.count)
+  const cargoCapacity = Number.isFinite(cargoCapacityRaw) ? Math.max(cargoCapacityRaw, 0) : 0
+  const cargoCount = Number.isFinite(cargoCountRaw) ? Math.max(cargoCountRaw, 0) : 0
+  const cargoMeterMax = cargoCapacity > 0 ? cargoCapacity : Math.max(cargoCount, 1)
+  const cargoMeterNow = Math.min(cargoCount, cargoMeterMax)
+  const cargoFillRatio = cargoMeterMax > 0 ? cargoMeterNow / cargoMeterMax : 0
+  const cargoFillPercent = Math.round(cargoFillRatio * 100)
+  const cargoFillPercentLabel = cargoCapacity > 0
+    ? Math.round(Math.max(cargoCount / Math.max(cargoCapacity, 1), 0) * 100)
+    : cargoFillPercent
+  const cargoFillDescriptor = cargoCapacity > 0
+    ? `${cargoFillPercentLabel}% full`
+    : (cargoCount > 0 ? `${cargoCount.toLocaleString()} t on board` : 'Empty hold')
+  const cargoMeterValueText = cargoCapacity > 0
+    ? `${cargoCount.toLocaleString()} of ${cargoCapacity.toLocaleString()} tonnes`
+    : `${cargoCount.toLocaleString()} tonnes in hold`
 
   const ghostnetStatus = valuation?.metadata?.ghostnetStatus || 'idle'
   const marketStatus = valuation?.metadata?.marketStatus || 'idle'
@@ -2450,8 +2487,25 @@ function CommodityTradePanel () {
   return (
     <section className={styles.tableSection}>
       <div className={styles.tableSectionHeader}>
-        <h2 className={styles.tableSectionTitle}>Commodity Trade</h2>
-        <p className={styles.sectionHint}>Ghost Net reconciles intercepted manifests with local intel to surface the strongest sale opportunities for your hold.</p>
+        <h2 className={styles.tableSectionTitle}>Cargo Hold</h2>
+        <p className={styles.sectionHint}>Monitor mining hauls, track capacity in real time, and surface the most lucrative buyers across nearby systems.</p>
+        <div className={styles.cargoProgress}>
+          <div className={styles.cargoProgressHeader}>
+            <span className={styles.cargoProgressLabel}>Cargo Hold Utilisation</span>
+            <span className={styles.cargoProgressValue}>{cargoFillDescriptor}</span>
+          </div>
+          <div
+            className={styles.cargoProgressTrack}
+            role='progressbar'
+            aria-label='Cargo hold utilisation'
+            aria-valuemin={0}
+            aria-valuemax={cargoMeterMax}
+            aria-valuenow={cargoMeterNow}
+            aria-valuetext={cargoMeterValueText}
+          >
+            <span className={styles.cargoProgressFill} style={{ width: `${cargoFillPercent}%` }} />
+          </div>
+        </div>
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
             <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -2941,7 +2995,7 @@ function CommodityTradePanel () {
                 ) : null}
 
                 {status === 'ready' && hasCargo && hasDisplayableRows && (
-                  <div className={styles.dataTableContainer}>
+                  <div className={styles.dataTableContainer} ref={tableContainerRef}>
                     <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
                       <colgroup>
                         <col style={{ width: '32%' }} />
@@ -4950,7 +5004,7 @@ export default function GhostnetPage() {
   }, [])
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
-    { name: 'Commodity Trade', icon: 'cargo', active: activeTab === 'commodityTrade', onClick: () => setActiveTab('commodityTrade') },
+    { name: 'Cargo Hold', icon: 'cargo', active: activeTab === 'cargoHold', onClick: () => setActiveTab('cargoHold') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
     { name: 'Engineering Opportunities', icon: 'engineer', active: false, url: '/ghostnet/engineering' },
@@ -4989,8 +5043,8 @@ export default function GhostnetPage() {
               <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
                 <TradeRoutesPanel />
               </div>
-              <div style={{ display: activeTab === 'commodityTrade' ? 'block' : 'none' }}>
-                <CommodityTradePanel />
+              <div style={{ display: activeTab === 'cargoHold' ? 'block' : 'none' }}>
+                <CargoHoldPanel />
               </div>
               <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
                 <MissionsPanel />
