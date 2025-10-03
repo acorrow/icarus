@@ -601,7 +601,7 @@ body.ghostnet-assimilation-forced::after {
 body.ghostnet-assimilation-forced .ghostnet-assimilation-target,
 .ghostnet-assimilation-force-fade {
   opacity: 0;
-  transform: scale(0.95) translate3d(0, -14px, 0);
+  transform: scale(0.96) translate3d(0, -4px, 0);
   filter: blur(2px) saturate(0.6) hue-rotate(-4deg);
 }
 
@@ -651,7 +651,7 @@ body.ghostnet-assimilation-forced .ghostnet-assimilation-target::before,
 
 .ghostnet-assimilation-target.ghostnet-assimilation-remove {
   opacity: 0;
-  transform: scale(0.94) translate3d(0, -8px, 0);
+  transform: scale(0.945) translate3d(0, -3px, 0);
   filter: blur(3px) contrast(0.65) saturate(0.85);
 }
 
@@ -685,7 +685,7 @@ body.ghostnet-assimilation-forced .ghostnet-assimilation-target::before,
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, -12px, 0) scale(0.55);
+    transform: translate3d(0, -6px, 0) scale(0.55);
     filter: blur(3px) hue-rotate(12deg);
   }
 }
