@@ -1,83 +1,56 @@
 .transferContextSummary {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.4fr) auto minmax(0, 1.6fr) minmax(0, 1.2fr);
-  gap: 1.15rem;
+  display: flex;
   align-items: center;
+  gap: 0.85rem;
   width: 100%;
-  padding: 1.1rem 1.35rem;
-  border-radius: 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
-  background: linear-gradient(165deg, color-mix(in srgb, var(--ghostnet-color-primary) 12%, transparent), color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent));
-  box-shadow: 0 1rem 2.4rem color-mix(in srgb, var(--ghostnet-color-background) 76%, transparent);
+  padding: 0.85rem 1.05rem;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-background) 86%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-primary) 8%, transparent) 100%);
+  box-shadow: 0 0.85rem 2rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
+  flex-wrap: nowrap;
 }
 
-.transferContextSummary > :global(*) {
-  min-width: 0;
-}
-
-.transferContextEntity {
+.segment {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.55rem;
   min-width: 0;
 }
 
-.transferContextEntityPill {
-  justify-content: flex-start;
+.stationSegment {
+  flex: 1 1 0;
 }
 
-.transferContextEntityMain {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  min-width: 0;
+.commoditySegment {
+  flex: 1.15 1 0;
 }
 
-.transferContextEntityEnd {
-  justify-content: space-between;
+.segmentEnd {
+  justify-content: flex-end;
 }
 
-.transferContextIcon {
-  display: flex;
+.icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 0.85rem;
-  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent);
-  box-shadow: 0 0.75rem 1.65rem color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);
-  overflow: hidden;
+  color: inherit;
 }
 
-.transferContextIcon :global(svg) {
+.icon :global(svg) {
   width: 1.25rem !important;
   height: 1.25rem !important;
 }
 
-.transferContextQuantity {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.45rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
-  background: color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent);
-  color: var(--ghostnet-ink);
-  font-weight: 600;
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
-  min-width: 3.4rem;
-}
-
-.transferContextCopy {
+.segmentBody {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.18rem;
   min-width: 0;
 }
 
-.transferContextName {
-  font-size: 1rem;
+.primary {
+  font-size: 0.98rem;
   font-weight: 600;
   color: var(--ghostnet-ink);
   white-space: nowrap;
@@ -85,82 +58,140 @@
   text-overflow: ellipsis;
 }
 
-.transferContextSubtext {
-  font-size: 0.78rem;
-  color: var(--ghostnet-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.transferContextMetrics {
-  margin-left: auto;
+.subtextGroup {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem 1.2rem;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.transferContextMetric {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  white-space: nowrap;
-}
-
-.transferContextMetricLabel {
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 52%, transparent);
-}
-
-.transferContextMetricValue {
-  font-size: 0.78rem;
-  color: var(--ghostnet-muted);
-  display: inline-flex;
-  align-items: center;
   gap: 0.35rem;
 }
 
-.transferContextArrow {
+.subtext {
+  font-size: 0.72rem;
+  color: var(--ghostnet-muted);
+  white-space: nowrap;
+}
+
+.metricGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.16rem;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.metricLabel {
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 48%, transparent);
+}
+
+.metricValue {
+  font-size: 0.76rem;
+  color: var(--ghostnet-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  white-space: nowrap;
+}
+
+.quantity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  color: var(--ghostnet-ink);
+  font-weight: 600;
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+}
+
+.commodityHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.commodityPrice {
+  font-size: 0.78rem;
+  color: var(--ghostnet-color-text-strong);
+  white-space: nowrap;
+}
+
+.arrowSegment {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  color: var(--ghostnet-muted);
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0 0.1rem;
+  flex: 0 0 auto;
+  min-width: 4.25rem;
 }
 
-.transferContextArrowLabel {
-  font-size: 0.65rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-.transferContextArrowIcon {
-  font-size: 1.6rem;
+.arrowIcon {
+  font-size: 1.35rem;
   line-height: 1;
   color: var(--ghostnet-color-accent, var(--ghostnet-accent));
 }
 
-@media (max-width: 1360px) {
+.arrowLabel {
+  font-size: 0.64rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 54%, transparent);
+}
+
+.arrowValue {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  white-space: nowrap;
+}
+
+.arrowSecondary {
+  font-size: 0.72rem;
+  color: var(--ghostnet-muted);
+  white-space: nowrap;
+}
+
+.optionalWide {
+  display: inline;
+}
+
+.optionalMedium {
+  display: inline;
+}
+
+@media (max-width: 1680px) {
+  .optionalWide {
+    display: none;
+  }
+}
+
+@media (max-width: 1440px) {
+  .optionalMedium {
+    display: none;
+  }
+
   .transferContextSummary {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.65rem;
   }
+}
 
-  .transferContextEntity,
-  .transferContextEntityEnd {
-    justify-content: flex-start;
-  }
-
-  .transferContextMetrics {
-    justify-content: flex-start;
-  }
-
-  .transferContextArrow {
-    flex-direction: row;
-    justify-content: flex-start;
+@media (max-width: 1280px) {
+  .transferContextSummary {
+    padding: 0.75rem 0.85rem;
+    gap: 0.55rem;
   }
 }

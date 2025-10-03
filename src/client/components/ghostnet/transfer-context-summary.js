@@ -2,166 +2,218 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styles from './transfer-context-summary.module.css'
 
-function TransferContextEntity ({
-  icon,
-  name,
-  nameColor,
-  subtexts,
-  quantity,
-  align,
-  metrics,
-  pill,
-  ariaLabel
-}) {
-  if (!name && !quantity && !icon) return null
+const BAD_TEXT_PATTERN = /[\u25A0-\u25A3\u25A9\uFFFD]/g
 
-  const hasMetrics = Array.isArray(metrics) && metrics.length > 0
-  const classNames = [styles.transferContextEntity]
-  if (align === 'end') classNames.push(styles.transferContextEntityEnd)
-  if (pill) classNames.push(styles.transferContextEntityPill)
+const sanitizeText = value => {
+  if (typeof value !== 'string') return value
+  return value.replace(BAD_TEXT_PATTERN, '').replace(/\s+/g, ' ').trim()
+}
+
+function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel, align }) {
+  if (!icon && !name && (!Array.isArray(subtexts) || subtexts.length === 0) && (!Array.isArray(metrics) || metrics.length === 0)) {
+    return null
+  }
+
+  const containerClass = [styles.segment, styles.stationSegment]
+  if (align === 'end') containerClass.push(styles.segmentEnd)
+
+  const normalizedSubtexts = Array.isArray(subtexts)
+    ? subtexts.map(sanitizeText).filter(Boolean)
+    : []
+
+  const normalizedMetrics = Array.isArray(metrics)
+    ? metrics
+        .map(metric => {
+          if (!metric || (!metric.label && !metric.value)) return null
+          const label = sanitizeText(metric.label)
+          const value = sanitizeText(metric.value)
+          if (!label && !value) return null
+          const priority = typeof metric.priority === 'boolean'
+            ? metric.priority
+            : /supply|demand/i.test(`${label} ${value}`)
+          return { label, value, priority }
+        })
+        .filter(Boolean)
+    : []
 
   return (
-    <div className={classNames.join(' ')}>
-      <div className={styles.transferContextEntityMain} aria-label={ariaLabel}>
-        {typeof quantity === 'string' && quantity ? (
-          <span className={styles.transferContextQuantity}>{quantity}</span>
+    <div className={containerClass.join(' ')} aria-label={ariaLabel || undefined}>
+      {icon ? <span className={styles.icon}>{icon}</span> : null}
+      <div className={styles.segmentBody}>
+        {name ? (
+          <span className={styles.primary} style={color ? { color } : undefined}>
+            {name}
+          </span>
         ) : null}
-        {icon ? <span className={styles.transferContextIcon}>{icon}</span> : null}
-        <div className={styles.transferContextCopy}>
-          {name ? (
-            <span className={styles.transferContextName} style={nameColor ? { color: nameColor } : undefined}>
-              {name}
-            </span>
-          ) : null}
-          {Array.isArray(subtexts)
-            ? subtexts
-                .filter(Boolean)
-                .map((line, index) => (
-                  <span key={`transfer-context-subtext-${index}`} className={styles.transferContextSubtext}>
-                    {line}
-                  </span>
-                ))
-            : null}
-        </div>
+
+        {normalizedSubtexts.length > 0 ? (
+          <div className={styles.subtextGroup}>
+            {normalizedSubtexts.map((line, index) => (
+              <span key={`station-subtext-${index}`} className={`${styles.subtext} ${styles.optionalWide}`}>
+                {line}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        {normalizedMetrics.length > 0 ? (
+          <div className={styles.metricGroup}>
+            {normalizedMetrics.map((metric, index) => {
+              const metricClass = [styles.metric]
+              if (!metric.priority) metricClass.push(styles.optionalMedium)
+              return (
+                <div key={`station-metric-${index}`} className={metricClass.join(' ')}>
+                  {metric.label ? <span className={styles.metricLabel}>{metric.label}</span> : null}
+                  {metric.value ? <span className={styles.metricValue}>{metric.value}</span> : null}
+                </div>
+              )
+            })}
+          </div>
+        ) : null}
       </div>
-      {hasMetrics ? (
-        <div className={styles.transferContextMetrics}>
-          {metrics.map((metric, index) => {
-            if (!metric || (!metric.label && !metric.value)) return null
-            return (
-              <div key={`transfer-context-metric-${index}`} className={styles.transferContextMetric}>
-                {metric.label ? (
-                  <span className={styles.transferContextMetricLabel}>{metric.label}</span>
-                ) : null}
-                {metric.value ? (
-                  <span className={styles.transferContextMetricValue}>{metric.value}</span>
-                ) : null}
-              </div>
-            )
-          })}
-        </div>
-      ) : null}
     </div>
   )
 }
 
-TransferContextEntity.defaultProps = {
+StationSegment.defaultProps = {
   icon: null,
   name: '',
-  nameColor: '',
+  color: '',
   subtexts: [],
-  quantity: '',
-  align: 'start',
   metrics: [],
-  pill: false,
-  ariaLabel: ''
+  ariaLabel: '',
+  align: 'start'
 }
 
-TransferContextEntity.propTypes = {
+StationSegment.propTypes = {
   icon: PropTypes.node,
   name: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-  nameColor: PropTypes.string,
+  color: PropTypes.string,
   subtexts: PropTypes.arrayOf(PropTypes.node),
-  quantity: PropTypes.string,
-  align: PropTypes.oneOf(['start', 'end']),
   metrics: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.node,
-      value: PropTypes.node
+      value: PropTypes.node,
+      priority: PropTypes.bool
     })
   ),
-  pill: PropTypes.bool,
+  ariaLabel: PropTypes.string,
+  align: PropTypes.oneOf(['start', 'end'])
+}
+
+function CommoditySegment ({ icon, name, color, subtexts, quantity, price, ariaLabel }) {
+  if (!icon && !name) return null
+
+  const normalizedSubtexts = Array.isArray(subtexts)
+    ? subtexts.map(sanitizeText).filter(Boolean)
+    : []
+
+  return (
+    <div className={`${styles.segment} ${styles.commoditySegment}`} aria-label={ariaLabel || undefined}>
+      {quantity ? (
+        <span className={`${styles.quantity} ${styles.optionalMedium}`}>{sanitizeText(quantity)}</span>
+      ) : null}
+      {icon ? <span className={styles.icon}>{icon}</span> : null}
+      <div className={styles.segmentBody}>
+        <div className={styles.commodityHeader}>
+          {name ? (
+            <span className={styles.primary} style={color ? { color } : undefined}>
+              {name}
+            </span>
+          ) : null}
+          {price ? (
+            <span className={`${styles.commodityPrice} ${styles.optionalWide}`}>{sanitizeText(price)}</span>
+          ) : null}
+        </div>
+        {normalizedSubtexts.length > 0 ? (
+          <div className={styles.subtextGroup}>
+            {normalizedSubtexts.map((line, index) => (
+              <span key={`commodity-subtext-${index}`} className={`${styles.subtext} ${styles.optionalMedium}`}>
+                {line}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+CommoditySegment.defaultProps = {
+  icon: null,
+  name: '',
+  color: '',
+  subtexts: [],
+  quantity: '',
+  price: '',
+  ariaLabel: ''
+}
+
+CommoditySegment.propTypes = {
+  icon: PropTypes.node,
+  name: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+  color: PropTypes.string,
+  subtexts: PropTypes.arrayOf(PropTypes.node),
+  quantity: PropTypes.string,
+  price: PropTypes.string,
   ariaLabel: PropTypes.string
+}
+
+function ArrowSegment ({ label, value, secondary }) {
+  if (!label && !value && !secondary) return null
+
+  return (
+    <div className={styles.arrowSegment}>
+      <span className={styles.arrowIcon} aria-hidden='true'>
+        {String.fromCharCode(0x279E)}
+      </span>
+      {label ? <span className={`${styles.arrowLabel} ${styles.optionalMedium}`}>{sanitizeText(label)}</span> : null}
+      {value ? <span className={styles.arrowValue}>{sanitizeText(value)}</span> : null}
+      {secondary ? <span className={`${styles.arrowSecondary} ${styles.optionalWide}`}>{sanitizeText(secondary)}</span> : null}
+    </div>
+  )
+}
+
+ArrowSegment.defaultProps = {
+  label: '',
+  value: '',
+  secondary: ''
+}
+
+ArrowSegment.propTypes = {
+  label: PropTypes.string,
+  value: PropTypes.string,
+  secondary: PropTypes.string
 }
 
 export default function TransferContextSummary ({
   origin,
+  purchase,
   commodity,
+  sale,
   destination,
-  profit,
-  arrow,
   className
 }) {
-  const containerClassNames = [styles.transferContextSummary]
-  if (className) containerClassNames.push(className)
-
-  const arrowLabel = typeof arrow?.label === 'string' && arrow.label.trim() ? arrow.label : null
-  const arrowSymbol = arrow?.icon || String.fromCharCode(0x279E)
+  const classNames = [styles.transferContextSummary]
+  if (className) classNames.push(className)
 
   return (
-    <div className={containerClassNames.join(' ')}>
-      <TransferContextEntity
-        icon={origin?.icon || null}
-        name={origin?.name || ''}
-        nameColor={origin?.color || ''}
-        subtexts={origin?.subtexts || []}
-        metrics={origin?.metrics || []}
-        ariaLabel={origin?.ariaLabel}
-      />
-
-      <TransferContextEntity
-        icon={commodity?.icon || null}
-        name={commodity?.name || ''}
-        nameColor={commodity?.color || ''}
-        subtexts={commodity?.subtexts || []}
-        quantity={commodity?.quantity || ''}
-        pill
-        ariaLabel={commodity?.ariaLabel}
-      />
-
-      <div className={styles.transferContextArrow} aria-hidden='true'>
-        {arrowLabel ? <span className={styles.transferContextArrowLabel}>{arrowLabel}</span> : null}
-        <span className={styles.transferContextArrowIcon}>{arrowSymbol}</span>
-      </div>
-
-      <TransferContextEntity
-        icon={destination?.icon || null}
-        name={destination?.name || ''}
-        nameColor={destination?.color || ''}
-        subtexts={destination?.subtexts || []}
-        metrics={destination?.metrics || []}
-        align='end'
-        ariaLabel={destination?.ariaLabel}
-      />
-
-      <TransferContextEntity
-        icon={profit?.icon || null}
-        name={profit?.value || ''}
-        nameColor={profit?.color || ''}
-        subtexts={profit?.subtexts || []}
-        align='end'
-        ariaLabel={profit?.ariaLabel}
-      />
+    <div className={classNames.join(' ')}>
+      <StationSegment {...origin} />
+      <ArrowSegment {...purchase} />
+      <CommoditySegment {...commodity} />
+      <ArrowSegment {...sale} />
+      <StationSegment {...destination} align='end' />
     </div>
   )
 }
 
 TransferContextSummary.defaultProps = {
   origin: {},
+  purchase: {},
   commodity: {},
+  sale: {},
   destination: {},
-  profit: {},
-  arrow: {},
   className: ''
 }
 
@@ -174,10 +226,16 @@ TransferContextSummary.propTypes = {
     metrics: PropTypes.arrayOf(
       PropTypes.shape({
         label: PropTypes.node,
-        value: PropTypes.node
+        value: PropTypes.node,
+        priority: PropTypes.bool
       })
     ),
     ariaLabel: PropTypes.string
+  }),
+  purchase: PropTypes.shape({
+    label: PropTypes.string,
+    value: PropTypes.string,
+    secondary: PropTypes.string
   }),
   commodity: PropTypes.shape({
     icon: PropTypes.node,
@@ -185,7 +243,13 @@ TransferContextSummary.propTypes = {
     color: PropTypes.string,
     subtexts: PropTypes.arrayOf(PropTypes.node),
     quantity: PropTypes.string,
+    price: PropTypes.string,
     ariaLabel: PropTypes.string
+  }),
+  sale: PropTypes.shape({
+    label: PropTypes.string,
+    value: PropTypes.string,
+    secondary: PropTypes.string
   }),
   destination: PropTypes.shape({
     icon: PropTypes.node,
@@ -195,21 +259,11 @@ TransferContextSummary.propTypes = {
     metrics: PropTypes.arrayOf(
       PropTypes.shape({
         label: PropTypes.node,
-        value: PropTypes.node
+        value: PropTypes.node,
+        priority: PropTypes.bool
       })
     ),
     ariaLabel: PropTypes.string
-  }),
-  profit: PropTypes.shape({
-    icon: PropTypes.node,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-    color: PropTypes.string,
-    subtexts: PropTypes.arrayOf(PropTypes.node),
-    ariaLabel: PropTypes.string
-  }),
-  arrow: PropTypes.shape({
-    icon: PropTypes.node,
-    label: PropTypes.string
   }),
   className: PropTypes.string
 }
