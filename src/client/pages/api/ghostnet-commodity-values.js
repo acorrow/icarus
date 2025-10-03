@@ -815,6 +815,7 @@ export default async function handler (req, res) {
       count: commodity.count,
       market: marketEntry,
       ghostnet: bestGhostnetListing,
+      ghostnetListings: Array.isArray(resolvedEntry.listings) ? resolvedEntry.listings : [],
       localHistory: {
         best: historyBestEntry,
         entries: historyEntries
