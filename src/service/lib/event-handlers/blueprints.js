@@ -32,7 +32,8 @@ class Blueprints {
           system: engineer.system.name,
           location: engineer.system.position,
           rank: engineer.progress.rank,
-          progress: engineer.progress.status
+          progress: engineer.progress.status,
+          marketId: engineer.marketId
         }
       }
 
