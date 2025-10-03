@@ -1,6 +1,8 @@
-import fetch from 'node-fetch'
 import https from 'https'
 import { load } from 'cheerio'
+import inaraClient from '../../../shared/inara-client.js'
+
+const { fetchWithTokenAccounting } = inaraClient
 
 const BASE_URL = 'https://inara.cz'
 const MINING_MISSION_TYPE = 7
@@ -99,7 +101,7 @@ export default async function handler (req, res) {
     const targetSystem = system || 'Sol'
     const url = buildGhostnetUrl(targetSystem)
 
-    const response = await fetch(url, {
+    const response = await fetchWithTokenAccounting(url, {
       agent: ipv4HttpsAgent,
       headers: GHOSTNET_REQUEST_HEADERS
     })

@@ -49,6 +49,106 @@
   font-size: 0.95rem;
 }
 
+
+.ghostnet-token-indicator {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+  min-width: 13rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary-light) 32%, transparent);
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent) 100%
+  );
+  box-shadow:
+    0 1.1rem 3rem color-mix(in srgb, var(--ghostnet-color-background) 72%, transparent),
+    inset 0 0 0.65rem color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+}
+
+.ghostnet-token-indicator__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 68%, transparent);
+}
+
+.ghostnet-token-indicator__value {
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ghostnet-color-text-strong);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-primary-light) 38%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.ghostnet-token-indicator__value--negative {
+  color: var(--ghostnet-color-warning);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--ghostnet-color-warning) 36%, transparent);
+}
+
+.ghostnet-token-indicator__value--loading {
+  font-size: 1.1rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
+}
+
+.ghostnet-token-indicator__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ghostnet-token-indicator__add-button {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary-light) 38%, transparent);
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ghostnet-color-text-strong);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 68%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-primary-dark) 52%, transparent) 100%);
+  box-shadow: 0 0.55rem 1.35rem color-mix(in srgb, var(--ghostnet-color-primary-dark) 52%, transparent);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.ghostnet-token-indicator__add-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.85rem 1.75rem color-mix(in srgb, var(--ghostnet-color-primary) 46%, transparent);
+}
+
+.ghostnet-token-indicator__add-button:not(:disabled):focus-visible {
+  outline: 2px solid var(--ghostnet-color-success);
+  outline-offset: 3px;
+}
+
+.ghostnet-token-indicator__add-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 46%, transparent);
+}
+
+.ghostnet-token-indicator__status {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 58%, transparent);
+}
+
+.ghostnet-token-indicator__status--syncing {
+  color: color-mix(in srgb, var(--ghostnet-color-primary-light) 78%, transparent);
+}
+
+.ghostnet-token-indicator__status--error {
+  color: var(--ghostnet-color-warning);
+}
+
 @keyframes ghostnet-spinner-rotate {
   to {
     transform: rotate(360deg);

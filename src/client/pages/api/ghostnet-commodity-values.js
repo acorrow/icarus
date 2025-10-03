@@ -2,8 +2,10 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import https from 'https'
-import fetch from 'node-fetch'
 import { load } from 'cheerio'
+import inaraClient from '../../../shared/inara-client.js'
+
+const { fetchWithTokenAccounting } = inaraClient
 
 const GHOSTNET_BASE_URL = 'https://inara.cz'
 const GHOSTNET_COMMODITY_SEARCH_URL = `${GHOSTNET_BASE_URL}/elite/commodities/`
@@ -193,7 +195,7 @@ async function loadCommodityOptions () {
   cachedCommodityOptionsPromise = (async () => {
     const url = new URL(GHOSTNET_COMMODITY_SEARCH_URL)
     url.searchParams.set('formbrief', '1')
-    const response = await fetch(url.toString(), {
+    const response = await fetchWithTokenAccounting(url.toString(), {
       agent: ipv4HttpsAgent,
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'
@@ -343,7 +345,7 @@ async function fetchCommoditySearchListings ({ commodityId, commodityName, nearS
   params.append('pa1[]', commodityId)
   if (nearSystem) params.set('ps1', nearSystem)
   const url = `${GHOSTNET_COMMODITY_SEARCH_URL}?${params.toString()}`
-  const response = await fetch(url, {
+  const response = await fetchWithTokenAccounting(url, {
     agent: ipv4HttpsAgent,
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'

@@ -3,6 +3,7 @@ const os = require('os')
 const EliteLog = require('./elite-log')
 const EliteJson = require('./elite-json')
 const EventHandlers = require('./event-handlers')
+const { recordActivityEvent } = require('./telemetry/activity-aggregator')
 
 const {
   PORT,
@@ -111,6 +112,12 @@ const logEventCallback = (log) => {
   if (!loadingInProgress) {
     broadcastEvent('newLogEntry', log)
     logEventHandler(log)
+  }
+
+  try {
+    recordActivityEvent(log)
+  } catch (err) {
+    // Silently ignore telemetry aggregation errors to avoid disrupting the service loop
   }
 }
 

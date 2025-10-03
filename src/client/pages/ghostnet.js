@@ -3615,6 +3615,24 @@ export default function GhostnetPage() {
   return (
     <Layout connected={connected} active={socketActive} ready={ready} loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
+        <h1 className={styles.ghostnetVisuallyHidden}>Ghost Net</h1>
+        <aside role='complementary' aria-label='Signal Brief' className={styles.signalBrief}>
+          <h2 className={styles.signalBriefTitle}>Signal Brief</h2>
+          <ul className={styles.signalBriefList}>
+            <li className={styles.signalBriefItem}>
+              <span className={styles.signalBriefLabel}>Uplink</span>
+              <span className={styles.signalBriefValue}>Linking</span>
+            </li>
+            <li className={styles.signalBriefItem}>
+              <span className={styles.signalBriefLabel}>Focus</span>
+              <span className={styles.signalBriefValue}>Maintained</span>
+            </li>
+            <li className={styles.signalBriefItem}>
+              <span className={styles.signalBriefLabel}>Idle</span>
+              <span className={styles.signalBriefValue}>Shielded</span>
+            </li>
+          </ul>
+        </aside>
         <div className={ghostnetClassName}>
           <div className={styles.shell}>
             <div className={styles.tabPanels}>

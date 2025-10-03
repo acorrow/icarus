@@ -6,6 +6,7 @@ import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
 import { initiateGhostnetAssimilation, isGhostnetAssimilationActive, GHOSTNET_ASSIMILATION_EVENT } from 'lib/ghostnet-assimilation'
+import { useTokenBalance } from 'lib/use-token-balance'
 
 const ORIGINAL_TITLE = 'ICARUS TERMINAL'
 const TARGET_TITLE = 'GHOSTNET-ATLAS'
@@ -47,6 +48,54 @@ const NAV_BUTTONS = [
 
 let IS_WINDOWS_APP = false
 
+function formatTokenValue (value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return '—'
+  try {
+    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(Math.round(value))
+  } catch (err) {
+    return value.toString()
+  }
+}
+
+function GhostnetTokenIndicator ({ balance, isLoading, isUpdating, error, onAdd = () => {} }) {
+  const hasNumericBalance = typeof balance === 'number' && !Number.isNaN(balance)
+  const displayValue = !hasNumericBalance && isLoading ? 'Loading…' : formatTokenValue(balance)
+  const valueClasses = ['ghostnet-token-indicator__value']
+  if (hasNumericBalance && balance < 0) valueClasses.push('ghostnet-token-indicator__value--negative')
+  if (!hasNumericBalance && isLoading) valueClasses.push('ghostnet-token-indicator__value--loading')
+
+  const showSyncStatus = Boolean(isUpdating || (isLoading && hasNumericBalance))
+  const syncMessage = isUpdating ? 'Updating…' : 'Syncing…'
+  const errorMessage = typeof error === 'string' ? error : (error && error.message ? error.message : null)
+
+  return (
+    <div className='ghostnet-token-indicator' role='status' aria-live='polite'>
+      <span className='ghostnet-token-indicator__label'>GhostNet Tokens</span>
+      <div className={valueClasses.join(' ')}>{displayValue}</div>
+      <div className='ghostnet-token-indicator__actions'>
+        <button
+          type='button'
+          className='ghostnet-token-indicator__add-button'
+          onClick={onAdd}
+          disabled={isUpdating}
+        >
+          Add 1,000
+        </button>
+        {showSyncStatus ? (
+          <span className='ghostnet-token-indicator__status ghostnet-token-indicator__status--syncing'>
+            {syncMessage}
+          </span>
+        ) : null}
+      </div>
+      {errorMessage ? (
+        <p className='ghostnet-token-indicator__status ghostnet-token-indicator__status--error'>
+          {errorMessage}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
 export default function Header ({ connected, active }) {
   const router = useRouter()
   const [dateTime, setDateTime] = useState(eliteDateTime())
@@ -64,6 +113,24 @@ export default function Header ({ connected, active }) {
   const activeTitleGlitchIndices = useRef(new Set())
   const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
   const isGhostnetRouteActive = currentPath === '/ghostnet'
+  const {
+    balance: tokenBalance,
+    isLoading: tokenBalanceLoading,
+    isUpdating: tokenBalanceUpdating,
+    error: tokenError,
+    addTokens: addTokenBalance
+  } = useTokenBalance({ enabled: isGhostnetRouteActive })
+
+  const handleAddTokens = useCallback(async () => {
+    if (!isGhostnetRouteActive) return
+    try {
+      await addTokenBalance(1000)
+      notification('Added 1,000 GhostNet tokens', { id: 'ghostnet-token-add-success' })
+    } catch (err) {
+      const message = err && err.message ? `Failed to add GhostNet tokens (${err.message})` : 'Failed to add GhostNet tokens'
+      notification(message, { id: 'ghostnet-token-add-error' })
+    }
+  }, [isGhostnetRouteActive, addTokenBalance])
 
   const clearTitleAnimationTimeouts = useCallback(() => {
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -346,7 +413,9 @@ export default function Header ({ connected, active }) {
     signalClassName += 'text-primary'
   }
 
-  const accessibleTitle = (titleChars.join('').trimEnd()) || ORIGINAL_TITLE
+  const accessibleTitle = isGhostnetRouteActive
+    ? 'Ghost Net'
+    : ((titleChars.join('').trimEnd()) || ORIGINAL_TITLE)
   const assimilationComplete = titleAnimationState.current.completed
   const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
 
@@ -395,42 +464,72 @@ export default function Header ({ connected, active }) {
           </span>
         </span>
       </h1>
-      <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
-        <p
-          className='text-primary text-center text-uppercase'
-          style={{ display: 'inline-block', padding: 0, margin: 0, lineHeight: '1rem', minWidth: '7.5rem' }}
+      <div
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '0.75rem'
+        }}
+      >
+        {isGhostnetRouteActive ? (
+          <GhostnetTokenIndicator
+            balance={tokenBalance}
+            isLoading={tokenBalanceLoading}
+            isUpdating={tokenBalanceUpdating}
+            error={tokenError}
+            onAdd={handleAddTokens}
+          />
+        ) : null}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            flexWrap: 'wrap',
+            gap: '0.75rem'
+          }}
         >
-           <span style={{position: 'relative', top: '.3rem', fontSize: '2.4rem', paddingTop: '.25rem'}}>
-           {dateTime.time}
-          </span>
-          <br/>
-          <span style={{fontSize: '1.1rem', position: 'relative', top: '.4rem'}}>
-            {dateTime.day} {dateTime.month} {dateTime.year}
-          </span>
-        </p>
+          <p
+            className='text-primary text-center text-uppercase'
+            style={{ display: 'inline-block', padding: 0, margin: 0, lineHeight: '1rem', minWidth: '7.5rem' }}
+          >
+             <span style={{position: 'relative', top: '.3rem', fontSize: '2.4rem', paddingTop: '.25rem'}}>
+             {dateTime.time}
+            </span>
+            <br/>
+            <span style={{fontSize: '1.1rem', position: 'relative', top: '.4rem'}}>
+              {dateTime.day} {dateTime.month} {dateTime.year}
+            </span>
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button disabled className='button--icon button--transparent' style={{ marginRight: '.5rem', opacity: active ? 1 : .25, transition: 'all .25s ease-out' }}>
+              <i className={signalClassName} style={{ position: 'relative', transition: 'all .25s ease', fontSize: '3rem', lineHeight: '1.8rem', top: '.5rem', right: '.25rem' }} />
+            </button>
 
-        <button disabled className='button--icon button--transparent' style={{ marginRight: '.5rem', opacity: active ? 1 : .25, transition: 'all .25s ease-out' }}>
-          <i className={signalClassName} style={{ position: 'relative', transition: 'all .25s ease', fontSize: '3rem', lineHeight: '1.8rem', top: '.5rem', right: '.25rem' }} />
-        </button>
+            {IS_WINDOWS_APP &&
+              <button tabIndex='1' onClick={pinWindow} className={`button--icon ${isPinned ? 'button--transparent' : ''}`} style={{marginRight: '.5rem' }} disabled={isFullScreen}>
+                <i className='icon icarus-terminal-pin-window' style={{ fontSize: '2rem' }} />
+              </button>}
 
-        {IS_WINDOWS_APP &&
-          <button tabIndex='1' onClick={pinWindow} className={`button--icon ${isPinned ? 'button--transparent' : ''}`} style={{ marginRight: '.5rem' }} disabled={isFullScreen}>
-            <i className='icon icarus-terminal-pin-window' style={{ fontSize: '2rem' }} />
-          </button>}
+            <button tabIndex='1' onClick={toggleNotifications} className='button--icon' style={{ marginRight: '.5rem' }}>
+              <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} style={{ fontSize: '2rem' }} />
+            </button>
 
-        <button tabIndex='1' onClick={toggleNotifications} className='button--icon' style={{ marginRight: '.5rem' }}>
-          <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} style={{ fontSize: '2rem' }} />
-        </button>
-
-        <button
-          tabIndex='1' className='button--icon' style={{ marginRight: '.5rem' }}
-          onClick={() => { setSettingsVisible(!settingsVisible); document.activeElement.blur() }}
-        >
-          <i className='icon icarus-terminal-settings' style={{ fontSize: '2rem' }} />
-        </button>
-        <button tabIndex='1' onClick={fullScreen} className='button--icon'>
-          <i className='icon icarus-terminal-fullscreen' style={{ fontSize: '2rem' }} />
-        </button>
+            <button
+              tabIndex='1' className='button--icon' style={{ marginRight: '.5rem' }}
+              onClick={() => { setSettingsVisible(!settingsVisible); document.activeElement.blur() }}
+            >
+              <i className='icon icarus-terminal-settings' style={{ fontSize: '2rem' }} />
+            </button>
+            <button tabIndex='1' onClick={fullScreen} className='button--icon'>
+              <i className='icon icarus-terminal-fullscreen' style={{ fontSize: '2rem' }} />
+            </button>
+          </div>
+        </div>
       </div>
       <hr />
       <div id='primaryNavigation' className='button-group'>

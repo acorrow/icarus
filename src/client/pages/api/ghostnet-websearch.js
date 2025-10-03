@@ -1,7 +1,7 @@
 // Backend API: Proxies GHOSTNET nearest-outfitting for ships only
 // Only supports ship search (not modules or other outfitting)
 
-import fetch from 'node-fetch'
+import inaraClient from '../../../shared/inara-client.js'
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
@@ -9,6 +9,8 @@ import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
 import { appendGhostnetLogEntry } from './ghostnet-log-utils.js'
+
+const { fetchWithTokenAccounting } = inaraClient
 
 const logPath = path.join(process.cwd(), 'ghostnet-websearch.log')
 function logGhostnetSearch(entry) {
@@ -324,7 +326,7 @@ export default async function handler(req, res) {
   logGhostnetSearch(`REQUEST: shipId=${shipId} system=${system} url=${url}`)
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTokenAccounting(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; ICARUS/1.0)',
         'Accept-Language': 'en-US,en;q=0.9'

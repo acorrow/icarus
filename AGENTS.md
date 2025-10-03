@@ -21,6 +21,7 @@
 - Favor composing UI from the shared layout primitives in `src/client/components` (e.g., `SectionFrame`, `SectionHeader`, table shells, detail drawers). If a new view needs a combination that does not yet exist, build the combination as a reusable component and place it alongside its peers so future pages can inherit it.
 - Consistency of data presentation is critical: station summaries should always follow the pattern `Icon → Name → Key Metrics → Secondary metadata`. Expanders and drawers must surface the same canonical fields (`status`, `ownership`, `location`, `throughput`, and `alerts`) in the same order across the app.
 - Avoid ad-hoc styling or bespoke CSS for one-off views. Extend the GhostNet CSS tokens or shared utility classes, and document any new token additions with rationale and usage guidance.
+- The GhostNet header now reserves the upper-right corner for the token balance indicator. Keep the indicator aligned to the header's right edge, and reuse the `.ghostnet-token-indicator*` styles defined in `src/client/css/pages/ghostnet.css` whenever the balance UI is touched.
 
 ### Palette hygiene
 - Keep the GhostNet palette constrained to the core tokens defined in `src/client/css/pages/ghostnet.css`.
