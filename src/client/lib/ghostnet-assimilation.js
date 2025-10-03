@@ -25,9 +25,9 @@ const EFFECT_BLOCKED_CLASS_COMBINATIONS = [
   ['scrollable', 'layout__panel--secondary-navigation']
 ]
 const NAVIGATION_EXCLUSION_SELECTOR = '#primaryNavigation'
-const FORCED_FADE_CLEANUP_DELAY = 720
-const STABILIZATION_START_DELAY = 180
-const OVERLAY_REMOVAL_DELAY = 820
+const FORCED_FADE_CLEANUP_DELAY = 560
+const STABILIZATION_START_DELAY = 120
+const OVERLAY_REMOVAL_DELAY = 640
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
 const MAX_CHARACTER_ANIMATIONS = 4800
 const MIN_TOP_LEVEL_GROUPS = 5
@@ -765,13 +765,14 @@ function scheduleJitter (element) {
 
   const elapsed = Math.max(0, performance.now() - assimilationStartTime)
   const progress = Math.min(1, elapsed / effectDurationMs)
-  const eased = Math.pow(progress, 1.45)
+  const eased = Math.pow(progress, 1.25)
   const intensity = Math.max(0, 1 - eased)
 
   const amplitudeBase = 7
   const amplitude = amplitudeBase * (0.35 + intensity * 0.85)
   const shiftX = (Math.random() - 0.5) * amplitude
-  const shiftY = (Math.random() - 0.5) * amplitude
+  const verticalAttenuation = 0.6 - Math.min(0.25, eased * 0.35)
+  const shiftY = (Math.random() - 0.5) * amplitude * verticalAttenuation
   const tilt = (Math.random() - 0.5) * (2.5 - intensity * 1.5)
   const saturation = 0.85 + intensity * 0.6
   const glowRadius = 0.75 + intensity * 1.35
