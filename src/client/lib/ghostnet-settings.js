@@ -1,5 +1,5 @@
 export const ASSIMILATION_DURATION_STORAGE_KEY = 'ghostnetAssimilationDuration'
-export const ASSIMILATION_DURATION_DEFAULT = 8
+export const ASSIMILATION_DURATION_DEFAULT = 5
 export const ASSIMILATION_DURATION_MIN = 2
 export const ASSIMILATION_DURATION_MAX = 8
 
