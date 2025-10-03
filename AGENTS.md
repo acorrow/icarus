@@ -40,6 +40,25 @@
 - **Interactive states:** Hover states brighten the primary hue by 8%, focus rings use a 2px outline of `#29F3C3`, and pressed states darken to `#2A0E82` with the glow removed.
 - **Accessibility:** Maintain WCAG AA contrast; when text falls below the ratio, elevate the surface or swap to the lighter ultraviolet tone.
 
+## GhostNet feature mapping
+
+Use these shortnames when coordinating GhostNet work:
+
+- **ROUTESCOUT** – Trade route tab that auto-detects ship capacity/pad size, exposes filter presets, and renders sortable profit tables driven by `/api/ghostnet-trade-routes`.【F:src/client/pages/ghostnet.js†L1881-L2134】【F:src/client/pages/ghostnet.js†L2724-L2843】【F:src/client/pages/api/ghostnet-trade-routes.js†L297-L360】
+- **CARGO_LEDGER** – Commodity valuation tab that syncs cargo inventory, compares local market snapshots, GhostNet submissions, and journal history to surface best sell values.【F:src/client/pages/ghostnet.js†L1309-L1500】
+- **MISSION_BEACON** – Mining missions tab that caches recent results per system and annotates faction standings against Commander reputation data.【F:src/client/pages/ghostnet.js†L1121-L1294】
+- **PRISTINE_TRACKER** – Pristine mining tab that lists ring bodies, lets users expand rows for system-object art/metadata, and streams inspector data from the navigation panel.【F:src/client/pages/ghostnet.js†L2724-L3260】
+- **UPLINK_FEED** – Ambient ship uplink console overlay cycling GhostNet pseudo-telemetry with collapsible controls and cadence scheduling.【F:src/client/pages/ghostnet.js†L3263-L3565】
+- **ASSIMILATION_GATE** – GhostNet page shell that toggles the theme class, triggers arrival-mode animations, and wires tab navigation including the terminal overlay.【F:src/client/pages/ghostnet.js†L3570-L3636】
+- **TAB_SHELL** – Navigation list injected into the GhostNet panel component to switch between the four primary tabs plus search entry point.【F:src/client/pages/ghostnet.js†L3604-L3632】
+- **SEARCH_PLACEHOLDER** – `/ghostnet/search` route stub retaining navigation and flagging the disabled general search surface.【F:src/client/pages/ghostnet/search.js†L1-L27】
+- **OUTFITTING_PLACEHOLDER** – `/ghostnet/outfitting` route stub with placeholder copy for future outfitting tools.【F:src/client/pages/ghostnet/outfitting.js†L1-L27】
+- **API_COMMODITY_CACHE** – Server handler that fetches GhostNet commodity listings, merges local market logs, and persists cache hits for commodity valuation requests.【F:src/client/pages/api/ghostnet-commodity-values.js†L1-L160】【F:src/client/pages/api/ghostnet-commodity-values.js†L660-L837】
+- **API_ROUTE_SCRAPER** – Server handler that validates filter inputs, scrapes GhostNet trade route HTML, and normalizes route legs for the trade panel.【F:src/client/pages/api/ghostnet-trade-routes.js†L297-L360】
+- **API_MISSION_SCRAPER** – Server handler that downloads GhostNet mission tables, parses factions, and reports proximity to the commander’s target system.【F:src/client/pages/api/ghostnet-missions.js†L42-L122】
+- **API_PRISTINE_SCRAPER** – Server handler that extracts pristine ring listings, resolves tooltip metadata, and formats body/system links.【F:src/client/pages/api/ghostnet-pristine-mining.js†L80-L166】
+- **API_WEBSEARCH** – Generic GhostNet API proxy that relays structured commodity/ship/module/material lookups to Inara’s INAPI endpoint.【F:src/client/pages/api/ghostnet-search.js†L1-L48】
+
 ## Scope
 These instructions apply to the entire repository unless a more specific `AGENTS.md` overrides them.
 
