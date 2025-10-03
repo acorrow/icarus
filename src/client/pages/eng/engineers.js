@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import animateTableEffect from 'lib/animate-table-effect'
 import { useRouter } from 'next/router'
 import distance from '../../../shared/distance'
@@ -16,6 +16,8 @@ export default function EngineeringEngineersPage () {
   const [componentReady, setComponentReady] = useState(false)
   const [currentSystem, setCurrentSystem] = useState()
   const [engineers, setEngineers] = useState()
+  const [availabilityFilter, setAvailabilityFilter] = useState('both')
+  const [tierFilter, setTierFilter] = useState('ALL')
 
   useEffect(animateTableEffect)
   
@@ -39,6 +41,46 @@ export default function EngineeringEngineersPage () {
     }
   }), [])
 
+  const filteredEngineers = useMemo(() => {
+    if (!engineers) return []
+
+    return engineers.filter(engineer => {
+      const status = typeof engineer.progress?.status === 'string' ? engineer.progress.status : ''
+      const normalizedStatus = status.toLowerCase()
+      const isUnlocked = normalizedStatus === 'unlocked'
+
+      if (availabilityFilter === 'yes' && !isUnlocked) return false
+      if (availabilityFilter === 'no' && isUnlocked) return false
+
+      if (tierFilter !== 'ALL') {
+        const desiredTier = Number.parseInt(tierFilter, 10)
+        const rawRank = engineer.progress?.rank
+        const engineerTier = typeof rawRank === 'number'
+          ? rawRank
+          : Number.parseInt(rawRank ?? '0', 10)
+
+        if (!Number.isNaN(desiredTier) && engineerTier !== desiredTier) return false
+      }
+
+      return true
+    })
+  }, [engineers, availabilityFilter, tierFilter])
+
+  const unlockedEngineers = useMemo(
+    () => filteredEngineers.filter(engineer => engineer.progress?.status?.toLowerCase?.() === 'unlocked'),
+    [filteredEngineers]
+  )
+
+  const invitedEngineers = useMemo(
+    () => filteredEngineers.filter(engineer => engineer.progress?.status !== UNKNOWN_VALUE && engineer.progress?.status?.toLowerCase?.() !== 'unlocked'),
+    [filteredEngineers]
+  )
+
+  const lockedEngineers = useMemo(
+    () => filteredEngineers.filter(engineer => engineer.progress?.status === UNKNOWN_VALUE),
+    [filteredEngineers]
+  )
+
   return (
     <Layout connected={connected} active={active} ready={ready} loader={!componentReady}>
       <Panel layout='full-width' scrollable navigation={EngineeringPanelNavItems('Engineers')}>
@@ -49,27 +91,70 @@ export default function EngineeringEngineersPage () {
           Engineers can use Blueprints and Experimental Effects to improve ships and equipment
         </p>
 
-        {engineers && engineers.length > 0 &&
+        {engineers &&
           <>
+            <div
+              className='text-primary'
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '1.5rem',
+                alignItems: 'flex-end',
+                marginTop: '1rem'
+              }}
+            >
+              <label style={{ display: 'flex', flexDirection: 'column', minWidth: '12rem' }}>
+                <span className='text-uppercase text-muted' style={{ fontSize: '.75rem', letterSpacing: '.08em' }}>Availability</span>
+                <select
+                  aria-label='Filter engineers by availability'
+                  value={availabilityFilter}
+                  onChange={event => setAvailabilityFilter(event.target.value)}
+                >
+                  <option value='both'>Include unlocked &amp; locked</option>
+                  <option value='yes'>Unlocked only</option>
+                  <option value='no'>Locked or invited only</option>
+                </select>
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', minWidth: '12rem' }}>
+                <span className='text-uppercase text-muted' style={{ fontSize: '.75rem', letterSpacing: '.08em' }}>Tier</span>
+                <select
+                  aria-label='Filter engineers by upgrade tier'
+                  value={tierFilter}
+                  onChange={event => setTierFilter(event.target.value)}
+                >
+                  <option value='ALL'>All tiers</option>
+                  <option value='5'>Tier 5</option>
+                  <option value='4'>Tier 4</option>
+                  <option value='3'>Tier 3</option>
+                  <option value='2'>Tier 2</option>
+                  <option value='1'>Tier 1</option>
+                  <option value='0'>Tier 0 (Locked)</option>
+                </select>
+              </label>
+            </div>
+
+            {filteredEngineers.length === 0 &&
+              <p className='text-muted'>No engineers match the selected filters.</p>}
+
             <div className='section-heading'>
               <h4 className='section-heading__text' style={{ marginTop: '1rem' }}>Unlocked Engineers</h4>
             </div>
             <ListEngineers
-              engineers={engineers.filter(e => e.progress.status.toLowerCase() === 'unlocked')}
+              engineers={unlockedEngineers}
               currentSystem={currentSystem}
             />
             <div className='section-heading'>
               <h4 className='section-heading__text' style={{ marginTop: '1rem' }}>Known/Invited Engineers</h4>
             </div>
             <ListEngineers
-              engineers={engineers.filter(e => e.progress.status !== UNKNOWN_VALUE && e.progress.status.toLowerCase() !== 'unlocked')}
+              engineers={invitedEngineers}
               currentSystem={currentSystem}
             />
             <div className='section-heading'>
               <h4 className='section-heading__text' style={{ marginTop: '1rem' }}>Locked Engineers</h4>
             </div>
             <ListEngineers
-              engineers={engineers.filter(e => e.progress.status === UNKNOWN_VALUE)}
+              engineers={lockedEngineers}
               currentSystem={currentSystem}
             />
           </>}
