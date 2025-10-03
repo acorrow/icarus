@@ -9,8 +9,7 @@ import {
   createCraftableBlueprintSummary,
   formatNumber,
   getEngineerDistanceLy,
-  getEngineerProgressState,
-  getEngineeringNavigation
+  getEngineerProgressState
 } from './engineering-utils'
 import styles from '../ghostnet.module.css'
 
@@ -20,7 +19,14 @@ export default function GhostnetEngineeringOpportunitiesPage () {
   const [currentSystem, setCurrentSystem] = useState(null)
   const [componentReady, setComponentReady] = useState(false)
   const router = useRouter()
-  const navigationItems = useMemo(() => getEngineeringNavigation('engineering'), [])
+  const navigationItems = useMemo(() => ([
+    { name: 'Trade Routes', icon: 'route', onClick: () => router.push('/ghostnet') },
+    { name: 'Commodity Trade', icon: 'cargo', onClick: () => router.push('/ghostnet') },
+    { name: 'Missions', icon: 'asteroid-base', onClick: () => router.push('/ghostnet') },
+    { name: 'Pristine Mining Locations', icon: 'planet-ringed', onClick: () => router.push('/ghostnet') },
+    { name: 'Engineering Opportunities', icon: 'engineer', active: true },
+    { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
+  ]), [router])
 
   const recomputeCraftable = useCallback((nextBlueprints) => {
     const summaries = createCraftableBlueprintSummary(nextBlueprints)

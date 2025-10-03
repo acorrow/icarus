@@ -10,7 +10,6 @@ import {
   formatNumber,
   getEngineerDistanceLy,
   getEngineerProgressState,
-  getEngineeringNavigation,
   normaliseBlueprintSymbol
 } from '../engineering-utils'
 import styles from '../../ghostnet.module.css'
@@ -38,7 +37,14 @@ function formatFeatureValue (feature) {
 export default function EngineeringBlueprintDetailPage () {
   const { connected, active, ready } = useSocket()
   const router = useRouter()
-  const navigationItems = useMemo(() => getEngineeringNavigation('engineering'), [])
+  const navigationItems = useMemo(() => ([
+    { name: 'Trade Routes', icon: 'route', onClick: () => router.push('/ghostnet') },
+    { name: 'Commodity Trade', icon: 'cargo', onClick: () => router.push('/ghostnet') },
+    { name: 'Missions', icon: 'asteroid-base', onClick: () => router.push('/ghostnet') },
+    { name: 'Pristine Mining Locations', icon: 'planet-ringed', onClick: () => router.push('/ghostnet') },
+    { name: 'Engineering Opportunities', icon: 'engineer', active: true, onClick: () => router.push('/ghostnet/engineering') },
+    { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
+  ]), [router])
   const [componentReady, setComponentReady] = useState(false)
   const [currentSystem, setCurrentSystem] = useState(null)
   const [blueprintSummary, setBlueprintSummary] = useState(null)

@@ -1,12 +1,5 @@
 import distance from '../../../shared/distance'
 
-const NAVIGATION_ITEMS = [
-  { key: 'ghostnet', name: 'Ghost Net', icon: 'route', url: '/ghostnet' },
-  { key: 'engineering', name: 'Engineering Opportunities', icon: 'engineer', url: '/ghostnet/engineering' },
-  { key: 'search', name: 'Search', icon: 'search', url: '/ghostnet/search' },
-  { key: 'outfitting', name: 'Outfitting', icon: 'wrench', url: '/ghostnet/outfitting' }
-]
-
 export const MATERIAL_EVENTS = new Set([
   'Materials',
   'MaterialCollected',
@@ -16,13 +9,6 @@ export const MATERIAL_EVENTS = new Set([
 ])
 
 export const TRAVEL_EVENTS = new Set(['Location', 'FSDJump'])
-
-export function getEngineeringNavigation (activeKey = 'engineering') {
-  return NAVIGATION_ITEMS.map(item => ({
-    ...item,
-    active: item.key === activeKey
-  }))
-}
 
 export function formatNumber (value) {
   if (typeof value !== 'number') return '0'
