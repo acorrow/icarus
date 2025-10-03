@@ -1389,6 +1389,375 @@ const NON_COMMODITY_KEYS = new Set(
     .filter(Boolean)
 )
 
+const MOCK_CARGO_MANIFEST_TEMPLATE = Object.freeze([
+  Object.freeze({
+    name: 'Palladium',
+    symbol: 'Palladium',
+    category: 'metals',
+    count: 48
+  }),
+  Object.freeze({
+    name: 'Tritium',
+    symbol: 'Tritium',
+    category: 'chemicals',
+    count: 64
+  }),
+  Object.freeze({
+    name: 'Consumer Technology',
+    symbol: 'Consumer Technology',
+    category: 'consumer items',
+    count: 30
+  })
+])
+
+const MOCK_COMMODITY_VALUATION_TEMPLATES = Object.freeze({
+  palladium: Object.freeze({
+    name: 'Palladium',
+    symbol: 'Palladium',
+    ghostnet: {
+      stationName: 'Moxon Dock',
+      systemName: 'LP 128-9',
+      stationType: 'Coriolis Starport',
+      price: 73250,
+      distanceLy: 18.6,
+      distanceLs: 612,
+      demandText: '▲▲▲ Demand surging',
+      demandIsLow: false,
+      updatedMinutesAgo: 42
+    },
+    ghostnetListings: [
+      {
+        stationName: 'Moxon Dock',
+        systemName: 'LP 128-9',
+        stationType: 'Coriolis Starport',
+        price: 73250,
+        distanceLy: 18.6,
+        distanceLs: 612,
+        demandText: '▲▲▲ Demand surging',
+        demandIsLow: false,
+        updatedMinutesAgo: 42
+      },
+      {
+        stationName: 'Jones Hub',
+        systemName: 'LP 122-32',
+        stationType: 'Orbis Starport',
+        price: 72120,
+        distanceLy: 26.4,
+        distanceLs: 954,
+        demandText: '▲▲ Demand climbing',
+        demandIsLow: false,
+        updatedMinutesAgo: 57
+      },
+      {
+        stationName: 'Clark Platform',
+        systemName: 'Phekda',
+        stationType: 'Outpost',
+        price: 70810,
+        distanceLy: 34.8,
+        distanceLs: 1840,
+        demandText: '▲ Demand stable',
+        demandIsLow: false,
+        updatedMinutesAgo: 89
+      }
+    ],
+    market: {
+      stationName: 'Jameson Memorial',
+      systemName: 'Shinrarta Dezhra',
+      sellPrice: 68950,
+      distanceLs: 513,
+      timestampMinutesAgo: 120
+    },
+    localHistory: {
+      best: {
+        stationName: 'Jameson Memorial',
+        systemName: 'Shinrarta Dezhra',
+        sellPrice: 68950,
+        distanceLs: 513,
+        timestampMinutesAgo: 120
+      },
+      entries: [
+        {
+          stationName: 'Jameson Memorial',
+          systemName: 'Shinrarta Dezhra',
+          sellPrice: 68950,
+          distanceLs: 513,
+          timestampMinutesAgo: 120,
+          source: 'journal'
+        },
+        {
+          stationName: 'Darnielle Gateway',
+          systemName: 'LHS 20',
+          sellPrice: 67210,
+          distanceLs: 412,
+          timestampMinutesAgo: 360,
+          source: 'journal'
+        }
+      ]
+    }
+  }),
+  tritium: Object.freeze({
+    name: 'Tritium',
+    symbol: 'Tritium',
+    ghostnet: {
+      stationName: 'Prospect Prospect',
+      systemName: 'Colonia',
+      stationType: 'Orbis Starport',
+      price: 50500,
+      distanceLy: 220.3,
+      distanceLs: 1420,
+      demandText: '▲▲ Refuelling effort',
+      demandIsLow: false,
+      updatedMinutesAgo: 28
+    },
+    ghostnetListings: [
+      {
+        stationName: 'Prospect Prospect',
+        systemName: 'Colonia',
+        stationType: 'Orbis Starport',
+        price: 50500,
+        distanceLy: 220.3,
+        distanceLs: 1420,
+        demandText: '▲▲ Refuelling effort',
+        demandIsLow: false,
+        updatedMinutesAgo: 28
+      },
+      {
+        stationName: 'Jaques Station',
+        systemName: 'Colonia',
+        stationType: 'Coriolis Starport',
+        price: 49875,
+        distanceLy: 220.3,
+        distanceLs: 940,
+        demandText: '▲ Demand steady',
+        demandIsLow: false,
+        updatedMinutesAgo: 46
+      },
+      {
+        stationName: 'Ratraii Freeport',
+        systemName: 'Ratraii',
+        stationType: 'Megaship',
+        price: 49200,
+        distanceLy: 236.8,
+        distanceLs: 178,
+        demandText: '▲ Fleet build-up',
+        demandIsLow: false,
+        updatedMinutesAgo: 73
+      }
+    ],
+    market: {
+      stationName: 'Davinci Port',
+      systemName: 'Colonia',
+      sellPrice: 47600,
+      distanceLs: 1280,
+      timestampMinutesAgo: 95
+    },
+    localHistory: {
+      best: {
+        stationName: 'Davinci Port',
+        systemName: 'Colonia',
+        sellPrice: 47600,
+        distanceLs: 1280,
+        timestampMinutesAgo: 95
+      },
+      entries: [
+        {
+          stationName: 'Davinci Port',
+          systemName: 'Colonia',
+          sellPrice: 47600,
+          distanceLs: 1280,
+          timestampMinutesAgo: 95,
+          source: 'journal'
+        },
+        {
+          stationName: 'Eagle Landing',
+          systemName: 'Tir',
+          sellPrice: 46820,
+          distanceLs: 2310,
+          timestampMinutesAgo: 410,
+          source: 'journal'
+        }
+      ]
+    }
+  }),
+  'consumer technology': Object.freeze({
+    name: 'Consumer Technology',
+    symbol: 'Consumer Technology',
+    ghostnet: {
+      stationName: 'Farseer Inc',
+      systemName: 'Deciat',
+      stationType: 'Planetary Port',
+      price: 19800,
+      distanceLy: 38.9,
+      distanceLs: 1440,
+      demandText: '▲▲▲ Tech boom',
+      demandIsLow: false,
+      updatedMinutesAgo: 18
+    },
+    ghostnetListings: [
+      {
+        stationName: 'Farseer Inc',
+        systemName: 'Deciat',
+        stationType: 'Planetary Port',
+        price: 19800,
+        distanceLy: 38.9,
+        distanceLs: 1440,
+        demandText: '▲▲▲ Tech boom',
+        demandIsLow: false,
+        updatedMinutesAgo: 18
+      },
+      {
+        stationName: 'Ohm City',
+        systemName: 'LHS 20',
+        stationType: 'Coriolis Starport',
+        price: 19240,
+        distanceLy: 42.3,
+        distanceLs: 962,
+        demandText: '▲▲ Market surge',
+        demandIsLow: false,
+        updatedMinutesAgo: 52
+      },
+      {
+        stationName: 'Azeban Orbital',
+        systemName: 'Eravate',
+        stationType: 'Coriolis Starport',
+        price: 18990,
+        distanceLy: 52.4,
+        distanceLs: 310,
+        demandText: '▲ Demand healthy',
+        demandIsLow: false,
+        updatedMinutesAgo: 77
+      }
+    ],
+    market: {
+      stationName: 'Cleve Hub',
+      systemName: 'Eravate',
+      sellPrice: 17650,
+      distanceLs: 452,
+      timestampMinutesAgo: 140
+    },
+    localHistory: {
+      best: {
+        stationName: 'Cleve Hub',
+        systemName: 'Eravate',
+        sellPrice: 17650,
+        distanceLs: 452,
+        timestampMinutesAgo: 140
+      },
+      entries: [
+        {
+          stationName: 'Cleve Hub',
+          systemName: 'Eravate',
+          sellPrice: 17650,
+          distanceLs: 452,
+          timestampMinutesAgo: 140,
+          source: 'journal'
+        },
+        {
+          stationName: 'Ackerman Market',
+          systemName: 'Eravate',
+          sellPrice: 16980,
+          distanceLs: 174,
+          timestampMinutesAgo: 300,
+          source: 'journal'
+        }
+      ]
+    }
+  })
+})
+
+function createMockCargoManifest () {
+  return MOCK_CARGO_MANIFEST_TEMPLATE.map(entry => ({ ...entry }))
+}
+
+function createMockCommodityValuations (cargoItems = []) {
+  const now = Date.now()
+  const minutesAgoToIso = minutes => new Date(now - (Number(minutes) || 0) * 60000).toISOString()
+
+  const enrichListing = listing => {
+    if (!listing || typeof listing !== 'object') return null
+    const next = { ...listing }
+    if (typeof next.updatedMinutesAgo === 'number') {
+      next.updatedAt = minutesAgoToIso(next.updatedMinutesAgo)
+      delete next.updatedMinutesAgo
+    }
+    if (typeof next.price === 'number') {
+      next.priceText = formatCredits(next.price, '--')
+    }
+    if (typeof next.distanceLy === 'number') {
+      next.distanceLyText = formatSystemDistance(next.distanceLy)
+    }
+    if (typeof next.distanceLs === 'number') {
+      next.distanceLsText = formatStationDistance(next.distanceLs)
+    }
+    return next
+  }
+
+  return cargoItems.reduce((acc, item) => {
+    const key = normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)
+    if (!key) return acc
+    const template = MOCK_COMMODITY_VALUATION_TEMPLATES[key]
+    if (!template) return acc
+
+    const clone = JSON.parse(JSON.stringify(template))
+
+    clone.ghostnet = enrichListing(clone.ghostnet) || null
+    clone.ghostnetListings = Array.isArray(clone.ghostnetListings)
+      ? clone.ghostnetListings.map(enrichListing).filter(Boolean)
+      : []
+
+    if (!clone.ghostnetEntry && clone.ghostnet) {
+      clone.ghostnetEntry = { ...clone.ghostnet }
+    }
+
+    if (!clone.ghostnetEntry && clone.ghostnetListings.length > 0) {
+      clone.ghostnetEntry = { ...clone.ghostnetListings[0] }
+    }
+
+    clone.market = clone.market && typeof clone.market === 'object'
+      ? {
+          ...clone.market,
+          timestamp: minutesAgoToIso(clone.market.timestampMinutesAgo),
+          distanceText: typeof clone.market.distanceLs === 'number'
+            ? formatStationDistance(clone.market.distanceLs)
+            : undefined
+        }
+      : null
+    if (clone.market) {
+      delete clone.market.timestampMinutesAgo
+    }
+
+    const historyEntries = Array.isArray(clone.localHistory?.entries)
+      ? clone.localHistory.entries.map(entry => ({
+          ...entry,
+          timestamp: minutesAgoToIso(entry.timestampMinutesAgo)
+        }))
+      : []
+
+    historyEntries.forEach(entry => {
+      delete entry.timestampMinutesAgo
+    })
+
+    const historyBest = clone.localHistory?.best && typeof clone.localHistory.best === 'object'
+      ? {
+          ...clone.localHistory.best,
+          timestamp: minutesAgoToIso(clone.localHistory.best.timestampMinutesAgo)
+        }
+      : null
+
+    if (historyBest) {
+      delete historyBest.timestampMinutesAgo
+    }
+
+    clone.localHistory = {
+      best: historyBest,
+      entries: historyEntries
+    }
+
+    acc.push(clone)
+    return acc
+  }, [])
+}
+
 function CommodityTradePanel () {
   const { connected, ready } = useSocket()
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
@@ -1401,6 +1770,22 @@ function CommodityTradePanel () {
   const [commodityContext, setCommodityContext] = useState(null)
   const [stationSortField, setStationSortField] = useState('price')
   const [stationSortDirection, setStationSortDirection] = useState('desc')
+  const [usingMockCargo, setUsingMockCargo] = useState(false)
+
+  const applyCargoInventory = useCallback(inventory => {
+    const manifest = Array.isArray(inventory)
+      ? inventory.filter(item => item && typeof item === 'object')
+      : []
+
+    if (manifest.length > 0) {
+      setUsingMockCargo(false)
+      setCargo(manifest.map(item => ({ ...item })))
+      return
+    }
+
+    setUsingMockCargo(true)
+    setCargo(createMockCargoManifest())
+  }, [])
 
   const cargoKey = useMemo(() => {
     if (!Array.isArray(cargo) || cargo.length === 0) return ''
@@ -1436,37 +1821,53 @@ function CommodityTradePanel () {
       try {
         const shipStatus = await sendEvent('getShipStatus')
         setShip(shipStatus)
-        setCargo(shipStatus?.cargo?.inventory ?? [])
+        applyCargoInventory(shipStatus?.cargo?.inventory)
       } catch (err) {
         console.error('Failed to load ship status for commodity trade panel', err)
       }
     })()
-  }, [connected, ready])
+  }, [connected, ready, applyCargoInventory])
 
   useEffect(() => eventListener('gameStateChange', async () => {
     try {
       const shipStatus = await sendEvent('getShipStatus')
       setShip(shipStatus)
-      setCargo(shipStatus?.cargo?.inventory ?? [])
+      applyCargoInventory(shipStatus?.cargo?.inventory)
     } catch (err) {
       console.error('Failed to refresh ship status after game state change', err)
     }
-  }), [])
+  }), [applyCargoInventory])
 
   useEffect(() => eventListener('newLogEntry', async () => {
     try {
       const shipStatus = await sendEvent('getShipStatus')
       setShip(shipStatus)
-      setCargo(shipStatus?.cargo?.inventory ?? [])
+      applyCargoInventory(shipStatus?.cargo?.inventory)
     } catch (err) {
       console.error('Failed to refresh ship status after new log entry', err)
     }
-  }), [])
+  }), [applyCargoInventory])
 
   useEffect(() => {
     if (!cargo || cargo.length === 0) {
       setStatus(ship ? 'empty' : 'idle')
       setValuation(prev => ({ ...prev, results: [] }))
+      return
+    }
+
+    if (usingMockCargo) {
+      setStatus('loading')
+      setError('')
+      const mockResults = createMockCommodityValuations(cargo)
+      setValuation({
+        results: mockResults,
+        metadata: {
+          ghostnetStatus: 'mock',
+          marketStatus: 'mock',
+          historyStatus: 'mock'
+        }
+      })
+      setStatus(mockResults.length > 0 ? 'ready' : 'empty')
       return
     }
 
@@ -1513,7 +1914,7 @@ function CommodityTradePanel () {
     return () => {
       cancelled = true
     }
-  }, [cargoKey])
+  }, [cargoKey, usingMockCargo])
 
   const valuationMap = useMemo(() => {
     const map = new Map()
@@ -2320,6 +2721,11 @@ function CommodityTradePanel () {
                 })() : null}
 
                 {renderStatusBanner()}
+                {usingMockCargo && hasCargo ? (
+                  <div className={styles.inlineNoticeMuted}>
+                    Showing mock cargo manifest for development while your hold is empty in-game.
+                  </div>
+                ) : null}
 
                 {status === 'ready' && hasCargo && hasDisplayableRows && (
                   <div className={styles.dataTableContainer}>
