@@ -9,16 +9,13 @@ const sanitizeText = value => {
   return value.replace(BAD_TEXT_PATTERN, '').replace(/\s+/g, ' ').trim()
 }
 
-function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel, align }) {
+function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel }) {
   if (!icon && !name && (!Array.isArray(subtexts) || subtexts.length === 0) && (!Array.isArray(metrics) || metrics.length === 0)) {
     return null
   }
 
-  const containerClass = [styles.segment, styles.stationSegment]
-  if (align === 'end') containerClass.push(styles.segmentEnd)
-
   const normalizedSubtexts = Array.isArray(subtexts)
-    ? subtexts.map(sanitizeText).filter(Boolean)
+    ? subtexts.map(entry => sanitizeText(entry)).filter(Boolean)
     : []
 
   const normalizedMetrics = Array.isArray(metrics)
@@ -30,47 +27,45 @@ function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel, alig
           if (!label && !value) return null
           const priority = typeof metric.priority === 'boolean'
             ? metric.priority
-            : /supply|demand/i.test(`${label} ${value}`)
+            : /supply|demand|buy|sell|profit/i.test(`${label} ${value}`)
           return { label, value, priority }
         })
         .filter(Boolean)
     : []
 
   return (
-    <div className={containerClass.join(' ')} aria-label={ariaLabel || undefined}>
+    <div className={`${styles.segment} ${styles.stationSegment}`} aria-label={ariaLabel || undefined}>
       {icon ? <span className={styles.icon}>{icon}</span> : null}
-      <div className={styles.segmentBody}>
-        {name ? (
-          <span className={styles.primary} style={color ? { color } : undefined}>
-            {name}
-          </span>
-        ) : null}
+      {name ? (
+        <span className={styles.primary} style={color ? { color } : undefined}>
+          {name}
+        </span>
+      ) : null}
 
-        {normalizedSubtexts.length > 0 ? (
-          <div className={styles.subtextGroup}>
-            {normalizedSubtexts.map((line, index) => (
-              <span key={`station-subtext-${index}`} className={`${styles.subtext} ${styles.optionalWide}`}>
-                {line}
-              </span>
-            ))}
-          </div>
-        ) : null}
+      {normalizedSubtexts.length > 0 ? (
+        <div className={styles.subtextGroup}>
+          {normalizedSubtexts.map((line, index) => (
+            <span key={`station-subtext-${index}`} className={`${styles.subtext} ${styles.optionalWide}`}>
+              {line}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
-        {normalizedMetrics.length > 0 ? (
-          <div className={styles.metricGroup}>
-            {normalizedMetrics.map((metric, index) => {
-              const metricClass = [styles.metric]
-              if (!metric.priority) metricClass.push(styles.optionalMedium)
-              return (
-                <div key={`station-metric-${index}`} className={metricClass.join(' ')}>
-                  {metric.label ? <span className={styles.metricLabel}>{metric.label}</span> : null}
-                  {metric.value ? <span className={styles.metricValue}>{metric.value}</span> : null}
-                </div>
-              )
-            })}
-          </div>
-        ) : null}
-      </div>
+      {normalizedMetrics.length > 0 ? (
+        <div className={styles.metricGroup}>
+          {normalizedMetrics.map((metric, index) => {
+            const metricClass = [styles.metric]
+            if (!metric.priority) metricClass.push(styles.optionalMedium)
+            return (
+              <div key={`station-metric-${index}`} className={metricClass.join(' ')}>
+                {metric.label ? <span className={styles.metricLabel}>{metric.label}</span> : null}
+                {metric.value ? <span className={styles.metricValue}>{metric.value}</span> : null}
+              </div>
+            )
+          })}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -81,8 +76,7 @@ StationSegment.defaultProps = {
   color: '',
   subtexts: [],
   metrics: [],
-  ariaLabel: '',
-  align: 'start'
+  ariaLabel: ''
 }
 
 StationSegment.propTypes = {
@@ -97,15 +91,14 @@ StationSegment.propTypes = {
       priority: PropTypes.bool
     })
   ),
-  ariaLabel: PropTypes.string,
-  align: PropTypes.oneOf(['start', 'end'])
+  ariaLabel: PropTypes.string
 }
 
 function CommoditySegment ({ icon, name, color, subtexts, quantity, price, ariaLabel }) {
-  if (!icon && !name) return null
+  if (!icon && !name && !quantity) return null
 
   const normalizedSubtexts = Array.isArray(subtexts)
-    ? subtexts.map(sanitizeText).filter(Boolean)
+    ? subtexts.map(entry => sanitizeText(entry)).filter(Boolean)
     : []
 
   return (
@@ -114,27 +107,23 @@ function CommoditySegment ({ icon, name, color, subtexts, quantity, price, ariaL
         <span className={`${styles.quantity} ${styles.optionalMedium}`}>{sanitizeText(quantity)}</span>
       ) : null}
       {icon ? <span className={styles.icon}>{icon}</span> : null}
-      <div className={styles.segmentBody}>
-        <div className={styles.commodityHeader}>
-          {name ? (
-            <span className={styles.primary} style={color ? { color } : undefined}>
-              {name}
+      {name ? (
+        <span className={styles.primary} style={color ? { color } : undefined}>
+          {name}
+        </span>
+      ) : null}
+      {price ? (
+        <span className={`${styles.commodityPrice} ${styles.optionalWide}`}>{sanitizeText(price)}</span>
+      ) : null}
+      {normalizedSubtexts.length > 0 ? (
+        <div className={styles.subtextGroup}>
+          {normalizedSubtexts.map((line, index) => (
+            <span key={`commodity-subtext-${index}`} className={`${styles.subtext} ${styles.optionalMedium}`}>
+              {line}
             </span>
-          ) : null}
-          {price ? (
-            <span className={`${styles.commodityPrice} ${styles.optionalWide}`}>{sanitizeText(price)}</span>
-          ) : null}
+          ))}
         </div>
-        {normalizedSubtexts.length > 0 ? (
-          <div className={styles.subtextGroup}>
-            {normalizedSubtexts.map((line, index) => (
-              <span key={`commodity-subtext-${index}`} className={`${styles.subtext} ${styles.optionalMedium}`}>
-                {line}
-              </span>
-            ))}
-          </div>
-        ) : null}
-      </div>
+      ) : null}
     </div>
   )
 }
@@ -159,39 +148,66 @@ CommoditySegment.propTypes = {
   ariaLabel: PropTypes.string
 }
 
-function ArrowSegment ({ label, value, secondary }) {
+function DistanceSegment ({ label, value, secondary }) {
   if (!label && !value && !secondary) return null
 
   return (
-    <div className={styles.arrowSegment}>
-      <span className={styles.arrowIcon} aria-hidden='true'>
+    <div className={`${styles.segment} ${styles.distanceSegment}`}>
+      <span className={styles.distanceIcon} aria-hidden='true'>
         {String.fromCharCode(0x279E)}
       </span>
-      {label ? <span className={`${styles.arrowLabel} ${styles.optionalMedium}`}>{sanitizeText(label)}</span> : null}
-      {value ? <span className={styles.arrowValue}>{sanitizeText(value)}</span> : null}
-      {secondary ? <span className={`${styles.arrowSecondary} ${styles.optionalWide}`}>{sanitizeText(secondary)}</span> : null}
+      {label ? <span className={`${styles.metricLabel} ${styles.optionalMedium}`}>{sanitizeText(label)}</span> : null}
+      {value ? <span className={styles.distanceValue}>{sanitizeText(value)}</span> : null}
+      {secondary ? <span className={`${styles.distanceSecondary} ${styles.optionalWide}`}>{sanitizeText(secondary)}</span> : null}
     </div>
   )
 }
 
-ArrowSegment.defaultProps = {
+DistanceSegment.defaultProps = {
   label: '',
   value: '',
   secondary: ''
 }
 
-ArrowSegment.propTypes = {
+DistanceSegment.propTypes = {
+  label: PropTypes.string,
+  value: PropTypes.string,
+  secondary: PropTypes.string
+}
+
+function ValueSegment ({ icon, label, value, secondary }) {
+  if (!icon && !label && !value && !secondary) return null
+
+  return (
+    <div className={`${styles.segment} ${styles.valueSegment}`}>
+      {icon ? <span className={styles.icon}>{icon}</span> : null}
+      {label ? <span className={`${styles.metricLabel} ${styles.optionalMedium}`}>{sanitizeText(label)}</span> : null}
+      {value ? <span className={styles.valuePrimary}>{sanitizeText(value)}</span> : null}
+      {secondary ? <span className={`${styles.valueSecondary} ${styles.optionalWide}`}>{sanitizeText(secondary)}</span> : null}
+    </div>
+  )
+}
+
+ValueSegment.defaultProps = {
+  icon: null,
+  label: '',
+  value: '',
+  secondary: ''
+}
+
+ValueSegment.propTypes = {
+  icon: PropTypes.node,
   label: PropTypes.string,
   value: PropTypes.string,
   secondary: PropTypes.string
 }
 
 export default function TransferContextSummary ({
-  origin,
-  purchase,
-  commodity,
-  sale,
-  destination,
+  item,
+  source,
+  distance,
+  target,
+  value,
   className
 }) {
   const classNames = [styles.transferContextSummary]
@@ -199,45 +215,26 @@ export default function TransferContextSummary ({
 
   return (
     <div className={classNames.join(' ')}>
-      <StationSegment {...origin} />
-      <ArrowSegment {...purchase} />
-      <CommoditySegment {...commodity} />
-      <ArrowSegment {...sale} />
-      <StationSegment {...destination} align='end' />
+      <CommoditySegment {...item} />
+      <StationSegment {...source} />
+      <DistanceSegment {...distance} />
+      <StationSegment {...target} />
+      <ValueSegment {...value} />
     </div>
   )
 }
 
 TransferContextSummary.defaultProps = {
-  origin: {},
-  purchase: {},
-  commodity: {},
-  sale: {},
-  destination: {},
+  item: {},
+  source: {},
+  distance: {},
+  target: {},
+  value: {},
   className: ''
 }
 
 TransferContextSummary.propTypes = {
-  origin: PropTypes.shape({
-    icon: PropTypes.node,
-    name: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-    color: PropTypes.string,
-    subtexts: PropTypes.arrayOf(PropTypes.node),
-    metrics: PropTypes.arrayOf(
-      PropTypes.shape({
-        label: PropTypes.node,
-        value: PropTypes.node,
-        priority: PropTypes.bool
-      })
-    ),
-    ariaLabel: PropTypes.string
-  }),
-  purchase: PropTypes.shape({
-    label: PropTypes.string,
-    value: PropTypes.string,
-    secondary: PropTypes.string
-  }),
-  commodity: PropTypes.shape({
+  item: PropTypes.shape({
     icon: PropTypes.node,
     name: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
     color: PropTypes.string,
@@ -246,12 +243,7 @@ TransferContextSummary.propTypes = {
     price: PropTypes.string,
     ariaLabel: PropTypes.string
   }),
-  sale: PropTypes.shape({
-    label: PropTypes.string,
-    value: PropTypes.string,
-    secondary: PropTypes.string
-  }),
-  destination: PropTypes.shape({
+  source: PropTypes.shape({
     icon: PropTypes.node,
     name: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
     color: PropTypes.string,
@@ -264,6 +256,31 @@ TransferContextSummary.propTypes = {
       })
     ),
     ariaLabel: PropTypes.string
+  }),
+  distance: PropTypes.shape({
+    label: PropTypes.string,
+    value: PropTypes.string,
+    secondary: PropTypes.string
+  }),
+  target: PropTypes.shape({
+    icon: PropTypes.node,
+    name: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+    color: PropTypes.string,
+    subtexts: PropTypes.arrayOf(PropTypes.node),
+    metrics: PropTypes.arrayOf(
+      PropTypes.shape({
+        label: PropTypes.node,
+        value: PropTypes.node,
+        priority: PropTypes.bool
+      })
+    ),
+    ariaLabel: PropTypes.string
+  }),
+  value: PropTypes.shape({
+    icon: PropTypes.node,
+    label: PropTypes.string,
+    value: PropTypes.string,
+    secondary: PropTypes.string
   }),
   className: PropTypes.string
 }

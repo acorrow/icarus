@@ -859,6 +859,26 @@ function parseNumberFromText (value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+function CreditsIcon ({ size = 22, color = 'var(--ghostnet-color-success)' }) {
+  const paths = Icons.credits
+  if (!paths) return null
+  return (
+    <svg
+      viewBox='0 0 1000 1000'
+      focusable='false'
+      aria-hidden='true'
+      style={{ width: size, height: size, fill: color, flexShrink: 0 }}
+    >
+      {paths}
+    </svg>
+  )
+}
+
+CreditsIcon.defaultProps = {
+  size: 22,
+  color: 'var(--ghostnet-color-success)'
+}
+
 function extractProfitPerTon (route) {
   if (!route) return null
   const summary = route.summary || {}
@@ -1837,6 +1857,25 @@ function CommodityTradePanel () {
       .join('|')
   }, [cargo])
 
+  const shipSourceSegment = useMemo(() => {
+    if (!ship) return null
+    const shipName = sanitizeInaraText(ship?.name) || sanitizeInaraText(ship?.ident) || 'Your Ship'
+    const shipIdent = sanitizeInaraText(ship?.ident)
+    const shipType = sanitizeInaraText(ship?.type)
+    const systemName = sanitizeInaraText(currentSystem?.name) || ''
+    const subtexts = [
+      shipIdent ? `ID ${shipIdent}` : null,
+      shipType && shipType !== shipName ? shipType : null,
+      systemName
+    ].filter(Boolean)
+    return {
+      icon: <StationIcon icon='ship' size={24} />,
+      name: shipName,
+      subtexts,
+      ariaLabel: `Ship ${shipName}`
+    }
+  }, [ship?.name, ship?.ident, ship?.type, currentSystem?.name])
+
   useEffect(() => {
     animateTableEffect()
   }, [cargoKey, valuation?.results?.length])
@@ -2511,33 +2550,40 @@ function CommodityTradePanel () {
           }
 
           const originEntry = detail.marketEntry || detail.localBestEntry || null
-          const originName = originEntry?.stationName || 'Local Market'
-          const originSystem = originEntry?.systemName || ''
-          const originType = originEntry?.stationType || ''
-          const originIconName = originEntry ? stationIconFromType(originType || '') : null
-          const originUpdated = originEntry?.updatedAt
-            ? formatRelativeTime(originEntry.updatedAt)
-            : (originEntry?.updatedText || '')
+          const sanitizedOrigin = originEntry ? sanitizeMarketListingEntry(originEntry) : null
+          const originStationName = sanitizedOrigin?.stationName || ''
+          const originSystem = sanitizedOrigin?.systemName || ''
+          const originType = sanitizedOrigin?.stationType || ''
+          const originIconName = originStationName ? stationIconFromType(originType || '') : null
+          const originUpdated = sanitizedOrigin?.updatedAt
+            ? formatRelativeTime(sanitizedOrigin.updatedAt)
+            : (sanitizedOrigin?.updatedText || '')
+          const originDemandIndicator = sanitizedOrigin?.demandText
+            ? renderDemandTrend(sanitizedOrigin.demandText, Boolean(sanitizedOrigin.demandIsLow), { subtle: true })
+            : null
           const localBestPrice = typeof detail.localBestPrice === 'number'
             ? detail.localBestPrice
-            : (originEntry?.price ?? null)
-          const localPriceDisplay = formatCredits(localBestPrice, originEntry?.priceText || '--')
-          const originMetrics = []
+            : (sanitizedOrigin?.price ?? null)
+          const localPriceDisplay = formatCredits(localBestPrice, sanitizedOrigin?.priceText || '--')
+          const sourceMetrics = []
+          if (localPriceDisplay && localPriceDisplay !== '--') {
+            sourceMetrics.push({ label: 'Buy', value: localPriceDisplay, priority: true })
+          }
+          if (originDemandIndicator) {
+            sourceMetrics.push({ label: 'Demand', value: originDemandIndicator, priority: true })
+          }
           if (originUpdated) {
-            originMetrics.push({ label: 'Updated', value: originUpdated })
+            sourceMetrics.push({ label: 'Updated', value: originUpdated })
           }
           const destinationMetrics = []
-          if (selectedSystemDistance) {
-            destinationMetrics.push({ label: 'System Distance', value: selectedSystemDistance })
-          }
-          if (selectedStationDistance) {
-            destinationMetrics.push({ label: 'Station Distance', value: selectedStationDistance })
-          }
-          if (selectedUpdated) {
-            destinationMetrics.push({ label: 'Updated', value: selectedUpdated })
+          if (selectedPriceDisplay && selectedPriceDisplay !== '--') {
+            destinationMetrics.push({ label: 'Sell', value: selectedPriceDisplay, priority: true })
           }
           if (selectedDemandIndicator) {
             destinationMetrics.push({ label: 'Demand', value: selectedDemandIndicator, priority: true })
+          }
+          if (selectedUpdated) {
+            destinationMetrics.push({ label: 'Updated', value: selectedUpdated })
           }
           const quantityDisplay = Number(detail.quantity || 0).toLocaleString()
           const quantityText = quantityDisplay ? `${quantityDisplay} t` : ''
@@ -2547,7 +2593,8 @@ function CommodityTradePanel () {
           const profitPerUnitDisplay = formatCredits(profitPerUnit, '--')
           const profitValue = profitPerUnit !== null ? profitPerUnit * (Number(detail.quantity) || 0) : null
           const profitValueDisplay = formatCredits(profitValue, selectedValueDisplay)
-          const destinationIconName = resolvedListing ? stationIconFromType(resolvedListing.stationType || '') : null
+          const destinationStationType = sanitizeInaraText(resolvedListing?.stationType) || resolvedListing?.stationType || ''
+          const destinationIconName = destinationStationType ? stationIconFromType(destinationStationType) : null
           const commodityPriceDisplay = selectedPriceDisplay && selectedPriceDisplay !== '--'
             ? `@ ${selectedPriceDisplay}`
             : ''
@@ -2555,15 +2602,39 @@ function CommodityTradePanel () {
             detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName ? detail.commoditySymbol : null,
             profitPerUnitDisplay && profitPerUnitDisplay !== '--' ? `Profit/t ${profitPerUnitDisplay}` : null
           ].filter(Boolean)
-          const purchaseArrow = {
-            label: 'Buy',
-            value: localPriceDisplay && localPriceDisplay !== '--' ? localPriceDisplay : '',
-            secondary: originUpdated ? `Updated ${originUpdated}` : ''
+          const distanceSegment = {
+            label: 'Distance',
+            value: selectedSystemDistance || '',
+            secondary: selectedStationDistance || ''
           }
-          const saleArrow = {
-            label: 'Sell',
-            value: selectedPriceDisplay && selectedPriceDisplay !== '--' ? selectedPriceDisplay : '',
-            secondary: profitValueDisplay && profitValueDisplay !== '--' ? `Profit ${profitValueDisplay}` : ''
+          const valueSecondaryParts = []
+          if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') valueSecondaryParts.push(`Per t ${profitPerUnitDisplay}`)
+          if (quantityText) valueSecondaryParts.push(`Payload ${quantityText}`)
+          const valueSecondary = valueSecondaryParts.join(' • ')
+          const shipSubtexts = Array.isArray(shipSourceSegment?.subtexts) ? shipSourceSegment.subtexts : []
+          const sourceSegment = shipSourceSegment
+            ? {
+                ...shipSourceSegment,
+                subtexts: [
+                  ...shipSubtexts,
+                  originStationName && originStationName !== shipSourceSegment.name ? `Docked: ${originStationName}` : null,
+                  originSystem
+                ].filter(Boolean),
+                metrics: sourceMetrics
+              }
+            : {
+                icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
+                name: originStationName || 'Local Market',
+                subtexts: [originSystem, originType].filter(Boolean),
+                metrics: sourceMetrics,
+                ariaLabel: originStationName ? `Origin station ${originStationName}` : 'Local market origin'
+              }
+          const destinationSubtexts = [selectedSystemName, destinationStationType].filter(Boolean)
+          const valueSegment = {
+            icon: <CreditsIcon size={22} />,
+            label: 'Profit',
+            value: profitValueDisplay && profitValueDisplay !== '--' ? profitValueDisplay : '',
+            secondary: valueSecondary
           }
 
           return (
@@ -2571,15 +2642,7 @@ function CommodityTradePanel () {
               <div className={styles.commodityDetailContext}>
                 <TransferContextSummary
                   className={styles.commodityDetailSummaryBar}
-                  origin={{
-                    icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
-                    name: originName,
-                    subtexts: [originSystem, originType].filter(Boolean),
-                    metrics: originMetrics,
-                    ariaLabel: originName ? `Origin station ${originName}` : 'Local market origin'
-                  }}
-                  purchase={purchaseArrow}
-                  commodity={{
+                  item={{
                     icon: <CommodityIcon category={detail.commodityCategory} size={28} />,
                     name: detail.commodityName,
                     subtexts: commoditySubtexts,
@@ -2587,14 +2650,16 @@ function CommodityTradePanel () {
                     price: commodityPriceDisplay,
                     ariaLabel: `${detail.commodityName} quantity ${quantityText || 'Unknown'}`
                   }}
-                  sale={saleArrow}
-                  destination={{
+                  source={sourceSegment}
+                  distance={distanceSegment}
+                  target={{
                     icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
                     name: selectedStationName,
-                    subtexts: [selectedSystemName, sanitizeInaraText(resolvedListing?.stationType) || resolvedListing?.stationType || ''].filter(Boolean),
+                    subtexts: destinationSubtexts,
                     metrics: destinationMetrics,
                     ariaLabel: `Destination station ${selectedStationName}`
                   }}
+                  value={valueSegment}
                 />
                 <div className={styles.commodityDetailActions}>
                   <button type='button' className='button button--secondary' onClick={handleCommodityDetailClose}>
@@ -2790,55 +2855,63 @@ function CommodityTradePanel () {
                     commoditySymbol && commoditySymbol !== commodityName ? commoditySymbol : null,
                     targetPriceDisplay && targetPriceDisplay !== '--' ? `@ ${targetPriceDisplay}` : null
                   ].filter(Boolean)
-                  const originMetrics = []
+                  const sourceMetrics = []
+                  if (localPriceDisplay && localPriceDisplay !== '--') {
+                    sourceMetrics.push({ label: 'Buy', value: localPriceDisplay, priority: true })
+                  }
                   if (originUpdated) {
-                    originMetrics.push({ label: 'Updated', value: originUpdated })
+                    sourceMetrics.push({ label: 'Updated', value: originUpdated })
                   }
                   const destinationMetrics = []
-                  if (summarySystemDistance) {
-                    destinationMetrics.push({ label: 'System Distance', value: summarySystemDistance })
-                  }
-                  if (summaryStationDistance) {
-                    destinationMetrics.push({ label: 'Station Distance', value: summaryStationDistance })
-                  }
-                  if (summaryUpdated) {
-                    destinationMetrics.push({ label: 'Updated', value: summaryUpdated })
+                  if (targetPriceDisplay && targetPriceDisplay !== '--') {
+                    destinationMetrics.push({ label: 'Sell', value: targetPriceDisplay, priority: true })
                   }
                   if (summaryDemandIndicator) {
                     destinationMetrics.push({ label: 'Demand', value: summaryDemandIndicator, priority: true })
                   }
-                  const profitSubtexts = []
-                  if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') {
-                    profitSubtexts.push(`Per Ton: ${profitPerUnitDisplay}`)
-                  }
-                  if (quantityText) {
-                    profitSubtexts.push(`Payload: ${quantityText}`)
+                  if (summaryUpdated) {
+                    destinationMetrics.push({ label: 'Updated', value: summaryUpdated })
                   }
                   const commodityPriceDisplay = targetPriceDisplay && targetPriceDisplay !== '--'
                     ? `@ ${targetPriceDisplay}`
                     : ''
-                  const purchaseArrow = {
-                    label: 'Buy',
-                    value: localPriceDisplay && localPriceDisplay !== '--' ? localPriceDisplay : '',
-                    secondary: originUpdated ? `Updated ${originUpdated}` : ''
+                  const distanceSegment = {
+                    label: 'Distance',
+                    value: summarySystemDistance || '',
+                    secondary: summaryStationDistance || ''
                   }
-                  const saleArrow = {
-                    label: 'Sell',
-                    value: targetPriceDisplay && targetPriceDisplay !== '--' ? targetPriceDisplay : '',
-                    secondary: profitValueDisplay && profitValueDisplay !== '--' ? `Profit ${profitValueDisplay}` : profitSubtexts[0] || ''
+                  const valueSecondaryParts = []
+                  if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') valueSecondaryParts.push(`Per t ${profitPerUnitDisplay}`)
+                  if (quantityText) valueSecondaryParts.push(`Payload ${quantityText}`)
+                  const valueSecondary = valueSecondaryParts.join(' • ')
+                  const shipSubtexts = Array.isArray(shipSourceSegment?.subtexts) ? shipSourceSegment.subtexts : []
+                  const sourceSegment = shipSourceSegment
+                    ? {
+                        ...shipSourceSegment,
+                        subtexts: [
+                          ...shipSubtexts,
+                          originName && originName !== shipSourceSegment.name ? `Docked: ${originName}` : null,
+                          originSystem
+                        ].filter(Boolean),
+                        metrics: sourceMetrics
+                      }
+                    : {
+                        icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
+                        name: originName,
+                        subtexts: originSubtexts,
+                        metrics: sourceMetrics,
+                        ariaLabel: originName ? `Origin station ${originName}` : 'Local market origin'
+                      }
+                  const valueSegment = {
+                    icon: <CreditsIcon size={22} />,
+                    label: 'Profit',
+                    value: profitValueDisplay && profitValueDisplay !== '--' ? profitValueDisplay : '',
+                    secondary: valueSecondary
                   }
                   return (
                     <TransferContextSummary
                       className={styles.transferSummaryBar}
-                      origin={{
-                        icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
-                        name: originName,
-                        subtexts: originSubtexts,
-                        metrics: originMetrics,
-                        ariaLabel: originName ? `Origin station ${originName}` : 'Local market origin'
-                      }}
-                      purchase={purchaseArrow}
-                      commodity={{
+                      item={{
                         icon: <CommodityIcon category={summary.commodityCategory} size={26} />,
                         name: commodityName,
                         subtexts: commoditySubtexts,
@@ -2846,14 +2919,16 @@ function CommodityTradePanel () {
                         price: commodityPriceDisplay,
                         ariaLabel: `${commodityName} quantity ${quantityText || 'Unknown'}`
                       }}
-                      sale={saleArrow}
-                      destination={{
+                      source={sourceSegment}
+                      distance={distanceSegment}
+                      target={{
                         icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
                         name: stationName,
                         subtexts: destinationSubtexts,
                         metrics: destinationMetrics,
                         ariaLabel: `Destination station ${stationName}`
                       }}
+                      value={valueSegment}
                     />
                   )
                 })() : null}
@@ -3807,40 +3882,48 @@ function TradeRoutesPanel () {
       returnCommodityName && returnCommodityName !== '--' ? `Return: ${returnCommodityName}` : null,
       outboundSellPrice ? `Sell: ${outboundSellPrice}` : null
     ].filter(Boolean)
-    const originMetricsBar = []
+    const sourceMetricsBar = []
+    if (outboundBuyPrice) {
+      sourceMetricsBar.push({ label: 'Buy', value: outboundBuyPrice, priority: true })
+    }
     if (outboundSupplyIndicator) {
-      originMetricsBar.push({ label: 'Supply', value: outboundSupplyIndicator, priority: true })
+      sourceMetricsBar.push({ label: 'Supply', value: outboundSupplyIndicator, priority: true })
     }
     if (returnDemandIndicator) {
-      originMetricsBar.push({ label: 'Return Demand', value: returnDemandIndicator, priority: true })
+      sourceMetricsBar.push({ label: 'Return Demand', value: returnDemandIndicator, priority: true })
     }
-    const destinationMetricsBar = []
+    const targetMetricsBar = []
+    if (outboundSellPrice) {
+      targetMetricsBar.push({ label: 'Sell', value: outboundSellPrice, priority: true })
+    }
     if (outboundDemandIndicator) {
-      destinationMetricsBar.push({ label: 'Demand', value: outboundDemandIndicator, priority: true })
+      targetMetricsBar.push({ label: 'Demand', value: outboundDemandIndicator, priority: true })
     }
     if (returnSupplyIndicator) {
-      destinationMetricsBar.push({ label: 'Return Supply', value: returnSupplyIndicator, priority: true })
-    }
-    if (routeDistanceDisplay) {
-      destinationMetricsBar.push({ label: 'Route Distance', value: routeDistanceDisplay })
-    }
-    if (systemDistanceDisplay) {
-      destinationMetricsBar.push({ label: 'System Distance', value: systemDistanceDisplay })
+      targetMetricsBar.push({ label: 'Return Supply', value: returnSupplyIndicator, priority: true })
     }
     if (updatedDisplay) {
-      destinationMetricsBar.push({ label: 'Updated', value: updatedDisplay })
+      targetMetricsBar.push({ label: 'Updated', value: updatedDisplay })
     }
     const commodityPriceDisplay = outboundSellPrice ? `@ ${outboundSellPrice}` : ''
-    const purchaseArrow = {
-      label: 'Buy',
-      value: outboundBuyPrice || ''
+    const distancePrimary = routeDistanceDisplay || systemDistanceDisplay || ''
+    const distanceSecondary = routeDistanceDisplay && systemDistanceDisplay && routeDistanceDisplay !== systemDistanceDisplay
+      ? systemDistanceDisplay
+      : ''
+    const distanceSegment = {
+      label: 'Distance',
+      value: distancePrimary,
+      secondary: distanceSecondary
     }
-    const saleArrow = {
-      label: 'Sell',
-      value: outboundSellPrice || '',
-      secondary: profitPerTon && profitPerTon !== '--'
-        ? `Profit/t ${profitPerTon}`
-        : (profitPerTrip && profitPerTrip !== '--' ? `Profit ${profitPerTrip}` : '')
+    const valueSecondaryParts = []
+    if (profitPerTon && profitPerTon !== '--') valueSecondaryParts.push(`Per t ${profitPerTon}`)
+    if (profitPerHour && profitPerHour !== '--') valueSecondaryParts.push(`Per hr ${profitPerHour}`)
+    const valueSecondary = valueSecondaryParts.join(' • ')
+    const valueSegment = {
+      icon: <CreditsIcon size={22} />,
+      label: 'Profit',
+      value: profitPerTrip && profitPerTrip !== '--' ? profitPerTrip : (profitPerTon && profitPerTon !== '--' ? profitPerTon : ''),
+      secondary: valueSecondary
     }
 
     return (
@@ -3852,16 +3935,7 @@ function TradeRoutesPanel () {
           </button>
           <TransferContextSummary
             className={styles.routeDetailSummaryBar}
-            origin={{
-              icon: originIconName ? <StationIcon icon={originIconName} color={originStationColor} /> : null,
-              name: originStation,
-              color: originStationColor,
-              subtexts: [originSystemName || 'Unknown system'],
-              metrics: originMetricsBar,
-              ariaLabel: `Origin station ${originStation}`
-            }}
-            purchase={purchaseArrow}
-            commodity={{
+            item={{
               icon: <CommodityIcon category={route?.origin?.buy?.category || 'default'} size={26} />,
               name: outboundCommodityName,
               subtexts: commoditySubtexts,
@@ -3869,15 +3943,24 @@ function TradeRoutesPanel () {
               price: commodityPriceDisplay,
               ariaLabel: `${outboundCommodityName} capacity ${quantityText || 'Unknown'}`
             }}
-            sale={saleArrow}
-            destination={{
+            source={{
+              icon: originIconName ? <StationIcon icon={originIconName} color={originStationColor} /> : null,
+              name: originStation,
+              color: originStationColor,
+              subtexts: [originSystemName || 'Unknown system'],
+              metrics: sourceMetricsBar,
+              ariaLabel: `Origin station ${originStation}`
+            }}
+            distance={distanceSegment}
+            target={{
               icon: destinationIconName ? <StationIcon icon={destinationIconName} color={destinationStationColor} /> : null,
               name: destinationStation,
               color: destinationStationColor,
               subtexts: [destinationSystemName || 'Unknown system'],
-              metrics: destinationMetricsBar,
+              metrics: targetMetricsBar,
               ariaLabel: `Destination station ${destinationStation}`
             }}
+            value={valueSegment}
           />
         </div>
         <div className={styles.routeDetailMetrics}>
