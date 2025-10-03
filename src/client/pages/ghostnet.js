@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback, Fragment } fr
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
+import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
@@ -39,6 +40,88 @@ function formatStationDistance (value, fallback) {
   return fallback || ''
 }
 
+const INARA_ARTIFACT_PATTERN = /[\u25A0-\u25AF\u25FB-\u25FE\uFFFD]/gu
+const DEMAND_ARROW_PATTERN = /[▲△▴▵▼▽▾▿↑↓]/g
+
+function sanitizeInaraText (value) {
+  if (typeof value !== 'string') return ''
+  return value.replace(INARA_ARTIFACT_PATTERN, '').replace(/\s+/g, ' ').trim()
+}
+
+const COMMODITY_CATEGORY_ICON_MAP = {
+  chemicals: { icon: 'barrel', color: 'var(--ghostnet-color-warning)' },
+  'consumer items': { icon: 'cargo', color: 'var(--ghostnet-accent)' },
+  foods: { icon: 'plant', color: 'var(--ghostnet-color-success)' },
+  'industrial materials': { icon: 'materials-manufactured', color: 'var(--ghostnet-accent)' },
+  'legal drugs': { icon: 'warning', color: 'var(--ghostnet-color-warning)' },
+  machinery: { icon: 'cogs', color: 'var(--ghostnet-accent)' },
+  medicines: { icon: 'help', color: 'var(--ghostnet-color-success)' },
+  metals: { icon: 'materials-raw', color: 'var(--ghostnet-accent)' },
+  minerals: { icon: 'materials', color: 'var(--ghostnet-accent)' },
+  nonmarketable: { icon: 'inventory', color: 'var(--ghostnet-subdued)' },
+  salvage: { icon: 'cargo-export', color: 'var(--ghostnet-accent)' },
+  slavery: { icon: 'system-authority', color: 'var(--ghostnet-color-warning)' },
+  technology: { icon: 'power', color: 'var(--ghostnet-accent)' },
+  textiles: { icon: 'materials-grade-1', color: 'var(--ghostnet-accent)' },
+  waste: { icon: 'warning', color: 'var(--ghostnet-color-warning)' },
+  weapons: { icon: 'shield', color: 'var(--ghostnet-color-warning)' },
+  default: { icon: 'cargo', color: 'var(--ghostnet-accent)' }
+}
+
+function getCommodityIconConfig (category) {
+  const key = typeof category === 'string' ? category.trim().toLowerCase() : ''
+  return COMMODITY_CATEGORY_ICON_MAP[key] || COMMODITY_CATEGORY_ICON_MAP.default
+}
+
+function CommodityIcon ({ category, size = 26 }) {
+  const config = getCommodityIconConfig(category)
+  const paths = Icons[config.icon]
+  if (!paths) return null
+  const viewBox = config.icon === 'asteroid-base' ? '0 0 2000 2000' : '0 0 1000 1000'
+  return (
+    <svg
+      viewBox={viewBox}
+      focusable='false'
+      aria-hidden='true'
+      style={{ width: size, height: size, fill: config.color, flexShrink: 0 }}
+    >
+      {paths}
+    </svg>
+  )
+}
+
+CommodityIcon.defaultProps = {
+  category: '',
+  size: 26
+}
+
+function renderDemandTrend (label, isLow, { subtle = false } = {}) {
+  const rawLabel = typeof label === 'string' ? label : ''
+  const cleaned = sanitizeInaraText(rawLabel)
+  const arrowMatches = rawLabel.match(DEMAND_ARROW_PATTERN) || []
+  const containsDownArrow = arrowMatches.some(char => /[▼▽▾▿↓]/.test(char))
+  const containsUpArrow = arrowMatches.some(char => /[▲△▴▵↑]/.test(char))
+  const direction = containsDownArrow && !containsUpArrow
+    ? 'down'
+    : (containsUpArrow && !containsDownArrow
+        ? 'up'
+        : (isLow ? 'down' : 'up'))
+  const arrowSymbol = direction === 'down' ? String.fromCharCode(0x25BC) : String.fromCharCode(0x25B2)
+  const arrowCount = Math.min(Math.max(arrowMatches.length || 1, 1), 4)
+  if (!cleaned && arrowMatches.length === 0) return null
+  const displayLabel = cleaned.replace(DEMAND_ARROW_PATTERN, '').trim()
+  const containerClassNames = [styles.demandIndicator]
+  if (subtle) containerClassNames.push(styles.demandIndicatorSubtle)
+  const arrowClassNames = [styles.demandIndicatorArrow]
+  arrowClassNames.push(direction === 'down' ? styles.demandIndicatorArrowLow : styles.demandIndicatorArrowHigh)
+  return (
+    <span className={containerClassNames.join(' ')}>
+      <span className={arrowClassNames.join(' ')} aria-hidden='true'>{arrowSymbol.repeat(arrowCount)}</span>
+      {displayLabel ? <span>{displayLabel}</span> : null}
+    </span>
+  )
+}
+
 function LoadingSpinner ({ label, inline = false }) {
   return (
     <div
@@ -64,6 +147,7 @@ function normaliseName (value) {
 const MISSIONS_CACHE_KEY = 'icarus.ghostnetMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
+const STATION_TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }
 
 function getMissionsCacheStorage () {
   if (typeof window === 'undefined') {
@@ -459,6 +543,48 @@ function formatCredits (value, fallback) {
   return fallback || '--'
 }
 
+function sanitizeCommodityListingEntry (entry) {
+  if (!entry || typeof entry !== 'object') return null
+  const price = typeof entry.price === 'number' ? entry.price : null
+  const priceText = formatCredits(price, sanitizeInaraText(entry.priceText) || '')
+  return {
+    stationName: sanitizeInaraText(entry.stationName) || '',
+    systemName: sanitizeInaraText(entry.systemName) || '',
+    stationType: sanitizeInaraText(entry.stationType) || '',
+    price,
+    priceText,
+    distanceLy: typeof entry.distanceLy === 'number' ? entry.distanceLy : null,
+    distanceLyText: sanitizeInaraText(entry.distanceLyText) || '',
+    distanceLs: typeof entry.distanceLs === 'number' ? entry.distanceLs : null,
+    distanceLsText: sanitizeInaraText(entry.distanceLsText) || '',
+    updatedAt: entry.updatedAt || null,
+    updatedText: sanitizeInaraText(entry.updatedText) || '',
+    demandText: sanitizeInaraText(entry.demandText) || '',
+    demandIsLow: Boolean(entry.demandIsLow)
+  }
+}
+
+function sanitizeMarketListingEntry (entry) {
+  if (!entry || typeof entry !== 'object') return null
+  const sellPrice = typeof entry.sellPrice === 'number' ? entry.sellPrice : null
+  const priceText = formatCredits(sellPrice, sanitizeInaraText(entry.sellPriceText) || sanitizeInaraText(entry.priceText) || '')
+  return {
+    stationName: sanitizeInaraText(entry.stationName) || '',
+    systemName: sanitizeInaraText(entry.systemName) || '',
+    stationType: sanitizeInaraText(entry.stationType) || '',
+    price: sellPrice,
+    priceText,
+    distanceLy: typeof entry.distanceLy === 'number' ? entry.distanceLy : null,
+    distanceLyText: sanitizeInaraText(entry.distanceLyText) || '',
+    distanceLs: typeof entry.distanceLs === 'number' ? entry.distanceLs : null,
+    distanceLsText: sanitizeInaraText(entry.distanceLsText) || '',
+    updatedAt: entry.updatedAt || entry.timestamp || null,
+    updatedText: sanitizeInaraText(entry.updatedText) || sanitizeInaraText(entry.timestampText) || '',
+    demandText: sanitizeInaraText(entry.demandText) || '',
+    demandIsLow: Boolean(entry.demandIsLow)
+  }
+}
+
 function PristineMiningArtwork ({ systemObject }) {
   const ringMaskId = useMemo(() => {
     if (!systemObject) return 'pristine-artwork-ring-mask'
@@ -731,6 +857,26 @@ function parseNumberFromText (value) {
   if (!cleaned) return null
   const parsed = Number(cleaned)
   return Number.isFinite(parsed) ? parsed : null
+}
+
+function CreditsIcon ({ size = 22, color = 'var(--ghostnet-color-success)' }) {
+  const paths = Icons.credits
+  if (!paths) return null
+  return (
+    <svg
+      viewBox='0 0 1000 1000'
+      focusable='false'
+      aria-hidden='true'
+      style={{ width: size, height: size, fill: color, flexShrink: 0 }}
+    >
+      {paths}
+    </svg>
+  )
+}
+
+CreditsIcon.defaultProps = {
+  size: 22,
+  color: 'var(--ghostnet-color-success)'
 }
 
 function extractProfitPerTon (route) {
@@ -1306,6 +1452,375 @@ const NON_COMMODITY_KEYS = new Set(
     .filter(Boolean)
 )
 
+const MOCK_CARGO_MANIFEST_TEMPLATE = Object.freeze([
+  Object.freeze({
+    name: 'Palladium',
+    symbol: 'Palladium',
+    category: 'metals',
+    count: 48
+  }),
+  Object.freeze({
+    name: 'Tritium',
+    symbol: 'Tritium',
+    category: 'chemicals',
+    count: 64
+  }),
+  Object.freeze({
+    name: 'Consumer Technology',
+    symbol: 'Consumer Technology',
+    category: 'consumer items',
+    count: 30
+  })
+])
+
+const MOCK_COMMODITY_VALUATION_TEMPLATES = Object.freeze({
+  palladium: Object.freeze({
+    name: 'Palladium',
+    symbol: 'Palladium',
+    ghostnet: {
+      stationName: 'Moxon Dock',
+      systemName: 'LP 128-9',
+      stationType: 'Coriolis Starport',
+      price: 73250,
+      distanceLy: 18.6,
+      distanceLs: 612,
+      demandText: '▲▲▲ Demand surging',
+      demandIsLow: false,
+      updatedMinutesAgo: 42
+    },
+    ghostnetListings: [
+      {
+        stationName: 'Moxon Dock',
+        systemName: 'LP 128-9',
+        stationType: 'Coriolis Starport',
+        price: 73250,
+        distanceLy: 18.6,
+        distanceLs: 612,
+        demandText: '▲▲▲ Demand surging',
+        demandIsLow: false,
+        updatedMinutesAgo: 42
+      },
+      {
+        stationName: 'Jones Hub',
+        systemName: 'LP 122-32',
+        stationType: 'Orbis Starport',
+        price: 72120,
+        distanceLy: 26.4,
+        distanceLs: 954,
+        demandText: '▲▲ Demand climbing',
+        demandIsLow: false,
+        updatedMinutesAgo: 57
+      },
+      {
+        stationName: 'Clark Platform',
+        systemName: 'Phekda',
+        stationType: 'Outpost',
+        price: 70810,
+        distanceLy: 34.8,
+        distanceLs: 1840,
+        demandText: '▲ Demand stable',
+        demandIsLow: false,
+        updatedMinutesAgo: 89
+      }
+    ],
+    market: {
+      stationName: 'Jameson Memorial',
+      systemName: 'Shinrarta Dezhra',
+      sellPrice: 68950,
+      distanceLs: 513,
+      timestampMinutesAgo: 120
+    },
+    localHistory: {
+      best: {
+        stationName: 'Jameson Memorial',
+        systemName: 'Shinrarta Dezhra',
+        sellPrice: 68950,
+        distanceLs: 513,
+        timestampMinutesAgo: 120
+      },
+      entries: [
+        {
+          stationName: 'Jameson Memorial',
+          systemName: 'Shinrarta Dezhra',
+          sellPrice: 68950,
+          distanceLs: 513,
+          timestampMinutesAgo: 120,
+          source: 'journal'
+        },
+        {
+          stationName: 'Darnielle Gateway',
+          systemName: 'LHS 20',
+          sellPrice: 67210,
+          distanceLs: 412,
+          timestampMinutesAgo: 360,
+          source: 'journal'
+        }
+      ]
+    }
+  }),
+  tritium: Object.freeze({
+    name: 'Tritium',
+    symbol: 'Tritium',
+    ghostnet: {
+      stationName: 'Prospect Prospect',
+      systemName: 'Colonia',
+      stationType: 'Orbis Starport',
+      price: 50500,
+      distanceLy: 220.3,
+      distanceLs: 1420,
+      demandText: '▲▲ Refuelling effort',
+      demandIsLow: false,
+      updatedMinutesAgo: 28
+    },
+    ghostnetListings: [
+      {
+        stationName: 'Prospect Prospect',
+        systemName: 'Colonia',
+        stationType: 'Orbis Starport',
+        price: 50500,
+        distanceLy: 220.3,
+        distanceLs: 1420,
+        demandText: '▲▲ Refuelling effort',
+        demandIsLow: false,
+        updatedMinutesAgo: 28
+      },
+      {
+        stationName: 'Jaques Station',
+        systemName: 'Colonia',
+        stationType: 'Coriolis Starport',
+        price: 49875,
+        distanceLy: 220.3,
+        distanceLs: 940,
+        demandText: '▲ Demand steady',
+        demandIsLow: false,
+        updatedMinutesAgo: 46
+      },
+      {
+        stationName: 'Ratraii Freeport',
+        systemName: 'Ratraii',
+        stationType: 'Megaship',
+        price: 49200,
+        distanceLy: 236.8,
+        distanceLs: 178,
+        demandText: '▲ Fleet build-up',
+        demandIsLow: false,
+        updatedMinutesAgo: 73
+      }
+    ],
+    market: {
+      stationName: 'Davinci Port',
+      systemName: 'Colonia',
+      sellPrice: 47600,
+      distanceLs: 1280,
+      timestampMinutesAgo: 95
+    },
+    localHistory: {
+      best: {
+        stationName: 'Davinci Port',
+        systemName: 'Colonia',
+        sellPrice: 47600,
+        distanceLs: 1280,
+        timestampMinutesAgo: 95
+      },
+      entries: [
+        {
+          stationName: 'Davinci Port',
+          systemName: 'Colonia',
+          sellPrice: 47600,
+          distanceLs: 1280,
+          timestampMinutesAgo: 95,
+          source: 'journal'
+        },
+        {
+          stationName: 'Eagle Landing',
+          systemName: 'Tir',
+          sellPrice: 46820,
+          distanceLs: 2310,
+          timestampMinutesAgo: 410,
+          source: 'journal'
+        }
+      ]
+    }
+  }),
+  'consumer technology': Object.freeze({
+    name: 'Consumer Technology',
+    symbol: 'Consumer Technology',
+    ghostnet: {
+      stationName: 'Farseer Inc',
+      systemName: 'Deciat',
+      stationType: 'Planetary Port',
+      price: 19800,
+      distanceLy: 38.9,
+      distanceLs: 1440,
+      demandText: '▲▲▲ Tech boom',
+      demandIsLow: false,
+      updatedMinutesAgo: 18
+    },
+    ghostnetListings: [
+      {
+        stationName: 'Farseer Inc',
+        systemName: 'Deciat',
+        stationType: 'Planetary Port',
+        price: 19800,
+        distanceLy: 38.9,
+        distanceLs: 1440,
+        demandText: '▲▲▲ Tech boom',
+        demandIsLow: false,
+        updatedMinutesAgo: 18
+      },
+      {
+        stationName: 'Ohm City',
+        systemName: 'LHS 20',
+        stationType: 'Coriolis Starport',
+        price: 19240,
+        distanceLy: 42.3,
+        distanceLs: 962,
+        demandText: '▲▲ Market surge',
+        demandIsLow: false,
+        updatedMinutesAgo: 52
+      },
+      {
+        stationName: 'Azeban Orbital',
+        systemName: 'Eravate',
+        stationType: 'Coriolis Starport',
+        price: 18990,
+        distanceLy: 52.4,
+        distanceLs: 310,
+        demandText: '▲ Demand healthy',
+        demandIsLow: false,
+        updatedMinutesAgo: 77
+      }
+    ],
+    market: {
+      stationName: 'Cleve Hub',
+      systemName: 'Eravate',
+      sellPrice: 17650,
+      distanceLs: 452,
+      timestampMinutesAgo: 140
+    },
+    localHistory: {
+      best: {
+        stationName: 'Cleve Hub',
+        systemName: 'Eravate',
+        sellPrice: 17650,
+        distanceLs: 452,
+        timestampMinutesAgo: 140
+      },
+      entries: [
+        {
+          stationName: 'Cleve Hub',
+          systemName: 'Eravate',
+          sellPrice: 17650,
+          distanceLs: 452,
+          timestampMinutesAgo: 140,
+          source: 'journal'
+        },
+        {
+          stationName: 'Ackerman Market',
+          systemName: 'Eravate',
+          sellPrice: 16980,
+          distanceLs: 174,
+          timestampMinutesAgo: 300,
+          source: 'journal'
+        }
+      ]
+    }
+  })
+})
+
+function createMockCargoManifest () {
+  return MOCK_CARGO_MANIFEST_TEMPLATE.map(entry => ({ ...entry }))
+}
+
+function createMockCommodityValuations (cargoItems = []) {
+  const now = Date.now()
+  const minutesAgoToIso = minutes => new Date(now - (Number(minutes) || 0) * 60000).toISOString()
+
+  const enrichListing = listing => {
+    if (!listing || typeof listing !== 'object') return null
+    const next = { ...listing }
+    if (typeof next.updatedMinutesAgo === 'number') {
+      next.updatedAt = minutesAgoToIso(next.updatedMinutesAgo)
+      delete next.updatedMinutesAgo
+    }
+    if (typeof next.price === 'number') {
+      next.priceText = formatCredits(next.price, '--')
+    }
+    if (typeof next.distanceLy === 'number') {
+      next.distanceLyText = formatSystemDistance(next.distanceLy)
+    }
+    if (typeof next.distanceLs === 'number') {
+      next.distanceLsText = formatStationDistance(next.distanceLs)
+    }
+    return next
+  }
+
+  return cargoItems.reduce((acc, item) => {
+    const key = normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)
+    if (!key) return acc
+    const template = MOCK_COMMODITY_VALUATION_TEMPLATES[key]
+    if (!template) return acc
+
+    const clone = JSON.parse(JSON.stringify(template))
+
+    clone.ghostnet = enrichListing(clone.ghostnet) || null
+    clone.ghostnetListings = Array.isArray(clone.ghostnetListings)
+      ? clone.ghostnetListings.map(enrichListing).filter(Boolean)
+      : []
+
+    if (!clone.ghostnetEntry && clone.ghostnet) {
+      clone.ghostnetEntry = { ...clone.ghostnet }
+    }
+
+    if (!clone.ghostnetEntry && clone.ghostnetListings.length > 0) {
+      clone.ghostnetEntry = { ...clone.ghostnetListings[0] }
+    }
+
+    clone.market = clone.market && typeof clone.market === 'object'
+      ? {
+          ...clone.market,
+          timestamp: minutesAgoToIso(clone.market.timestampMinutesAgo),
+          distanceText: typeof clone.market.distanceLs === 'number'
+            ? formatStationDistance(clone.market.distanceLs)
+            : undefined
+        }
+      : null
+    if (clone.market) {
+      delete clone.market.timestampMinutesAgo
+    }
+
+    const historyEntries = Array.isArray(clone.localHistory?.entries)
+      ? clone.localHistory.entries.map(entry => ({
+          ...entry,
+          timestamp: minutesAgoToIso(entry.timestampMinutesAgo)
+        }))
+      : []
+
+    historyEntries.forEach(entry => {
+      delete entry.timestampMinutesAgo
+    })
+
+    const historyBest = clone.localHistory?.best && typeof clone.localHistory.best === 'object'
+      ? {
+          ...clone.localHistory.best,
+          timestamp: minutesAgoToIso(clone.localHistory.best.timestampMinutesAgo)
+        }
+      : null
+
+    if (historyBest) {
+      delete historyBest.timestampMinutesAgo
+    }
+
+    clone.localHistory = {
+      best: historyBest,
+      entries: historyEntries
+    }
+
+    acc.push(clone)
+    return acc
+  }, [])
+}
+
 function CommodityTradePanel () {
   const { connected, ready } = useSocket()
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
@@ -1314,6 +1829,26 @@ function CommodityTradePanel () {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
   const [valuation, setValuation] = useState({ results: [], metadata: { ghostnetStatus: 'idle', marketStatus: 'idle' } })
+  const [activeCommodityDetail, setActiveCommodityDetail] = useState(null)
+  const [commodityContext, setCommodityContext] = useState(null)
+  const [stationSortField, setStationSortField] = useState('price')
+  const [stationSortDirection, setStationSortDirection] = useState('desc')
+  const [usingMockCargo, setUsingMockCargo] = useState(false)
+
+  const applyCargoInventory = useCallback(inventory => {
+    const manifest = Array.isArray(inventory)
+      ? inventory.filter(item => item && typeof item === 'object')
+      : []
+
+    if (manifest.length > 0) {
+      setUsingMockCargo(false)
+      setCargo(manifest.map(item => ({ ...item })))
+      return
+    }
+
+    setUsingMockCargo(true)
+    setCargo(createMockCargoManifest())
+  }, [])
 
   const cargoKey = useMemo(() => {
     if (!Array.isArray(cargo) || cargo.length === 0) return ''
@@ -1322,9 +1857,45 @@ function CommodityTradePanel () {
       .join('|')
   }, [cargo])
 
+  const shipSourceSegment = useMemo(() => {
+    if (!ship) return null
+    const shipName = sanitizeInaraText(ship?.name) || sanitizeInaraText(ship?.ident) || 'Your Ship'
+    const shipIdent = sanitizeInaraText(ship?.ident)
+    const shipType = sanitizeInaraText(ship?.type)
+    const systemName = sanitizeInaraText(currentSystem?.name) || ''
+    const subtexts = [
+      shipIdent ? `ID ${shipIdent}` : null,
+      shipType && shipType !== shipName ? shipType : null,
+      systemName
+    ].filter(Boolean)
+    return {
+      icon: <StationIcon icon='ship' size={24} />,
+      name: shipName,
+      subtexts,
+      ariaLabel: `Ship ${shipName}`
+    }
+  }, [ship?.name, ship?.ident, ship?.type, currentSystem?.name])
+
   useEffect(() => {
     animateTableEffect()
   }, [cargoKey, valuation?.results?.length])
+
+  useEffect(() => {
+    if (!activeCommodityDetail) {
+      if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        const rafId = window.requestAnimationFrame(() => {
+          animateTableEffect()
+        })
+        return () => {
+          if (typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+            window.cancelAnimationFrame(rafId)
+          }
+        }
+      }
+      animateTableEffect()
+    }
+    return undefined
+  }, [activeCommodityDetail])
 
   useEffect(() => {
     if (!connected) return
@@ -1332,37 +1903,53 @@ function CommodityTradePanel () {
       try {
         const shipStatus = await sendEvent('getShipStatus')
         setShip(shipStatus)
-        setCargo(shipStatus?.cargo?.inventory ?? [])
+        applyCargoInventory(shipStatus?.cargo?.inventory)
       } catch (err) {
         console.error('Failed to load ship status for commodity trade panel', err)
       }
     })()
-  }, [connected, ready])
+  }, [connected, ready, applyCargoInventory])
 
   useEffect(() => eventListener('gameStateChange', async () => {
     try {
       const shipStatus = await sendEvent('getShipStatus')
       setShip(shipStatus)
-      setCargo(shipStatus?.cargo?.inventory ?? [])
+      applyCargoInventory(shipStatus?.cargo?.inventory)
     } catch (err) {
       console.error('Failed to refresh ship status after game state change', err)
     }
-  }), [])
+  }), [applyCargoInventory])
 
   useEffect(() => eventListener('newLogEntry', async () => {
     try {
       const shipStatus = await sendEvent('getShipStatus')
       setShip(shipStatus)
-      setCargo(shipStatus?.cargo?.inventory ?? [])
+      applyCargoInventory(shipStatus?.cargo?.inventory)
     } catch (err) {
       console.error('Failed to refresh ship status after new log entry', err)
     }
-  }), [])
+  }), [applyCargoInventory])
 
   useEffect(() => {
     if (!cargo || cargo.length === 0) {
       setStatus(ship ? 'empty' : 'idle')
       setValuation(prev => ({ ...prev, results: [] }))
+      return
+    }
+
+    if (usingMockCargo) {
+      setStatus('loading')
+      setError('')
+      const mockResults = createMockCommodityValuations(cargo)
+      setValuation({
+        results: mockResults,
+        metadata: {
+          ghostnetStatus: 'mock',
+          marketStatus: 'mock',
+          historyStatus: 'mock'
+        }
+      })
+      setStatus(mockResults.length > 0 ? 'ready' : 'empty')
       return
     }
 
@@ -1409,7 +1996,7 @@ function CommodityTradePanel () {
     return () => {
       cancelled = true
     }
-  }, [cargoKey])
+  }, [cargoKey, usingMockCargo])
 
   const valuationMap = useMemo(() => {
     const map = new Map()
@@ -1489,6 +2076,8 @@ function CommodityTradePanel () {
           localBestSource: null,
           historyEntries: [],
           marketEntry: null,
+          ghostnetEntry: null,
+          ghostnetListings: [],
           ghostnetPrice: null,
           ghostnetValue: null,
           localValue: null
@@ -1497,6 +2086,7 @@ function CommodityTradePanel () {
 
       const marketEntry = entry?.market && typeof entry.market === 'object' ? entry.market : null
       const ghostnetEntry = entry?.ghostnet && typeof entry.ghostnet === 'object' ? entry.ghostnet : null
+      const ghostnetListings = Array.isArray(entry?.ghostnetListings) ? entry.ghostnetListings : []
       const historyRaw = Array.isArray(entry?.localHistory?.entries) ? entry.localHistory.entries : []
       const historyEntries = historyRaw
         .filter(candidate => candidate && typeof candidate === 'object' && typeof candidate.sellPrice === 'number')
@@ -1562,6 +2152,8 @@ function CommodityTradePanel () {
         localBestSource,
         historyEntries,
         marketEntry,
+        ghostnetEntry,
+        ghostnetListings,
         ghostnetPrice,
         ghostnetValue,
         localValue,
@@ -1576,6 +2168,212 @@ function CommodityTradePanel () {
   const hasCargo = Array.isArray(cargo) && cargo.length > 0
   const hasPricedRows = commodityRows.some(row => typeof row.bestPrice === 'number')
   const hasDisplayableRows = hasPricedRows || nonCommodityRows.length > 0
+
+  useEffect(() => {
+    if (!activeCommodityDetail) return
+    const stillExists = commodityRows.some(row => row.key === activeCommodityDetail.key)
+    if (!stillExists) {
+      setActiveCommodityDetail(null)
+    }
+  }, [commodityRows, activeCommodityDetail])
+
+  const handleOpenCommodityDetail = useCallback(row => {
+    if (!row || row.nonCommodity) return
+
+    const commodityName = row?.item?.name || row?.item?.symbol || 'Unknown'
+    const commoditySymbol = row?.item?.symbol || ''
+    const listingsSource = Array.isArray(row?.ghostnetListings) && row.ghostnetListings.length > 0
+      ? row.ghostnetListings
+      : (row?.ghostnetEntry ? [row.ghostnetEntry] : [])
+
+    const listings = listingsSource
+      .map((listing, index) => {
+        const sanitizedListing = sanitizeCommodityListingEntry(listing)
+        if (!sanitizedListing) return null
+        return {
+          ...sanitizedListing,
+          __id: `${row.key}-listing-${index}`,
+          __order: index
+        }
+      })
+      .filter(Boolean)
+
+    const marketEntry = sanitizeMarketListingEntry(row.marketEntry)
+    const localBestEntry = sanitizeMarketListingEntry(row.localBestEntry)
+    const ghostnetEntry = sanitizeCommodityListingEntry(row.ghostnetEntry)
+
+    let selectedIndex = listings.findIndex(listing => {
+      if (!ghostnetEntry) return false
+      const listingStation = normaliseName(listing?.stationName)
+      const listingSystem = normaliseName(listing?.systemName)
+      const entryStation = normaliseName(ghostnetEntry?.stationName)
+      const entrySystem = normaliseName(ghostnetEntry?.systemName)
+      if (!listingStation || !entryStation) return false
+      if (listingStation !== entryStation) return false
+      if (entrySystem && listingSystem) return listingSystem === entrySystem
+      if (!entrySystem && !listingSystem) return true
+      return false
+    })
+
+    if (selectedIndex < 0) selectedIndex = 0
+
+    setActiveCommodityDetail({
+      key: row.key,
+      commodityName,
+      commoditySymbol,
+      commodityCategory: row?.item?.category || '',
+      quantity: row.quantity,
+      listings,
+      selectedListingId: listings[selectedIndex]?.__id || null,
+      ghostnetEntry,
+      marketEntry,
+      localBestEntry,
+      localBestPrice: typeof row.localBestPrice === 'number'
+        ? row.localBestPrice
+        : (localBestEntry?.price ?? null),
+      localBestSource: row.localBestSource || null,
+      bestPrice: typeof row.bestPrice === 'number' ? row.bestPrice : null,
+      bestSource: row.bestSource || null
+    })
+  }, [])
+
+  useEffect(() => {
+    if (activeCommodityDetail?.key) {
+      setStationSortField('price')
+      setStationSortDirection('desc')
+    }
+  }, [activeCommodityDetail?.key])
+
+  const activeDetailListings = useMemo(() => {
+    if (!activeCommodityDetail) return []
+    return Array.isArray(activeCommodityDetail.listings) ? activeCommodityDetail.listings : []
+  }, [activeCommodityDetail])
+
+  const sortedDetailListings = useMemo(() => {
+    if (!activeCommodityDetail) return []
+    const entries = [...activeDetailListings]
+    const getSortValue = (listing, field) => {
+      if (!listing) return null
+      if (field === 'price') {
+        if (typeof listing.price === 'number') return listing.price
+        return parseNumberFromText(listing.priceText)
+      }
+      if (field === 'distanceLy') {
+        if (typeof listing.distanceLy === 'number') return listing.distanceLy
+        return parseNumberFromText(listing.distanceLyText)
+      }
+      if (field === 'distanceLs') {
+        if (typeof listing.distanceLs === 'number') return listing.distanceLs
+        return parseNumberFromText(listing.distanceLsText)
+      }
+      return null
+    }
+
+    const directionMultiplier = stationSortDirection === 'asc' ? 1 : -1
+
+    entries.sort((a, b) => {
+      const valueA = getSortValue(a, stationSortField)
+      const valueB = getSortValue(b, stationSortField)
+
+      if (valueA === null && valueB === null) {
+        return (a?.__order || 0) - (b?.__order || 0)
+      }
+      if (valueA === null) return 1
+      if (valueB === null) return -1
+      if (valueA === valueB) {
+        return (a?.__order || 0) - (b?.__order || 0)
+      }
+      return valueA > valueB ? directionMultiplier : -directionMultiplier
+    })
+
+    return entries
+  }, [activeCommodityDetail, activeDetailListings, stationSortDirection, stationSortField])
+
+  const resolvedDetailListing = useMemo(() => {
+    if (!activeCommodityDetail) return null
+    const byId = sortedDetailListings.find(entry => entry.__id === activeCommodityDetail.selectedListingId)
+    if (byId) return byId
+    if (sortedDetailListings.length > 0) return sortedDetailListings[0]
+    return activeCommodityDetail.ghostnetEntry || null
+  }, [activeCommodityDetail, sortedDetailListings])
+
+  const handleStationContextSelect = useCallback(listingId => {
+    setActiveCommodityDetail(prev => {
+      if (!prev) return prev
+      if (prev.selectedListingId === listingId) return prev
+      return { ...prev, selectedListingId: listingId }
+    })
+  }, [])
+
+  const handleCommodityDetailClose = useCallback(() => {
+    setActiveCommodityDetail(prev => {
+      if (prev) {
+        const listing = prev.listings.find(entry => entry.__id === prev.selectedListingId)
+        const destinationEntry = listing || prev.ghostnetEntry || null
+        const sanitizedDestination = destinationEntry
+          ? (listing ? listing : sanitizeCommodityListingEntry(destinationEntry))
+          : null
+        const sanitizedOrigin = prev.marketEntry
+          ? sanitizeMarketListingEntry(prev.marketEntry)
+          : (prev.localBestEntry ? sanitizeMarketListingEntry(prev.localBestEntry) : null)
+
+        if (sanitizedDestination) {
+          const targetPrice = typeof sanitizedDestination.price === 'number'
+            ? sanitizedDestination.price
+            : null
+          const localBestPrice = typeof prev.localBestPrice === 'number'
+            ? prev.localBestPrice
+            : (sanitizedOrigin?.price ?? null)
+          const quantityValue = Number(prev.quantity || 0)
+          const profitPerUnit = (typeof targetPrice === 'number' && typeof localBestPrice === 'number')
+            ? targetPrice - localBestPrice
+            : null
+          const profitValue = profitPerUnit !== null ? profitPerUnit * quantityValue : null
+
+          setCommodityContext({
+            commodityKey: prev.key,
+            commodityName: sanitizeInaraText(prev.commodityName) || '',
+            commoditySymbol: sanitizeInaraText(prev.commoditySymbol) || '',
+            commodityCategory: prev.commodityCategory,
+            quantity: prev.quantity,
+            stationName: sanitizedDestination.stationName || '',
+            systemName: sanitizedDestination.systemName || '',
+            stationType: sanitizedDestination.stationType || '',
+            price: targetPrice,
+            priceText: formatCredits(targetPrice, sanitizedDestination.priceText || '--'),
+            demandText: sanitizedDestination.demandText || '',
+            demandIsLow: Boolean(sanitizedDestination.demandIsLow),
+            distanceLy: sanitizedDestination.distanceLy ?? null,
+            distanceLyText: sanitizedDestination.distanceLyText || '',
+            distanceLs: sanitizedDestination.distanceLs ?? null,
+            distanceLsText: sanitizedDestination.distanceLsText || '',
+            updatedAt: sanitizedDestination.updatedAt || null,
+            updatedText: sanitizedDestination.updatedText || '',
+            originStationName: sanitizedOrigin?.stationName || '',
+            originSystemName: sanitizedOrigin?.systemName || '',
+            originStationType: sanitizedOrigin?.stationType || '',
+            originDistanceLy: sanitizedOrigin?.distanceLy ?? null,
+            originDistanceLyText: sanitizedOrigin?.distanceLyText || '',
+            originDistanceLs: sanitizedOrigin?.distanceLs ?? null,
+            originDistanceLsText: sanitizedOrigin?.distanceLsText || '',
+            originUpdatedAt: sanitizedOrigin?.updatedAt || null,
+            originUpdatedText: sanitizedOrigin?.updatedText || '',
+            localBestPrice,
+            localBestPriceText: formatCredits(localBestPrice, sanitizedOrigin?.priceText || '--'),
+            profitPerUnit,
+            profitPerUnitText: formatCredits(profitPerUnit, '--'),
+            profitValue,
+            profitValueText: formatCredits(profitValue, '--'),
+            localBestSource: prev.localBestSource || null,
+            bestSource: prev.bestSource || null
+          })
+        } else {
+          setCommodityContext(null)
+        }
+      }
+      return null
+    })
+  }, [])
 
   const renderSourceBadge = source => {
     if (source === 'ghostnet') {
@@ -1597,8 +2395,10 @@ function CommodityTradePanel () {
     const resolvedSource = source === 'station'
       ? (entryData?.source === 'journal' ? 'Station Snapshot' : 'Station')
       : 'History'
-    const stationLine = entryData.stationName
-      ? `${entryData.stationName}${entryData.systemName ? ` · ${entryData.systemName}` : ''}`
+    const stationName = sanitizeInaraText(entryData.stationName) || entryData.stationName || ''
+    const systemName = sanitizeInaraText(entryData.systemName) || entryData.systemName || ''
+    const stationLine = stationName
+      ? `${stationName}${systemName ? ` · ${systemName}` : ''}`
       : ''
     const distanceDisplay = typeof entryData.distanceLs === 'number' && !Number.isNaN(entryData.distanceLs)
       ? formatStationDistance(entryData.distanceLs)
@@ -1713,31 +2513,454 @@ function CommodityTradePanel () {
         )}
       </div>
 
-      <div className='ghostnet-panel-table'>
-        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-          {renderStatusBanner()}
+      {activeCommodityDetail
+        ? (() => {
+          const detail = activeCommodityDetail
+          const listings = sortedDetailListings
+          const resolvedListing = resolvedDetailListing
+          const selectedPriceDisplay = resolvedListing ? formatCredits(resolvedListing.price, resolvedListing.priceText || '--') : '--'
+          const selectedValueDisplay = resolvedListing && typeof resolvedListing?.price === 'number'
+            ? formatCredits(resolvedListing.price * (detail.quantity || 0), '--')
+            : '--'
+          const selectedDemand = sanitizeInaraText(resolvedListing?.demandText) || (typeof resolvedListing?.demand === 'number' ? resolvedListing.demand.toLocaleString() : '')
+          const selectedSystemDistance = formatSystemDistance(resolvedListing?.distanceLy, sanitizeInaraText(resolvedListing?.distanceLyText) || resolvedListing?.distanceLyText)
+          const selectedStationDistance = formatStationDistance(resolvedListing?.distanceLs, sanitizeInaraText(resolvedListing?.distanceLsText) || resolvedListing?.distanceLsText)
+          const selectedUpdated = resolvedListing?.updatedAt
+            ? formatRelativeTime(resolvedListing.updatedAt)
+            : (sanitizeInaraText(resolvedListing?.updatedText) || resolvedListing?.updatedText || '')
+          const selectedStationName = sanitizeInaraText(resolvedListing?.stationName) || resolvedListing?.stationName || '--'
+          const selectedSystemName = sanitizeInaraText(resolvedListing?.systemName) || resolvedListing?.systemName || ''
+          const selectedDemandIndicator = renderDemandTrend(selectedDemand, Boolean(resolvedListing?.demandIsLow), { subtle: true })
+          const defaultSelectedId = detail.selectedListingId || (listings[0]?.__id ?? null)
 
-          {status === 'ready' && hasCargo && hasDisplayableRows && (
-            <div className={styles.dataTableContainer}>
-              <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
-                <colgroup>
-                  <col style={{ width: '32%' }} />
-                  <col style={{ width: '8%' }} />
-                  <col style={{ width: '20%' }} />
-                  <col style={{ width: '24%' }} />
-                  <col style={{ width: '16%' }} />
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th>Commodity</th>
-                    <th className='text-right'>Qty</th>
-                    <th>Local Data</th>
-                    <th>GHOSTNET Max</th>
-                    <th className='text-right'>Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {commodityRows.map((row, index) => {
+          const getHeaderSortState = field => {
+            if (stationSortField !== field) return 'none'
+            return stationSortDirection === 'asc' ? 'ascending' : 'descending'
+          }
+
+          const toggleStationSort = field => {
+            setStationSortField(prevField => {
+              if (prevField === field) {
+                setStationSortDirection(prevDirection => (prevDirection === 'asc' ? 'desc' : 'asc'))
+                return prevField
+              }
+              setStationSortDirection(field === 'price' ? 'desc' : 'asc')
+              return field
+            })
+          }
+
+          const originEntry = detail.marketEntry || detail.localBestEntry || null
+          const sanitizedOrigin = originEntry ? sanitizeMarketListingEntry(originEntry) : null
+          const originStationName = sanitizedOrigin?.stationName || ''
+          const originSystem = sanitizedOrigin?.systemName || ''
+          const originType = sanitizedOrigin?.stationType || ''
+          const originIconName = originStationName ? stationIconFromType(originType || '') : null
+          const originUpdated = sanitizedOrigin?.updatedAt
+            ? formatRelativeTime(sanitizedOrigin.updatedAt)
+            : (sanitizedOrigin?.updatedText || '')
+          const originDemandIndicator = sanitizedOrigin?.demandText
+            ? renderDemandTrend(sanitizedOrigin.demandText, Boolean(sanitizedOrigin.demandIsLow), { subtle: true })
+            : null
+          const localBestPrice = typeof detail.localBestPrice === 'number'
+            ? detail.localBestPrice
+            : (sanitizedOrigin?.price ?? null)
+          const localPriceDisplay = formatCredits(localBestPrice, sanitizedOrigin?.priceText || '--')
+          const sourceMetrics = []
+          if (localPriceDisplay && localPriceDisplay !== '--') {
+            sourceMetrics.push({ label: 'Buy', value: localPriceDisplay, priority: true })
+          }
+          if (originDemandIndicator) {
+            sourceMetrics.push({ label: 'Demand', value: originDemandIndicator, priority: true })
+          }
+          if (originUpdated) {
+            sourceMetrics.push({ label: 'Updated', value: originUpdated })
+          }
+          const destinationMetrics = []
+          if (selectedPriceDisplay && selectedPriceDisplay !== '--') {
+            destinationMetrics.push({ label: 'Sell', value: selectedPriceDisplay, priority: true })
+          }
+          if (selectedDemandIndicator) {
+            destinationMetrics.push({ label: 'Demand', value: selectedDemandIndicator, priority: true })
+          }
+          if (selectedUpdated) {
+            destinationMetrics.push({ label: 'Updated', value: selectedUpdated })
+          }
+          const quantityDisplay = Number(detail.quantity || 0).toLocaleString()
+          const quantityText = quantityDisplay ? `${quantityDisplay} t` : ''
+          const profitPerUnit = (typeof resolvedListing?.price === 'number' && typeof localBestPrice === 'number')
+            ? resolvedListing.price - localBestPrice
+            : null
+          const profitPerUnitDisplay = formatCredits(profitPerUnit, '--')
+          const profitValue = profitPerUnit !== null ? profitPerUnit * (Number(detail.quantity) || 0) : null
+          const profitValueDisplay = formatCredits(profitValue, selectedValueDisplay)
+          const destinationStationType = sanitizeInaraText(resolvedListing?.stationType) || resolvedListing?.stationType || ''
+          const destinationIconName = destinationStationType ? stationIconFromType(destinationStationType) : null
+          const commodityPriceDisplay = selectedPriceDisplay && selectedPriceDisplay !== '--'
+            ? `@ ${selectedPriceDisplay}`
+            : ''
+          const commoditySubtexts = [
+            detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName ? detail.commoditySymbol : null,
+            profitPerUnitDisplay && profitPerUnitDisplay !== '--' ? `Profit/t ${profitPerUnitDisplay}` : null
+          ].filter(Boolean)
+          const distanceSegment = {
+            label: 'Distance',
+            value: selectedSystemDistance || '',
+            secondary: selectedStationDistance || ''
+          }
+          const valueSecondaryParts = []
+          if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') valueSecondaryParts.push(`Per t ${profitPerUnitDisplay}`)
+          if (quantityText) valueSecondaryParts.push(`Payload ${quantityText}`)
+          const valueSecondary = valueSecondaryParts.join(' • ')
+          const shipSubtexts = Array.isArray(shipSourceSegment?.subtexts) ? shipSourceSegment.subtexts : []
+          const sourceSegment = shipSourceSegment
+            ? {
+                ...shipSourceSegment,
+                subtexts: [
+                  ...shipSubtexts,
+                  originStationName && originStationName !== shipSourceSegment.name ? `Docked: ${originStationName}` : null,
+                  originSystem
+                ].filter(Boolean),
+                metrics: sourceMetrics
+              }
+            : {
+                icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
+                name: originStationName || 'Local Market',
+                subtexts: [originSystem, originType].filter(Boolean),
+                metrics: sourceMetrics,
+                ariaLabel: originStationName ? `Origin station ${originStationName}` : 'Local market origin'
+              }
+          const destinationSubtexts = [selectedSystemName, destinationStationType].filter(Boolean)
+          const valueSegment = {
+            icon: <CreditsIcon size={22} />,
+            label: 'Profit',
+            value: profitValueDisplay && profitValueDisplay !== '--' ? profitValueDisplay : '',
+            secondary: valueSecondary
+          }
+
+          return (
+            <div className={styles.commodityDetailContainer}>
+              <div className={styles.commodityDetailContext}>
+                <TransferContextSummary
+                  className={styles.commodityDetailSummaryBar}
+                  item={{
+                    icon: <CommodityIcon category={detail.commodityCategory} size={28} />,
+                    name: detail.commodityName,
+                    subtexts: commoditySubtexts,
+                    quantity: quantityText,
+                    price: commodityPriceDisplay,
+                    ariaLabel: `${detail.commodityName} quantity ${quantityText || 'Unknown'}`
+                  }}
+                  source={sourceSegment}
+                  distance={distanceSegment}
+                  target={{
+                    icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
+                    name: selectedStationName,
+                    subtexts: destinationSubtexts,
+                    metrics: destinationMetrics,
+                    ariaLabel: `Destination station ${selectedStationName}`
+                  }}
+                  value={valueSegment}
+                />
+                <div className={styles.commodityDetailActions}>
+                  <button type='button' className='button button--secondary' onClick={handleCommodityDetailClose}>
+                    Back to Cargo
+                  </button>
+                </div>
+              </div>
+
+              <div className='ghostnet-panel-table'>
+                <div className='scrollable' style={STATION_TABLE_SCROLL_AREA_STYLE}>
+                  {listings.length === 0 ? (
+                    <div className={styles.detailEmptyState}>
+                      No GHOSTNET listings available for this commodity.
+                    </div>
+                  ) : (
+                    <div className={styles.dataTableContainer}>
+                      <table className={`${styles.dataTable} ${styles.dataTableFixed}`}>
+                        <colgroup>
+                          <col style={{ width: '38%' }} />
+                          <col style={{ width: '18%' }} />
+                          <col style={{ width: '18%' }} />
+                          <col style={{ width: '12%' }} />
+                          <col style={{ width: '14%' }} />
+                        </colgroup>
+                        <thead>
+                          <tr>
+                            <th>Station</th>
+                            <th
+                              scope='col'
+                              aria-sort={getHeaderSortState('distanceLy')}
+                            >
+                              <button
+                                type='button'
+                                className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLy' ? styles.tableHeaderButtonActive : ''}`}
+                                onClick={() => toggleStationSort('distanceLy')}
+                              >
+                                Distance
+                                {stationSortField === 'distanceLy' && (
+                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
+                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
+                                  </span>
+                                )}
+                              </button>
+                            </th>
+                            <th
+                              scope='col'
+                              aria-sort={getHeaderSortState('distanceLs')}
+                            >
+                              <button
+                                type='button'
+                                className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLs' ? styles.tableHeaderButtonActive : ''}`}
+                                onClick={() => toggleStationSort('distanceLs')}
+                              >
+                                Station Distance
+                                {stationSortField === 'distanceLs' && (
+                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
+                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
+                                  </span>
+                                )}
+                              </button>
+                            </th>
+                            <th>Demand</th>
+                            <th
+                              scope='col'
+                              aria-sort={getHeaderSortState('price')}
+                            >
+                              <button
+                                type='button'
+                                className={`${styles.tableHeaderButton} ${stationSortField === 'price' ? styles.tableHeaderButtonActive : ''}`}
+                                onClick={() => toggleStationSort('price')}
+                              >
+                                Price
+                                {stationSortField === 'price' && (
+                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
+                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
+                                  </span>
+                                )}
+                              </button>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {listings.map((listing, listingIndex) => {
+                            const isSelected = listing.__id === defaultSelectedId
+                            const stationIcon = stationIconFromType(listing.stationType || '')
+                            const systemDistanceDisplay = formatSystemDistance(listing.distanceLy, listing.distanceLyText)
+                            const stationDistanceDisplay = formatStationDistance(listing.distanceLs, listing.distanceLsText)
+                            const demandDisplay = sanitizeInaraText(listing.demandText) || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
+                            const updatedDisplay = listing.updatedAt
+                              ? formatRelativeTime(listing.updatedAt)
+                              : (listing.updatedText || '')
+                            const priceDisplay = formatCredits(listing.price, listing.priceText || '--')
+                            const demandIndicator = renderDemandTrend(demandDisplay, Boolean(listing.demandIsLow))
+                            const rowClasses = [styles.tableRowInteractive]
+                            if (isSelected) rowClasses.push(styles.stationRowSelected)
+
+                            const handleListingKeyDown = event => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault()
+                                handleStationContextSelect(listing.__id)
+                              }
+                            }
+
+                            return (
+                              <tr
+                                key={listing.__id || `${detail.key}-listing-${listingIndex}`}
+                                className={rowClasses.join(' ')}
+                                onClick={() => handleStationContextSelect(listing.__id)}
+                                onKeyDown={handleListingKeyDown}
+                                tabIndex={0}
+                                role='button'
+                                aria-pressed={isSelected}
+                                data-ghostnet-table-row='visible'
+                              >
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                                  <div className={styles.stationCell}>
+                                    <StationIcon icon={stationIcon} size={24} />
+                                    <div className={styles.stationCellText}>
+                                      <div className={styles.stationName}>{listing.stationName || 'Unknown Station'}</div>
+                                      <div className={styles.stationSystem}>{listing.systemName || 'Unknown System'}</div>
+                                      {(listing.stationType || isSelected) ? (
+                                        <div className={styles.stationMetaRow}>
+                                          {listing.stationType ? (
+                                            <div className={styles.stationMeta}>{listing.stationType}</div>
+                                          ) : null}
+                                          {isSelected ? (
+                                            <span className={styles.stationSelectionTag}>In Context</span>
+                                          ) : null}
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{systemDistanceDisplay || '--'}</td>
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{stationDistanceDisplay || '--'}</td>
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{demandIndicator || '--'}</td>
+                                <td className={`text-right ${styles.tableCellTop} ${styles.tableCellCompact}`}>
+                                  <div>{priceDisplay}</div>
+                                  {updatedDisplay ? (
+                                    <div className={styles.tableMetaMuted}>Updated {updatedDisplay}</div>
+                                  ) : null}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })()
+        : (
+          <>
+            <div className='ghostnet-panel-table'>
+              <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
+                {commodityContext ? (() => {
+                  const summary = commodityContext
+                  const commodityName = sanitizeInaraText(summary.commodityName) || summary.commodityName || 'Unknown Commodity'
+                  const commoditySymbol = sanitizeInaraText(summary.commoditySymbol) || summary.commoditySymbol || ''
+                  const summaryValueDisplay = typeof summary.price === 'number'
+                    ? formatCredits(summary.price * (summary.quantity || 0), '--')
+                    : '--'
+                  const summaryPriceDisplay = formatCredits(summary.price, summary.priceText || '--')
+                  const summarySystemDistance = formatSystemDistance(summary.distanceLy, summary.distanceLyText)
+                  const summaryStationDistance = formatStationDistance(summary.distanceLs, summary.distanceLsText)
+                  const summaryUpdated = summary.updatedAt
+                    ? formatRelativeTime(summary.updatedAt)
+                    : (summary.updatedText || '')
+                  const summaryDemandIndicator = renderDemandTrend(summary.demandText, Boolean(summary.demandIsLow), { subtle: true })
+                  const stationName = sanitizeInaraText(summary.stationName) || summary.stationName || '--'
+                  const systemName = sanitizeInaraText(summary.systemName) || summary.systemName || ''
+                  const stationType = sanitizeInaraText(summary.stationType) || summary.stationType || ''
+                  const destinationIconName = stationName ? stationIconFromType(stationType || '') : null
+                  const quantityDisplay = Number(summary.quantity || 0).toLocaleString()
+                  const quantityText = quantityDisplay ? `${quantityDisplay} t` : ''
+                  const targetPriceDisplay = summaryPriceDisplay
+                  const localPriceDisplay = formatCredits(summary.localBestPrice, summary.localBestPriceText || '--')
+                  const originName = summary.originStationName || 'Local Market'
+                  const originSystem = summary.originSystemName || ''
+                  const originType = summary.originStationType || ''
+                  const originIconName = summary.originStationName ? stationIconFromType(originType || '') : null
+                  const originUpdated = summary.originUpdatedAt
+                    ? formatRelativeTime(summary.originUpdatedAt)
+                    : (summary.originUpdatedText || '')
+                  const profitPerUnitDisplay = formatCredits(summary.profitPerUnit, summary.profitPerUnitText || '--')
+                  const profitValueDisplay = formatCredits(summary.profitValue, summary.profitValueText || summaryValueDisplay)
+                  const originSubtexts = [originSystem, originType].filter(Boolean)
+                  const destinationSubtexts = [systemName, stationType].filter(Boolean)
+                  const commoditySubtexts = [
+                    commoditySymbol && commoditySymbol !== commodityName ? commoditySymbol : null,
+                    targetPriceDisplay && targetPriceDisplay !== '--' ? `@ ${targetPriceDisplay}` : null
+                  ].filter(Boolean)
+                  const sourceMetrics = []
+                  if (localPriceDisplay && localPriceDisplay !== '--') {
+                    sourceMetrics.push({ label: 'Buy', value: localPriceDisplay, priority: true })
+                  }
+                  if (originUpdated) {
+                    sourceMetrics.push({ label: 'Updated', value: originUpdated })
+                  }
+                  const destinationMetrics = []
+                  if (targetPriceDisplay && targetPriceDisplay !== '--') {
+                    destinationMetrics.push({ label: 'Sell', value: targetPriceDisplay, priority: true })
+                  }
+                  if (summaryDemandIndicator) {
+                    destinationMetrics.push({ label: 'Demand', value: summaryDemandIndicator, priority: true })
+                  }
+                  if (summaryUpdated) {
+                    destinationMetrics.push({ label: 'Updated', value: summaryUpdated })
+                  }
+                  const commodityPriceDisplay = targetPriceDisplay && targetPriceDisplay !== '--'
+                    ? `@ ${targetPriceDisplay}`
+                    : ''
+                  const distanceSegment = {
+                    label: 'Distance',
+                    value: summarySystemDistance || '',
+                    secondary: summaryStationDistance || ''
+                  }
+                  const valueSecondaryParts = []
+                  if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') valueSecondaryParts.push(`Per t ${profitPerUnitDisplay}`)
+                  if (quantityText) valueSecondaryParts.push(`Payload ${quantityText}`)
+                  const valueSecondary = valueSecondaryParts.join(' • ')
+                  const shipSubtexts = Array.isArray(shipSourceSegment?.subtexts) ? shipSourceSegment.subtexts : []
+                  const sourceSegment = shipSourceSegment
+                    ? {
+                        ...shipSourceSegment,
+                        subtexts: [
+                          ...shipSubtexts,
+                          originName && originName !== shipSourceSegment.name ? `Docked: ${originName}` : null,
+                          originSystem
+                        ].filter(Boolean),
+                        metrics: sourceMetrics
+                      }
+                    : {
+                        icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
+                        name: originName,
+                        subtexts: originSubtexts,
+                        metrics: sourceMetrics,
+                        ariaLabel: originName ? `Origin station ${originName}` : 'Local market origin'
+                      }
+                  const valueSegment = {
+                    icon: <CreditsIcon size={22} />,
+                    label: 'Profit',
+                    value: profitValueDisplay && profitValueDisplay !== '--' ? profitValueDisplay : '',
+                    secondary: valueSecondary
+                  }
+                  return (
+                    <TransferContextSummary
+                      className={styles.transferSummaryBar}
+                      item={{
+                        icon: <CommodityIcon category={summary.commodityCategory} size={26} />,
+                        name: commodityName,
+                        subtexts: commoditySubtexts,
+                        quantity: quantityText,
+                        price: commodityPriceDisplay,
+                        ariaLabel: `${commodityName} quantity ${quantityText || 'Unknown'}`
+                      }}
+                      source={sourceSegment}
+                      distance={distanceSegment}
+                      target={{
+                        icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
+                        name: stationName,
+                        subtexts: destinationSubtexts,
+                        metrics: destinationMetrics,
+                        ariaLabel: `Destination station ${stationName}`
+                      }}
+                      value={valueSegment}
+                    />
+                  )
+                })() : null}
+
+                {renderStatusBanner()}
+                {usingMockCargo && hasCargo ? (
+                  <div className={styles.inlineNoticeMuted}>
+                    Showing mock cargo manifest for development while your hold is empty in-game.
+                  </div>
+                ) : null}
+
+                {status === 'ready' && hasCargo && hasDisplayableRows && (
+                  <div className={styles.dataTableContainer}>
+                    <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
+                      <colgroup>
+                        <col style={{ width: '32%' }} />
+                        <col style={{ width: '8%' }} />
+                        <col style={{ width: '20%' }} />
+                        <col style={{ width: '24%' }} />
+                        <col style={{ width: '16%' }} />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th>Commodity</th>
+                          <th className='text-right'>Qty</th>
+                          <th>Local Data</th>
+                          <th>GHOSTNET Max</th>
+                          <th className='text-right'>Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {commodityRows.map((row, index) => {
                     const {
                       item,
                       entry,
@@ -1750,13 +2973,18 @@ function CommodityTradePanel () {
                       bestValue,
                       bestSource,
                       ghostnetValue,
-                      localValue
+                      localValue,
+                      ghostnetEntry
                     } = row
 
-                    const ghostnetStation = entry?.ghostnet?.stationName
-                    const ghostnetSystem = entry?.ghostnet?.systemName
-                    const ghostnetDemand = entry?.ghostnet?.demandText
-                    const ghostnetUpdated = entry?.ghostnet?.updatedText
+                    const ghostnetContextEntry = ghostnetEntry || entry?.ghostnet || null
+                    const ghostnetStation = sanitizeInaraText(ghostnetContextEntry?.stationName) || ghostnetContextEntry?.stationName || ''
+                    const ghostnetSystem = sanitizeInaraText(ghostnetContextEntry?.systemName) || ghostnetContextEntry?.systemName || ''
+                    const ghostnetDemand = sanitizeInaraText(ghostnetContextEntry?.demandText) || (typeof ghostnetContextEntry?.demand === 'number' ? ghostnetContextEntry.demand.toLocaleString() : '')
+                    const ghostnetUpdatedText = sanitizeInaraText(ghostnetContextEntry?.updatedText) || ghostnetContextEntry?.updatedText || ''
+                    const ghostnetUpdated = ghostnetContextEntry?.updatedAt
+                      ? formatRelativeTime(ghostnetContextEntry.updatedAt)
+                      : ghostnetUpdatedText
                     const ghostnetPriceDisplay = typeof ghostnetPrice === 'number' ? formatCredits(ghostnetPrice, '--') : '--'
                     const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
 
@@ -1796,19 +3024,63 @@ function CommodityTradePanel () {
 
                     const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
 
+                    const isContextRow = commodityContext?.commodityKey === row.key
+                    const contextSummary = isContextRow ? commodityContext : null
+                    const contextDistance = contextSummary ? formatStationDistance(contextSummary.distanceLs, contextSummary.distanceLsText) : ''
+                    const contextSystemDistance = contextSummary ? formatSystemDistance(contextSummary.distanceLy, contextSummary.distanceLyText) : ''
+                    const rowClassNames = [styles.tableRowInteractive]
+                    if (isContextRow) rowClassNames.push(styles.tableRowContext)
+
+                    const handleRowKeyDown = event => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        handleOpenCommodityDetail(row)
+                      }
+                    }
+
                     return (
-                      <tr key={`${row.key}-${index}`} data-ghostnet-table-row='pending'>
+                      <tr
+                        key={`${row.key}-${index}`}
+                        className={rowClassNames.join(' ')}
+                        data-ghostnet-table-row='pending'
+                        onClick={() => handleOpenCommodityDetail(row)}
+                        onKeyDown={handleRowKeyDown}
+                        tabIndex={0}
+                        role='button'
+                        aria-label={`Open ${(item?.name || item?.symbol || 'commodity')} detail`}
+                      >
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div>{item?.name || item?.symbol || 'Unknown'}</div>
-                          {item?.symbol && item?.symbol !== item?.name && (
-                            <div className={styles.tableSubtext}>{item.symbol}</div>
-                          )}
-                          {entry?.errors?.ghostnet && !entry?.ghostnet && (
-                            <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
-                          )}
-                          {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
-                            <div className={styles.tableWarning}>{entry.errors.market}</div>
-                          )}
+                          <div className={styles.commodityCell}>
+                            <div className={styles.commodityCellIcon}>
+                              <CommodityIcon category={item?.category} size={22} />
+                            </div>
+                            <div className={styles.commodityCellText}>
+                              <div className={styles.commodityCellTitle}>{item?.name || item?.symbol || 'Unknown'}</div>
+                              {item?.symbol && item?.symbol !== item?.name && (
+                                <div className={styles.tableSubtext}>{item.symbol}</div>
+                              )}
+                              {entry?.errors?.ghostnet && !entry?.ghostnet && (
+                                <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
+                              )}
+                              {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
+                                <div className={styles.tableWarning}>{entry.errors.market}</div>
+                              )}
+                              {isContextRow && contextSummary?.stationName && (
+                                <div className={styles.tableContextIndicator}>
+                                  <span className={styles.tableContextLabel}>Station Context</span>
+                                  <span className={styles.tableContextValue}>
+                                    {contextSummary.stationName}
+                                    {contextSummary.systemName ? ` · ${contextSummary.systemName}` : ''}
+                                  </span>
+                                  {(contextSystemDistance || contextDistance) && (
+                                    <span className={styles.tableContextFootnote}>
+                                      {[contextSystemDistance, contextDistance].filter(Boolean).join(' / ')}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </td>
                         <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{quantity.toLocaleString()}</td>
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
@@ -1832,7 +3104,9 @@ function CommodityTradePanel () {
                             </div>
                           )}
                           {ghostnetDemand && (
-                            <div className={styles.tableMetaMuted}>Demand: {ghostnetDemand}</div>
+                            <div className={styles.tableMetaMuted}>
+                              Demand: {renderDemandTrend(ghostnetDemand, Boolean(ghostnetContextEntry?.demandIsLow), { subtle: true }) || ghostnetDemand}
+                            </div>
                           )}
                           {ghostnetUpdated && (
                             <div className={styles.tableMetaMuted}>Updated {ghostnetUpdated}</div>
@@ -1849,31 +3123,33 @@ function CommodityTradePanel () {
                       </tr>
                     )
                   })}
-                  {nonCommodityRows.map((row, index) => {
-                    const animationDelay = (commodityRows.length + index) * 0.03
-                    const quantityDisplay = Number(row.quantity) || 0
-                    return (
-                      <tr key={`${row.key}-non-${index}`} className={styles.nonCommodityRow} style={{ animationDelay: `${animationDelay}s` }}>
-                        <td colSpan={5}>
-                          <div className={styles.nonCommodityRowContent}>
-                            <span className={styles.nonCommodityLabel}>{row.item?.name || row.item?.symbol || 'Unknown'}</span>
-                            <span className={styles.nonCommodityTag}>Not a Commodity</span>
-                            <span className={styles.nonCommodityQuantity}>{quantityDisplay.toLocaleString()} in cargo</span>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                        {nonCommodityRows.map((row, index) => {
+                          const animationDelay = (commodityRows.length + index) * 0.03
+                          const quantityDisplay = Number(row.quantity) || 0
+                          return (
+                            <tr key={`${row.key}-non-${index}`} className={styles.nonCommodityRow} style={{ animationDelay: `${animationDelay}s` }}>
+                              <td colSpan={5}>
+                                <div className={styles.nonCommodityRowContent}>
+                                  <span className={styles.nonCommodityLabel}>{row.item?.name || row.item?.symbol || 'Unknown'}</span>
+                                  <span className={styles.nonCommodityTag}>Not a Commodity</span>
+                                  <span className={styles.nonCommodityQuantity}>{quantityDisplay.toLocaleString()} in cargo</span>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      <div className={styles.tableFootnote}>
-        In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
-      </div>
+            <div className={styles.tableFootnote}>
+              In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
+            </div>
+          </>
+        )}
     </section>
   )
 }
@@ -2558,6 +3834,10 @@ function TradeRoutesPanel () {
       <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>{text}</span>
     )
 
+    const outboundCommodityName = sanitizeInaraText(outboundCommodity) || outboundCommodity || '--'
+    const returnCommodityName = sanitizeInaraText(returnCommodity) || returnCommodity || '--'
+    const outboundBuyPrice = sanitizeInaraText(outboundBuy?.priceText) || outboundBuy?.priceText || ''
+    const outboundSellPrice = sanitizeInaraText(outboundSell?.priceText) || outboundSell?.priceText || ''
     const originStanding = originStandingStatusText
       ? (
         <span
@@ -2591,6 +3871,61 @@ function TradeRoutesPanel () {
       { label: 'Updated', value: updatedDisplay || '--' }
     ]
 
+    const capacityDisplay = typeof cargoCapacityDisplay === 'string' && /\d/.test(cargoCapacityDisplay)
+      ? cargoCapacityDisplay
+      : ''
+    const fallbackCapacity = typeof route?.summary?.cargoCapacity === 'number'
+      ? `${Math.round(route.summary.cargoCapacity).toLocaleString()} t`
+      : (typeof route?.cargoCapacity === 'number' ? `${Math.round(route.cargoCapacity).toLocaleString()} t` : '')
+    const quantityText = capacityDisplay || fallbackCapacity
+    const commoditySubtexts = [
+      returnCommodityName && returnCommodityName !== '--' ? `Return: ${returnCommodityName}` : null,
+      outboundSellPrice ? `Sell: ${outboundSellPrice}` : null
+    ].filter(Boolean)
+    const sourceMetricsBar = []
+    if (outboundBuyPrice) {
+      sourceMetricsBar.push({ label: 'Buy', value: outboundBuyPrice, priority: true })
+    }
+    if (outboundSupplyIndicator) {
+      sourceMetricsBar.push({ label: 'Supply', value: outboundSupplyIndicator, priority: true })
+    }
+    if (returnDemandIndicator) {
+      sourceMetricsBar.push({ label: 'Return Demand', value: returnDemandIndicator, priority: true })
+    }
+    const targetMetricsBar = []
+    if (outboundSellPrice) {
+      targetMetricsBar.push({ label: 'Sell', value: outboundSellPrice, priority: true })
+    }
+    if (outboundDemandIndicator) {
+      targetMetricsBar.push({ label: 'Demand', value: outboundDemandIndicator, priority: true })
+    }
+    if (returnSupplyIndicator) {
+      targetMetricsBar.push({ label: 'Return Supply', value: returnSupplyIndicator, priority: true })
+    }
+    if (updatedDisplay) {
+      targetMetricsBar.push({ label: 'Updated', value: updatedDisplay })
+    }
+    const commodityPriceDisplay = outboundSellPrice ? `@ ${outboundSellPrice}` : ''
+    const distancePrimary = routeDistanceDisplay || systemDistanceDisplay || ''
+    const distanceSecondary = routeDistanceDisplay && systemDistanceDisplay && routeDistanceDisplay !== systemDistanceDisplay
+      ? systemDistanceDisplay
+      : ''
+    const distanceSegment = {
+      label: 'Distance',
+      value: distancePrimary,
+      secondary: distanceSecondary
+    }
+    const valueSecondaryParts = []
+    if (profitPerTon && profitPerTon !== '--') valueSecondaryParts.push(`Per t ${profitPerTon}`)
+    if (profitPerHour && profitPerHour !== '--') valueSecondaryParts.push(`Per hr ${profitPerHour}`)
+    const valueSecondary = valueSecondaryParts.join(' • ')
+    const valueSegment = {
+      icon: <CreditsIcon size={22} />,
+      label: 'Profit',
+      value: profitPerTrip && profitPerTrip !== '--' ? profitPerTrip : (profitPerTon && profitPerTon !== '--' ? profitPerTon : ''),
+      secondary: valueSecondary
+    }
+
     return (
       <div className={styles.routeDetailContainer}>
         <div className={styles.routeDetailHeader}>
@@ -2598,23 +3933,35 @@ function TradeRoutesPanel () {
             <span aria-hidden='true'>{String.fromCharCode(0x2039)}</span>
             <span>Back to routes</span>
           </button>
-          <div className={styles.routeDetailHeading}>
-            <span className={styles.routeDetailLabel}>Trade Route Intel</span>
-            <h3 className={styles.routeDetailTitle}>
-              {originStation}
-              <span className={styles.routeDetailDivider}>{String.fromCharCode(0x279E)}</span>
-              {destinationStation}
-            </h3>
-            <p className={styles.routeDetailSubhead}>
-              {originSystemName || 'Unknown system'}
-              <span className={styles.routeDetailArrow} aria-hidden='true'>{String.fromCharCode(0x2192)}</span>
-              {destinationSystemName || 'Unknown system'}
-            </p>
-          </div>
-          <div className={styles.routeDetailMeta}>
-            <span className={styles.routeDetailMetaLabel}>Last Update</span>
-            <span className={styles.routeDetailMetaValue}>{updatedDisplay || '--'}</span>
-          </div>
+          <TransferContextSummary
+            className={styles.routeDetailSummaryBar}
+            item={{
+              icon: <CommodityIcon category={route?.origin?.buy?.category || 'default'} size={26} />,
+              name: outboundCommodityName,
+              subtexts: commoditySubtexts,
+              quantity: quantityText,
+              price: commodityPriceDisplay,
+              ariaLabel: `${outboundCommodityName} capacity ${quantityText || 'Unknown'}`
+            }}
+            source={{
+              icon: originIconName ? <StationIcon icon={originIconName} color={originStationColor} /> : null,
+              name: originStation,
+              color: originStationColor,
+              subtexts: [originSystemName || 'Unknown system'],
+              metrics: sourceMetricsBar,
+              ariaLabel: `Origin station ${originStation}`
+            }}
+            distance={distanceSegment}
+            target={{
+              icon: destinationIconName ? <StationIcon icon={destinationIconName} color={destinationStationColor} /> : null,
+              name: destinationStation,
+              color: destinationStationColor,
+              subtexts: [destinationSystemName || 'Unknown system'],
+              metrics: targetMetricsBar,
+              ariaLabel: `Destination station ${destinationStation}`
+            }}
+            value={valueSegment}
+          />
         </div>
         <div className={styles.routeDetailMetrics}>
           {metrics.map(metric => (
@@ -3198,7 +4545,7 @@ function PristineMiningPanel () {
                         <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
                       </tr>
                       {isExpanded && (
-                        <tr className={styles.tableDetailRow} data-ghostnet-table-row='pending'>
+                        <tr className={`${styles.tableDetailRow} ghostnet-table-detail-row`} data-ghostnet-table-row='pending'>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>

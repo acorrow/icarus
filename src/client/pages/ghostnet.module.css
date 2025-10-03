@@ -682,6 +682,32 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   user-select: none;
 }
 
+.tableHeaderButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tableHeaderButton:focus-visible {
+  outline: 2px solid var(--ghostnet-color-success);
+  outline-offset: 2px;
+}
+
+.tableHeaderButtonActive {
+  color: var(--ghostnet-accent);
+}
+
+.tableSortIndicator {
+  font-size: 0.75rem;
+  color: var(--ghostnet-subdued);
+}
+
 .tableRowInteractive {
   cursor: pointer;
 }
@@ -696,6 +722,10 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 
 .tableRowExpanded:hover {
   background: color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent) !important;
+}
+
+.tableDetailRow {
+  background: transparent !important;
 }
 
 .tableDetailRow td {
@@ -948,19 +978,9 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 
 .routeDetailHeader {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1.75rem 2rem;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--ghostnet-color-primary-dark) 85%, transparent),
-    color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent)
-  );
-  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
-  border-radius: 1.25rem;
-  box-shadow: 0 1.5rem 3rem var(--ghostnet-shadow);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
 }
 
 .routeDetailBackButton {
@@ -1327,10 +1347,8 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
 }
 
-.routeDetailMetaValue {
-  font-size: 0.98rem;
-  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
-  color: var(--ghostnet-color-text-strong);
+.routeDetailSummaryBar {
+  flex: 1 1 auto;
 }
 
 .routeDetailMetrics {
@@ -1601,6 +1619,204 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   line-height: 1.6;
 }
 
+.tableRowContext {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+}
+
+.tableRowContext:hover {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 26%, transparent);
+}
+
+.tableContextIndicator {
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
+  box-shadow: 0 0.9rem 1.8rem color-mix(in srgb, var(--ghostnet-color-background) 76%, transparent);
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tableContextLabel {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
+}
+
+.tableContextValue {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.tableContextFootnote {
+  font-size: 0.72rem;
+  color: var(--ghostnet-muted);
+}
+
+.demandIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.demandIndicatorSubtle {
+  font-size: 0.88em;
+}
+
+.demandIndicatorArrow {
+  font-size: 0.85em;
+  line-height: 1;
+}
+
+.demandIndicatorArrowHigh {
+  color: var(--ghostnet-color-success);
+}
+
+.demandIndicatorArrowLow {
+  color: var(--ghostnet-color-warning);
+}
+
+
+.commodityDetailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.transferSummaryBar {
+  margin-bottom: 1.35rem;
+}
+
+.commodityDetailContext {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.commodityDetailSummaryBar {
+  flex: 1 1 48rem;
+}
+
+.commodityDetailActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 9rem;
+}
+
+.commodityDetailActions :global(button) {
+  min-width: 8.5rem;
+}
+
+
+
+.detailEmptyState {
+  padding: 2rem;
+  text-align: center;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
+  font-size: 0.95rem;
+}
+
+.stationCell {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.stationCellText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stationMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stationName {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.stationSystem {
+  font-size: 0.78rem;
+  color: var(--ghostnet-muted);
+}
+
+.stationMeta {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 58%, transparent);
+}
+
+.stationSelectionTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ghostnet-color-success);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-success) 60%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ghostnet-color-success) 18%, transparent);
+}
+
+.stationRowSelected {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent);
+}
+
+.stationRowSelected:hover {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 26%, transparent);
+}
+
+.stationDemandLow {
+  color: var(--ghostnet-color-warning);
+}
+
+.commodityCell {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.commodityCellIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent);
+  box-shadow: 0 1rem 1.8rem color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);
+}
+
+.commodityCellIcon svg {
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+}
+
+.commodityCellText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.commodityCellTitle {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
 .metricGrid {
   display: flex;
   flex-wrap: wrap;
@@ -1741,7 +1957,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
 }
 
-.ghostnet :global(.ghostnet-panel-table tbody tr:nth-child(even)) {
+.ghostnet :global(.ghostnet-panel-table tbody tr:nth-child(even):not(.ghostnet-table-detail-row)) {
   background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 45%, transparent);
 }
 

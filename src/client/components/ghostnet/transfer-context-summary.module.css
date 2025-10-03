@@ -1,0 +1,183 @@
+.transferContextSummary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.05fr) minmax(0, 0.8fr) minmax(0, 1.05fr) minmax(0, 0.85fr);
+  align-items: stretch;
+  justify-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-background) 86%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-primary) 8%, transparent) 100%);
+  box-shadow: 0 0.85rem 2rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
+}
+
+.segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.stationSegment,
+.commoditySegment,
+.distanceSegment,
+.valueSegment {
+  width: 100%;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.icon :global(svg) {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+}
+
+.primary {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtextGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  align-items: center;
+}
+
+.subtext {
+  font-size: 0.7rem;
+  color: var(--ghostnet-muted);
+  white-space: nowrap;
+}
+
+.metricGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.22rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.14rem;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.metricLabel {
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 48%, transparent);
+}
+
+.metricValue {
+  font-size: 0.74rem;
+  color: var(--ghostnet-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.24rem;
+  white-space: nowrap;
+}
+
+.quantity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  color: var(--ghostnet-ink);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.commodityPrice {
+  font-size: 0.78rem;
+  color: var(--ghostnet-color-text-strong);
+  white-space: nowrap;
+}
+
+.distanceSegment {
+  gap: 0.2rem;
+}
+
+.distanceIcon {
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--ghostnet-color-accent, var(--ghostnet-accent));
+}
+
+.distanceValue {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  white-space: nowrap;
+}
+
+.distanceSecondary {
+  font-size: 0.72rem;
+  color: var(--ghostnet-muted);
+  white-space: nowrap;
+}
+
+.valueSegment {
+  gap: 0.22rem;
+}
+
+.valuePrimary {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  white-space: nowrap;
+}
+
+.valueSecondary {
+  font-size: 0.72rem;
+  color: var(--ghostnet-muted);
+  white-space: nowrap;
+}
+
+.optionalWide {
+  display: inline;
+}
+
+.optionalMedium {
+  display: inline;
+}
+
+@media (max-width: 1680px) {
+  .optionalWide {
+    display: none;
+  }
+}
+
+@media (max-width: 1480px) {
+  .transferContextSummary {
+    gap: 0.45rem;
+    padding: 0.7rem 0.85rem;
+  }
+}
+
+@media (max-width: 1400px) {
+  .optionalMedium {
+    display: none;
+  }
+}
