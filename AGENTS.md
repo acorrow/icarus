@@ -2,11 +2,12 @@
 
 ## Testing expectations for GUI updates
 - Whenever you introduce or modify any GUI surface (pages, views, interactive components), you **must** run the following commands and report them in your summary:
-  - `npm test -- --runInBand`
+  - `npm test -- --runInBand --config jest.config.js`
   - `npm run build:client`
-  - `npm run start`
-- After starting the app, navigate to the impacted route(s) and capture an updated screenshot using the provided browser tooling.
-- Include the screenshot path in your final notes so reviewers can trace the visual verification.
+- After the build, launch one of the sanctioned rendering targets:
+  - Preferred production snapshot: `npm run serve:export` (serves <http://127.0.0.1:4100> once `npm run build:client` has finished).
+  - Fast iteration: `npm run dev:web` (Next.js dev server on <http://127.0.0.1:3000> without SWC).
+- Use the `browser_container` Playwright helper to capture a screenshot **for each iteration of your UI work**. Always reference the screenshot path in your final notes so reviewers can trace the visual verification. Set the viewport to `1280x720`, wait for the DOM to settle, and capture full-page shots unless the task specifies otherwise.
 - Treat every GUI task as an iterative design exercise. After you collect each screenshot, compare it against the task requirements and ask yourself:
   - Does this state fulfill the user request, both functionally and visually?
   - Are there lingering rough edges (spacing, alignment, color usage, accessibility) that would distract a commander interacting with the page?
@@ -17,12 +18,10 @@
   3. Implement the adjustments, refresh the app, and capture another screenshot.
   4. Repeat until the screenshots demonstrate a clear, polished improvement that satisfies the original ask.
 - Summarize the outcome of this iterative loop in your final notes by highlighting what changed between the first and final captures and why the result addresses the user's needs.
-- **GhostNet screenshot workflow:**
-  1. Run `npm test -- --runInBand --config jest.config.js`.
-  2. Run `npm run build:client` to regenerate the static export (requires the bundled `@next/swc-linux-x64-gnu` binary).
-  3. In a dedicated shell start one of the preview servers:
-     - `npm run dev:web` for the dynamic Next.js dev server on <http://127.0.0.1:3000>.
-     - `npm run serve:export` to host the static export on <http://127.0.0.1:4100> (preferred for PR screenshots).
+- **GhostNet screenshot workflow checklist:**
+  1. Run `npm test -- --runInBand --config jest.config.js` (serial mode keeps Jest aligned with `jest.config.js`). The repo includes the optional dependency `@next/swc-linux-x64-gnu@12.3.4` so the build will not fail on missing SWC binaries.
+  2. Run `npm run build:client` to regenerate the static export required for screenshots.
+  3. In a dedicated shell start one of the preview servers above.
   4. Use the `browser_container` Playwright helper to open the running URL and call `page.screenshot(...)`. The container has the required GTK/Atk libraries, so Chromium launches reliably. Example:
 
      ```python
@@ -33,6 +32,7 @@
          async with async_playwright() as p:
              browser = await p.chromium.launch()
              page = await browser.new_page()
+             await page.set_viewport_size({'width': 1280, 'height': 720})
              await page.goto('http://127.0.0.1:4100/ghostnet.html', wait_until='domcontentloaded')
              await page.wait_for_timeout(1000)
              await page.screenshot(path='artifacts/ghostnet.png', full_page=True)
@@ -40,7 +40,25 @@
 
      asyncio.run(main())
      ```
-- Node-based Puppeteer/Playwright scripts inside the build container are **not** reliable because the sandbox lacks the required desktop dependencies. Always rely on the `browser_container` workflow above.
+- Node-based Puppeteer/Playwright scripts inside the build container are **not** reliable because the sandbox lacks the required desktop dependencies. Always rely on the `browser_container` workflow above and link to its generated artifact in your notes.
+
+## Development quickstart
+- Install dependencies with `npm install`.
+- Duplicate `.env-example` to `.env` and point `LOG_DIR` at an Elite Dangerous journal directory when you need live data.
+- `npm run dev:web` starts the web client at <http://127.0.0.1:3000>; `npm run dev` launches the combined service stack at <http://127.0.0.1:3300>.
+- `npm start` mirrors the packaged debug launcher flow used by players.
+- Full Windows builds are orchestrated through `npm run build`; individual bundles are exposed via:
+  - `npm run build:app`, `npm run build:service`, `npm run build:client`, `npm run build:package`, and `npm run build:assets`.
+  - Debug variants (`npm run build:debug`, `npm run build:debug:app`, `npm run build:debug:service`) emit quickly for local validation but ship unoptimized binaries.
+- Cross-platform headless builds land in `dist/` via `npm run build:standalone`. Run with `--help` for usage details and keep binaries in-place on Linux so bundled assets resolve.
+- Treat `src/app` (Go launcher), `src/service` (Node backend), and `src/client` (Next/React UI) as separate concerns; the launcher expects the service binary in the same directory or it will exit on startup.
+
+## GhostNet theming & asset references
+- Primary surfaces live in `src/client/pages/ghostnet.js` and `src/client/pages/ghostnet.module.css`; the hero animation draws from `src/client/public/ghostnet/signal-mesh.svg`.
+- Jest + Testing Library smoke tests in `src/client/__tests__/ghostnet.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
+- Maintain the Ghost Net copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `GhostnetPage`; update both arrays to keep the loop seamless.
+- When undoing Ghost Net changes, delete `ghostnet.module.css`, the asset folder (`src/client/public/ghostnet/`), and associated imports, then remove the Jest configuration and dependencies if the testing stack is no longer desired.
+- Respect the palette guidance below—new CSS tokens must document their intent and derive from `src/client/css/pages/ghostnet.css` rather than introducing bespoke colors.
 
 ## GhostNet implementation principles
 - Treat the **GhostNet** page as the sole surface for intentional UI enhancements. References to "the app" in these instructions should be interpreted as the GhostNet page unless a task explicitly states otherwise.
