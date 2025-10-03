@@ -12,15 +12,124 @@ const ARRIVAL_FLAG_KEY = 'ghostnet.assimilationArrival'
 const JITTER_TIMER_FIELD = '__ghostnetAssimilationJitterTimer__'
 
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HTML', 'BODY'])
+const EFFECT_BLOCKED_TAGS = new Set(['TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'COLGROUP', 'COL'])
+const EFFECT_BLOCKED_CLASS_NAMES = new Set([
+  'layout__full-width',
+  'layout__panel--secondary-navigation',
+  'layout__main',
+  'layout__background',
+  'layout__overlay'
+])
+const EFFECT_BLOCKED_ID_NAMES = new Set(['secondaryNavigation'])
+const EFFECT_BLOCKED_CLASS_COMBINATIONS = [
+  ['scrollable', 'layout__panel--secondary-navigation']
+]
 const NAVIGATION_EXCLUSION_SELECTOR = '#primaryNavigation'
 const FORCED_FADE_CLEANUP_DELAY = 720
 const STABILIZATION_START_DELAY = 180
 const OVERLAY_REMOVAL_DELAY = 820
 const DEFAULT_EFFECT_DURATION = ASSIMILATION_DURATION_DEFAULT * 1000
-const MAX_ACTIVE_TARGETS = 160
-const MAX_CHARACTER_ANIMATIONS = 3200
+const MAX_CHARACTER_ANIMATIONS = 4800
+const MIN_TOP_LEVEL_GROUPS = 5
 let effectDurationMs = DEFAULT_EFFECT_DURATION
 let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
+
+const ALWAYS_ANIMATE_TAGS = new Set(['H', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'SPAN'])
+
+let cachedMainHeaderElement = null
+let attemptedHeaderLookup = false
+
+function isDocumentRootElement (element) {
+  if (!element || typeof document === 'undefined') return false
+
+  if (element === document.body || element === document.documentElement) {
+    return true
+  }
+
+  if (element.tagName && (element.tagName === 'BODY' || element.tagName === 'HTML')) {
+    return true
+  }
+
+  return false
+}
+
+function getMainHeaderElement () {
+  if (typeof document === 'undefined') return null
+
+  if (!attemptedHeaderLookup) {
+    attemptedHeaderLookup = true
+    try {
+      const selectors = [
+        'body > header',
+        'body > .layout > header',
+        'body > div > header',
+        'body > div > .layout > header',
+        '#__next > header',
+        '#__next > .layout > header',
+        'body header'
+      ]
+
+      for (const selector of selectors) {
+        const candidate = document.querySelector(selector)
+        if (candidate && candidate instanceof HTMLElement && document.body.contains(candidate)) {
+          cachedMainHeaderElement = candidate
+          break
+        }
+      }
+
+      if (!cachedMainHeaderElement) {
+        const fallback = document.querySelector('header')
+        if (fallback && fallback instanceof HTMLElement && document.body.contains(fallback)) {
+          cachedMainHeaderElement = fallback
+        }
+      }
+    } catch (err) {
+      cachedMainHeaderElement = null
+    }
+  }
+
+  if (cachedMainHeaderElement && (!cachedMainHeaderElement.isConnected || !document.body.contains(cachedMainHeaderElement))) {
+    cachedMainHeaderElement = null
+    attemptedHeaderLookup = false
+    return getMainHeaderElement()
+  }
+
+  return cachedMainHeaderElement || null
+}
+
+function isInMainHeaderSection (element) {
+  if (!element || !(element instanceof HTMLElement)) return false
+
+  const mainHeader = getMainHeaderElement()
+  if (!mainHeader) return false
+
+  return mainHeader === element || mainHeader.contains(element)
+}
+
+function shouldSkipAssimilationSubtree (element) {
+  return isInMainHeaderSection(element) || isInAssimilationOverlaySection(element)
+}
+
+function isInAssimilationOverlaySection (element) {
+  if (!element || !(element instanceof HTMLElement)) return false
+
+  if (
+    element.classList &&
+    (element.classList.contains('ghostnet-assimilation-overlay') ||
+      element.classList.contains('ghostnet-assimilation-dialog'))
+  ) {
+    return true
+  }
+
+  if (typeof element.closest === 'function') {
+    const overlay = element.closest('.ghostnet-assimilation-overlay')
+    if (overlay && overlay instanceof HTMLElement) {
+      return true
+    }
+  }
+
+  return false
+}
 
 const ASSIMILATION_ALERT_LINES = [
   {
@@ -267,21 +376,367 @@ function isWithinExcludedRegion (element) {
   return false
 }
 
-function isForbiddenFallbackCandidate (element) {
-  if (!element) return true
-  if (EXCLUDED_TAGS.has(element.tagName)) return true
-  if (isWithinExcludedRegion(element)) return true
-  return false
+function getViewportSize () {
+  if (typeof window !== 'undefined') {
+    const width = Math.max(0, Number.isFinite(window.innerWidth) ? window.innerWidth : 0)
+    const height = Math.max(0, Number.isFinite(window.innerHeight) ? window.innerHeight : 0)
+    if (width > 0 || height > 0) {
+      return { width, height }
+    }
+  }
+
+  if (typeof document !== 'undefined' && document.documentElement) {
+    const { clientWidth, clientHeight } = document.documentElement
+    if (clientWidth > 0 || clientHeight > 0) {
+      return { width: clientWidth, height: clientHeight }
+    }
+  }
+
+  return { width: 0, height: 0 }
+}
+
+function isFullViewportWidthRect (rect) {
+  if (!rect) return false
+
+  const { width: viewportWidth } = getViewportSize()
+  if (viewportWidth <= 0) return false
+
+  const tolerance = Math.max(1, viewportWidth * 0.0125)
+  const spansLeftEdge = rect.left <= tolerance
+  const spansRightEdge = rect.right >= viewportWidth - tolerance
+
+  if (!spansLeftEdge || !spansRightEdge) {
+    return false
+  }
+
+  if (rect.width >= viewportWidth - tolerance) {
+    return true
+  }
+
+  const widthDifference = Math.abs(rect.width - viewportWidth)
+  return widthDifference <= tolerance
+}
+
+function isRectVisibleOnScreen (rect) {
+  if (!rect) return false
+
+  const { width: viewportWidth, height: viewportHeight } = getViewportSize()
+
+  if (viewportWidth > 0) {
+    if (rect.right <= 0 || rect.left >= viewportWidth) {
+      return false
+    }
+  }
+
+  if (viewportHeight > 0) {
+    if (rect.bottom <= 0 || rect.top >= viewportHeight) {
+      return false
+    }
+  }
+
+  return rect.width !== 0 || rect.height !== 0
+}
+
+function isVisibilityCandidate (element, rect) {
+  if (!element) return false
+  if (!element.tagName) return false
+  if (EXCLUDED_TAGS.has(element.tagName)) return false
+  if (isDocumentRootElement(element)) return false
+  if (isWithinExcludedRegion(element)) return false
+  if ('isConnected' in element && !element.isConnected) return false
+  if (typeof element.getBoundingClientRect !== 'function') return false
+
+  const boundingRect = rect || getElementRect(element)
+  if (!boundingRect) return false
+
+  if (isFullViewportWidthRect(boundingRect)) {
+    return false
+  }
+
+  if (typeof element.getClientRects === 'function') {
+    const clientRects = element.getClientRects()
+    if (!clientRects || clientRects.length === 0) {
+      return false
+    }
+  }
+
+  return isRectVisibleOnScreen(boundingRect)
 }
 
 function isEligibleTarget (element) {
   if (!element) return false
-  if (EXCLUDED_TAGS.has(element.tagName)) return false
-  if (isWithinExcludedRegion(element)) return false
-  if (typeof element.getBoundingClientRect !== 'function') return false
-  const rect = element.getBoundingClientRect()
-  if (!rect) return false
-  return rect.width !== 0 || rect.height !== 0
+
+  const rect = getElementRect(element)
+  if (!isVisibilityCandidate(element, rect)) {
+    return false
+  }
+
+  return isEffectPermitted(element)
+}
+
+function shouldIncludeParentCandidate (element, candidateSet) {
+  if (!element || !candidateSet) return false
+  if (!isEffectPermitted(element)) return false
+
+  if (shouldAlwaysAnimateElement(element)) {
+    return true
+  }
+
+  const childElements = typeof element.children !== 'undefined'
+    ? Array.from(element.children)
+    : []
+
+  if (childElements.length === 0) {
+    return true
+  }
+
+  const eligibleChildren = childElements.filter((child) => candidateSet.has(child) && isEffectPermitted(child))
+
+  if (eligibleChildren.length === 0) {
+    return true
+  }
+
+  if (eligibleChildren.length <= 3) {
+    return true
+  }
+
+  const trimmedText = typeof element.textContent === 'string'
+    ? element.textContent.trim()
+    : ''
+
+  if (trimmedText.length > 0 && trimmedText.length <= 280) {
+    return true
+  }
+
+  return false
+}
+
+function isEffectPermitted (element) {
+  if (!element) return false
+
+  const { tagName } = element
+  if (!tagName) return false
+
+  if (EXCLUDED_TAGS.has(tagName) || isDocumentRootElement(element)) {
+    return false
+  }
+
+  if (hasBlockedEffectClass(element)) {
+    return false
+  }
+
+  return !EFFECT_BLOCKED_TAGS.has(tagName)
+}
+
+function hasBlockedEffectClass (element) {
+  if (!element) {
+    return false
+  }
+
+  if (element.id && EFFECT_BLOCKED_ID_NAMES.has(element.id)) {
+    return true
+  }
+
+  if (typeof element.classList === 'undefined') {
+    return false
+  }
+
+  for (const className of EFFECT_BLOCKED_CLASS_NAMES) {
+    if (element.classList.contains(className)) {
+      return true
+    }
+  }
+
+  for (const combination of EFFECT_BLOCKED_CLASS_COMBINATIONS) {
+    if (combination.every((className) => element.classList.contains(className))) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function collectPermittedBlockedDescendants (blockedElements, existingSet) {
+  if (!blockedElements || blockedElements.size === 0) {
+    return []
+  }
+
+  const descendants = new Set()
+  const visited = new Set()
+
+  blockedElements.forEach((blocked) => {
+    if (!blocked || visited.has(blocked) || !(blocked instanceof HTMLElement)) {
+      return
+    }
+
+    const queue = [blocked]
+
+    while (queue.length > 0) {
+      const current = queue.shift()
+      if (!current || visited.has(current) || !(current instanceof HTMLElement)) {
+        continue
+      }
+
+      visited.add(current)
+
+      if (shouldSkipAssimilationSubtree(current)) {
+        continue
+      }
+
+      const children = typeof current.children !== 'undefined'
+        ? Array.from(current.children)
+        : []
+
+      children.forEach((child) => {
+        if (child && !visited.has(child)) {
+          queue.push(child)
+        }
+      })
+
+      if (current === blocked || isDocumentRootElement(current)) {
+        continue
+      }
+
+      if (existingSet && existingSet.has(current)) {
+        continue
+      }
+
+      const rect = getElementRect(current)
+      if (!isVisibilityCandidate(current, rect)) {
+        continue
+      }
+
+      if (isEffectPermitted(current)) {
+        descendants.add(current)
+      }
+    }
+  })
+
+  return Array.from(descendants)
+}
+
+function collectVisibleEligibleElements (root) {
+  if (!root || !(root instanceof HTMLElement)) {
+    return { candidates: [], candidateSet: new Set() }
+  }
+
+  const queue = [root]
+  const visited = new Set()
+  const candidateSet = new Set()
+  const candidates = []
+  const blockedElements = new Set()
+
+  while (queue.length > 0) {
+    const current = queue.shift()
+    if (!current || visited.has(current) || !(current instanceof HTMLElement)) {
+      continue
+    }
+
+    visited.add(current)
+
+    if (shouldSkipAssimilationSubtree(current)) {
+      continue
+    }
+
+    const children = typeof current.children !== 'undefined'
+      ? Array.from(current.children)
+      : []
+
+    children.forEach((child) => {
+      if (child && !visited.has(child)) {
+        queue.push(child)
+      }
+    })
+
+    if (isDocumentRootElement(current)) {
+      continue
+    }
+
+    const rect = getElementRect(current)
+    if (!isVisibilityCandidate(current, rect)) {
+      continue
+    }
+
+    if (isEffectPermitted(current)) {
+      if (!candidateSet.has(current)) {
+        candidateSet.add(current)
+        candidates.push(current)
+      }
+    } else {
+      blockedElements.add(current)
+    }
+  }
+
+  const forcedDescendants = collectPermittedBlockedDescendants(blockedElements, candidateSet)
+  forcedDescendants.forEach((element) => {
+    if (!candidateSet.has(element)) {
+      candidateSet.add(element)
+      candidates.push(element)
+    }
+  })
+
+  return { candidates, candidateSet }
+}
+
+function shouldAlwaysAnimateElement (element) {
+  if (!element || !element.tagName) return false
+  return ALWAYS_ANIMATE_TAGS.has(element.tagName)
+}
+
+function getElementRect (element) {
+  if (!element || typeof element.getBoundingClientRect !== 'function') return null
+  try {
+    return element.getBoundingClientRect()
+  } catch (err) {
+    return null
+  }
+}
+
+function getLowerHalfThreshold (root) {
+  const { height: viewportHeight } = getViewportSize()
+  if (viewportHeight > 0) {
+    return viewportHeight / 2
+  }
+
+  const rootRect = getElementRect(root)
+  if (rootRect) {
+    return rootRect.top + (rootRect.height / 2)
+  }
+
+  return 0
+}
+
+function resolveGroupAnchor (element, root, threshold) {
+  if (!element) return null
+
+  let current = element
+  let anchor = element
+
+  while (current && current !== document.body) {
+    if (!isEligibleTarget(current)) {
+      break
+    }
+
+    const rect = getElementRect(current)
+    if (!rect) {
+      break
+    }
+
+    if (rect.top < threshold) {
+      break
+    }
+
+    anchor = current
+
+    const parent = current.parentElement
+    if (!parent || parent === document.body || parent === root) {
+      break
+    }
+
+    current = parent
+  }
+
+  return anchor
 }
 
 function clearJitterTimer (element) {
@@ -354,8 +809,251 @@ function shuffle (array) {
   return array
 }
 
+function chooseRepresentative (elements, used) {
+  if (!Array.isArray(elements) || elements.length === 0) {
+    return null
+  }
+
+  for (const element of elements) {
+    if (!used.has(element)) {
+      used.add(element)
+      return element
+    }
+  }
+
+  const fallback = elements[0]
+  if (fallback) {
+    used.add(fallback)
+  }
+  return fallback || null
+}
+
+function ensureTopLevelGroups (anchorGroups, minimumCount) {
+  const result = anchorGroups
+    .map(({ anchor, childGroups }) => ({
+      representative: anchor,
+      childGroups: childGroups.map((members) => members.slice()).filter((members) => members.length > 0)
+    }))
+    .filter((group) => group.childGroups.length > 0)
+
+  if (result.length === 0) {
+    return []
+  }
+
+  const usedRepresentatives = new Set(result.map((group) => group.representative).filter(Boolean))
+
+  const normalizeRepresentative = (group) => {
+    const flattened = group.childGroups.flat()
+    if (flattened.length === 0) {
+      group.representative = null
+      return
+    }
+    if (!flattened.includes(group.representative)) {
+      const replacement = chooseRepresentative(flattened, usedRepresentatives)
+      if (replacement) {
+        group.representative = replacement
+      }
+    }
+  }
+
+  const detachChildGroup = (donor, childGroup) => {
+    const clone = childGroup.slice()
+    const representative = chooseRepresentative(clone, usedRepresentatives)
+    return {
+      representative,
+      childGroups: [clone]
+    }
+  }
+
+  while (result.length < minimumCount) {
+    let donorIndex = -1
+    let donorChildIndex = -1
+    let largestSize = 0
+
+    result.forEach((group, groupIndex) => {
+      group.childGroups.forEach((childGroup, childIndex) => {
+        if (childGroup.length > largestSize || (childGroup.length === largestSize && group.childGroups.length > 1)) {
+          largestSize = childGroup.length
+          donorIndex = groupIndex
+          donorChildIndex = childIndex
+        }
+      })
+    })
+
+    if (donorIndex === -1 || donorChildIndex === -1) {
+      break
+    }
+
+    const donor = result[donorIndex]
+    const childGroup = donor.childGroups[donorChildIndex]
+
+    if (donor.childGroups.length > 1) {
+      donor.childGroups.splice(donorChildIndex, 1)
+      result.push(detachChildGroup(donor, childGroup))
+    } else if (childGroup.length > 1) {
+      const randomized = shuffle(childGroup.slice())
+      const splitPoint = Math.ceil(randomized.length / 2)
+      const firstHalf = randomized.slice(0, splitPoint)
+      const secondHalf = randomized.slice(splitPoint)
+
+      if (secondHalf.length === 0) {
+        break
+      }
+
+      donor.childGroups[0] = firstHalf
+      result.push(detachChildGroup(donor, secondHalf))
+    } else {
+      break
+    }
+
+    normalizeRepresentative(donor)
+  }
+
+  result.forEach((group) => normalizeRepresentative(group))
+
+  return result
+}
+
+function partitionGroupMembers (anchor, membersSet) {
+  const members = Array.from(membersSet).filter(Boolean)
+  if (members.length === 0) {
+    return []
+  }
+
+  const anchorElement = members.includes(anchor) ? anchor : members[0]
+  const remainingMembers = members.filter((member) => member !== anchorElement)
+
+  if (remainingMembers.length === 0) {
+    return [[anchorElement]]
+  }
+
+  shuffle(remainingMembers)
+
+  const groups = []
+  let anchorAdded = false
+  let pending = remainingMembers.slice()
+
+  while (pending.length > 0) {
+    const maxChunk = Math.min(4, pending.length)
+    const chunkSize = Math.max(1, Math.floor(Math.random() * maxChunk) + 1)
+    const chunk = pending.splice(0, chunkSize)
+
+    if (!anchorAdded) {
+      chunk.unshift(anchorElement)
+      anchorAdded = true
+    }
+
+    groups.push(chunk)
+  }
+
+  if (!anchorAdded) {
+    groups.push([anchorElement])
+  }
+
+  return groups
+}
+
+function buildAssimilationPlan () {
+  const root = document.querySelector('.layout__main') || document.body
+
+  if (!root) {
+    return { root: null, topLevelGroups: [], targets: [] }
+  }
+
+  const traversalRoot = (typeof document !== 'undefined' && document.body instanceof HTMLElement)
+    ? document.body
+    : root
+
+  const { candidates, candidateSet } = collectVisibleEligibleElements(traversalRoot)
+
+  if (!candidates || candidates.length === 0) {
+    return { root, topLevelGroups: [], targets: [] }
+  }
+
+  const threshold = getLowerHalfThreshold(root)
+  const parentCandidates = new Set()
+
+  candidates.forEach((element) => {
+    let ancestor = element.parentElement
+    while (ancestor && ancestor !== document.body && ancestor !== root) {
+      if (candidateSet.has(ancestor)) {
+        parentCandidates.add(ancestor)
+        break
+      }
+      ancestor = ancestor.parentElement
+    }
+  })
+
+  const leafSet = new Set(
+    candidates
+      .filter((element) => !parentCandidates.has(element))
+      .filter((element) => !shouldSkipAssimilationSubtree(element))
+      .filter((element) => isEffectPermitted(element))
+  )
+
+  parentCandidates.forEach((element) => {
+    if (!shouldSkipAssimilationSubtree(element) && shouldIncludeParentCandidate(element, candidateSet)) {
+      leafSet.add(element)
+    }
+  })
+
+  const leaves = Array.from(leafSet)
+
+  if (leaves.length === 0) {
+    return { root, topLevelGroups: [], targets: [] }
+  }
+
+  const groupMap = new Map()
+  leaves.forEach((element) => {
+    const anchor = resolveGroupAnchor(element, root, threshold) || element
+    if (!groupMap.has(anchor)) {
+      groupMap.set(anchor, new Set())
+    }
+    groupMap.get(anchor).add(element)
+  })
+
+  const randomizedAnchors = shuffle(Array.from(groupMap.entries()))
+  const anchorGroups = randomizedAnchors.map(([anchor, members]) => ({
+    anchor,
+    childGroups: partitionGroupMembers(anchor, members)
+  }))
+
+  let topLevelGroups = ensureTopLevelGroups(anchorGroups, MIN_TOP_LEVEL_GROUPS)
+
+  topLevelGroups = topLevelGroups
+    .map((group) => ({
+      representative: group.representative,
+      childGroups: group.childGroups.filter((child) => Array.isArray(child) && child.length > 0)
+    }))
+    .filter((group) => group.childGroups.length > 0)
+
+  if (topLevelGroups.length === 0) {
+    return { root, topLevelGroups: [], targets: [] }
+  }
+
+  const targetsSet = new Set()
+  topLevelGroups.forEach((group) => {
+    group.childGroups.forEach((child) => {
+      child.forEach((element) => {
+        if (
+          !shouldSkipAssimilationSubtree(element) &&
+          isEffectPermitted(element) &&
+          !isDocumentRootElement(element)
+        ) {
+          targetsSet.add(element)
+        }
+      })
+    })
+  })
+
+  return { root, topLevelGroups, targets: Array.from(targetsSet) }
+}
+
 function upgradeElement (element, baseDelay) {
   if (!element || element.dataset.ghostnetAssimilated === 'true') return
+  if (shouldSkipAssimilationSubtree(element)) return
+  if (!isEffectPermitted(element)) return
+  if (isDocumentRootElement(element)) return
   if (remainingCharacterAnimations <= 0) return
 
   element.dataset.ghostnetAssimilated = 'true'
@@ -387,7 +1085,15 @@ function upgradeElement (element, baseDelay) {
     spanWrapper.className = 'ghostnet-assimilation-text'
     const fragment = document.createDocumentFragment()
     const characters = Array.from(original)
-    const allowedCharacters = Math.min(characters.length, remainingCharacterAnimations)
+    const allowedCharacters = Math.min(
+      Math.max(0, Math.floor(characters.length / 2)),
+      remainingCharacterAnimations
+    )
+
+    if (allowedCharacters === 0) {
+      return
+    }
+
     for (let i = 0; i < allowedCharacters; i++) {
       const char = characters[i]
       const charSpan = document.createElement('span')
@@ -412,7 +1118,7 @@ function upgradeElement (element, baseDelay) {
   })
 
   const safeWindow = Math.max(180, effectDurationMs - baseDelay - 120)
-  const removalDelay = Math.max(180, Math.min(safeWindow, 900 + Math.random() * 450))
+  const removalDelay = Math.max(180, Math.min(safeWindow, effectDurationMs - baseDelay - 240))
 
   window.setTimeout(() => {
     element.classList.add('ghostnet-assimilation-remove')
@@ -427,88 +1133,52 @@ function upgradeElement (element, baseDelay) {
   }, removalDelay)
 }
 
-function buildElementList () {
-  const root = document.querySelector('.layout__main') || document.body
-  if (!root) {
-    return { root: null, elements: [] }
-  }
-  const elements = Array.from(root.querySelectorAll('*')).filter((element) => isEligibleTarget(element))
-
-  if (root !== document.body && root instanceof HTMLElement && isEligibleTarget(root)) {
-    elements.push(root)
-  }
-
-  return {
-    root,
-    elements: shuffle(elements)
-  }
-}
-
-function findFallbackTarget (element, primarySet, fallbackSet, root) {
-  if (!element) return null
-  const rootElement = root || document.body
-  const candidates = []
-  let current = element.parentElement
-
-  while (current) {
-    if (primarySet.has(current) || fallbackSet.has(current)) {
-      return null
-    }
-
-    if (!isForbiddenFallbackCandidate(current) && isEligibleTarget(current)) {
-      candidates.push(current)
-    }
-
-    if (current === rootElement || current === document.body) {
-      break
-    }
-
-    current = current.parentElement
-  }
-
-  for (let i = candidates.length - 1; i >= 0; i--) {
-    const candidate = candidates[i]
-    if (!isForbiddenFallbackCandidate(candidate) && !primarySet.has(candidate) && !fallbackSet.has(candidate)) {
-      return candidate
-    }
-  }
-
-  if (!isForbiddenFallbackCandidate(rootElement) && isEligibleTarget(rootElement) && !primarySet.has(rootElement) && !fallbackSet.has(rootElement)) {
-    return rootElement
-  }
-
-  return null
-}
-
 function beginAssimilationEffect () {
-  const { root, elements: shuffledElements } = buildElementList()
-  const primaryTargets = shuffledElements.slice(0, MAX_ACTIVE_TARGETS)
-  const primarySet = new Set(primaryTargets)
-  const overflowTargets = shuffledElements.slice(MAX_ACTIVE_TARGETS)
-  const fallbackSet = new Set()
-
-  overflowTargets.forEach((element) => {
-    const fallback = findFallbackTarget(element, primarySet, fallbackSet, root)
-    if (fallback) {
-      fallbackSet.add(fallback)
-    }
-  })
-
-  const targets = shuffle(Array.from(new Set([...primaryTargets, ...fallbackSet])))
+  const { topLevelGroups, targets } = buildAssimilationPlan()
   assimilationStartTime = performance.now()
   document.body.classList.add('ghostnet-assimilation-mode')
   showAssimilationOverlay()
 
-  targets.forEach((element) => {
-    const delay = Math.random() * (effectDurationMs * 0.55)
-    window.setTimeout(() => {
-      upgradeElement(element, delay)
-    }, delay)
-  })
+  if (topLevelGroups.length > 0) {
+    const scheduler = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
+      ? window.requestAnimationFrame.bind(window)
+      : (callback) => window.setTimeout(callback, 16)
+
+    scheduler(() => {
+      const topLevelDelayStep = topLevelGroups.length > 0
+        ? Math.min(420, effectDurationMs / Math.max(1, topLevelGroups.length))
+        : 0
+
+      topLevelGroups.forEach((group, groupIndex) => {
+        const baseDelay = groupIndex * topLevelDelayStep
+        const nestedGroups = Array.isArray(group.childGroups) ? group.childGroups : []
+
+        if (nestedGroups.length === 0) {
+          if (group.representative) {
+            upgradeElement(group.representative, baseDelay)
+          }
+          return
+        }
+
+        const nestedDelayStep = nestedGroups.length > 1
+          ? Math.min(260, topLevelDelayStep / nestedGroups.length)
+          : 0
+
+        nestedGroups.forEach((childGroup, childIndex) => {
+          const childDelay = baseDelay + (childIndex * nestedDelayStep)
+          childGroup.forEach((element) => {
+            upgradeElement(element, childDelay)
+          })
+        })
+      })
+    })
+  }
+
+  const uniqueTargets = Array.from(new Set(targets))
 
   const cleanup = () => {
     document.body.classList.remove('ghostnet-assimilation-mode')
-    targets.forEach((element) => {
+    uniqueTargets.forEach((element) => {
       if (!element) return
       element.classList.remove('ghostnet-assimilation-target', 'ghostnet-assimilation-remove', 'ghostnet-assimilation-force-fade')
       clearJitterTimer(element)
@@ -527,7 +1197,7 @@ function beginAssimilationEffect () {
     document.body.classList.remove('ghostnet-assimilation-forced')
   }
 
-  return { cleanup, targets }
+  return { cleanup, targets: uniqueTargets }
 }
 
 export function initiateGhostnetAssimilation (callback) {
