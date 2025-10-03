@@ -2609,11 +2609,15 @@ function CommodityTradePanel () {
                                     <div className={styles.stationCellText}>
                                       <div className={styles.stationName}>{listing.stationName || 'Unknown Station'}</div>
                                       <div className={styles.stationSystem}>{listing.systemName || 'Unknown System'}</div>
-                                      {listing.stationType ? (
-                                        <div className={styles.stationMeta}>{listing.stationType}</div>
-                                      ) : null}
-                                      {isSelected ? (
-                                        <div className={styles.stationSelectionTag}>In Context</div>
+                                      {(listing.stationType || isSelected) ? (
+                                        <div className={styles.stationMetaRow}>
+                                          {listing.stationType ? (
+                                            <div className={styles.stationMeta}>{listing.stationType}</div>
+                                          ) : null}
+                                          {isSelected ? (
+                                            <span className={styles.stationSelectionTag}>In Context</span>
+                                          ) : null}
+                                        </div>
                                       ) : null}
                                     </div>
                                   </div>
@@ -2662,6 +2666,39 @@ function CommodityTradePanel () {
                   const stationType = sanitizeInaraText(summary.stationType) || summary.stationType || ''
                   const stationIcon = stationIconFromType(stationType || '')
                   const quantityDisplay = Number(summary.quantity || 0).toLocaleString()
+                  const stationMetrics = []
+                  if (summarySystemDistance) {
+                    stationMetrics.push(
+                      <div key='system-distance' className={`${styles.contextSummaryFootnote} ${styles.contextSummaryMetric}`}>
+                        <span className={styles.contextSummaryMetricLabel}>System Distance</span>
+                        <span className={styles.contextSummaryMetricValue}>{summarySystemDistance}</span>
+                      </div>
+                    )
+                  }
+                  if (summaryStationDistance) {
+                    stationMetrics.push(
+                      <div key='station-distance' className={`${styles.contextSummaryFootnote} ${styles.contextSummaryMetric}`}>
+                        <span className={styles.contextSummaryMetricLabel}>Station Distance</span>
+                        <span className={styles.contextSummaryMetricValue}>{summaryStationDistance}</span>
+                      </div>
+                    )
+                  }
+                  if (summaryUpdated) {
+                    stationMetrics.push(
+                      <div key='updated-at' className={`${styles.contextSummaryFootnote} ${styles.contextSummaryMetric}`}>
+                        <span className={styles.contextSummaryMetricLabel}>Updated</span>
+                        <span className={styles.contextSummaryMetricValue}>{summaryUpdated}</span>
+                      </div>
+                    )
+                  }
+                  if (summaryDemandIndicator) {
+                    stationMetrics.push(
+                      <div key='demand' className={`${styles.contextSummaryFootnote} ${styles.contextSummaryMetric}`}>
+                        <span className={styles.contextSummaryMetricLabel}>Demand</span>
+                        <span className={styles.contextSummaryMetricValue}>{summaryDemandIndicator}</span>
+                      </div>
+                    )
+                  }
                   return (
                     <div className={styles.contextSummary}>
                       <div className={styles.contextSummaryGroup}>
@@ -2681,34 +2718,27 @@ function CommodityTradePanel () {
                       </div>
                       <div className={styles.contextSummaryGroup}>
                         <span className={styles.contextSummaryLabel}>Station Context</span>
-                        <div className={styles.contextSummaryEntity}>
-                          <div className={styles.contextSummaryIcon}>
-                            <StationIcon icon={stationIcon} size={24} />
+                        <div className={styles.contextSummaryStationRow}>
+                          <div className={styles.contextSummaryEntity}>
+                            <div className={styles.contextSummaryIcon}>
+                              <StationIcon icon={stationIcon} size={24} />
+                            </div>
+                            <div className={styles.contextSummaryHeading}>
+                              <span className={styles.contextSummaryValue}>{stationName}</span>
+                              {systemName ? (
+                                <span className={styles.contextSummaryFootnote}>{systemName}</span>
+                              ) : null}
+                              {stationType ? (
+                                <span className={styles.contextSummaryFootnote}>{stationType}</span>
+                              ) : null}
+                            </div>
                           </div>
-                          <div className={styles.contextSummaryHeading}>
-                            <span className={styles.contextSummaryValue}>{stationName}</span>
-                            {systemName ? (
-                              <span className={styles.contextSummaryFootnote}>{systemName}</span>
-                            ) : null}
-                            {stationType ? (
-                              <span className={styles.contextSummaryFootnote}>{stationType}</span>
-                            ) : null}
-                          </div>
+                          {stationMetrics.length > 0 ? (
+                            <div className={styles.contextSummaryMetrics}>
+                              {stationMetrics}
+                            </div>
+                          ) : null}
                         </div>
-                        {summarySystemDistance ? (
-                          <span className={styles.contextSummaryFootnote}>System Distance: {summarySystemDistance}</span>
-                        ) : null}
-                        {summaryStationDistance ? (
-                          <span className={styles.contextSummaryFootnote}>Station Distance: {summaryStationDistance}</span>
-                        ) : null}
-                        {summaryUpdated ? (
-                          <span className={styles.contextSummaryFootnote}>Updated {summaryUpdated}</span>
-                        ) : null}
-                        {summaryDemandIndicator ? (
-                          <span className={styles.contextSummaryFootnote}>
-                            Demand: {summaryDemandIndicator}
-                          </span>
-                        ) : null}
                       </div>
                       <div className={styles.contextSummaryGroup}>
                         <span className={styles.contextSummaryLabel}>Value</span>
