@@ -5019,12 +5019,6 @@ export default function GhostnetPage() {
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div className={ghostnetClassName}>
           <div className={styles.hero}>
-            <div className={styles.heroHeader}>
-              <h1 className={styles.heroTitle}>Ghost Net</h1>
-              <p className={styles.heroSubtitle}>
-                Ghost Net intercept feed compiled from GHOSTNET community relays.
-              </p>
-            </div>
             <aside className={styles.heroStatus} role='complementary' aria-label='Signal Brief'>
               <dl className={styles.heroStatusList}>
                 <div className={styles.heroStatusItem}>

@@ -28,10 +28,10 @@ describe('Ghost Net page', () => {
     mockEventListener.mockClear()
   })
 
-  it('renders the Ghost Net hero and status summary', async () => {
+  it('renders the Ghost Net status summary without the hero heading', async () => {
     await act(async () => { render(<GhostnetPage />) })
 
-    expect(await screen.findByRole('heading', { level: 1, name: /ghost net/i })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1, name: /ghost net/i })).not.toBeInTheDocument()
 
     const statusPanel = await screen.findByRole('complementary', { name: /signal brief/i })
     expect(within(statusPanel).getByText(/uplink/i)).toBeInTheDocument()
