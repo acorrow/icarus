@@ -13,10 +13,36 @@ import packageJson from '../../../package.json'
 function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPanel = 'Theme' }) {
   const [activeSettingsPanel, setActiveSettingsPanel] = useState(defaultActiveSettingsPanel)
 
+  useEffect(() => {
+    if (typeof document === 'undefined' || !document.body) return undefined
+
+    const { body } = document
+    if (visible) {
+      body.classList.add('assimilation-paused')
+    } else {
+      body.classList.remove('assimilation-paused')
+    }
+
+    return () => {
+      body.classList.remove('assimilation-paused')
+    }
+  }, [visible])
+
   return (
     <>
-      <div className='modal-dialog__background' style={{ opacity: visible ? 1 : 0, visibility: visible ? 'visible' : 'hidden' }} onClick={toggleVisible} />
-      <div className='modal-dialog' style={{ opacity: visible ? 1 : 0, visibility: visible ? 'visible' : 'hidden' }}>
+      <div
+        className='modal-dialog__background'
+        role='presentation'
+        data-no-assimilation
+        style={{ opacity: visible ? 1 : 0, visibility: visible ? 'visible' : 'hidden' }}
+        onClick={toggleVisible}
+      />
+      <div
+        className='modal-dialog'
+        role='dialog'
+        data-no-assimilation
+        style={{ opacity: visible ? 1 : 0, visibility: visible ? 'visible' : 'hidden' }}
+      >
         <h2 className='modal-dialog__title'>Settings</h2>
         <hr />
         <div className='secondary-navigation modal-dialog__navigation'>

@@ -36,6 +36,14 @@ let remainingCharacterAnimations = MAX_CHARACTER_ANIMATIONS
 
 const ALWAYS_ANIMATE_TAGS = new Set(['H', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'SPAN'])
 
+const CANDIDATE_SELECTOR = [
+  'main',
+  'h1,h2,h3,h4,h5',
+  'p,li,a,button',
+  '#primaryNavigation button',
+  '[data-assimilate]'
+].join(',')
+
 let cachedMainHeaderElement = null
 let attemptedHeaderLookup = false
 
@@ -107,6 +115,15 @@ function isInMainHeaderSection (element) {
 }
 
 function shouldSkipAssimilationSubtree (element) {
+  if (!element) return false
+
+  if (element instanceof HTMLElement && typeof element.closest === 'function') {
+    const blocked = element.closest('[data-no-assimilation]')
+    if (blocked && blocked instanceof HTMLElement) {
+      return true
+    }
+  }
+
   return isInMainHeaderSection(element) || isInAssimilationOverlaySection(element)
 }
 
@@ -471,12 +488,30 @@ function isEligibleTarget (element) {
     return false
   }
 
-  return isEffectPermitted(element)
+  if (!isEffectPermitted(element)) {
+    return false
+  }
+
+  if (!elementMatchesCandidateSelector(element)) {
+    return false
+  }
+
+  if (!hasVisibleText(element)) {
+    return false
+  }
+
+  if (isOverlayLike(element)) {
+    return false
+  }
+
+  return true
 }
 
 function shouldIncludeParentCandidate (element, candidateSet) {
   if (!element || !candidateSet) return false
   if (!isEffectPermitted(element)) return false
+  if (!hasVisibleText(element)) return false
+  if (isOverlayLike(element)) return false
 
   if (shouldAlwaysAnimateElement(element)) {
     return true
@@ -556,7 +591,7 @@ function hasBlockedEffectClass (element) {
   return false
 }
 
-function collectPermittedBlockedDescendants (blockedElements, existingSet) {
+function collectPermittedBlockedDescendants (blockedElements, existingSet, targetedElements) {
   if (!blockedElements || blockedElements.size === 0) {
     return []
   }
@@ -607,6 +642,18 @@ function collectPermittedBlockedDescendants (blockedElements, existingSet) {
       }
 
       if (isEffectPermitted(current)) {
+        const hasCandidate = targetedElements && targetedElements.size > 0
+          ? targetedElements.has(current)
+          : elementMatchesCandidateSelector(current)
+        if (!hasCandidate) {
+          continue
+        }
+        if (!hasVisibleText(current)) {
+          continue
+        }
+        if (isOverlayLike(current)) {
+          continue
+        }
         descendants.add(current)
       }
     }
@@ -625,6 +672,20 @@ function collectVisibleEligibleElements (root) {
   const candidateSet = new Set()
   const candidates = []
   const blockedElements = new Set()
+  const targetedElements = new Set()
+
+  if (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') {
+    try {
+      const matches = document.querySelectorAll(CANDIDATE_SELECTOR)
+      matches.forEach((match) => {
+        if (match instanceof HTMLElement) {
+          targetedElements.add(match)
+        }
+      })
+    } catch (err) {
+      // Ignore selector issues in unsupported environments
+    }
+  }
 
   while (queue.length > 0) {
     const current = queue.shift()
@@ -658,6 +719,18 @@ function collectVisibleEligibleElements (root) {
     }
 
     if (isEffectPermitted(current)) {
+      const hasCandidate = targetedElements.size > 0
+        ? targetedElements.has(current)
+        : elementMatchesCandidateSelector(current)
+      if (!hasCandidate) {
+        continue
+      }
+      if (!hasVisibleText(current)) {
+        continue
+      }
+      if (isOverlayLike(current)) {
+        continue
+      }
       if (!candidateSet.has(current)) {
         candidateSet.add(current)
         candidates.push(current)
@@ -667,7 +740,7 @@ function collectVisibleEligibleElements (root) {
     }
   }
 
-  const forcedDescendants = collectPermittedBlockedDescendants(blockedElements, candidateSet)
+  const forcedDescendants = collectPermittedBlockedDescendants(blockedElements, candidateSet, targetedElements)
   forcedDescendants.forEach((element) => {
     if (!candidateSet.has(element)) {
       candidateSet.add(element)
@@ -681,6 +754,90 @@ function collectVisibleEligibleElements (root) {
 function shouldAlwaysAnimateElement (element) {
   if (!element || !element.tagName) return false
   return ALWAYS_ANIMATE_TAGS.has(element.tagName)
+}
+
+function elementMatchesCandidateSelector (element) {
+  if (!element || !(element instanceof HTMLElement)) return false
+  if (shouldAlwaysAnimateElement(element)) {
+    return true
+  }
+  if (typeof element.matches !== 'function') {
+    return false
+  }
+  try {
+    return element.matches(CANDIDATE_SELECTOR)
+  } catch (err) {
+    return false
+  }
+}
+
+const hasVisibleText = (el) => {
+  if (!el) return false
+  const text = (el.textContent || '').replace(/\s+/g, '')
+  if (!text) return false
+  if (typeof el.getBoundingClientRect !== 'function') return false
+  let rect
+  try {
+    rect = el.getBoundingClientRect()
+  } catch (err) {
+    rect = null
+  }
+  if (!rect) return false
+  return rect.width > 0 && rect.height > 0
+}
+
+const hasDecorativeAfter = (el) => {
+  if (!el || typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') {
+    return false
+  }
+  let after
+  try {
+    after = window.getComputedStyle(el, '::after')
+  } catch (err) {
+    after = null
+  }
+  if (!after) return false
+  const content = after.content
+  if (!content || content === 'none' || content === 'normal' || content === '""') {
+    return false
+  }
+  const positioned = after.position === 'fixed' || after.position === 'absolute'
+  const visibleBg = after.backgroundColor && after.backgroundColor !== 'rgba(0, 0, 0, 0)' && after.backgroundColor !== 'transparent'
+  const opacityValue = parseFloat(after.opacity || '1')
+  const opaque = Number.isFinite(opacityValue) ? opacityValue > 0.01 : true
+  return positioned && (visibleBg || opaque)
+}
+
+const isOverlayLike = (el) => {
+  if (!el) return false
+  let computed
+  if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+    try {
+      computed = window.getComputedStyle(el)
+    } catch (err) {
+      computed = null
+    }
+  }
+  if (computed && computed.position === 'fixed') {
+    let rect = null
+    if (typeof el.getBoundingClientRect === 'function') {
+      try {
+        rect = el.getBoundingClientRect()
+      } catch (err) {
+        rect = null
+      }
+    }
+    if (rect && typeof window !== 'undefined') {
+      const viewportArea = window.innerWidth * window.innerHeight
+      if (viewportArea > 0) {
+        const coverage = (rect.width * rect.height) / viewportArea
+        if (coverage > 0.8) {
+          return true
+        }
+      }
+    }
+  }
+  return hasDecorativeAfter(el)
 }
 
 function getElementRect (element) {
@@ -762,6 +919,16 @@ function fadeAssimilationTargets (elements) {
 
 function scheduleJitter (element) {
   if (!element || !assimilationInProgress) return
+
+  if (
+    typeof document !== 'undefined' &&
+    document.body &&
+    document.body.classList &&
+    document.body.classList.contains('assimilation-paused')
+  ) {
+    clearJitterTimer(element)
+    return
+  }
 
   const elapsed = Math.max(0, performance.now() - assimilationStartTime)
   const progress = Math.min(1, elapsed / effectDurationMs)
@@ -992,6 +1159,8 @@ function buildAssimilationPlan () {
       .filter((element) => !parentCandidates.has(element))
       .filter((element) => !shouldSkipAssimilationSubtree(element))
       .filter((element) => isEffectPermitted(element))
+      .filter((element) => hasVisibleText(element))
+      .filter((element) => !isOverlayLike(element))
   )
 
   parentCandidates.forEach((element) => {
@@ -1041,7 +1210,9 @@ function buildAssimilationPlan () {
         if (
           !shouldSkipAssimilationSubtree(element) &&
           isEffectPermitted(element) &&
-          !isDocumentRootElement(element)
+          !isDocumentRootElement(element) &&
+          hasVisibleText(element) &&
+          !isOverlayLike(element)
         ) {
           targetsSet.add(element)
         }
@@ -1056,6 +1227,9 @@ function upgradeElement (element, baseDelay) {
   if (!element || element.dataset.ghostnetAssimilated === 'true') return
   if (shouldSkipAssimilationSubtree(element)) return
   if (!isEffectPermitted(element)) return
+  if (!elementMatchesCandidateSelector(element)) return
+  if (!hasVisibleText(element)) return
+  if (isOverlayLike(element)) return
   if (isDocumentRootElement(element)) return
   if (remainingCharacterAnimations <= 0) return
 
@@ -1205,6 +1379,11 @@ function beginAssimilationEffect () {
 
 export function initiateGhostnetAssimilation (callback) {
   if (typeof window === 'undefined') {
+    if (typeof callback === 'function') callback()
+    return
+  }
+
+  if (document && document.body && document.body.classList && document.body.classList.contains('assimilation-paused')) {
     if (typeof callback === 'function') callback()
     return
   }

@@ -3616,6 +3616,26 @@ export default function GhostnetPage() {
     <Layout connected={connected} active={socketActive} ready={ready} loader={false}>
       <Panel layout='full-width' navigation={navigationItems} search={false}>
         <div className={ghostnetClassName}>
+          <div className={styles.hero}>
+            <div className={styles.heroHeader}>
+              <h1 className={styles.heroTitle}>Ghost Net</h1>
+              <p className={styles.heroSubtitle}>
+                Ghost Net intercept feed compiled from GHOSTNET community relays.
+              </p>
+            </div>
+            <aside className={styles.heroStatus} role='complementary' aria-label='Signal Brief'>
+              <dl className={styles.heroStatusList}>
+                <div className={styles.heroStatusItem}>
+                  <dt className={styles.heroStatusLabel}>Uplink</dt>
+                  <dd className={styles.heroStatusValue}>Linking</dd>
+                </div>
+                <div className={styles.heroStatusItem}>
+                  <dt className={styles.heroStatusLabel}>Focus</dt>
+                  <dd className={styles.heroStatusValue}>Idle</dd>
+                </div>
+              </dl>
+            </aside>
+          </div>
           <div className={styles.shell}>
             <div className={styles.tabPanels}>
               <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
