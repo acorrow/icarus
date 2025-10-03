@@ -1834,6 +1834,7 @@ function CargoHoldPanel () {
   const [stationSortField, setStationSortField] = useState('price')
   const [stationSortDirection, setStationSortDirection] = useState('desc')
   const [usingMockCargo, setUsingMockCargo] = useState(false)
+  const tableContainerRef = useRef(null)
 
   const applyCargoInventory = useCallback(inventory => {
     const manifest = Array.isArray(inventory)
@@ -2168,6 +2169,27 @@ function CargoHoldPanel () {
   const hasCargo = Array.isArray(cargo) && cargo.length > 0
   const hasPricedRows = commodityRows.some(row => typeof row.bestPrice === 'number')
   const hasDisplayableRows = hasPricedRows || nonCommodityRows.length > 0
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    if (status !== 'ready') return undefined
+    const container = tableContainerRef.current
+    if (!container) return undefined
+
+    const timeoutId = window.setTimeout(() => {
+      container.querySelectorAll('[data-ghostnet-table-row]').forEach(element => {
+        if (element.getAttribute('data-ghostnet-table-row') !== 'visible') {
+          element.setAttribute('data-ghostnet-table-row', 'visible')
+        }
+      })
+    }, 600)
+
+    return () => {
+      if (typeof window !== 'undefined' && typeof window.clearTimeout === 'function') {
+        window.clearTimeout(timeoutId)
+      }
+    }
+  }, [status, cargoKey, valuation?.results?.length])
 
   useEffect(() => {
     if (!activeCommodityDetail) return
@@ -2973,7 +2995,7 @@ function CargoHoldPanel () {
                 ) : null}
 
                 {status === 'ready' && hasCargo && hasDisplayableRows && (
-                  <div className={styles.dataTableContainer}>
+                  <div className={styles.dataTableContainer} ref={tableContainerRef}>
                     <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
                       <colgroup>
                         <col style={{ width: '32%' }} />
