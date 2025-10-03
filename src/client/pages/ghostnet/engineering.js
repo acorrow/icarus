@@ -21,7 +21,7 @@ export default function GhostnetEngineeringOpportunitiesPage () {
   const router = useRouter()
   const navigationItems = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', onClick: () => router.push('/ghostnet') },
-    { name: 'Commodity Trade', icon: 'cargo', onClick: () => router.push('/ghostnet') },
+    { name: 'Cargo Hold', icon: 'cargo', onClick: () => router.push('/ghostnet') },
     { name: 'Missions', icon: 'asteroid-base', onClick: () => router.push('/ghostnet') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', onClick: () => router.push('/ghostnet') },
     { name: 'Engineering Opportunities', icon: 'engineer', active: true },
