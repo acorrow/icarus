@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Layout from 'components/layout'
 import Panel from 'components/panel'
-import PanelNavigation from 'components/panel-navigation'
 import { useSocket, sendEvent, eventListener } from 'lib/socket'
 import distance from '../../../shared/distance'
 import styles from '../ghostnet.module.css'
@@ -164,8 +163,7 @@ export default function GhostnetEngineeringOpportunitiesPage () {
 
   return (
     <Layout connected={connected} active={active} ready={ready} loader={!componentReady}>
-      <PanelNavigation items={NAV_ITEMS} />
-      <Panel layout='full-width' scrollable>
+      <Panel layout='full-width' scrollable navigation={NAV_ITEMS}>
         <div className={styles.ghostnet}>
           <div className={styles.hero}>
             <div className={styles.heroHeader}>
