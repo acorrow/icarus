@@ -3606,6 +3606,7 @@ export default function GhostnetPage() {
     { name: 'Commodity Trade', icon: 'cargo', active: activeTab === 'commodityTrade', onClick: () => setActiveTab('commodityTrade') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
+    { name: 'Engineering Opportunities', icon: 'engineer', active: false, url: '/ghostnet/engineering' },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
 
   ]), [activeTab])

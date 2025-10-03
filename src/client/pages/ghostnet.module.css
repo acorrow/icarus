@@ -780,6 +780,117 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   margin-top: 0.45rem;
 }
 
+.opportunityIntro {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.opportunityName {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  font-size: 1.05rem;
+}
+
+.gradeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--ghostnet-border-regular);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  color: var(--ghostnet-accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 0.85rem;
+}
+
+.moduleTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.moduleTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 22%, transparent);
+  color: var(--ghostnet-text-soft);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.materialList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.materialItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+  align-items: baseline;
+}
+
+.materialName {
+  color: var(--ghostnet-ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.materialCount {
+  color: var(--ghostnet-muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+
+.engineerList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.engineerItem {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.engineerName {
+  color: var(--ghostnet-ink);
+  font-weight: 600;
+}
+
+.engineerMeta {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  color: var(--ghostnet-text-soft);
+  font-size: 0.85rem;
+}
+
+.engineerStatus {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ghostnet-muted);
+}
+
+.engineerStatusUnlocked {
+  color: var(--ghostnet-accent);
+}
+
 .tableIndicatorPlaceholder {
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
   font-size: 0.82rem;
