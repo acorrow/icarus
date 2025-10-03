@@ -105,7 +105,28 @@ function isInMainHeaderSection (element) {
 }
 
 function shouldSkipAssimilationSubtree (element) {
-  return isInMainHeaderSection(element)
+  return isInMainHeaderSection(element) || isInAssimilationOverlaySection(element)
+}
+
+function isInAssimilationOverlaySection (element) {
+  if (!element || !(element instanceof HTMLElement)) return false
+
+  if (
+    element.classList &&
+    (element.classList.contains('ghostnet-assimilation-overlay') ||
+      element.classList.contains('ghostnet-assimilation-dialog'))
+  ) {
+    return true
+  }
+
+  if (typeof element.closest === 'function') {
+    const overlay = element.closest('.ghostnet-assimilation-overlay')
+    if (overlay && overlay instanceof HTMLElement) {
+      return true
+    }
+  }
+
+  return false
 }
 
 const ASSIMILATION_ALERT_LINES = [
