@@ -1,0 +1,98 @@
+.stationCell {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.stationCellText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stationMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stationName {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.stationSystem {
+  font-size: 0.78rem;
+  color: var(--ghostnet-muted);
+}
+
+.stationMeta {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 58%, transparent);
+}
+
+.stationSelectionTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ghostnet-color-success);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-success) 60%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ghostnet-color-success) 18%, transparent);
+}
+
+.stationMetrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.stationMetric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--ghostnet-muted);
+}
+
+.stationMetricLabel {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.66rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 58%, transparent);
+}
+
+.stationDemand {
+  margin-top: 0.25rem;
+}
+
+.demandIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.demandIndicatorSubtle {
+  font-size: 0.88em;
+}
+
+.demandIndicatorArrow {
+  font-size: 0.85em;
+  line-height: 1;
+}
+
+.demandIndicatorArrowHigh {
+  color: var(--ghostnet-color-success);
+}
+
+.demandIndicatorArrowLow {
+  color: var(--ghostnet-color-warning);
+}

@@ -3,10 +3,15 @@ import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
 import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
+import StationSummary, { StationIcon, DemandIndicator } from '../components/ghostnet/station-summary'
+import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
+import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/ghostnet-formatters'
+import { sanitizeInaraText } from '../lib/sanitize-inara-text'
+import { stationIconFromType, getStationIconName } from '../lib/station-icons'
 import styles from './ghostnet.module.css'
 
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
@@ -25,102 +30,6 @@ const SHIP_STATUS_UPDATE_EVENTS = new Set([
   'ShipyardNew',
   'ShipyardTransfer'
 ])
-
-function formatSystemDistance (value, fallback) {
-  if (typeof value === 'number' && !Number.isNaN(value)) {
-    return `${value.toFixed(2)} Ly`
-  }
-  return fallback || ''
-}
-
-function formatStationDistance (value, fallback) {
-  if (typeof value === 'number' && !Number.isNaN(value)) {
-    return `${Math.round(value).toLocaleString()} Ls`
-  }
-  return fallback || ''
-}
-
-const INARA_ARTIFACT_PATTERN = /[\u25A0-\u25AF\u25FB-\u25FE\uFFFD]/gu
-const DEMAND_ARROW_PATTERN = /[▲△▴▵▼▽▾▿↑↓]/g
-
-function sanitizeInaraText (value) {
-  if (typeof value !== 'string') return ''
-  return value.replace(INARA_ARTIFACT_PATTERN, '').replace(/\s+/g, ' ').trim()
-}
-
-const COMMODITY_CATEGORY_ICON_MAP = {
-  chemicals: { icon: 'barrel', color: 'var(--ghostnet-color-warning)' },
-  'consumer items': { icon: 'cargo', color: 'var(--ghostnet-accent)' },
-  foods: { icon: 'plant', color: 'var(--ghostnet-color-success)' },
-  'industrial materials': { icon: 'materials-manufactured', color: 'var(--ghostnet-accent)' },
-  'legal drugs': { icon: 'warning', color: 'var(--ghostnet-color-warning)' },
-  machinery: { icon: 'cogs', color: 'var(--ghostnet-accent)' },
-  medicines: { icon: 'help', color: 'var(--ghostnet-color-success)' },
-  metals: { icon: 'materials-raw', color: 'var(--ghostnet-accent)' },
-  minerals: { icon: 'materials', color: 'var(--ghostnet-accent)' },
-  nonmarketable: { icon: 'inventory', color: 'var(--ghostnet-subdued)' },
-  salvage: { icon: 'cargo-export', color: 'var(--ghostnet-accent)' },
-  slavery: { icon: 'system-authority', color: 'var(--ghostnet-color-warning)' },
-  technology: { icon: 'power', color: 'var(--ghostnet-accent)' },
-  textiles: { icon: 'materials-grade-1', color: 'var(--ghostnet-accent)' },
-  waste: { icon: 'warning', color: 'var(--ghostnet-color-warning)' },
-  weapons: { icon: 'shield', color: 'var(--ghostnet-color-warning)' },
-  default: { icon: 'cargo', color: 'var(--ghostnet-accent)' }
-}
-
-function getCommodityIconConfig (category) {
-  const key = typeof category === 'string' ? category.trim().toLowerCase() : ''
-  return COMMODITY_CATEGORY_ICON_MAP[key] || COMMODITY_CATEGORY_ICON_MAP.default
-}
-
-function CommodityIcon ({ category, size = 26 }) {
-  const config = getCommodityIconConfig(category)
-  const paths = Icons[config.icon]
-  if (!paths) return null
-  const viewBox = config.icon === 'asteroid-base' ? '0 0 2000 2000' : '0 0 1000 1000'
-  return (
-    <svg
-      viewBox={viewBox}
-      focusable='false'
-      aria-hidden='true'
-      style={{ width: size, height: size, fill: config.color, flexShrink: 0 }}
-    >
-      {paths}
-    </svg>
-  )
-}
-
-CommodityIcon.defaultProps = {
-  category: '',
-  size: 26
-}
-
-function renderDemandTrend (label, isLow, { subtle = false } = {}) {
-  const rawLabel = typeof label === 'string' ? label : ''
-  const cleaned = sanitizeInaraText(rawLabel)
-  const arrowMatches = rawLabel.match(DEMAND_ARROW_PATTERN) || []
-  const containsDownArrow = arrowMatches.some(char => /[▼▽▾▿↓]/.test(char))
-  const containsUpArrow = arrowMatches.some(char => /[▲△▴▵↑]/.test(char))
-  const direction = containsDownArrow && !containsUpArrow
-    ? 'down'
-    : (containsUpArrow && !containsDownArrow
-        ? 'up'
-        : (isLow ? 'down' : 'up'))
-  const arrowSymbol = direction === 'down' ? String.fromCharCode(0x25BC) : String.fromCharCode(0x25B2)
-  const arrowCount = Math.min(Math.max(arrowMatches.length || 1, 1), 4)
-  if (!cleaned && arrowMatches.length === 0) return null
-  const displayLabel = cleaned.replace(DEMAND_ARROW_PATTERN, '').trim()
-  const containerClassNames = [styles.demandIndicator]
-  if (subtle) containerClassNames.push(styles.demandIndicatorSubtle)
-  const arrowClassNames = [styles.demandIndicatorArrow]
-  arrowClassNames.push(direction === 'down' ? styles.demandIndicatorArrowLow : styles.demandIndicatorArrowHigh)
-  return (
-    <span className={containerClassNames.join(' ')}>
-      <span className={arrowClassNames.join(' ')} aria-hidden='true'>{arrowSymbol.repeat(arrowCount)}</span>
-      {displayLabel ? <span>{displayLabel}</span> : null}
-    </span>
-  )
-}
 
 function LoadingSpinner ({ label, inline = false }) {
   return (
@@ -238,24 +147,6 @@ function findSystemObjectByName (systemData, name) {
   if (match) return match
 
   return null
-}
-
-function formatRelativeTime (value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return typeof value === 'string' ? value : ''
-  }
-  const diffMs = Date.now() - date.getTime()
-  if (diffMs < 0) return 'Just now'
-  const minutes = Math.floor(diffMs / 60000)
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`
-  const days = Math.floor(hours / 24)
-  if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`
-  return date.toLocaleDateString()
 }
 
 function getTimestampValue (value) {
@@ -515,32 +406,6 @@ function resolveRouteFactionName (localData, endpointData) {
   }
 
   return ''
-}
-
-function stationIconFromType(type = '') {
-  const lower = type.toLowerCase()
-  if (lower.includes('asteroid')) return 'asteroid-base'
-  if (lower.includes('outpost')) return 'outpost'
-  if (lower.includes('ocellus')) return 'ocellus-starport'
-  if (lower.includes('orbis')) return 'orbis-starport'
-  if (lower.includes('planetary port') || lower.includes('planetary outpost') || lower.includes('workshop')) return 'planetary-port'
-  if (lower.includes('settlement')) return 'settlement'
-  if (lower.includes('installation') || lower.includes('mega ship') || lower.includes('megaship') || lower.includes('fleet carrier')) return 'megaship'
-  return 'coriolis-starport'
-}
-
-function formatCredits (value, fallback) {
-  if (typeof value === 'number' && !Number.isNaN(value)) {
-    return `${Math.round(value).toLocaleString()} Cr`
-  }
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value)
-    if (!Number.isNaN(parsed)) {
-      return `${Math.round(parsed).toLocaleString()} Cr`
-    }
-    return value
-  }
-  return fallback || '--'
 }
 
 function sanitizeCommodityListingEntry (entry) {
@@ -819,36 +684,6 @@ const DEFAULT_SORT_DIRECTION = {
   profitPerTon: 'desc',
   routeDistance: 'asc',
   distance: 'asc'
-}
-
-function getStationIconName (localInfo = {}, remoteInfo = {}) {
-  if (localInfo?.icon) return localInfo.icon
-  const candidates = [
-    localInfo?.stationType,
-    localInfo?.type,
-    remoteInfo?.stationType,
-    remoteInfo?.type,
-    remoteInfo?.subType
-  ].filter(entry => typeof entry === 'string' && entry.trim())
-  if (candidates.length === 0) return null
-  return stationIconFromType(candidates[0])
-}
-
-function StationIcon ({ icon, size = 26, color = 'var(--ghostnet-accent)' }) {
-  if (!icon) return null
-  const paths = Icons[icon]
-  if (!paths) return null
-  const viewBox = icon === 'asteroid-base' ? '0 0 2000 2000' : '0 0 1000 1000'
-  return (
-    <svg
-      viewBox={viewBox}
-      focusable='false'
-      aria-hidden='true'
-      style={{ width: size, height: size, fill: color, flexShrink: 0 }}
-    >
-      {paths}
-    </svg>
-  )
 }
 
 function parseNumberFromText (value) {
@@ -2584,7 +2419,14 @@ function CargoHoldPanel () {
             : (sanitizeInaraText(resolvedListing?.updatedText) || resolvedListing?.updatedText || '')
           const selectedStationName = sanitizeInaraText(resolvedListing?.stationName) || resolvedListing?.stationName || '--'
           const selectedSystemName = sanitizeInaraText(resolvedListing?.systemName) || resolvedListing?.systemName || ''
-          const selectedDemandIndicator = renderDemandTrend(selectedDemand, Boolean(resolvedListing?.demandIsLow), { subtle: true })
+          const selectedDemandIndicator = (
+            <DemandIndicator
+              label={resolvedListing?.demandText || ''}
+              fallbackLabel={selectedDemand}
+              isLow={Boolean(resolvedListing?.demandIsLow)}
+              subtle
+            />
+          )
           const defaultSelectedId = detail.selectedListingId || (listings[0]?.__id ?? null)
 
           const getHeaderSortState = field => {
@@ -2613,7 +2455,14 @@ function CargoHoldPanel () {
             ? formatRelativeTime(sanitizedOrigin.updatedAt)
             : (sanitizedOrigin?.updatedText || '')
           const originDemandIndicator = sanitizedOrigin?.demandText
-            ? renderDemandTrend(sanitizedOrigin.demandText, Boolean(sanitizedOrigin.demandIsLow), { subtle: true })
+            ? (
+                <DemandIndicator
+                  label={sanitizedOrigin.demandText}
+                  fallbackLabel={sanitizedOrigin.demandText}
+                  isLow={Boolean(sanitizedOrigin.demandIsLow)}
+                  subtle
+                />
+              )
             : null
           const localBestPrice = typeof detail.localBestPrice === 'number'
             ? detail.localBestPrice
@@ -2806,7 +2655,6 @@ function CargoHoldPanel () {
                               ? formatRelativeTime(listing.updatedAt)
                               : (listing.updatedText || '')
                             const priceDisplay = formatCredits(listing.price, listing.priceText || '--')
-                            const demandIndicator = renderDemandTrend(demandDisplay, Boolean(listing.demandIsLow))
                             const rowClasses = [styles.tableRowInteractive]
                             if (isSelected) rowClasses.push(styles.stationRowSelected)
 
@@ -2829,27 +2677,27 @@ function CargoHoldPanel () {
                                 data-ghostnet-table-row='visible'
                               >
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  <div className={styles.stationCell}>
-                                    <StationIcon icon={stationIcon} size={24} />
-                                    <div className={styles.stationCellText}>
-                                      <div className={styles.stationName}>{listing.stationName || 'Unknown Station'}</div>
-                                      <div className={styles.stationSystem}>{listing.systemName || 'Unknown System'}</div>
-                                      {(listing.stationType || isSelected) ? (
-                                        <div className={styles.stationMetaRow}>
-                                          {listing.stationType ? (
-                                            <div className={styles.stationMeta}>{listing.stationType}</div>
-                                          ) : null}
-                                          {isSelected ? (
-                                            <span className={styles.stationSelectionTag}>In Context</span>
-                                          ) : null}
-                                        </div>
-                                      ) : null}
-                                    </div>
-                                  </div>
+                                  <StationSummary
+                                    iconName={stationIcon}
+                                    name={listing.stationName || 'Unknown Station'}
+                                    system={listing.systemName || 'Unknown System'}
+                                    stationType={listing.stationType || ''}
+                                    isSelected={isSelected}
+                                  />
                                 </td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{systemDistanceDisplay || '--'}</td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{stationDistanceDisplay || '--'}</td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{demandIndicator || '--'}</td>
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                                  {((listing.demandText || demandDisplay) && (listing.demandText || demandDisplay).toString().trim())
+                                    ? (
+                                      <DemandIndicator
+                                        label={listing.demandText || demandDisplay}
+                                        fallbackLabel={demandDisplay}
+                                        isLow={Boolean(listing.demandIsLow)}
+                                      />
+                                      )
+                                    : '--'}
+                                </td>
                                 <td className={`text-right ${styles.tableCellTop} ${styles.tableCellCompact}`}>
                                   <div>{priceDisplay}</div>
                                   {updatedDisplay ? (
@@ -2872,120 +2720,14 @@ function CargoHoldPanel () {
           <>
             <div className='ghostnet-panel-table'>
               <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-                {commodityContext ? (() => {
-                  const summary = commodityContext
-                  const commodityName = sanitizeInaraText(summary.commodityName) || summary.commodityName || 'Unknown Commodity'
-                  const commoditySymbol = sanitizeInaraText(summary.commoditySymbol) || summary.commoditySymbol || ''
-                  const summaryValueDisplay = typeof summary.price === 'number'
-                    ? formatCredits(summary.price * (summary.quantity || 0), '--')
-                    : '--'
-                  const summaryPriceDisplay = formatCredits(summary.price, summary.priceText || '--')
-                  const summarySystemDistance = formatSystemDistance(summary.distanceLy, summary.distanceLyText)
-                  const summaryStationDistance = formatStationDistance(summary.distanceLs, summary.distanceLsText)
-                  const summaryUpdated = summary.updatedAt
-                    ? formatRelativeTime(summary.updatedAt)
-                    : (summary.updatedText || '')
-                  const summaryDemandIndicator = renderDemandTrend(summary.demandText, Boolean(summary.demandIsLow), { subtle: true })
-                  const stationName = sanitizeInaraText(summary.stationName) || summary.stationName || '--'
-                  const systemName = sanitizeInaraText(summary.systemName) || summary.systemName || ''
-                  const stationType = sanitizeInaraText(summary.stationType) || summary.stationType || ''
-                  const destinationIconName = stationName ? stationIconFromType(stationType || '') : null
-                  const quantityDisplay = Number(summary.quantity || 0).toLocaleString()
-                  const quantityText = quantityDisplay ? `${quantityDisplay} t` : ''
-                  const targetPriceDisplay = summaryPriceDisplay
-                  const localPriceDisplay = formatCredits(summary.localBestPrice, summary.localBestPriceText || '--')
-                  const originName = summary.originStationName || 'Local Market'
-                  const originSystem = summary.originSystemName || ''
-                  const originType = summary.originStationType || ''
-                  const originIconName = summary.originStationName ? stationIconFromType(originType || '') : null
-                  const originUpdated = summary.originUpdatedAt
-                    ? formatRelativeTime(summary.originUpdatedAt)
-                    : (summary.originUpdatedText || '')
-                  const profitPerUnitDisplay = formatCredits(summary.profitPerUnit, summary.profitPerUnitText || '--')
-                  const profitValueDisplay = formatCredits(summary.profitValue, summary.profitValueText || summaryValueDisplay)
-                  const originSubtexts = [originSystem, originType].filter(Boolean)
-                  const destinationSubtexts = [systemName, stationType].filter(Boolean)
-                  const commoditySubtexts = [
-                    commoditySymbol && commoditySymbol !== commodityName ? commoditySymbol : null,
-                    targetPriceDisplay && targetPriceDisplay !== '--' ? `@ ${targetPriceDisplay}` : null
-                  ].filter(Boolean)
-                  const sourceMetrics = []
-                  if (localPriceDisplay && localPriceDisplay !== '--') {
-                    sourceMetrics.push({ label: 'Buy', value: localPriceDisplay, priority: true })
-                  }
-                  if (originUpdated) {
-                    sourceMetrics.push({ label: 'Updated', value: originUpdated })
-                  }
-                  const destinationMetrics = []
-                  if (targetPriceDisplay && targetPriceDisplay !== '--') {
-                    destinationMetrics.push({ label: 'Sell', value: targetPriceDisplay, priority: true })
-                  }
-                  if (summaryDemandIndicator) {
-                    destinationMetrics.push({ label: 'Demand', value: summaryDemandIndicator, priority: true })
-                  }
-                  if (summaryUpdated) {
-                    destinationMetrics.push({ label: 'Updated', value: summaryUpdated })
-                  }
-                  const commodityPriceDisplay = targetPriceDisplay && targetPriceDisplay !== '--'
-                    ? `@ ${targetPriceDisplay}`
-                    : ''
-                  const distanceSegment = {
-                    label: 'Distance',
-                    value: summarySystemDistance || '',
-                    secondary: summaryStationDistance || ''
-                  }
-                  const valueSecondaryParts = []
-                  if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') valueSecondaryParts.push(`Per t ${profitPerUnitDisplay}`)
-                  if (quantityText) valueSecondaryParts.push(`Payload ${quantityText}`)
-                  const valueSecondary = valueSecondaryParts.join(' • ')
-                  const shipSubtexts = Array.isArray(shipSourceSegment?.subtexts) ? shipSourceSegment.subtexts : []
-                  const sourceSegment = shipSourceSegment
-                    ? {
-                        ...shipSourceSegment,
-                        subtexts: [
-                          ...shipSubtexts,
-                          originName && originName !== shipSourceSegment.name ? `Docked: ${originName}` : null,
-                          originSystem
-                        ].filter(Boolean),
-                        metrics: sourceMetrics
-                      }
-                    : {
-                        icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
-                        name: originName,
-                        subtexts: originSubtexts,
-                        metrics: sourceMetrics,
-                        ariaLabel: originName ? `Origin station ${originName}` : 'Local market origin'
-                      }
-                  const valueSegment = {
-                    icon: <CreditsIcon size={22} />,
-                    label: 'Profit',
-                    value: profitValueDisplay && profitValueDisplay !== '--' ? profitValueDisplay : '',
-                    secondary: valueSecondary
-                  }
-                  return (
-                    <TransferContextSummary
-                      className={styles.transferSummaryBar}
-                      item={{
-                        icon: <CommodityIcon category={summary.commodityCategory} size={26} />,
-                        name: commodityName,
-                        subtexts: commoditySubtexts,
-                        quantity: quantityText,
-                        price: commodityPriceDisplay,
-                        ariaLabel: `${commodityName} quantity ${quantityText || 'Unknown'}`
-                      }}
-                      source={sourceSegment}
-                      distance={distanceSegment}
-                      target={{
-                        icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
-                        name: stationName,
-                        subtexts: destinationSubtexts,
-                        metrics: destinationMetrics,
-                        ariaLabel: `Destination station ${stationName}`
-                      }}
-                      value={valueSegment}
-                    />
-                  )
-                })() : null}
+                {commodityContext ? (
+                  <CommoditySummary
+                    summary={commodityContext}
+                    shipSourceSegment={shipSourceSegment}
+                    className={styles.transferSummaryBar}
+                    valueIcon={<CreditsIcon size={22} />}
+                  />
+                ) : null}
 
                 {renderStatusBanner()}
                 {usingMockCargo && hasCargo ? (
@@ -3035,6 +2777,16 @@ function CargoHoldPanel () {
                     const ghostnetStation = sanitizeInaraText(ghostnetContextEntry?.stationName) || ghostnetContextEntry?.stationName || ''
                     const ghostnetSystem = sanitizeInaraText(ghostnetContextEntry?.systemName) || ghostnetContextEntry?.systemName || ''
                     const ghostnetDemand = sanitizeInaraText(ghostnetContextEntry?.demandText) || (typeof ghostnetContextEntry?.demand === 'number' ? ghostnetContextEntry.demand.toLocaleString() : '')
+                    const ghostnetDemandIndicator = (ghostnetContextEntry?.demandText || ghostnetDemand)
+                      ? (
+                        <DemandIndicator
+                          label={ghostnetContextEntry?.demandText || ghostnetDemand}
+                          fallbackLabel={ghostnetDemand}
+                          isLow={Boolean(ghostnetContextEntry?.demandIsLow)}
+                          subtle
+                        />
+                        )
+                      : null
                     const ghostnetUpdatedText = sanitizeInaraText(ghostnetContextEntry?.updatedText) || ghostnetContextEntry?.updatedText || ''
                     const ghostnetUpdated = ghostnetContextEntry?.updatedAt
                       ? formatRelativeTime(ghostnetContextEntry.updatedAt)
@@ -3159,7 +2911,7 @@ function CargoHoldPanel () {
                           )}
                           {ghostnetDemand && (
                             <div className={styles.tableMetaMuted}>
-                              Demand: {renderDemandTrend(ghostnetDemand, Boolean(ghostnetContextEntry?.demandIsLow), { subtle: true }) || ghostnetDemand}
+                              Demand: {ghostnetDemandIndicator || ghostnetDemand}
                             </div>
                           )}
                           {ghostnetUpdated && (
