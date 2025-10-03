@@ -10,7 +10,7 @@ import {
   formatNumber,
   getEngineerDistanceLy,
   getEngineerProgressState
-} from './engineering-utils'
+} from 'lib/ghostnet/engineering-utils'
 import styles from '../ghostnet.module.css'
 
 export default function GhostnetEngineeringOpportunitiesPage () {

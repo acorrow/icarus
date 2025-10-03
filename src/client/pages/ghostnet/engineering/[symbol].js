@@ -11,7 +11,7 @@ import {
   getEngineerDistanceLy,
   getEngineerProgressState,
   normaliseBlueprintSymbol
-} from '../engineering-utils'
+} from 'lib/ghostnet/engineering-utils'
 import styles from '../../ghostnet.module.css'
 
 function formatFeatureValue (feature) {
