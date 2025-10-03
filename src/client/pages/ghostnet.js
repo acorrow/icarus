@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback, Fragment } fr
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
+import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
@@ -540,6 +541,48 @@ function formatCredits (value, fallback) {
     return value
   }
   return fallback || '--'
+}
+
+function sanitizeCommodityListingEntry (entry) {
+  if (!entry || typeof entry !== 'object') return null
+  const price = typeof entry.price === 'number' ? entry.price : null
+  const priceText = formatCredits(price, sanitizeInaraText(entry.priceText) || '')
+  return {
+    stationName: sanitizeInaraText(entry.stationName) || '',
+    systemName: sanitizeInaraText(entry.systemName) || '',
+    stationType: sanitizeInaraText(entry.stationType) || '',
+    price,
+    priceText,
+    distanceLy: typeof entry.distanceLy === 'number' ? entry.distanceLy : null,
+    distanceLyText: sanitizeInaraText(entry.distanceLyText) || '',
+    distanceLs: typeof entry.distanceLs === 'number' ? entry.distanceLs : null,
+    distanceLsText: sanitizeInaraText(entry.distanceLsText) || '',
+    updatedAt: entry.updatedAt || null,
+    updatedText: sanitizeInaraText(entry.updatedText) || '',
+    demandText: sanitizeInaraText(entry.demandText) || '',
+    demandIsLow: Boolean(entry.demandIsLow)
+  }
+}
+
+function sanitizeMarketListingEntry (entry) {
+  if (!entry || typeof entry !== 'object') return null
+  const sellPrice = typeof entry.sellPrice === 'number' ? entry.sellPrice : null
+  const priceText = formatCredits(sellPrice, sanitizeInaraText(entry.sellPriceText) || sanitizeInaraText(entry.priceText) || '')
+  return {
+    stationName: sanitizeInaraText(entry.stationName) || '',
+    systemName: sanitizeInaraText(entry.systemName) || '',
+    stationType: sanitizeInaraText(entry.stationType) || '',
+    price: sellPrice,
+    priceText,
+    distanceLy: typeof entry.distanceLy === 'number' ? entry.distanceLy : null,
+    distanceLyText: sanitizeInaraText(entry.distanceLyText) || '',
+    distanceLs: typeof entry.distanceLs === 'number' ? entry.distanceLs : null,
+    distanceLsText: sanitizeInaraText(entry.distanceLsText) || '',
+    updatedAt: entry.updatedAt || entry.timestamp || null,
+    updatedText: sanitizeInaraText(entry.updatedText) || sanitizeInaraText(entry.timestampText) || '',
+    demandText: sanitizeInaraText(entry.demandText) || '',
+    demandIsLow: Boolean(entry.demandIsLow)
+  }
 }
 
 function PristineMiningArtwork ({ systemObject }) {
@@ -2104,26 +2147,28 @@ function CommodityTradePanel () {
       ? row.ghostnetListings
       : (row?.ghostnetEntry ? [row.ghostnetEntry] : [])
 
-    const listings = listingsSource.map((listing, index) => ({
-      ...listing,
-      stationName: sanitizeInaraText(listing?.stationName) || '',
-      systemName: sanitizeInaraText(listing?.systemName) || '',
-      stationType: sanitizeInaraText(listing?.stationType) || '',
-      demandText: sanitizeInaraText(listing?.demandText) || '',
-      priceText: sanitizeInaraText(listing?.priceText) || '',
-      distanceLyText: sanitizeInaraText(listing?.distanceLyText) || '',
-      distanceLsText: sanitizeInaraText(listing?.distanceLsText) || '',
-      updatedText: sanitizeInaraText(listing?.updatedText) || '',
-      __id: `${row.key}-listing-${index}`,
-      __order: index
-    }))
+    const listings = listingsSource
+      .map((listing, index) => {
+        const sanitizedListing = sanitizeCommodityListingEntry(listing)
+        if (!sanitizedListing) return null
+        return {
+          ...sanitizedListing,
+          __id: `${row.key}-listing-${index}`,
+          __order: index
+        }
+      })
+      .filter(Boolean)
+
+    const marketEntry = sanitizeMarketListingEntry(row.marketEntry)
+    const localBestEntry = sanitizeMarketListingEntry(row.localBestEntry)
+    const ghostnetEntry = sanitizeCommodityListingEntry(row.ghostnetEntry)
 
     let selectedIndex = listings.findIndex(listing => {
-      if (!row?.ghostnetEntry) return false
+      if (!ghostnetEntry) return false
       const listingStation = normaliseName(listing?.stationName)
       const listingSystem = normaliseName(listing?.systemName)
-      const entryStation = normaliseName(row.ghostnetEntry?.stationName)
-      const entrySystem = normaliseName(row.ghostnetEntry?.systemName)
+      const entryStation = normaliseName(ghostnetEntry?.stationName)
+      const entrySystem = normaliseName(ghostnetEntry?.systemName)
       if (!listingStation || !entryStation) return false
       if (listingStation !== entryStation) return false
       if (entrySystem && listingSystem) return listingSystem === entrySystem
@@ -2141,7 +2186,15 @@ function CommodityTradePanel () {
       quantity: row.quantity,
       listings,
       selectedListingId: listings[selectedIndex]?.__id || null,
-      ghostnetEntry: row.ghostnetEntry || null
+      ghostnetEntry,
+      marketEntry,
+      localBestEntry,
+      localBestPrice: typeof row.localBestPrice === 'number'
+        ? row.localBestPrice
+        : (localBestEntry?.price ?? null),
+      localBestSource: row.localBestSource || null,
+      bestPrice: typeof row.bestPrice === 'number' ? row.bestPrice : null,
+      bestSource: row.bestSource || null
     })
   }, [])
 
@@ -2217,48 +2270,63 @@ function CommodityTradePanel () {
     setActiveCommodityDetail(prev => {
       if (prev) {
         const listing = prev.listings.find(entry => entry.__id === prev.selectedListingId)
-        if (listing) {
+        const destinationEntry = listing || prev.ghostnetEntry || null
+        const sanitizedDestination = destinationEntry
+          ? (listing ? listing : sanitizeCommodityListingEntry(destinationEntry))
+          : null
+        const sanitizedOrigin = prev.marketEntry
+          ? sanitizeMarketListingEntry(prev.marketEntry)
+          : (prev.localBestEntry ? sanitizeMarketListingEntry(prev.localBestEntry) : null)
+
+        if (sanitizedDestination) {
+          const targetPrice = typeof sanitizedDestination.price === 'number'
+            ? sanitizedDestination.price
+            : null
+          const localBestPrice = typeof prev.localBestPrice === 'number'
+            ? prev.localBestPrice
+            : (sanitizedOrigin?.price ?? null)
+          const quantityValue = Number(prev.quantity || 0)
+          const profitPerUnit = (typeof targetPrice === 'number' && typeof localBestPrice === 'number')
+            ? targetPrice - localBestPrice
+            : null
+          const profitValue = profitPerUnit !== null ? profitPerUnit * quantityValue : null
+
           setCommodityContext({
             commodityKey: prev.key,
             commodityName: sanitizeInaraText(prev.commodityName) || '',
             commoditySymbol: sanitizeInaraText(prev.commoditySymbol) || '',
             commodityCategory: prev.commodityCategory,
             quantity: prev.quantity,
-            stationName: sanitizeInaraText(listing.stationName) || '',
-            systemName: sanitizeInaraText(listing.systemName) || '',
-            stationType: sanitizeInaraText(listing.stationType) || '',
-            price: typeof listing.price === 'number' ? listing.price : null,
-            priceText: sanitizeInaraText(listing.priceText) || '',
-            demandText: sanitizeInaraText(listing.demandText) || '',
-            demandIsLow: Boolean(listing.demandIsLow),
-            distanceLy: typeof listing.distanceLy === 'number' ? listing.distanceLy : null,
-            distanceLyText: sanitizeInaraText(listing.distanceLyText) || '',
-            distanceLs: typeof listing.distanceLs === 'number' ? listing.distanceLs : null,
-            distanceLsText: sanitizeInaraText(listing.distanceLsText) || '',
-            updatedAt: listing.updatedAt || null,
-            updatedText: sanitizeInaraText(listing.updatedText) || ''
-          })
-        } else if (prev.ghostnetEntry) {
-          const fallback = prev.ghostnetEntry
-          setCommodityContext({
-            commodityKey: prev.key,
-            commodityName: sanitizeInaraText(prev.commodityName) || '',
-            commoditySymbol: sanitizeInaraText(prev.commoditySymbol) || '',
-            commodityCategory: prev.commodityCategory,
-            quantity: prev.quantity,
-            stationName: sanitizeInaraText(fallback.stationName) || '',
-            systemName: sanitizeInaraText(fallback.systemName) || '',
-            stationType: sanitizeInaraText(fallback.stationType) || '',
-            price: typeof fallback.price === 'number' ? fallback.price : null,
-            priceText: sanitizeInaraText(fallback.priceText) || '',
-            demandText: sanitizeInaraText(fallback.demandText) || '',
-            demandIsLow: Boolean(fallback.demandIsLow),
-            distanceLy: typeof fallback.distanceLy === 'number' ? fallback.distanceLy : null,
-            distanceLyText: sanitizeInaraText(fallback.distanceLyText) || '',
-            distanceLs: typeof fallback.distanceLs === 'number' ? fallback.distanceLs : null,
-            distanceLsText: sanitizeInaraText(fallback.distanceLsText) || '',
-            updatedAt: fallback.updatedAt || null,
-            updatedText: sanitizeInaraText(fallback.updatedText) || ''
+            stationName: sanitizedDestination.stationName || '',
+            systemName: sanitizedDestination.systemName || '',
+            stationType: sanitizedDestination.stationType || '',
+            price: targetPrice,
+            priceText: formatCredits(targetPrice, sanitizedDestination.priceText || '--'),
+            demandText: sanitizedDestination.demandText || '',
+            demandIsLow: Boolean(sanitizedDestination.demandIsLow),
+            distanceLy: sanitizedDestination.distanceLy ?? null,
+            distanceLyText: sanitizedDestination.distanceLyText || '',
+            distanceLs: sanitizedDestination.distanceLs ?? null,
+            distanceLsText: sanitizedDestination.distanceLsText || '',
+            updatedAt: sanitizedDestination.updatedAt || null,
+            updatedText: sanitizedDestination.updatedText || '',
+            originStationName: sanitizedOrigin?.stationName || '',
+            originSystemName: sanitizedOrigin?.systemName || '',
+            originStationType: sanitizedOrigin?.stationType || '',
+            originDistanceLy: sanitizedOrigin?.distanceLy ?? null,
+            originDistanceLyText: sanitizedOrigin?.distanceLyText || '',
+            originDistanceLs: sanitizedOrigin?.distanceLs ?? null,
+            originDistanceLsText: sanitizedOrigin?.distanceLsText || '',
+            originUpdatedAt: sanitizedOrigin?.updatedAt || null,
+            originUpdatedText: sanitizedOrigin?.updatedText || '',
+            localBestPrice,
+            localBestPriceText: formatCredits(localBestPrice, sanitizedOrigin?.priceText || '--'),
+            profitPerUnit,
+            profitPerUnitText: formatCredits(profitPerUnit, '--'),
+            profitValue,
+            profitValueText: formatCredits(profitValue, '--'),
+            localBestSource: prev.localBestSource || null,
+            bestSource: prev.bestSource || null
           })
         } else {
           setCommodityContext(null)
@@ -2442,54 +2510,95 @@ function CommodityTradePanel () {
             })
           }
 
+          const originEntry = detail.marketEntry || detail.localBestEntry || null
+          const originName = originEntry?.stationName || 'Local Market'
+          const originSystem = originEntry?.systemName || ''
+          const originType = originEntry?.stationType || ''
+          const originIconName = originEntry ? stationIconFromType(originType || '') : null
+          const originUpdated = originEntry?.updatedAt
+            ? formatRelativeTime(originEntry.updatedAt)
+            : (originEntry?.updatedText || '')
+          const localBestPrice = typeof detail.localBestPrice === 'number'
+            ? detail.localBestPrice
+            : (originEntry?.price ?? null)
+          const localPriceDisplay = formatCredits(localBestPrice, originEntry?.priceText || '--')
+          const originMetrics = []
+          if (localPriceDisplay && localPriceDisplay !== '--') {
+            originMetrics.push({ label: 'Local Price', value: localPriceDisplay })
+          }
+          if (originUpdated) {
+            originMetrics.push({ label: 'Updated', value: originUpdated })
+          }
+          const destinationMetrics = []
+          if (selectedSystemDistance) {
+            destinationMetrics.push({ label: 'System Distance', value: selectedSystemDistance })
+          }
+          if (selectedStationDistance) {
+            destinationMetrics.push({ label: 'Station Distance', value: selectedStationDistance })
+          }
+          if (selectedUpdated) {
+            destinationMetrics.push({ label: 'Updated', value: selectedUpdated })
+          }
+          if (selectedDemandIndicator) {
+            destinationMetrics.push({ label: 'Demand', value: selectedDemandIndicator })
+          }
+          const quantityDisplay = Number(detail.quantity || 0).toLocaleString()
+          const quantityText = quantityDisplay ? `${quantityDisplay} t` : ''
+          const profitPerUnit = (typeof resolvedListing?.price === 'number' && typeof localBestPrice === 'number')
+            ? resolvedListing.price - localBestPrice
+            : null
+          const profitPerUnitDisplay = formatCredits(profitPerUnit, '--')
+          const profitValue = profitPerUnit !== null ? profitPerUnit * (Number(detail.quantity) || 0) : null
+          const profitValueDisplay = formatCredits(profitValue, selectedValueDisplay)
+          const profitSubtexts = []
+          if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') {
+            profitSubtexts.push(`Per Ton: ${profitPerUnitDisplay}`)
+          }
+          if (quantityText) {
+            profitSubtexts.push(`Payload: ${quantityText}`)
+          }
+          const destinationIconName = resolvedListing ? stationIconFromType(resolvedListing.stationType || '') : null
+          const commoditySubtexts = [
+            detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName ? detail.commoditySymbol : null,
+            selectedPriceDisplay && selectedPriceDisplay !== '--' ? `@ ${selectedPriceDisplay}` : null
+          ].filter(Boolean)
+
           return (
             <div className={styles.commodityDetailContainer}>
               <div className={styles.commodityDetailContext}>
-                <div className={styles.commodityDetailInfo}>
-                  <span className={styles.commodityDetailLabel}>Commodity</span>
-                  <div className={styles.commodityDetailHeader}>
-                    <div className={styles.commodityDetailIcon}>
-                      <CommodityIcon category={detail.commodityCategory} size={28} />
-                    </div>
-                    <div className={styles.commodityDetailHeading}>
-                      <span className={styles.commodityDetailValue}>{detail.commodityName}</span>
-                      {detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName && (
-                        <span className={styles.commodityDetailSubtext}>{detail.commoditySymbol}</span>
-                      )}
-                    </div>
-                  </div>
-                  <span className={styles.commodityDetailFootnote}>
-                    Quantity in cargo: {Number(detail.quantity || 0).toLocaleString()}
-                  </span>
-                </div>
-                <div className={styles.commodityDetailInfo}>
-                  <span className={styles.commodityDetailLabel}>Station Context</span>
-                  <span className={styles.commodityDetailValue}>{selectedStationName}</span>
-                  {selectedSystemName ? <span className={styles.commodityDetailSubtext}>{selectedSystemName}</span> : null}
-                  {selectedSystemDistance ? (
-                    <span className={styles.commodityDetailFootnote}>{selectedSystemDistance}</span>
-                  ) : null}
-                  {selectedStationDistance ? (
-                    <span className={styles.commodityDetailFootnote}>{selectedStationDistance}</span>
-                  ) : null}
-                  {selectedUpdated ? (
-                    <span className={styles.commodityDetailFootnote}>Updated {selectedUpdated}</span>
-                  ) : null}
-                  {selectedDemandIndicator ? (
-                    <span className={styles.commodityDetailFootnote}>
-                      Demand: {selectedDemandIndicator}
-                    </span>
-                  ) : null}
-                </div>
-                <div className={styles.commodityDetailSummary}>
-                  <span className={styles.commodityDetailLabel}>Potential Sale Value</span>
-                  <span className={styles.commodityDetailHighlight}>{selectedValueDisplay}</span>
-                  <span className={styles.commodityDetailFootnote}>
-                    @
-                    {' '}
-                    {selectedPriceDisplay}
-                  </span>
-                </div>
+                <TransferContextSummary
+                  className={styles.commodityDetailSummaryBar}
+                  origin={{
+                    icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
+                    name: originName,
+                    subtexts: [originSystem, originType].filter(Boolean),
+                    metrics: originMetrics,
+                    ariaLabel: originName ? `Origin station ${originName}` : 'Local market origin'
+                  }}
+                  commodity={{
+                    icon: <CommodityIcon category={detail.commodityCategory} size={28} />,
+                    name: detail.commodityName,
+                    subtexts: commoditySubtexts,
+                    quantity: quantityText,
+                    ariaLabel: `${detail.commodityName} quantity ${quantityText || 'Unknown'}`
+                  }}
+                  arrow={{ label: 'Route' }}
+                  destination={{
+                    icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
+                    name: selectedStationName,
+                    subtexts: [selectedSystemName, sanitizeInaraText(resolvedListing?.stationType) || resolvedListing?.stationType || ''].filter(Boolean),
+                    metrics: destinationMetrics,
+                    ariaLabel: `Destination station ${selectedStationName}`
+                  }}
+                  profit={{
+                    icon: <StationIcon icon='credits' size={24} color='var(--ghostnet-color-success)' />,
+                    value: profitValueDisplay,
+                    subtexts: profitSubtexts,
+                    ariaLabel: profitValueDisplay && profitValueDisplay !== '--'
+                      ? `Projected profit ${profitValueDisplay}`
+                      : 'Projected profit unavailable'
+                  }}
+                />
                 <div className={styles.commodityDetailActions}>
                   <button type='button' className='button button--secondary' onClick={handleCommodityDetailClose}>
                     Back to Cargo
@@ -2664,89 +2773,87 @@ function CommodityTradePanel () {
                   const stationName = sanitizeInaraText(summary.stationName) || summary.stationName || '--'
                   const systemName = sanitizeInaraText(summary.systemName) || summary.systemName || ''
                   const stationType = sanitizeInaraText(summary.stationType) || summary.stationType || ''
-                  const stationIcon = stationIconFromType(stationType || '')
+                  const destinationIconName = stationName ? stationIconFromType(stationType || '') : null
                   const quantityDisplay = Number(summary.quantity || 0).toLocaleString()
-                  const stationMetrics = []
+                  const quantityText = quantityDisplay ? `${quantityDisplay} t` : ''
+                  const targetPriceDisplay = summaryPriceDisplay
+                  const localPriceDisplay = formatCredits(summary.localBestPrice, summary.localBestPriceText || '--')
+                  const originName = summary.originStationName || 'Local Market'
+                  const originSystem = summary.originSystemName || ''
+                  const originType = summary.originStationType || ''
+                  const originIconName = summary.originStationName ? stationIconFromType(originType || '') : null
+                  const originUpdated = summary.originUpdatedAt
+                    ? formatRelativeTime(summary.originUpdatedAt)
+                    : (summary.originUpdatedText || '')
+                  const profitPerUnitDisplay = formatCredits(summary.profitPerUnit, summary.profitPerUnitText || '--')
+                  const profitValueDisplay = formatCredits(summary.profitValue, summary.profitValueText || summaryValueDisplay)
+                  const originSubtexts = [originSystem, originType].filter(Boolean)
+                  const destinationSubtexts = [systemName, stationType].filter(Boolean)
+                  const commoditySubtexts = [
+                    commoditySymbol && commoditySymbol !== commodityName ? commoditySymbol : null,
+                    targetPriceDisplay && targetPriceDisplay !== '--' ? `@ ${targetPriceDisplay}` : null
+                  ].filter(Boolean)
+                  const originMetrics = []
+                  if (localPriceDisplay && localPriceDisplay !== '--') {
+                    originMetrics.push({ label: 'Local Price', value: localPriceDisplay })
+                  }
+                  if (originUpdated) {
+                    originMetrics.push({ label: 'Updated', value: originUpdated })
+                  }
+                  const destinationMetrics = []
                   if (summarySystemDistance) {
-                    stationMetrics.push(
-                      <div key='system-distance' className={`${styles.contextSummaryFootnote} ${styles.contextSummaryMetric}`}>
-                        <span className={styles.contextSummaryMetricLabel}>System Distance</span>
-                        <span className={styles.contextSummaryMetricValue}>{summarySystemDistance}</span>
-                      </div>
-                    )
+                    destinationMetrics.push({ label: 'System Distance', value: summarySystemDistance })
                   }
                   if (summaryStationDistance) {
-                    stationMetrics.push(
-                      <div key='station-distance' className={`${styles.contextSummaryFootnote} ${styles.contextSummaryMetric}`}>
-                        <span className={styles.contextSummaryMetricLabel}>Station Distance</span>
-                        <span className={styles.contextSummaryMetricValue}>{summaryStationDistance}</span>
-                      </div>
-                    )
+                    destinationMetrics.push({ label: 'Station Distance', value: summaryStationDistance })
                   }
                   if (summaryUpdated) {
-                    stationMetrics.push(
-                      <div key='updated-at' className={`${styles.contextSummaryFootnote} ${styles.contextSummaryMetric}`}>
-                        <span className={styles.contextSummaryMetricLabel}>Updated</span>
-                        <span className={styles.contextSummaryMetricValue}>{summaryUpdated}</span>
-                      </div>
-                    )
+                    destinationMetrics.push({ label: 'Updated', value: summaryUpdated })
                   }
                   if (summaryDemandIndicator) {
-                    stationMetrics.push(
-                      <div key='demand' className={`${styles.contextSummaryFootnote} ${styles.contextSummaryMetric}`}>
-                        <span className={styles.contextSummaryMetricLabel}>Demand</span>
-                        <span className={styles.contextSummaryMetricValue}>{summaryDemandIndicator}</span>
-                      </div>
-                    )
+                    destinationMetrics.push({ label: 'Demand', value: summaryDemandIndicator })
+                  }
+                  const profitSubtexts = []
+                  if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') {
+                    profitSubtexts.push(`Per Ton: ${profitPerUnitDisplay}`)
+                  }
+                  if (quantityText) {
+                    profitSubtexts.push(`Payload: ${quantityText}`)
                   }
                   return (
-                    <div className={styles.contextSummary}>
-                      <div className={styles.contextSummaryGroup}>
-                        <span className={styles.contextSummaryLabel}>Commodity Context</span>
-                        <div className={styles.contextSummaryEntity}>
-                          <div className={styles.contextSummaryIcon}>
-                            <CommodityIcon category={summary.commodityCategory} size={26} />
-                          </div>
-                          <div className={styles.contextSummaryHeading}>
-                            <span className={styles.contextSummaryValue}>{commodityName}</span>
-                            {commoditySymbol && commoditySymbol !== commodityName ? (
-                              <span className={styles.contextSummaryFootnote}>{commoditySymbol}</span>
-                            ) : null}
-                            <span className={styles.contextSummaryFootnote}>Qty {quantityDisplay}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={styles.contextSummaryGroup}>
-                        <span className={styles.contextSummaryLabel}>Station Context</span>
-                        <div className={styles.contextSummaryStationRow}>
-                          <div className={styles.contextSummaryEntity}>
-                            <div className={styles.contextSummaryIcon}>
-                              <StationIcon icon={stationIcon} size={24} />
-                            </div>
-                            <div className={styles.contextSummaryHeading}>
-                              <span className={styles.contextSummaryValue}>{stationName}</span>
-                              {systemName ? (
-                                <span className={styles.contextSummaryFootnote}>{systemName}</span>
-                              ) : null}
-                              {stationType ? (
-                                <span className={styles.contextSummaryFootnote}>{stationType}</span>
-                              ) : null}
-                            </div>
-                          </div>
-                          {stationMetrics.length > 0 ? (
-                            <div className={styles.contextSummaryMetrics}>
-                              {stationMetrics}
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                      <div className={styles.contextSummaryGroup}>
-                        <span className={styles.contextSummaryLabel}>Value</span>
-                        <span className={styles.contextSummaryHighlight}>{summaryValueDisplay}</span>
-                        <span className={styles.contextSummaryFootnote}>@ {summaryPriceDisplay}</span>
-                        <span className={styles.contextSummaryFootnote}>Payload: {quantityDisplay} t</span>
-                      </div>
-                    </div>
+                    <TransferContextSummary
+                      className={styles.transferSummaryBar}
+                      origin={{
+                        icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
+                        name: originName,
+                        subtexts: originSubtexts,
+                        metrics: originMetrics,
+                        ariaLabel: originName ? `Origin station ${originName}` : 'Local market origin'
+                      }}
+                      commodity={{
+                        icon: <CommodityIcon category={summary.commodityCategory} size={26} />,
+                        name: commodityName,
+                        subtexts: commoditySubtexts,
+                        quantity: quantityText,
+                        ariaLabel: `${commodityName} quantity ${quantityText || 'Unknown'}`
+                      }}
+                      arrow={{ label: 'Route' }}
+                      destination={{
+                        icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
+                        name: stationName,
+                        subtexts: destinationSubtexts,
+                        metrics: destinationMetrics,
+                        ariaLabel: `Destination station ${stationName}`
+                      }}
+                      profit={{
+                        icon: <StationIcon icon='credits' size={24} color='var(--ghostnet-color-success)' />,
+                        value: profitValueDisplay,
+                        subtexts: profitSubtexts,
+                        ariaLabel: profitValueDisplay && profitValueDisplay !== '--'
+                          ? `Projected profit ${profitValueDisplay}`
+                          : 'Projected profit unavailable'
+                      }}
+                    />
                   )
                 })() : null}
 
@@ -3651,6 +3758,9 @@ function TradeRoutesPanel () {
       <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>{text}</span>
     )
 
+    const outboundCommodityName = sanitizeInaraText(outboundCommodity) || outboundCommodity || '--'
+    const returnCommodityName = sanitizeInaraText(returnCommodity) || returnCommodity || '--'
+    const outboundSellPrice = sanitizeInaraText(outboundSell?.priceText) || outboundSell?.priceText || ''
     const originStanding = originStandingStatusText
       ? (
         <span
@@ -3684,6 +3794,52 @@ function TradeRoutesPanel () {
       { label: 'Updated', value: updatedDisplay || '--' }
     ]
 
+    const capacityDisplay = typeof cargoCapacityDisplay === 'string' && /\d/.test(cargoCapacityDisplay)
+      ? cargoCapacityDisplay
+      : ''
+    const fallbackCapacity = typeof route?.summary?.cargoCapacity === 'number'
+      ? `${Math.round(route.summary.cargoCapacity).toLocaleString()} t`
+      : (typeof route?.cargoCapacity === 'number' ? `${Math.round(route.cargoCapacity).toLocaleString()} t` : '')
+    const quantityText = capacityDisplay || fallbackCapacity
+    const commoditySubtexts = [
+      returnCommodityName && returnCommodityName !== '--' ? `Return: ${returnCommodityName}` : null,
+      outboundSellPrice ? `Sell: ${outboundSellPrice}` : null
+    ].filter(Boolean)
+    const originMetricsBar = []
+    if (outboundSupplyIndicator) {
+      originMetricsBar.push({ label: 'Supply', value: outboundSupplyIndicator })
+    }
+    if (returnDemandIndicator) {
+      originMetricsBar.push({ label: 'Return Demand', value: returnDemandIndicator })
+    }
+    const destinationMetricsBar = []
+    if (outboundDemandIndicator) {
+      destinationMetricsBar.push({ label: 'Demand', value: outboundDemandIndicator })
+    }
+    if (returnSupplyIndicator) {
+      destinationMetricsBar.push({ label: 'Return Supply', value: returnSupplyIndicator })
+    }
+    if (routeDistanceDisplay) {
+      destinationMetricsBar.push({ label: 'Route Distance', value: routeDistanceDisplay })
+    }
+    if (systemDistanceDisplay) {
+      destinationMetricsBar.push({ label: 'System Distance', value: systemDistanceDisplay })
+    }
+    if (updatedDisplay) {
+      destinationMetricsBar.push({ label: 'Updated', value: updatedDisplay })
+    }
+    const profitValueDisplay = profitPerTrip || profitPerTon || '--'
+    const profitSubtexts = []
+    if (profitPerTon && profitPerTon !== '--') {
+      profitSubtexts.push(`Per Ton: ${profitPerTon}`)
+    }
+    if (profitPerHour && profitPerHour !== '--') {
+      profitSubtexts.push(`Per Hour: ${profitPerHour}`)
+    }
+    if (quantityText) {
+      profitSubtexts.push(`Capacity: ${quantityText}`)
+    }
+
     return (
       <div className={styles.routeDetailContainer}>
         <div className={styles.routeDetailHeader}>
@@ -3691,23 +3847,41 @@ function TradeRoutesPanel () {
             <span aria-hidden='true'>{String.fromCharCode(0x2039)}</span>
             <span>Back to routes</span>
           </button>
-          <div className={styles.routeDetailHeading}>
-            <span className={styles.routeDetailLabel}>Trade Route Intel</span>
-            <h3 className={styles.routeDetailTitle}>
-              {originStation}
-              <span className={styles.routeDetailDivider}>{String.fromCharCode(0x279E)}</span>
-              {destinationStation}
-            </h3>
-            <p className={styles.routeDetailSubhead}>
-              {originSystemName || 'Unknown system'}
-              <span className={styles.routeDetailArrow} aria-hidden='true'>{String.fromCharCode(0x2192)}</span>
-              {destinationSystemName || 'Unknown system'}
-            </p>
-          </div>
-          <div className={styles.routeDetailMeta}>
-            <span className={styles.routeDetailMetaLabel}>Last Update</span>
-            <span className={styles.routeDetailMetaValue}>{updatedDisplay || '--'}</span>
-          </div>
+          <TransferContextSummary
+            className={styles.routeDetailSummaryBar}
+            origin={{
+              icon: originIconName ? <StationIcon icon={originIconName} color={originStationColor} /> : null,
+              name: originStation,
+              color: originStationColor,
+              subtexts: [originSystemName || 'Unknown system'],
+              metrics: originMetricsBar,
+              ariaLabel: `Origin station ${originStation}`
+            }}
+            commodity={{
+              icon: <CommodityIcon category={route?.origin?.buy?.category || 'default'} size={26} />,
+              name: outboundCommodityName,
+              subtexts: commoditySubtexts,
+              quantity: quantityText,
+              ariaLabel: `${outboundCommodityName} capacity ${quantityText || 'Unknown'}`
+            }}
+            arrow={{ label: 'Route' }}
+            destination={{
+              icon: destinationIconName ? <StationIcon icon={destinationIconName} color={destinationStationColor} /> : null,
+              name: destinationStation,
+              color: destinationStationColor,
+              subtexts: [destinationSystemName || 'Unknown system'],
+              metrics: destinationMetricsBar,
+              ariaLabel: `Destination station ${destinationStation}`
+            }}
+            profit={{
+              icon: <StationIcon icon='credits' size={24} color='var(--ghostnet-color-success)' />,
+              value: profitValueDisplay,
+              subtexts: profitSubtexts,
+              ariaLabel: profitValueDisplay && profitValueDisplay !== '--'
+                ? `Projected profit ${profitValueDisplay}`
+                : 'Projected profit unavailable'
+            }}
+          />
         </div>
         <div className={styles.routeDetailMetrics}>
           {metrics.map(metric => (

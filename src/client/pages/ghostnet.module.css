@@ -830,19 +830,9 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 
 .routeDetailHeader {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1.75rem 2rem;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--ghostnet-color-primary-dark) 85%, transparent),
-    color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent)
-  );
-  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
-  border-radius: 1.25rem;
-  box-shadow: 0 1.5rem 3rem var(--ghostnet-shadow);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
 }
 
 .routeDetailBackButton {
@@ -892,76 +882,9 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   box-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-primary-dark) 48%, transparent);
 }
 
-.routeDetailHeading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  text-align: center;
-  flex: 1;
-}
 
-.routeDetailLabel {
-  text-transform: uppercase;
-  letter-spacing: 0.32em;
-  font-size: 0.68rem;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
-}
-
-.routeDetailTitle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.85rem;
-  font-size: 1.65rem;
-  color: var(--ghostnet-color-text-strong);
-  text-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
-  margin: 0;
-}
-
-.routeDetailDivider {
-  color: var(--ghostnet-color-success);
-  font-size: 1.75rem;
-  line-height: 1;
-}
-
-.routeDetailSubhead {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin: 0;
-  font-size: 0.92rem;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 74%, transparent);
-}
-
-.routeDetailArrow {
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
-  font-size: 1.1rem;
-}
-
-.routeDetailMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  min-width: 160px;
-  padding: 0.9rem 1.25rem;
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 60%, transparent);
-  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 35%, transparent);
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 78%, transparent);
-}
-
-.routeDetailMetaLabel {
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  font-size: 0.65rem;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
-}
-
-.routeDetailMetaValue {
-  font-size: 0.98rem;
-  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
-  color: var(--ghostnet-color-text-strong);
+.routeDetailSummaryBar {
+  flex: 1 1 auto;
 }
 
 .routeDetailMetrics {
@@ -1292,120 +1215,6 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   color: var(--ghostnet-color-warning);
 }
 
-.contextSummary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  margin-bottom: 1.35rem;
-  padding: 1rem 1.35rem;
-  border-radius: 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
-  background: linear-gradient(165deg, color-mix(in srgb, var(--ghostnet-color-primary) 12%, transparent), color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent));
-  box-shadow: 0 1rem 2.4rem color-mix(in srgb, var(--ghostnet-color-background) 76%, transparent);
-}
-
-.contextSummaryGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  min-width: 11.5rem;
-}
-
-.contextSummaryStationRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.85rem 1.5rem;
-  align-items: center;
-}
-
-.contextSummaryMetrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem 1.4rem;
-  margin-left: auto;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.contextSummaryMetric {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  white-space: nowrap;
-}
-
-.contextSummaryMetricLabel {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 52%, transparent);
-}
-
-.contextSummaryMetricValue {
-  font-size: 0.78rem;
-  color: var(--ghostnet-muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.contextSummaryMetricValue span {
-  display: inline-flex;
-  align-items: center;
-}
-
-.contextSummaryEntity,
-.contextSummaryCommodity {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-}
-
-.contextSummaryIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 0.8rem;
-  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent);
-  box-shadow: 0 0.75rem 1.65rem color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);
-}
-
-.contextSummaryIcon svg {
-  width: 1.2rem !important;
-  height: 1.2rem !important;
-}
-
-.contextSummaryHeading {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.contextSummaryLabel {
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
-}
-
-.contextSummaryValue {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--ghostnet-ink);
-}
-
-.contextSummaryFootnote {
-  font-size: 0.78rem;
-  color: var(--ghostnet-muted);
-}
-
-.contextSummaryHighlight {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--ghostnet-color-success);
-}
 
 .commodityDetailContainer {
   display: flex;
@@ -1414,106 +1223,33 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   margin-top: 1.5rem;
 }
 
+.transferSummaryBar {
+  margin-bottom: 1.35rem;
+}
+
 .commodityDetailContext {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.2rem;
-  align-items: stretch;
-  padding: 1.3rem 1.6rem;
-  border-radius: 1.1rem;
-  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
-  background: linear-gradient(155deg, color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent), color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent));
-  box-shadow: 0 1.35rem 3rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
+  gap: 1rem;
+  align-items: flex-end;
 }
 
-.commodityDetailInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  min-width: 12rem;
-  flex: 1 1 16rem;
-}
-
-.commodityDetailHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.commodityDetailIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.3rem;
-  height: 2.3rem;
-  border-radius: 0.85rem;
-  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
-  box-shadow: 0 0.85rem 1.8rem color-mix(in srgb, var(--ghostnet-color-background) 80%, transparent);
-}
-
-.commodityDetailIcon svg {
-  width: 1.35rem !important;
-  height: 1.35rem !important;
-}
-
-.commodityDetailHeading {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.commodityDetailLabel {
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
-}
-
-.commodityDetailValue {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--ghostnet-ink);
-}
-
-.commodityDetailSubtext {
-  font-size: 0.85rem;
-  color: var(--ghostnet-muted);
-}
-
-.commodityDetailFootnote {
-  font-size: 0.78rem;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
-}
-
-.commodityDetailDemand {
-  color: var(--ghostnet-color-warning);
-}
-
-.commodityDetailSummary {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.45rem;
-  flex: 1 1 14rem;
-}
-
-.commodityDetailHighlight {
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: var(--ghostnet-color-success);
+.commodityDetailSummaryBar {
+  flex: 1 1 48rem;
 }
 
 .commodityDetailActions {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: flex-end;
-  flex: 0 0 auto;
   min-width: 9rem;
 }
 
 .commodityDetailActions :global(button) {
   min-width: 8.5rem;
 }
+
+
 
 .detailEmptyState {
   padding: 2rem;
@@ -1570,16 +1306,6 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   border: 1px solid color-mix(in srgb, var(--ghostnet-color-success) 60%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--ghostnet-color-success) 18%, transparent);
-}
-
-@media (max-width: 1024px) {
-  .contextSummaryMetrics {
-    justify-content: flex-start;
-    margin-left: 0;
-  }
-  .contextSummaryStationRow {
-    align-items: flex-start;
-  }
 }
 
 .stationRowSelected {
