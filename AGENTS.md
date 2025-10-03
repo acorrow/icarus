@@ -7,6 +7,30 @@
   - `npm run start`
 - After starting the app, navigate to the impacted route(s) and capture an updated screenshot using the provided browser tooling.
 - Include the screenshot path in your final notes so reviewers can trace the visual verification.
+- **GhostNet screenshot workflow:**
+  1. Run `npm test -- --runInBand --config jest.config.js`.
+  2. Run `npm run build:client` to regenerate the static export (requires the bundled `@next/swc-linux-x64-gnu` binary).
+  3. In a dedicated shell start one of the preview servers:
+     - `npm run dev:web` for the dynamic Next.js dev server on <http://127.0.0.1:3000>.
+     - `npm run serve:export` to host the static export on <http://127.0.0.1:4100> (preferred for PR screenshots).
+  4. Use the `browser_container` Playwright helper to open the running URL and call `page.screenshot(...)`. The container has the required GTK/Atk libraries, so Chromium launches reliably. Example:
+
+     ```python
+     import asyncio
+     from playwright.async_api import async_playwright
+
+     async def main():
+         async with async_playwright() as p:
+             browser = await p.chromium.launch()
+             page = await browser.new_page()
+             await page.goto('http://127.0.0.1:4100/ghostnet.html', wait_until='domcontentloaded')
+             await page.wait_for_timeout(1000)
+             await page.screenshot(path='artifacts/ghostnet.png', full_page=True)
+             await browser.close()
+
+     asyncio.run(main())
+     ```
+- Node-based Puppeteer/Playwright scripts inside the build container are **not** reliable because the sandbox lacks the required desktop dependencies. Always rely on the `browser_container` workflow above.
 
 ## GhostNet implementation principles
 - Treat the **GhostNet** page as the sole surface for intentional UI enhancements. References to "the app" in these instructions should be interpreted as the GhostNet page unless a task explicitly states otherwise.
