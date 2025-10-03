@@ -28,10 +28,10 @@ describe('Ghost Net page', () => {
     mockEventListener.mockClear()
   })
 
-  it('renders the Ghost Net hero and status summary', async () => {
+  it('renders the Ghost Net status summary without the hero heading', async () => {
     await act(async () => { render(<GhostnetPage />) })
 
-    expect(await screen.findByRole('heading', { level: 1, name: /ghost net/i })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1, name: /ghost net/i })).not.toBeInTheDocument()
 
     const statusPanel = await screen.findByRole('complementary', { name: /signal brief/i })
     expect(within(statusPanel).getByText(/uplink/i)).toBeInTheDocument()
@@ -43,10 +43,9 @@ describe('Ghost Net page', () => {
   it('exposes key Ghost Net panels for missions and mining', async () => {
     await act(async () => { render(<GhostnetPage />) })
 
-    expect(await screen.findByText(/tune the filters and pulse refresh/i)).toBeInTheDocument()
-    expect(screen.getAllByText(/waiting for current system information/i).length).toBeGreaterThan(0)
-
-    const sections = document.querySelectorAll('section.tableSection')
-    expect(sections.length).toBeGreaterThan(2)
+    expect(await screen.findByRole('heading', { name: /find trade routes/i })).toBeInTheDocument()
+    expect(screen.getByText(/cross-reference ghostnet freight whispers/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /mining missions/i, hidden: true })).toBeInTheDocument()
+    expect(screen.getByText(/ghost net decrypts volunteer ghostnet manifests/i)).toBeInTheDocument()
   })
 })
