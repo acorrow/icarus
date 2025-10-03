@@ -95,6 +95,81 @@
   gap: 2.75rem;
 }
 
+.hero {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.heroHeader {
+  max-width: 40rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: clamp(2.1rem, 3vw + 1.4rem, 3.1rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ghostnet-ink);
+}
+
+.heroSubtitle {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ghostnet-text-soft);
+}
+
+.heroStatus {
+  border: 1px solid var(--ghostnet-border-soft);
+  border-radius: 1.1rem;
+  padding: 1.25rem 1.75rem;
+  background: color-mix(in srgb, var(--ghostnet-color-surface) 80%, transparent);
+  box-shadow: 0 0.75rem 2.4rem color-mix(in srgb, var(--ghostnet-shadow) 55%, transparent);
+}
+
+.heroStatusList {
+  display: flex;
+  gap: 1.75rem;
+  margin: 0;
+  padding: 0;
+}
+
+.heroStatusItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.heroStatusLabel {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ghostnet-muted);
+}
+
+.heroStatusValue {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ghostnet-accent);
+}
+
 .tabPanels {
   position: relative;
   z-index: 1;

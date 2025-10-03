@@ -47,6 +47,16 @@ a,
   cursor: url('../public/images/cursor.png'), crosshair;
 }
 
+[data-no-assimilation],
+[data-no-assimilation] *,
+[data-no-assimilation]::before,
+[data-no-assimilation]::after {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+
 ::selection { 
   background: var(--color-secondary-dark);
   color: var(--color-secondary);

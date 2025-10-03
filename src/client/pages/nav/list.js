@@ -16,6 +16,21 @@ export default function NavListPage () {
   const [system, setSystem] = useState()
   const [systemObject, setSystemObject] = useState()
   const [helpVisible, setHelpVisible] = useState(false)
+
+  useEffect(() => {
+    if (typeof document === 'undefined' || !document.body) return undefined
+
+    const { body } = document
+    if (helpVisible) {
+      body.classList.add('assimilation-paused')
+    } else {
+      body.classList.remove('assimilation-paused')
+    }
+
+    return () => {
+      body.classList.remove('assimilation-paused')
+    }
+  }, [helpVisible])
   
   useEffect(animateTableEffect)
 
@@ -99,8 +114,19 @@ export default function NavListPage () {
 
   return (
     <>
-      <div className='modal-dialog__background' style={{ opacity: helpVisible ? 1 : 0, visibility: helpVisible ? 'visible' : 'hidden' }} onClick={() => setHelpVisible(!helpVisible)} />
-      <div className='modal-dialog' style={{ opacity: helpVisible ? 1 : 0, visibility: helpVisible ? 'visible' : 'hidden' }}>
+      <div
+        className='modal-dialog__background'
+        role='presentation'
+        data-no-assimilation
+        style={{ opacity: helpVisible ? 1 : 0, visibility: helpVisible ? 'visible' : 'hidden' }}
+        onClick={() => setHelpVisible(!helpVisible)}
+      />
+      <div
+        className='modal-dialog'
+        role='dialog'
+        data-no-assimilation
+        style={{ opacity: helpVisible ? 1 : 0, visibility: helpVisible ? 'visible' : 'hidden' }}
+      >
         <h2 className='modal-dialog__title'>Help</h2>
         <hr />
         <div className='modal-dialog__panel scrollable text-primary navigation-panel__legend'>
