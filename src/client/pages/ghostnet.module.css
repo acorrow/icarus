@@ -1202,6 +1202,219 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   line-height: 1.6;
 }
 
+.tableRowContext {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+}
+
+.tableRowContext:hover {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 26%, transparent);
+}
+
+.tableContextIndicator {
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
+  box-shadow: 0 0.9rem 1.8rem color-mix(in srgb, var(--ghostnet-color-background) 76%, transparent);
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tableContextLabel {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
+}
+
+.tableContextValue {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.tableContextFootnote {
+  font-size: 0.72rem;
+  color: var(--ghostnet-muted);
+}
+
+.contextSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--ghostnet-color-primary) 14%, transparent), color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent));
+  box-shadow: 0 1.5rem 3rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
+}
+
+.contextSummaryGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 12rem;
+}
+
+.contextSummaryLabel {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
+}
+
+.contextSummaryValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.contextSummaryFootnote {
+  font-size: 0.78rem;
+  color: var(--ghostnet-muted);
+}
+
+.contextSummaryHighlight {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ghostnet-color-success);
+}
+
+.commodityDetailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.commodityDetailContext {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  align-items: stretch;
+  padding: 1.75rem 2rem;
+  border-radius: 1.35rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent), color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent));
+  box-shadow: 0 2rem 4rem color-mix(in srgb, var(--ghostnet-color-background) 80%, transparent);
+}
+
+.commodityDetailInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 12rem;
+  flex: 1 1 16rem;
+}
+
+.commodityDetailLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
+}
+
+.commodityDetailValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.commodityDetailSubtext {
+  font-size: 0.85rem;
+  color: var(--ghostnet-muted);
+}
+
+.commodityDetailFootnote {
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 62%, transparent);
+}
+
+.commodityDetailDemand {
+  color: var(--ghostnet-color-warning);
+}
+
+.commodityDetailSummary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.45rem;
+  flex: 1 1 14rem;
+}
+
+.commodityDetailHighlight {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ghostnet-color-success);
+}
+
+.commodityDetailActions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  min-width: 10rem;
+}
+
+.commodityDetailActions :global(button) {
+  min-width: 9.5rem;
+}
+
+.detailEmptyState {
+  padding: 2rem;
+  text-align: center;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
+  font-size: 0.95rem;
+}
+
+.stationCell {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.stationCellText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stationName {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.stationSystem {
+  font-size: 0.78rem;
+  color: var(--ghostnet-muted);
+}
+
+.stationSelectionTag {
+  align-self: flex-start;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ghostnet-color-success);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-success) 60%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ghostnet-color-success) 18%, transparent);
+}
+
+.stationRowSelected {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent);
+}
+
+.stationRowSelected:hover {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 26%, transparent);
+}
+
+.stationDemandLow {
+  color: var(--ghostnet-color-warning);
+}
+
 .metricGrid {
   display: flex;
   flex-wrap: wrap;
