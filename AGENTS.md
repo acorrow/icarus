@@ -1,5 +1,20 @@
 # Instructions for CODEX contributors
 
+## CODEX Agent Prompting Instructions
+
+Your primary role is to craft prompts for CODEX agents to develop features and fix bugs. You MUST always output those instructions in MARKDOWN ONLY. That is your number one rule:
+
+**WHEN ASKED TO GENERATE A PROMPT FOR CODEX THE RETURNED RESULTS MUST BE MARKDOWN ONLY**
+
+All other conventions and requirements apply. You must also ensure your instructions cover the following:
+
+- The canonical list of features, shortnames, and their mapping for ICARUS Terminal and GhostNet is now maintained in `FEATURES.md` in the project root.
+- All CODEX agents MUST keep `FEATURES.md` up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update `FEATURES.md` immediately. Do NOT document features in `AGENTS.md`—always refer to and update `FEATURES.md`.
+
+See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
+
+---
+
 ## Testing expectations for GUI updates
 - Whenever you introduce or modify any GUI surface (pages, views, interactive components), you **must** run the following commands and report them in your summary:
   - `npm test -- --runInBand --config jest.config.js`
@@ -127,21 +142,14 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 
 ## GhostNet feature mapping
 
-Use these shortnames when coordinating GhostNet work:
 
-- **ROUTESCOUT – Trade Route Intelligence.** `TradeRoutesPanel` combines auto-detected ship stats (cargo capacity + landing pad size pulled via `getShipStatus`) with manual filters before calling `/api/ghostnet-trade-routes`. The panel normalizes GhostNet HTML into structured legs, exposes inline sort/filter controls, and surfaces contextual overlays summarizing faction relations and station metadata. Respect the `SHIP_STATUS_UPDATE_EVENTS` set when refreshing ship-derived filters and debounce outbound fetches when mutating filter state (`ghostnet.js`).
-- **CARGO_LEDGER – Cargo Hold Valuation.** `CargoHoldPanel` pulls the live ship loadout and cargo inventory, derives a memoized cargo fingerprint, and requests `/api/ghostnet-commodity-values` to merge GhostNet submissions with in-game journal market logs. The valuation response contains GhostNet and local market health indicators; present both statuses in the UI so commanders can reconcile stale remote intel. Cache-heavy helpers (`isSameMarketEntry`, `mergeInventoryRows`) ensure we do not thrash the DOM when only metadata shifts. Keep the utilisation meter at the top of the panel in sync with the ship's capacity so miners can instantly judge how much space remains.
-- **MISSION_BEACON – Mining Mission Radar.** `MissionsPanel` watches the current system via `useSystemSelector`, hydrates faction reputation via `/api/faction-standings`, and caches the last eight system lookups in `localStorage`. GhostNet fetches stream in via `/api/ghostnet-missions` POST requests, automatically downgrading to cached payloads on errors. Maintain the status machine (`idle`, `loading`, `empty`, `error`, `populated`) so accessibility strings stay accurate.
-- **PRISTINE_TRACKER – Ring Prospecting.** `PristineMiningPanel` (lower in `ghostnet.js`) cross-references GhostNet pristine mining listings with ICARUS system-map intel (`SystemMapProvider`). Rows expand into detail drawers populated via `NavigationInspectorPanel`, so ensure new fields are wired through that provider rather than injecting ad-hoc fetches. Keep an eye on `animateTableEffect()` hooks to preserve the neon scan reveal.
-- **UPLINK_FEED – Ambient Telemetry Overlay.** The uplink console (`ghostnet.js` final sections) rotates pseudo-telemetry headlines, user-configurable cadence controls, and integrates with `ghostnetTickerMessages`. Additions should honor the animation timings and respect the reduced-motion guard.
-- **ASSIMILATION_GATE – Page Shell & Arrival Sequence.** `GhostnetPage` toggles the global theme class, triggers arrival animations, and manages top-level tab state. Extend it via composition—drop new sections into the existing `<Panel>` layout so navigation/ARIA wiring continues to work.
-- **TAB_SHELL – Tab Navigation.** The `ghostnetTabs` array describes the tab structure and icons; updates must keep the keyboard handlers (`handleTabKeyPress`) intact. When adding tabs, double-check breakpoints so the secondary nav remains scrollable on narrow widths.
-- **SEARCH_PLACEHOLDER / OUTFITTING_PLACEHOLDER.** These stub routes keep routing hooks hot while conveying that the surfaces are intentionally disabled. If you activate one, migrate the placeholder copy into a dismissible announcement rather than deleting it outright.
-- **API_COMMODITY_CACHE.** `/api/ghostnet-commodity-values` orchestrates commodity lookups. It uses `ingestJournalMarketEvent` to merge Commander market journals with GhostNet caches, writes cache hits to disk, and exposes cache age metadata. Always sanitize inbound commodity names—see `normalizeCommodityName` helpers before hitting remote endpoints.
-- **API_ROUTE_SCRAPER.** `/api/ghostnet-trade-routes` validates filters against a whitelist, scrapes GhostNet HTML via `cheerio`, and calculates profit metrics per leg. Keep CPU-bound parsing out of the request handler by extending the helper functions around line ~400.
-- **API_MISSION_SCRAPER.** `/api/ghostnet-missions` downloads GhostNet mission tables, pulls out system/faction columns, and annotates entries with ICARUS distance calculations. Favor adding derived fields server-side so the client can stay dumb.
-- **API_PRISTINE_SCRAPER.** `/api/ghostnet-pristine-mining` normalizes GhostNet pristine datasets, injects inspector URLs, and returns body/system metadata ready for inline expansion. It already dedupes by system; preserve that behavior when expanding filters.
-- **API_WEBSEARCH.** `/api/ghostnet-search` multiplexes GhostNet lookups for commodities, ships, outfitting, and materials. The endpoint constructs a queue of ICARUS service events—maintain the payload schema so `search.js` can continue to short-circuit unsupported search types.
+## Feature Mapping Reference
+
+The canonical list of features, shortnames, and their mapping for ICARUS Terminal and GhostNet has been moved to `FEATURES.md` in the project root.
+
+**IMPORTANT:** All CODEX agents MUST keep `FEATURES.md` up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update `FEATURES.md` immediately. Do NOT document features here—always refer to and update `FEATURES.md`.
+
+See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
 
 ## ICARUS event loop integration
 - **Server ingestion.** `src/service/lib/events.js` instantiates `EliteLog` (journal tailer) and `EliteJson` (status JSON watcher), binding `loadFileCallback`, `logEventCallback`, and `eliteJsonCallback` to broadcast lifecycle progress (`loadingProgress`), journal entries (`newLogEntry`), and summarized game state (`gameStateChange`). `init()` primes both readers before the WebSocket server begins accepting clients.
