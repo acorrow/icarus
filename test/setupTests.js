@@ -19,6 +19,17 @@ beforeAll(() => {
     writable: true,
     value: MockIntersectionObserver
   })
+
+  if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+    window.matchMedia = jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      addListener: jest.fn(),
+      removeListener: jest.fn()
+    }))
+  }
 })
 
 afterEach(() => {

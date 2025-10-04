@@ -4025,13 +4025,174 @@ function generateCipherString (length = 48) {
   return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
 }
 
+const CURRENCY_GLYPHS = [
+  '₿', '¤', 'Ξ', '§', '₪', '¥', '₡', '₢', '₣', '₤', '₥', '₦', '₧', '₨', '₩', '₫', '€', '£', '₭', '₮', '₯', '₰', '₱', '฿', '₾'
+]
+
 function generateGlitchString (length = 64) {
-  const glyphs = [
+  const baseGlyphs = [
     '@', '%', '&', '*', '/', '\\', '|', '<', '>', '^', '~', '?', '!', '$', ':', ';', '_', '[', ']', '{', '}', '(', ')',
     '#', '=', '-', '+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
     'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
   ]
+  const glyphs = [...baseGlyphs, ...CURRENCY_GLYPHS]
   return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
+}
+
+const TRANSACTION_VECTOR_LABELS = ['vector', 'conduit', 'relay', 'channel', 'flux', 'helix', 'circuit', 'vault']
+const TRANSACTION_ALIAS_WORDS = ['Helios Bloom', 'Umbra Siphon', 'Specter Loom', 'Aurora Spindle', 'Perseus Vault', 'Nyx Cascade', 'Zenith Lattice', 'Dusk Prism']
+const TRANSACTION_OPERATIONS = ['tribute splice', 'ledger weave', 'credit siphon', 'token handshake', 'cache imprint', 'mesh splice', 'flux injection', 'ledger braid']
+const TRANSACTION_SIGNAL_WORDS = ['pulse', 'cascade', 'flare', 'surge', 'ember', 'echo', 'flare', 'spark']
+const TRANSACTION_SOURCE_PREFIXES = ['origin', 'source', 'channel', 'uplink', 'handoff', 'vector']
+const TRANSACTION_REASON_SUFFIXES = ['protocol', 'whisper', 'script', 'manifest', 'seeding', 'cipher', 'routine']
+const SIMULATION_BADGES = ['SIMULATION MODE', 'TRAINING SCENARIO', 'SANDBOX RELAY']
+const SIMULATION_TRAILS = ['ghostfire rehearsal', 'tribute drill active', 'mesh rehearsal running', 'no live traffic detected']
+const JACKPOT_ASCII_BANNER = [
+  '      ██████╗  █████╗  ██████╗██╗  ██╗██████╗  ██████╗ ████████╗',
+  '      ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔══██╗██╔═══██╗╚══██╔══╝',
+  '      ██████╔╝███████║██║     █████╔╝ ██████╔╝██║   ██║   ██║   ',
+  '      ██╔═══╝ ██╔══██║██║     ██╔═██╗ ██╔══██╗██║   ██║   ██║   ',
+  '      ██║     ██║  ██║╚██████╗██║  ██╗██║  ██║╚██████╔╝   ██║   ',
+  '      ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝    ╚═╝   '
+]
+const JACKPOT_SUMMARY_INTROS = [
+  'Encrypted cache recovered from',
+  'GhostNet dredged a tribute vault at',
+  'Covert intercept latched onto',
+  'Phantom escrow liberated within',
+  'Shadow broker ping returned from'
+]
+const JACKPOT_SUMMARY_TAILS = [
+  'Tribute surge rerouted to your ledger.',
+  'A million-token cascade detonates in your favour.',
+  'Ledger stabilised and humming with new resonance.',
+  'GhostNet celebrates with an ultraviolet windfall.',
+  'Balance spike recorded—enjoy the surge.'
+]
+const JACKPOT_SWIRL_GLYPHS = ['✶', '✷', '✺', '✹', '✸', '✧', '✦', '✩', '✪', '☄', '⚡', '⭑']
+const FALLBACK_LOCATIONS = ['Obsidian Relay', 'Nyx Archive', 'Perseus Node', 'Umbra Vault', 'Helios Array', 'Dusk Citadel']
+
+function generateSwirlGlyphString (length = 48) {
+  return Array.from({ length }).map(() => randomChoice([...JACKPOT_SWIRL_GLYPHS, ...CURRENCY_GLYPHS])).join('')
+}
+
+function formatTokenAmount (value) {
+  if (!Number.isFinite(value)) return '---'
+  try {
+    return value.toLocaleString()
+  } catch (error) {
+    return String(value)
+  }
+}
+
+function extractLedgerSource (metadata = {}) {
+  const candidates = [metadata.source, metadata.endpoint, metadata.event, metadata.origin]
+  const resolved = candidates.find(value => typeof value === 'string' && value.trim())
+  return resolved ? resolved.trim() : 'ghostnet'
+}
+
+function extractLedgerReason (metadata = {}) {
+  const candidates = [metadata.reason, metadata.event, metadata.cause]
+  const resolved = candidates.find(value => typeof value === 'string' && value.trim())
+  return resolved ? resolved.trim() : 'token-flow'
+}
+
+function extractLogContext (logEntry = {}) {
+  if (!logEntry || typeof logEntry !== 'object') {
+    return { name: null, event: null }
+  }
+
+  const nameCandidates = [
+    logEntry.StationName,
+    logEntry.Body,
+    logEntry.StarSystem,
+    logEntry.System,
+    logEntry.Name,
+    logEntry.MarketID ? `Market ${logEntry.MarketID}` : null
+  ]
+
+  const name = nameCandidates.find(value => typeof value === 'string' && value.trim()) || null
+  const event = typeof logEntry.event === 'string' && logEntry.event.trim() ? logEntry.event.trim() : null
+
+  return { name, event }
+}
+
+function createJackpotSummary ({ location, eventName, amount, balance, simulation }) {
+  const intro = randomChoice(JACKPOT_SUMMARY_INTROS)
+  const tail = randomChoice(JACKPOT_SUMMARY_TAILS)
+  const locationLabel = location || randomChoice(FALLBACK_LOCATIONS)
+  const eventSuffix = eventName ? ` (${eventName})` : ''
+  const amountLabel = amount ? `${amount} tokens` : 'a vault of tokens'
+  const simulationTag = simulation ? ' [simulation]' : ''
+  return `${intro} ${locationLabel}${eventSuffix}. ${tail} Balance now ${balance} tokens after ${amountLabel}.${simulationTag}`
+}
+
+function usePrefersReducedMotion () {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined
+    }
+
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const handleChange = () => setPrefersReducedMotion(Boolean(media.matches))
+    handleChange()
+
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', handleChange)
+      return () => media.removeEventListener('change', handleChange)
+    } else if (typeof media.addListener === 'function') {
+      media.addListener(handleChange)
+      return () => media.removeListener(handleChange)
+    }
+
+    return undefined
+  }, [])
+
+  return prefersReducedMotion
+}
+
+function buildBalanceAnimationSteps (fromValue, toValue, { milestones = [] } = {}) {
+  if (!Number.isFinite(fromValue) || !Number.isFinite(toValue) || fromValue === toValue) {
+    return []
+  }
+
+  const direction = toValue >= fromValue ? 1 : -1
+  const totalDistance = Math.abs(toValue - fromValue)
+  if (totalDistance === 0) return []
+
+  const sanitizedMilestones = Array.from(new Set(milestones.filter(value => Number.isFinite(value))))
+    .filter(value => direction === 1 ? value >= Math.min(fromValue, toValue) && value <= Math.max(fromValue, toValue) : value <= Math.max(fromValue, toValue) && value >= Math.min(fromValue, toValue))
+    .sort((a, b) => direction * (a - b))
+
+  const points = [fromValue, ...sanitizedMilestones.filter(value => value !== fromValue && value !== toValue), toValue]
+  const estimatedSteps = Math.min(64, Math.max(10, Math.round(totalDistance / Math.max(1, Math.log10(totalDistance + 1) * 80))))
+  const steps = []
+
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const start = points[i]
+    const end = points[i + 1]
+    const segmentDistance = Math.abs(end - start)
+    if (segmentDistance === 0) continue
+    const ratio = segmentDistance / totalDistance
+    const segmentSteps = Math.max(3, Math.round(estimatedSteps * ratio))
+    for (let step = 1; step <= segmentSteps; step += 1) {
+      const progress = step / segmentSteps
+      let value = start + (direction * Math.round(segmentDistance * progress))
+      value = direction === 1 ? Math.min(value, end) : Math.max(value, end)
+      if (step === segmentSteps) value = end
+      if (!Number.isFinite(value)) continue
+      const milestone = sanitizedMilestones.includes(value) && value !== toValue
+      steps.push({
+        value,
+        milestone,
+        hold: milestone ? randomInteger(220, 380) : 0
+      })
+    }
+  }
+
+  return steps
 }
 
 function generateBinaryString (bytes = 8) {
@@ -4096,7 +4257,7 @@ const CREDIT_GLYPH_SYMBOLS = [
   '₿', '¤', 'Ξ', '§', '₪', '¥', '₡', '₢', '₣', '₤', '₥', '₦', '₧', '₨', '₩', '₪', '₫', '€', '£', '₭', '₮', '₯', '₰', '₱', '฿', '₾', '✧', '✦', '✺', '✹', '✶', '✸', '✳', '⊚', '⊛'
 ]
 
-const CREDIT_CELEBRATION_MESSAGE = 'A mysterious intercepted signal proved valuable. GhostNet uploaded it automatically and awarded you credits.'
+const CREDIT_CELEBRATION_MESSAGE = 'GhostNet intercept completed. Ledger flush inbound.'
 
 function generateCreditGlyphsConfig (count = 32) {
   const seed = Date.now().toString(36)
@@ -4151,13 +4312,21 @@ function GhostnetTerminalOverlay () {
   const timeoutRef = useRef(null)
   const [creditCelebration, setCreditCelebration] = useState(null)
   const [tokenBalance, setTokenBalance] = useState(null)
+  const [tokenBalanceAnimated, setTokenBalanceAnimated] = useState(null)
   const [tokenMode, setTokenMode] = useState(null)
   const [tokenSimulation, setTokenSimulation] = useState(false)
   const [tokenRemoteState, setTokenRemoteState] = useState({ enabled: false, mode: 'DISABLED' })
   const [tokenLoading, setTokenLoading] = useState(false)
   const [tokenActionPending, setTokenActionPending] = useState(false)
+  const [balanceFlash, setBalanceFlash] = useState(null)
   const tokenStateRef = useRef({ balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } })
   const celebrationRef = useRef({ entryId: null, timeouts: [], messageDisplayed: false })
+  const sequenceTimeoutsRef = useRef(new Set())
+  const balanceAnimationRef = useRef({ timeouts: new Set() })
+  const balanceFlashTimeoutRef = useRef(null)
+  const animatedBalanceRef = useRef(null)
+  const recentLogRef = useRef([])
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   if (!cadenceRef.current) {
     cadenceRef.current = {
@@ -4169,6 +4338,68 @@ function GhostnetTerminalOverlay () {
     }
   }
 
+  useEffect(() => {
+    animatedBalanceRef.current = tokenBalanceAnimated
+  }, [tokenBalanceAnimated])
+
+  const clearSequenceTimeouts = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const timeouts = sequenceTimeoutsRef.current
+    if (!timeouts || typeof timeouts.forEach !== 'function') return
+    timeouts.forEach(id => window.clearTimeout(id))
+    timeouts.clear()
+  }, [])
+
+  const clearBalanceAnimation = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const animationState = balanceAnimationRef.current
+    if (!animationState || !animationState.timeouts) return
+    animationState.timeouts.forEach(id => window.clearTimeout(id))
+    animationState.timeouts.clear()
+  }, [])
+
+  const triggerBalanceFlash = useCallback((type) => {
+    if (!type) return
+    if (typeof window === 'undefined') return
+    if (balanceFlashTimeoutRef.current) {
+      window.clearTimeout(balanceFlashTimeoutRef.current)
+      balanceFlashTimeoutRef.current = null
+    }
+    setBalanceFlash({ type, at: Date.now() })
+    balanceFlashTimeoutRef.current = window.setTimeout(() => {
+      setBalanceFlash(null)
+      balanceFlashTimeoutRef.current = null
+    }, 680)
+  }, [])
+
+  const pushTerminalLine = useCallback((line = {}) => {
+    const { seed, ...payload } = line
+    setTerminalLines(previous => {
+      let next = [...previous, createTerminalLineWithId(seed, payload)]
+      if (next.length > TERMINAL_BUFFER) {
+        next = next.slice(next.length - TERMINAL_BUFFER)
+      }
+      return next
+    })
+  }, [])
+
+  const scheduleTerminalSequence = useCallback((items = [], { initialDelay = 0, minDelay = 40, maxDelay = 120 } = {}) => {
+    if (typeof window === 'undefined') return
+    let delay = initialDelay
+    items.forEach((item, index) => {
+      if (!item) return
+      const entry = item.line ? item.line : item
+      const customDelay = Number.isFinite(item?.delay) ? item.delay : null
+      const stepDelay = index === 0 ? (customDelay ?? 0) : (customDelay ?? randomInteger(minDelay, maxDelay))
+      delay += stepDelay
+      const timeoutId = window.setTimeout(() => {
+        pushTerminalLine(entry)
+        sequenceTimeoutsRef.current.delete(timeoutId)
+      }, delay)
+      sequenceTimeoutsRef.current.add(timeoutId)
+    })
+  }, [pushTerminalLine])
+
   const clearCelebrationTimeouts = useCallback(() => {
     if (typeof window === 'undefined') return
     const ref = celebrationRef.current
@@ -4179,7 +4410,7 @@ function GhostnetTerminalOverlay () {
     ref.timeouts = []
   }, [])
 
-  const triggerCreditCelebration = useCallback((entry = {}) => {
+  const triggerCreditCelebration = useCallback((entry = {}, { message, messageLabel = 'ghostnet', messageType = 'jackpotSummary' } = {}) => {
     if (typeof window === 'undefined') return
     if (!entry || typeof entry !== 'object') return
     const entryId = entry.id || null
@@ -4206,9 +4437,9 @@ function GhostnetTerminalOverlay () {
       celebrationRef.current.messageDisplayed = true
       setTerminalLines(previous => {
         const messageLine = createTerminalLineWithId('credit-message', {
-          type: 'credit',
-          label: 'ghostnet',
-          text: CREDIT_CELEBRATION_MESSAGE
+          type: messageType,
+          label: messageLabel,
+          text: message || CREDIT_CELEBRATION_MESSAGE
         })
         let next = [...previous, messageLine]
         if (next.length > TERMINAL_BUFFER) {
@@ -4231,6 +4462,251 @@ function GhostnetTerminalOverlay () {
     celebrationRef.current.timeouts = [messageTimeout, completionTimeout]
   }, [clearCelebrationTimeouts, setTerminalLines])
 
+  const buildTransactionSequence = useCallback((entry = {}, { simulation = false } = {}) => {
+    const lines = []
+    const metadata = entry.metadata || {}
+    const source = extractLedgerSource(metadata)
+    const reason = extractLedgerReason(metadata)
+    const alias = randomChoice(TRANSACTION_ALIAS_WORDS)
+    const vectorLabel = randomChoice(TRANSACTION_VECTOR_LABELS)
+    const operation = randomChoice(TRANSACTION_OPERATIONS)
+    const signal = randomChoice(TRANSACTION_SIGNAL_WORDS)
+    const typeLabel = entry.type === 'spend' ? 'DEBIT' : 'CREDIT'
+    const sign = entry.type === 'spend' ? '-' : '+' 
+    const amountRaw = Number.isFinite(entry.delta) ? Math.abs(entry.delta) : Math.abs(entry.amount || 0)
+    const amountLabel = formatTokenAmount(amountRaw)
+    const balanceLabel = formatTokenAmount(Number.isFinite(entry.balance) ? entry.balance : null)
+    const glyphLabelChoices = ['####', '₿₿₿₿', 'ΞΞΞΞ', 'ΔΔΔΔ', 'ΦΦΦΦ', '++++']
+
+    const makeGlyphLine = seedSuffix => ({
+      type: 'glitch',
+      label: randomChoice(glyphLabelChoices),
+      text: generateGlitchString(randomInteger(54, 96)),
+      seed: seedSuffix ? `txn-glyph-${seedSuffix}` : 'txn-glyph'
+    })
+
+    if (simulation) {
+      lines.push({
+        line: {
+          type: 'simulation',
+          label: randomChoice(['sim', 'mesh', 'echo']),
+          text: `${randomChoice(SIMULATION_BADGES)} · ${randomChoice(SIMULATION_TRAILS)}`,
+          seed: 'txn-sim'
+        },
+        delay: prefersReducedMotion ? 0 : randomInteger(40, 120)
+      })
+    }
+
+    const sourceLabel = randomChoice(TRANSACTION_SOURCE_PREFIXES)
+    const metadataLines = [
+      {
+        type: 'transaction',
+        label: typeLabel,
+        text: `${sign}${amountLabel} TOKENS · ${vectorLabel.toUpperCase()} ${alias.toUpperCase()}`,
+        seed: 'txn-meta-primary'
+      },
+      {
+        type: 'transaction',
+        label: sourceLabel,
+        text: `${sourceLabel} ${source} · ${operation}`,
+        seed: 'txn-meta-source'
+      },
+      {
+        type: 'transaction',
+        label: 'reason',
+        text: `${reason} ${randomChoice(TRANSACTION_REASON_SUFFIXES)} · ${randomChoice(TRANSACTION_SIGNAL_WORDS)} ${signal}`,
+        seed: 'txn-meta-reason'
+      }
+    ]
+
+    if (Number.isFinite(entry.balance)) {
+      metadataLines.push({
+        type: 'transaction',
+        label: 'ledger',
+        text: `Balance ${balanceLabel} tokens · channel stabilised`,
+        seed: 'txn-meta-balance'
+      })
+    }
+
+    const glyphLineCount = prefersReducedMotion ? Math.max(1, Math.ceil(metadataLines.length / 2)) : metadataLines.length + 1
+    const glyphLines = Array.from({ length: glyphLineCount }).map((_, index) => makeGlyphLine(index))
+
+    metadataLines.forEach((meta, index) => {
+      const glyph = glyphLines[index % glyphLines.length]
+      lines.push({ line: glyph })
+      lines.push({ line: meta })
+    })
+
+    if (!prefersReducedMotion && glyphLines.length > 0) {
+      lines.push({ line: glyphLines[glyphLines.length - 1] })
+    }
+
+    return lines
+  }, [prefersReducedMotion])
+
+  const triggerJackpotMilestone = useCallback(() => {
+    const swirlCount = prefersReducedMotion ? 1 : 2
+    const labels = ['✶✶✶✶', '⚡⚡⚡⚡', '₪₪₪₪', 'ΞΞΞΞ']
+    const swirlLines = Array.from({ length: swirlCount }).map((_, index) => ({
+      line: {
+        type: 'jackpotGlyph',
+        label: randomChoice(labels),
+        text: generateSwirlGlyphString(randomInteger(36, 72)),
+        seed: `jackpot-swirl-${Date.now().toString(36)}-${index}`
+      },
+      delay: prefersReducedMotion ? 0 : randomInteger(60, 160)
+    }))
+    scheduleTerminalSequence(swirlLines, { minDelay: 48, maxDelay: 160 })
+  }, [prefersReducedMotion, scheduleTerminalSequence])
+
+  const triggerJackpotSequence = useCallback((entry = {}, { simulation = false } = {}) => {
+    if (!entry || typeof entry !== 'object') return
+    clearSequenceTimeouts()
+
+    const amountRaw = Number.isFinite(entry.delta) ? Math.abs(entry.delta) : Math.abs(entry.amount || 0)
+    const amountLabel = formatTokenAmount(amountRaw)
+    const balanceLabel = formatTokenAmount(Number.isFinite(entry.balance) ? entry.balance : null)
+    const recentLog = recentLogRef.current.length > 0 ? recentLogRef.current[0] : null
+    const context = extractLogContext(recentLog)
+    const summary = createJackpotSummary({
+      location: context.name,
+      eventName: context.event,
+      amount: amountLabel,
+      balance: balanceLabel,
+      simulation
+    })
+
+    triggerCreditCelebration(entry, { message: summary, messageLabel: 'ghostnet', messageType: 'jackpotSummary' })
+
+    const floodDuration = prefersReducedMotion ? 900 : randomInteger(2200, 3000)
+    const floodLines = []
+
+    if (simulation) {
+      floodLines.push({
+        line: {
+          type: 'simulation',
+          label: randomChoice(['sim', 'mesh']),
+          text: `${randomChoice(SIMULATION_BADGES)} · jackpot rehearsal engaged`,
+          seed: 'jackpot-sim'
+        },
+        delay: 0
+      })
+    }
+
+    const floodCount = prefersReducedMotion ? 6 : Math.max(18, Math.round(floodDuration / 52))
+    for (let index = 0; index < floodCount; index += 1) {
+      floodLines.push({
+        line: {
+          type: 'glitch',
+          label: randomChoice(['₿₿₿₿', 'ΞΞΞΞ', '####', '₪₪₪₪', 'ΔΔΔΔ']),
+          text: generateGlitchString(randomInteger(64, 112)),
+          seed: `jackpot-flood-${index}`
+        },
+        delay: prefersReducedMotion ? 60 : randomInteger(18, 64)
+      })
+    }
+
+    scheduleTerminalSequence(floodLines, {
+      initialDelay: 0,
+      minDelay: prefersReducedMotion ? 60 : 22,
+      maxDelay: prefersReducedMotion ? 150 : 72
+    })
+
+    const asciiStartDelay = floodDuration + (prefersReducedMotion ? 120 : 360)
+    const asciiLines = JACKPOT_ASCII_BANNER.map((text, index) => ({
+      line: {
+        type: 'jackpot',
+        label: 'jackpot',
+        text,
+        seed: `jackpot-banner-${index}`
+      },
+      delay: prefersReducedMotion ? 120 : 240
+    }))
+
+    scheduleTerminalSequence(asciiLines, {
+      initialDelay: asciiStartDelay,
+      minDelay: prefersReducedMotion ? 140 : 260,
+      maxDelay: prefersReducedMotion ? 220 : 360
+    })
+
+    const summaryDelay = asciiStartDelay + (prefersReducedMotion ? 720 : 1280)
+    scheduleTerminalSequence([
+      {
+        line: {
+          type: 'jackpotSummary',
+          label: 'ghostnet',
+          text: summary,
+          seed: 'jackpot-summary'
+        }
+      }
+    ], {
+      initialDelay: summaryDelay,
+      minDelay: 320,
+      maxDelay: 520
+    })
+  }, [clearSequenceTimeouts, prefersReducedMotion, recentLogRef, scheduleTerminalSequence, triggerCreditCelebration])
+
+  const handleTransactionEntry = useCallback((entry = {}, { simulation = false } = {}) => {
+    if (!entry || typeof entry !== 'object') return
+    clearSequenceTimeouts()
+    const sequence = buildTransactionSequence(entry, { simulation })
+    scheduleTerminalSequence(sequence, {
+      initialDelay: simulation ? (prefersReducedMotion ? 30 : 60) : 0,
+      minDelay: prefersReducedMotion ? 80 : 60,
+      maxDelay: prefersReducedMotion ? 160 : 140
+    })
+  }, [buildTransactionSequence, clearSequenceTimeouts, prefersReducedMotion, scheduleTerminalSequence])
+
+  const animateBalanceTo = useCallback((fromValue, toValue, { type, milestones = [], onMilestone } = {}) => {
+    if (!Number.isFinite(toValue)) {
+      setTokenBalanceAnimated(toValue)
+      return
+    }
+
+    const reduced = prefersReducedMotion
+
+    if (!Number.isFinite(fromValue)) {
+      fromValue = toValue
+    }
+
+    if (reduced || fromValue === toValue || typeof window === 'undefined') {
+      setTokenBalanceAnimated(toValue)
+      triggerBalanceFlash(type)
+      return
+    }
+
+    clearBalanceAnimation()
+
+    const steps = buildBalanceAnimationSteps(fromValue, toValue, { milestones })
+    if (!steps.length) {
+      setTokenBalanceAnimated(toValue)
+      triggerBalanceFlash(type)
+      return
+    }
+
+    const animationState = balanceAnimationRef.current
+    if (!animationState.timeouts) {
+      animationState.timeouts = new Set()
+    }
+
+    let delay = 0
+    steps.forEach((step, index) => {
+      const stepDelay = randomInteger(40, 120) + (Number.isFinite(step.hold) ? step.hold : 0)
+      delay += stepDelay
+      const timeoutId = window.setTimeout(() => {
+        setTokenBalanceAnimated(step.value)
+        if (step.milestone && typeof onMilestone === 'function') {
+          onMilestone(step.value)
+        }
+        if (index === steps.length - 1) {
+          triggerBalanceFlash(type)
+        }
+        animationState.timeouts.delete(timeoutId)
+      }, delay)
+      animationState.timeouts.add(timeoutId)
+    })
+  }, [clearBalanceAnimation, prefersReducedMotion, triggerBalanceFlash])
+
   useEffect(() => {
     let isMounted = true
     let unsubscribe
@@ -4238,6 +4714,8 @@ function GhostnetTerminalOverlay () {
     const applySnapshot = (payload = {}) => {
       const snapshot = (payload && payload.snapshot) || payload
       if (!snapshot || typeof snapshot !== 'object') return
+      const previousState = tokenStateRef.current || {}
+      const previousBalance = Number.isFinite(previousState.balance) ? previousState.balance : null
       const balance = Number.isFinite(snapshot.balance) ? snapshot.balance : null
       const mode = typeof snapshot.mode === 'string' ? snapshot.mode : null
       const simulation = Boolean(snapshot.simulation)
@@ -4257,14 +4735,38 @@ function GhostnetTerminalOverlay () {
       setTokenActionPending(false)
       tokenStateRef.current = { balance, simulation, remote: remoteState }
 
-      if (
-        isMounted &&
-        simulation &&
-        payload.entry &&
-        payload.entry.metadata &&
-        payload.entry.metadata.event === 'negative-balance-recovery'
-      ) {
-        triggerCreditCelebration(payload.entry)
+      const entry = payload.entry && typeof payload.entry === 'object' ? payload.entry : null
+      const startingValue = Number.isFinite(animatedBalanceRef.current)
+        ? animatedBalanceRef.current
+        : Number.isFinite(previousBalance)
+          ? previousBalance
+          : balance
+
+      if (entry && Number.isFinite(balance) && Number.isFinite(startingValue)) {
+        const metadata = entry.metadata || {}
+        if (metadata.event === 'negative-balance-recovery') {
+          const milestones = []
+          if (Number.isFinite(metadata.threshold)) milestones.push(metadata.threshold)
+          milestones.push(0)
+          milestones.push(balance)
+          animateBalanceTo(startingValue, balance, {
+            type: entry.type,
+            milestones,
+            onMilestone: () => triggerJackpotMilestone()
+          })
+          triggerJackpotSequence(entry, { simulation })
+        } else {
+          animateBalanceTo(startingValue, balance, { type: entry.type })
+          handleTransactionEntry(entry, { simulation })
+        }
+      } else if (Number.isFinite(balance)) {
+        if (!Number.isFinite(animatedBalanceRef.current)) {
+          setTokenBalanceAnimated(balance)
+        } else {
+          animateBalanceTo(animatedBalanceRef.current, balance, { type: null })
+        }
+      } else {
+        setTokenBalanceAnimated(null)
       }
     }
 
@@ -4289,8 +4791,27 @@ function GhostnetTerminalOverlay () {
       isMounted = false
       if (typeof unsubscribe === 'function') unsubscribe()
       clearCelebrationTimeouts()
+      clearSequenceTimeouts()
+      clearBalanceAnimation()
+      if (typeof window !== 'undefined' && balanceFlashTimeoutRef.current) {
+        window.clearTimeout(balanceFlashTimeoutRef.current)
+        balanceFlashTimeoutRef.current = null
+      }
     }
-  }, [triggerCreditCelebration, clearCelebrationTimeouts])
+  }, [
+    animateBalanceTo,
+    handleTransactionEntry,
+    triggerJackpotSequence,
+    triggerJackpotMilestone,
+    clearCelebrationTimeouts,
+    clearSequenceTimeouts,
+    clearBalanceAnimation
+  ])
+
+  useEffect(() => eventListener('newLogEntry', log => {
+    if (!log || typeof log !== 'object') return
+    recentLogRef.current = [log, ...recentLogRef.current].slice(0, 6)
+  }), [])
 
   const advanceCadence = useCallback(() => {
     const state = cadenceRef.current
@@ -4438,13 +4959,14 @@ function GhostnetTerminalOverlay () {
 
   const tokenBalanceDisplay = useMemo(() => {
     if (tokenLoading) return 'Syncing…'
-    if (!Number.isFinite(tokenBalance)) return '---'
+    const displayBalance = Number.isFinite(tokenBalanceAnimated) ? tokenBalanceAnimated : tokenBalance
+    if (!Number.isFinite(displayBalance)) return '---'
     try {
-      return tokenBalance.toLocaleString()
+      return displayBalance.toLocaleString()
     } catch (error) {
-      return String(tokenBalance)
+      return String(displayBalance)
     }
-  }, [tokenBalance, tokenLoading])
+  }, [tokenBalanceAnimated, tokenBalance, tokenLoading])
 
   const isNegativeBalance = Number.isFinite(tokenBalance) && tokenBalance < 0
   const tokenButtonDisabled = tokenLoading || tokenActionPending
@@ -4504,7 +5026,12 @@ function GhostnetTerminalOverlay () {
             <div className={styles.terminalTokenRow}>
               <span className={styles.terminalTokenLabel}>Tokens</span>
               <span
-                className={[styles.terminalTokenValue, isNegativeBalance ? styles.terminalTokenValueNegative : ''].filter(Boolean).join(' ')}
+                className={[
+                  styles.terminalTokenValue,
+                  isNegativeBalance ? styles.terminalTokenValueNegative : '',
+                  balanceFlash?.type === 'earn' ? styles.terminalTokenValueFlashCredit : '',
+                  balanceFlash?.type === 'spend' ? styles.terminalTokenValueFlashDebit : ''
+                ].filter(Boolean).join(' ')}
               >
                 {tokenBalanceDisplay}
               </span>
@@ -4546,6 +5073,11 @@ function GhostnetTerminalOverlay () {
               else if (line.type === 'glitch') promptClassNames.push(styles.terminalPromptGlitch)
               else if (line.type === 'system') promptClassNames.push(styles.terminalPromptSystem)
               else if (line.type === 'credit') promptClassNames.push(styles.terminalPromptCredit)
+              else if (line.type === 'transaction') promptClassNames.push(styles.terminalPromptTransaction)
+              else if (line.type === 'simulation') promptClassNames.push(styles.terminalPromptSimulation)
+              else if (line.type === 'jackpot') promptClassNames.push(styles.terminalPromptJackpot)
+              else if (line.type === 'jackpotGlyph') promptClassNames.push(styles.terminalPromptJackpotGlyph)
+              else if (line.type === 'jackpotSummary') promptClassNames.push(styles.terminalPromptJackpotSummary)
 
               const textClassNames = [styles.terminalText]
               if (line.type === 'alert') textClassNames.push(styles.terminalTextAlert)
@@ -4555,6 +5087,11 @@ function GhostnetTerminalOverlay () {
               if (line.type === 'glitch') textClassNames.push(styles.terminalTextGlitch)
               if (line.type === 'system') textClassNames.push(styles.terminalTextSystem)
               if (line.type === 'credit') textClassNames.push(styles.terminalTextCredit)
+              if (line.type === 'transaction') textClassNames.push(styles.terminalTextTransaction)
+              if (line.type === 'simulation') textClassNames.push(styles.terminalTextSimulation)
+              if (line.type === 'jackpot') textClassNames.push(styles.terminalTextJackpot)
+              if (line.type === 'jackpotGlyph') textClassNames.push(styles.terminalTextJackpotGlyph)
+              if (line.type === 'jackpotSummary') textClassNames.push(styles.terminalTextJackpotSummary)
 
               return (
                 <li key={line.id} className={styles.terminalLine}>
