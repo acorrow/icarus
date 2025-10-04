@@ -4504,6 +4504,28 @@ function generateAlertText () {
   return `${randomChoice(['ANOMALY', 'INTRUSION', 'SIGNAL'])} ${randomChoice(['DELTA', 'OMEGA', 'SIGMA'])} DETECTED · cascade ${randomInteger(1000, 9999)}`
 }
 
+const MENACE_ALERTS = [
+  formatted => `LEDGER IMBALANCE · ${formatted} TOKENS BELOW ZERO`,
+  formatted => `TRIBUTE DEFICIT DETECTED · ${formatted} TOKENS OUTSTANDING`,
+  formatted => `NEGATIVE CREDIT VECTOR · ${formatted} TOKENS OWED`
+]
+
+const MENACE_ECHOES = [
+  () => 'GhostNet growls: repay your tribute or be assimilated.',
+  () => 'GhostNet whispers from the void: settle the debt before the mesh tightens.',
+  () => 'GhostNet watches. Tribute is expected. Delay invites eradication.'
+]
+
+function generateMenaceLines (balance) {
+  const formatted = Number.isFinite(balance) ? balance.toLocaleString() : 'UNKNOWN'
+  const alertText = randomChoice(MENACE_ALERTS)(formatted)
+  const echoText = randomChoice(MENACE_ECHOES)()
+  return [
+    { type: 'alert', label: '!!!', text: alertText },
+    { type: 'system', label: 'ghostnet', text: echoText }
+  ]
+}
+
 function generateTerminalLine () {
   const generators = {
     command: () => ({ type: 'command', label: 'ghostnet@ship', text: generateCommandText() }),
@@ -4532,19 +4554,93 @@ function GhostnetTerminalOverlay () {
   )
   const cadenceRef = useRef()
   const timeoutRef = useRef(null)
+  const [tokenBalance, setTokenBalance] = useState(null)
+  const [tokenMode, setTokenMode] = useState(null)
+  const [tokenSimulation, setTokenSimulation] = useState(false)
+  const [tokenRemoteState, setTokenRemoteState] = useState({ enabled: false, mode: 'DISABLED' })
+  const [tokenLoading, setTokenLoading] = useState(false)
+  const [tokenActionPending, setTokenActionPending] = useState(false)
+  const tokenStateRef = useRef({ balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } })
 
   if (!cadenceRef.current) {
     cadenceRef.current = {
       mode: 'normal',
       queue: [],
       floodCountdown: randomInteger(24, 48),
-      recoveryCountdown: 0
+      recoveryCountdown: 0,
+      menaceCooldown: 0
     }
   }
+
+  useEffect(() => {
+    let isMounted = true
+    let unsubscribe
+
+    const applySnapshot = (payload = {}) => {
+      const snapshot = (payload && payload.snapshot) || payload
+      if (!snapshot || typeof snapshot !== 'object') return
+      const balance = Number.isFinite(snapshot.balance) ? snapshot.balance : null
+      const mode = typeof snapshot.mode === 'string' ? snapshot.mode : null
+      const simulation = Boolean(snapshot.simulation)
+      const remoteRaw = snapshot.remote || {}
+      const remoteState = {
+        enabled: Boolean(remoteRaw.enabled),
+        mode: typeof remoteRaw.mode === 'string' ? remoteRaw.mode : 'DISABLED',
+        synced: remoteRaw.synced === true
+      }
+
+      if (!isMounted) return
+      setTokenBalance(balance)
+      setTokenMode(mode)
+      setTokenSimulation(simulation)
+      setTokenRemoteState(remoteState)
+      setTokenLoading(false)
+      setTokenActionPending(false)
+      tokenStateRef.current = { balance, simulation, remote: remoteState }
+    }
+
+    setTokenLoading(true)
+    sendEvent('getTokenBalance')
+      .then(applySnapshot)
+      .catch(error => {
+        console.error('[GhostNet] Failed to load token balance', error)
+        if (!isMounted) return
+        setTokenBalance(null)
+        setTokenMode(null)
+        setTokenSimulation(false)
+        setTokenRemoteState({ enabled: false, mode: 'DISABLED' })
+        setTokenLoading(false)
+        setTokenActionPending(false)
+        tokenStateRef.current = { balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } }
+      })
+
+    unsubscribe = eventListener('ghostnetTokensUpdated', applySnapshot)
+
+    return () => {
+      isMounted = false
+      if (typeof unsubscribe === 'function') unsubscribe()
+    }
+  }, [])
 
   const advanceCadence = useCallback(() => {
     const state = cadenceRef.current
     const lines = []
+
+    const tokenState = tokenStateRef.current || {}
+    const hasNegativeBalance = Number.isFinite(tokenState.balance) && tokenState.balance < 0
+    if (hasNegativeBalance) {
+      if (!state.menaceCooldown || state.menaceCooldown <= 0) {
+        const menaceLines = generateMenaceLines(tokenState.balance)
+        menaceLines.forEach(base => {
+          lines.push(createTerminalLineWithId('menace', base))
+        })
+        state.menaceCooldown = randomInteger(12, 24)
+      } else {
+        state.menaceCooldown -= 1
+      }
+    } else {
+      state.menaceCooldown = 0
+    }
 
     const pushLine = base => {
       lines.push(createTerminalLineWithId('', base))
@@ -4657,6 +4753,47 @@ function GhostnetTerminalOverlay () {
     }
   }, [advanceCadence])
 
+  const handleAddTokens = useCallback(async () => {
+    setTokenActionPending(true)
+    try {
+      await sendEvent('awardTokens', {
+        amount: 100000,
+        metadata: { source: 'ghostnet-console' }
+      })
+    } catch (error) {
+      console.error('[GhostNet] Failed to award tokens from console', error)
+      setTokenActionPending(false)
+    }
+  }, [])
+
+  const tokenBalanceDisplay = useMemo(() => {
+    if (tokenLoading) return 'Syncing…'
+    if (!Number.isFinite(tokenBalance)) return '---'
+    try {
+      return tokenBalance.toLocaleString()
+    } catch (error) {
+      return String(tokenBalance)
+    }
+  }, [tokenBalance, tokenLoading])
+
+  const isNegativeBalance = Number.isFinite(tokenBalance) && tokenBalance < 0
+  const tokenButtonDisabled = tokenLoading || tokenActionPending
+
+  const tokenStatusText = useMemo(() => {
+    const ledgerLabel = tokenSimulation
+      ? 'Simulation ledger'
+      : tokenMode === 'LIVE'
+        ? 'Live ledger'
+        : 'Local ledger'
+    let remoteLabel
+    if (tokenRemoteState.enabled) {
+      remoteLabel = tokenRemoteState.mode === 'MIRROR' ? 'Remote mirror active' : 'Remote sync active'
+    } else {
+      remoteLabel = 'Local storage'
+    }
+    return `${ledgerLabel} · ${remoteLabel}`
+  }, [tokenSimulation, tokenMode, tokenRemoteState.enabled, tokenRemoteState.mode])
+
   const visibleLines = useMemo(() => {
     return terminalLines.slice(-TERMINAL_WINDOW)
   }, [terminalLines])
@@ -4672,6 +4809,26 @@ function GhostnetTerminalOverlay () {
           <div className={styles.terminalHeaderContent}>
             <span className={styles.terminalTitle}>Ship Uplink Console</span>
             <span className={styles.terminalStatus}>Channel mesh://ghostnet</span>
+            <div className={styles.terminalTokenRow}>
+              <span className={styles.terminalTokenLabel}>Tokens</span>
+              <span
+                className={[styles.terminalTokenValue, isNegativeBalance ? styles.terminalTokenValueNegative : ''].filter(Boolean).join(' ')}
+              >
+                {tokenBalanceDisplay}
+              </span>
+              <button
+                type='button'
+                className={styles.terminalTokenButton}
+                onClick={handleAddTokens}
+                disabled={tokenButtonDisabled}
+                aria-label='Request 100000 tokens'
+              >
+                {tokenActionPending ? '···' : '+'}
+              </button>
+            </div>
+            <div className={styles.terminalTokenMeta} aria-live='polite'>
+              {tokenStatusText}
+            </div>
           </div>
           <button
             type='button'

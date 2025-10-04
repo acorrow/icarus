@@ -26,6 +26,13 @@ describe('Ghost Net page', () => {
   beforeEach(() => {
     mockSendEvent.mockClear()
     mockEventListener.mockClear()
+    mockSendEvent.mockImplementation((eventName) => {
+      if (eventName === 'getTokenBalance') {
+        return Promise.resolve({ balance: 1337, mode: 'SIMULATION', simulation: true, remote: { enabled: false, mode: 'DISABLED' } })
+      }
+      return Promise.resolve(null)
+    })
+    mockEventListener.mockImplementation(() => () => {})
   })
 
   it('renders the Ghost Net status summary without the hero heading', async () => {
@@ -47,5 +54,13 @@ describe('Ghost Net page', () => {
     expect(screen.getByText(/cross-reference ghostnet freight whispers/i)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /mining missions/i, hidden: true })).toBeInTheDocument()
     expect(screen.getByText(/ghost net decrypts volunteer ghostnet manifests/i)).toBeInTheDocument()
+  })
+
+  it('renders the token console meter with request control', async () => {
+    await act(async () => { render(<GhostnetPage />) })
+
+    expect(mockSendEvent).toHaveBeenCalledWith('getTokenBalance')
+    expect(await screen.findByText(/tokens/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /request 100000 tokens/i })).toBeInTheDocument()
   })
 })

@@ -72,4 +72,28 @@ describe('TokenLedger', () => {
     const ledgerFile = await fs.readJson(path.join(tempDir, 'ledger.json'))
     expect(ledgerFile.balance).toBe(125)
   })
+
+  it('mirrors transactions to a remote ledger when configured', async () => {
+    const remoteClient = {
+      mode: TokenLedger.REMOTE_MODES.MIRROR,
+      isEnabled: jest.fn(() => true),
+      fetchSnapshot: jest.fn().mockResolvedValue({ balance: 900 }),
+      recordTransaction: jest.fn().mockResolvedValue({ balance: 1100 })
+    }
+
+    const ledger = new TokenLedger({
+      storageDir: tempDir,
+      initialBalance: 0,
+      remoteClient,
+      remote: { mode: TokenLedger.REMOTE_MODES.MIRROR, endpoint: 'https://example.com/tokens', enabled: true }
+    })
+
+    await ledger.bootstrap()
+    expect(remoteClient.fetchSnapshot).toHaveBeenCalled()
+
+    const entry = await ledger.recordEarn(200, { reason: 'sync-test' })
+    expect(remoteClient.recordTransaction).toHaveBeenCalledWith('earn', 200, { reason: 'sync-test' })
+    expect(entry.remote).toMatchObject({ enabled: true, synced: true })
+    expect(await ledger.getBalance()).toBe(1100)
+  })
 })

@@ -3,6 +3,11 @@ const TOKEN_MODES = {
   LIVE: 'LIVE'
 }
 
+const TOKEN_REMOTE_MODES = {
+  DISABLED: 'DISABLED',
+  MIRROR: 'MIRROR'
+}
+
 function getTokenMode (env = process.env) {
   const raw = (env.ICARUS_TOKENS_MODE || '').trim().toUpperCase()
   return raw === TOKEN_MODES.LIVE ? TOKEN_MODES.LIVE : TOKEN_MODES.SIMULATION
@@ -45,12 +50,57 @@ const TOKEN_REWARD_VALUES = Object.freeze({
   ENGINEER_PROGRESS: 500
 })
 
+function getRemoteLedgerMode (env = process.env) {
+  const raw = (env.ICARUS_TOKENS_REMOTE_MODE || '').trim().toUpperCase()
+  if (raw === TOKEN_REMOTE_MODES.MIRROR) return TOKEN_REMOTE_MODES.MIRROR
+  return TOKEN_REMOTE_MODES.DISABLED
+}
+
+function getRemoteLedgerEndpoint (env = process.env) {
+  return (env.ICARUS_TOKENS_REMOTE_ENDPOINT || '').trim()
+}
+
+function getRemoteLedgerApiKey (env = process.env) {
+  const raw = (env.ICARUS_TOKENS_REMOTE_API_KEY || '').trim()
+  return raw.length > 0 ? raw : null
+}
+
+function getRemoteLedgerTimeout (env = process.env) {
+  const raw = Number.parseInt((env.ICARUS_TOKENS_REMOTE_TIMEOUT_MS || '').trim(), 10)
+  if (Number.isFinite(raw) && raw > 0) return raw
+  return 8000
+}
+
+function getRemoteLedgerConfig (env = process.env) {
+  const mode = getRemoteLedgerMode(env)
+  const endpoint = getRemoteLedgerEndpoint(env)
+  const apiKey = getRemoteLedgerApiKey(env)
+  const timeout = getRemoteLedgerTimeout(env)
+  const enabled = mode !== TOKEN_REMOTE_MODES.DISABLED && endpoint.length > 0
+
+  return {
+    mode,
+    endpoint,
+    apiKey,
+    timeout,
+    enabled
+  }
+}
+
+function isRemoteLedgerEnabled (env = process.env) {
+  return getRemoteLedgerConfig(env).enabled
+}
+
 module.exports = {
   TOKEN_MODES,
+  TOKEN_REMOTE_MODES,
   TOKEN_SPEND_COSTS,
   TOKEN_REWARD_VALUES,
   getTokenMode,
   isTokenLedgerLive,
   shouldSimulateTokenTransfers,
-  getInitialTokenBalance
+  getInitialTokenBalance,
+  getRemoteLedgerMode,
+  getRemoteLedgerConfig,
+  isRemoteLedgerEnabled
 }

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/router'
-import { socketOptions, sendEvent, eventListener } from 'lib/socket'
+import { socketOptions } from 'lib/socket'
 import { isWindowFullScreen, isWindowPinned, toggleFullScreen, togglePinWindow } from 'lib/window'
 import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
@@ -64,11 +64,6 @@ export default function Header ({ connected, active }) {
   const activeTitleGlitchIndices = useRef(new Set())
   const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
   const isGhostnetRouteActive = currentPath === '/ghostnet'
-  const [tokenBalance, setTokenBalance] = useState(null)
-  const [tokenMode, setTokenMode] = useState(null)
-  const [tokenSimulation, setTokenSimulation] = useState(false)
-  const [tokenLoading, setTokenLoading] = useState(false)
-  const [tokenActionPending, setTokenActionPending] = useState(false)
 
   const clearTitleAnimationTimeouts = useCallback(() => {
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -342,95 +337,6 @@ export default function Header ({ connected, active }) {
     return undefined
   }, [isGhostnetRouteActive, startTitleGlitching, stopTitleGlitching, titleAssimilated])
 
-  useEffect(() => {
-    let unsubscribe = null
-    let active = true
-
-    const applySnapshot = (snapshot = {}) => {
-      if (!active) return
-      const nextBalance = typeof snapshot.balance === 'number' ? snapshot.balance : null
-      const nextMode = typeof snapshot.mode === 'string' ? snapshot.mode : null
-      const nextSimulation = Boolean(snapshot.simulation)
-      setTokenBalance(nextBalance)
-      setTokenMode(nextMode)
-      setTokenSimulation(nextSimulation)
-    }
-
-    if (!isGhostnetRouteActive) {
-      setTokenBalance(null)
-      setTokenMode(null)
-      setTokenSimulation(false)
-      setTokenLoading(false)
-      return () => {}
-    }
-
-    setTokenLoading(true)
-
-    sendEvent('getTokenBalance')
-      .then((response) => {
-        if (!active) return
-        applySnapshot(response || {})
-      })
-      .catch((error) => {
-        console.warn('Failed to load token balance', error)
-        if (!active) return
-        setTokenBalance(null)
-        setTokenMode(null)
-        setTokenSimulation(false)
-      })
-      .finally(() => {
-        if (active) setTokenLoading(false)
-      })
-
-    unsubscribe = eventListener('ghostnetTokensUpdated', (payload = {}) => {
-      const snapshot = payload?.snapshot || payload || {}
-      applySnapshot(snapshot)
-    })
-
-    return () => {
-      active = false
-      if (typeof unsubscribe === 'function') unsubscribe()
-    }
-  }, [isGhostnetRouteActive])
-
-  const handleAddTokens = useCallback(async () => {
-    if (!isGhostnetRouteActive || tokenActionPending) return
-    setTokenActionPending(true)
-    try {
-      await sendEvent('awardTokens', {
-        amount: 100000,
-        metadata: { source: 'ghostnet-header', reason: 'manual-token-boost' }
-      })
-    } catch (error) {
-      console.warn('Failed to award tokens', error)
-    } finally {
-      setTokenActionPending(false)
-    }
-  }, [isGhostnetRouteActive, tokenActionPending])
-
-  const tokenDisplayValue = useMemo(() => {
-    if (!isGhostnetRouteActive) return null
-    if (tokenLoading) return '…'
-    if (typeof tokenBalance === 'number') {
-      try {
-        return tokenBalance.toLocaleString('en-US')
-      } catch (error) {
-        console.warn('Failed to format token balance', error)
-        return String(tokenBalance)
-      }
-    }
-    if (tokenMode === 'UNAVAILABLE') return 'N/A'
-    return '—'
-  }, [isGhostnetRouteActive, tokenLoading, tokenBalance, tokenMode])
-
-  const tokenStatusLabel = useMemo(() => {
-    if (!isGhostnetRouteActive) return null
-    if (tokenMode === 'UNAVAILABLE') return 'Offline'
-    if (tokenSimulation) return 'Sim'
-    if (tokenMode) return tokenMode
-    return null
-  }, [isGhostnetRouteActive, tokenMode, tokenSimulation])
-
   let signalClassName = 'icon icarus-terminal-signal '
   if (!connected) {
     signalClassName += 'text-primary'
@@ -489,72 +395,7 @@ export default function Header ({ connected, active }) {
           </span>
         </span>
       </h1>
-      <div
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem'
-        }}
-      >
-        {isGhostnetRouteActive && (
-          <div
-            className='text-primary text-uppercase'
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '.5rem',
-              marginRight: '.5rem',
-              padding: '.25rem .5rem',
-              border: '1px solid rgba(140, 92, 255, 0.35)',
-              borderRadius: '.5rem',
-              background: 'rgba(28, 22, 51, 0.72)',
-              boxShadow: '0 0 12px rgba(93, 46, 255, 0.45)'
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: '1.1rem' }}>
-              <span style={{ fontSize: '.9rem', letterSpacing: '.12em' }}>Tokens</span>
-              <span
-                style={{
-                  fontSize: '1.5rem',
-                  fontWeight: 600,
-                  minWidth: '7ch',
-                  textAlign: 'right',
-                  color: 'rgba(245, 241, 255, 0.92)'
-                }}
-              >
-                {tokenDisplayValue}
-              </span>
-            </div>
-            {tokenStatusLabel && (
-              <span
-                className='text-muted'
-                style={{ fontSize: '.75rem', letterSpacing: '.16em', textTransform: 'uppercase' }}
-              >
-                {tokenStatusLabel}
-              </span>
-            )}
-            <button
-              type='button'
-              className='button--icon button--transparent'
-              onClick={handleAddTokens}
-              disabled={tokenActionPending}
-              aria-label='Add 100000 GhostNet tokens'
-              style={{
-                marginLeft: '.25rem',
-                fontSize: '1.6rem',
-                fontWeight: 600,
-                lineHeight: '1.2rem',
-                opacity: tokenActionPending ? 0.5 : 1,
-                transition: 'opacity .2s ease'
-              }}
-            >
-              +
-            </button>
-          </div>
-        )}
+      <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
         <p
           className='text-primary text-center text-uppercase'
           style={{ display: 'inline-block', padding: 0, margin: 0, lineHeight: '1rem', minWidth: '7.5rem' }}
