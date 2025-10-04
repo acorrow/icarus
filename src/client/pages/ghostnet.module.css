@@ -888,6 +888,12 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   padding: 1.25rem 2rem;
 }
 
+.cargoTableMessageStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .tableMessageBorder {
   border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
 }

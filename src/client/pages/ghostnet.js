@@ -60,6 +60,15 @@ const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
 const STATION_TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }
 
+function useStableId (prefix) {
+  const idRef = useRef(null)
+  if (idRef.current === null) {
+    const suffix = Math.random().toString(36).slice(2, 10)
+    idRef.current = prefix ? `${prefix}-${suffix}` : suffix
+  }
+  return idRef.current
+}
+
 function getMissionsCacheStorage () {
   if (typeof window === 'undefined') {
     return { entries: {} }
@@ -1799,21 +1808,63 @@ function CargoHoldPanel () {
     )
   }
 
-  const renderStatusBanner = () => {
-    if (status === 'loading') {
-      return <LoadingSpinner label='Loading commodity valuations…' />
-    }
-    if (status === 'error') {
-      return <div className={styles.inlineNotice}>{error || 'Unable to load commodity valuations.'}</div>
-    }
-    if ((status === 'empty' || (status === 'ready' && !hasPricedRows && nonCommodityRows.length === 0)) && hasCargo) {
-      return <div className={styles.inlineNoticeMuted}>No price data available for your current cargo.</div>
-    }
-    if (!hasCargo) {
-      return <div className={styles.inlineNoticeMuted}>Cargo hold is empty.</div>
+  const summaryDescriptionId = useStableId('cargo-summary')
+  const mockNoticeDescriptionId = useStableId('cargo-notice')
+
+  const tableHasData = status === 'ready' && hasCargo && hasDisplayableRows
+
+  // Map the legacy cargo valuation status machine into the shared shell states.
+  const tableStatus = useMemo(() => {
+    if (status === 'loading') return 'loading'
+    if (status === 'error') return 'error'
+    if (status === 'ready') return tableHasData ? 'populated' : 'empty'
+    if (status === 'empty') return 'empty'
+    if (!hasCargo) return 'empty'
+    return 'idle'
+  }, [hasCargo, status, tableHasData])
+
+  const tableEmptyContent = useMemo(() => {
+    if (!hasCargo) return 'Cargo hold is empty.'
+    if (status === 'empty' || (status === 'ready' && !hasDisplayableRows)) {
+      return 'No price data available for your current cargo.'
     }
     return null
-  }
+  }, [hasCargo, hasDisplayableRows, status])
+
+  const summaryBlock = commodityContext
+    ? (
+        <div id={summaryDescriptionId}>
+          <CommoditySummary
+            summary={commodityContext}
+            shipSourceSegment={shipSourceSegment}
+            className={styles.transferSummaryBar}
+            valueIcon={<CreditsIcon size={22} />}
+          />
+        </div>
+        )
+    : null
+
+  const mockDataNotice = usingMockCargo && hasCargo
+    ? (
+        <div id={mockNoticeDescriptionId} className={styles.inlineNoticeMuted}>
+          Showing mock cargo manifest for development while your hold is empty in-game.
+        </div>
+        )
+    : null
+
+  const tableMessage = summaryBlock || mockDataNotice
+    ? (
+        <div className={styles.cargoTableMessageStack}>
+          {summaryBlock}
+          {mockDataNotice}
+        </div>
+        )
+    : null
+
+  const tableDescribedBy = [
+    summaryBlock ? summaryDescriptionId : null,
+    mockDataNotice ? mockNoticeDescriptionId : null
+  ].filter(Boolean).join(' ') || undefined
 
   const currentSystemName = currentSystem?.name || 'Unknown'
   const cargoCapacityRaw = Number(ship?.cargo?.capacity)
@@ -2232,45 +2283,45 @@ function CargoHoldPanel () {
         })()
         : (
           <>
-            <div className='ghostnet-panel-table'>
-              <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-                {commodityContext ? (
-                  <CommoditySummary
-                    summary={commodityContext}
-                    shipSourceSegment={shipSourceSegment}
-                    className={styles.transferSummaryBar}
-                    valueIcon={<CreditsIcon size={22} />}
-                  />
-                ) : null}
-
-                {renderStatusBanner()}
-                {usingMockCargo && hasCargo ? (
-                  <div className={styles.inlineNoticeMuted}>
-                    Showing mock cargo manifest for development while your hold is empty in-game.
-                  </div>
-                ) : null}
-
-                {status === 'ready' && hasCargo && hasDisplayableRows && (
-                  <div className={styles.dataTableContainer} ref={tableContainerRef}>
-                    <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
-                      <colgroup>
-                        <col style={{ width: '32%' }} />
-                        <col style={{ width: '8%' }} />
-                        <col style={{ width: '20%' }} />
-                        <col style={{ width: '24%' }} />
-                        <col style={{ width: '16%' }} />
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th>Commodity</th>
-                          <th className='text-right'>Qty</th>
-                          <th>Local Data</th>
-                          <th>GHOSTNET Max</th>
-                          <th className='text-right'>Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {commodityRows.map((row, index) => {
+            <DataTableShell
+              ariaDescribedBy={tableDescribedBy}
+              ariaLabel='Cargo hold valuations'
+              accessory={(
+                <div className={styles.tableFootnote}>
+                  In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
+                </div>
+              )}
+              containerRef={tableContainerRef}
+              emptyContent={tableEmptyContent}
+              errorMessage={error || 'Unable to load commodity valuations.'}
+              hasData={tableHasData}
+              idleMessage='Awaiting cargo manifest…'
+              loadingContent={<LoadingSpinner label='Loading commodity valuations…' />}
+              message={tableMessage}
+              scrollAreaStyle={TABLE_SCROLL_AREA_STYLE}
+              showMessageBorder={tableHasData}
+              status={tableStatus}
+              tableClassName={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}
+            >
+              {/* Context summary and mock-data messaging live in the shell so that they scroll with the manifest rows. */}
+              <colgroup>
+                <col style={{ width: '32%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '20%' }} />
+                <col style={{ width: '24%' }} />
+                <col style={{ width: '16%' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Commodity</th>
+                  <th className='text-right'>Qty</th>
+                  <th>Local Data</th>
+                  <th>GHOSTNET Max</th>
+                  <th className='text-right'>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {commodityRows.map((row, index) => {
                     const {
                       item,
                       entry,
@@ -2442,8 +2493,8 @@ function CargoHoldPanel () {
                         </td>
                       </tr>
                     )
-                  })}
-                        {nonCommodityRows.map((row, index) => {
+                })}
+                {nonCommodityRows.map((row, index) => {
                           const animationDelay = (commodityRows.length + index) * 0.03
                           const quantityDisplay = Number(row.quantity) || 0
                           return (
@@ -2457,17 +2508,9 @@ function CargoHoldPanel () {
                               </td>
                             </tr>
                           )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className={styles.tableFootnote}>
-              In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
-            </div>
+                })}
+              </tbody>
+            </DataTableShell>
           </>
         )}
     </section>
@@ -3821,7 +3864,7 @@ function PristineMiningPanel () {
             const distanceDisplay = formatSystemDistance(location.distanceLy, location.distanceText)
             const isExpanded = expandedLocationKey === key
 
-            // Legacy note: Inline expansion remains to preserve the navigation inspector context.
+            // TODO(ghostnet-pristine): Inline expansion remains to preserve the navigation inspector context.
             // See AGENTS.md for the follow-up plan to migrate these rows into a dedicated view.
             return (
               <Fragment key={key}>
