@@ -16,6 +16,7 @@ const TITLE_MIN_WIDTH = `${ORIGINAL_TITLE.length}ch`
 const TITLE_GLYPHS = ['Λ', 'Ξ', 'Ψ', 'Ø', 'Σ', '✦', '✧', '☍', '⌁', '⌖', '◬', '◈', '★', '✶', '⋆']
 const createEmptyGlitchStyles = () => Array.from({ length: ORIGINAL_TITLE.length }, () => null)
 import { initiateGhostnetExitTransition, isGhostnetExitTransitionActive } from 'lib/ghostnet-exit-transition'
+import { getGhostnetInitSetting, setGhostnetInitSetting } from 'lib/ghostnet-settings'
 
 const NAV_BUTTONS = [
   {
@@ -45,6 +46,8 @@ const NAV_BUTTONS = [
   }
 ]
 
+const GHOSTNET_INIT_ANIMATION_DURATION = 900
+
 let IS_WINDOWS_APP = false
 
 export default function Header ({ connected, active }) {
@@ -64,6 +67,12 @@ export default function Header ({ connected, active }) {
   const activeTitleGlitchIndices = useRef(new Set())
   const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
   const isGhostnetRouteActive = currentPath === '/ghostnet'
+  const [ghostnetInitState, setGhostnetInitState] = useState(() => {
+    if (typeof window === 'undefined') return 'complete'
+    return getGhostnetInitSetting() ? 'complete' : 'pending'
+  })
+  const [ghostnetInitAnimating, setGhostnetInitAnimating] = useState(false)
+  const ghostnetInitAnimationTimeout = useRef(null)
 
   const clearTitleAnimationTimeouts = useCallback(() => {
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -323,6 +332,25 @@ export default function Header ({ connected, active }) {
     }
   }, [startTitleMorph])
 
+  useEffect(() => () => {
+    if (ghostnetInitAnimationTimeout.current && typeof window !== 'undefined') {
+      window.clearTimeout(ghostnetInitAnimationTimeout.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (ghostnetInitState !== 'complete') return
+
+    setGhostnetInitSetting(true)
+    if (ghostnetInitAnimationTimeout.current && typeof window !== 'undefined') {
+      window.clearTimeout(ghostnetInitAnimationTimeout.current)
+      ghostnetInitAnimationTimeout.current = null
+    }
+    if (ghostnetInitAnimating) {
+      setGhostnetInitAnimating(false)
+    }
+  }, [ghostnetInitAnimating, ghostnetInitState])
+
   useEffect(() => {
     if (!titleAssimilated) return undefined
 
@@ -336,6 +364,24 @@ export default function Header ({ connected, active }) {
     stopTitleGlitching(true)
     return undefined
   }, [isGhostnetRouteActive, startTitleGlitching, stopTitleGlitching, titleAssimilated])
+
+  const ghostnetInitPending = ghostnetInitState !== 'complete'
+  const ghostnetNavCollapsed = ghostnetInitPending && !ghostnetInitAnimating
+  const ghostnetNavAnimating = ghostnetInitPending && ghostnetInitAnimating
+
+  const handleGhostnetInitTrigger = useCallback(() => {
+    if (!ghostnetInitPending || ghostnetInitAnimating) return
+    if (typeof window === 'undefined') return
+
+    setGhostnetInitAnimating(true)
+    if (ghostnetInitAnimationTimeout.current) {
+      window.clearTimeout(ghostnetInitAnimationTimeout.current)
+      ghostnetInitAnimationTimeout.current = null
+    }
+    ghostnetInitAnimationTimeout.current = window.setTimeout(() => {
+      setGhostnetInitState('complete')
+    }, GHOSTNET_INIT_ANIMATION_DURATION)
+  }, [ghostnetInitAnimating, ghostnetInitPending])
 
   let signalClassName = 'icon icarus-terminal-signal '
   if (!connected) {
@@ -409,6 +455,22 @@ export default function Header ({ connected, active }) {
           </span>
         </p>
 
+        <button
+          type='button'
+          tabIndex='1'
+          className={['button--icon', 'ghostnet-init-trigger', ghostnetInitPending ? 'ghostnet-init-trigger--armed' : ''].filter(Boolean).join(' ')}
+          style={{ marginRight: '.5rem' }}
+          onClick={handleGhostnetInitTrigger}
+          disabled={ghostnetNavAnimating}
+          aria-disabled={!ghostnetInitPending && !ghostnetNavAnimating}
+          aria-pressed={!ghostnetInitPending}
+          aria-label={ghostnetInitPending ? 'Initialize GhostNet navigation controls' : 'GhostNet navigation initialized'}
+          title={ghostnetInitPending ? 'Initialize GhostNet navigation controls' : 'GhostNet navigation initialized'}
+          data-ghostnet-init-trigger='true'
+        >
+          <i className='icon icarus-terminal-shield' aria-hidden='true' />
+        </button>
+
         <button disabled className='button--icon button--transparent' style={{ marginRight: '.5rem', opacity: active ? 1 : .25, transition: 'all .25s ease-out' }}>
           <i className={signalClassName} style={{ position: 'relative', transition: 'all .25s ease', fontSize: '3rem', lineHeight: '1.8rem', top: '.5rem', right: '.25rem' }} />
         </button>
@@ -442,12 +504,19 @@ export default function Header ({ connected, active }) {
             <button
               key={button.name}
               data-primary-navigation={i + 1}
-              tabIndex='1'
-              disabled={isActive || (isGhostNet && isGhostnetAssimilationActive()) || exitActive}
+              tabIndex={isGhostNet && ghostnetNavCollapsed ? -1 : 1}
+              disabled={
+                isActive ||
+                exitActive ||
+                (isGhostNet && (isGhostnetAssimilationActive() || ghostnetNavCollapsed || ghostnetNavAnimating))
+              }
+              aria-hidden={isGhostNet && ghostnetNavCollapsed ? 'true' : undefined}
               aria-current={isActive ? 'page' : undefined}
               className={[
                 isActive ? 'button--active' : '',
-                isGhostNet ? 'ghostnet-nav-button' : ''
+                isGhostNet ? 'ghostnet-nav-button' : '',
+                isGhostNet && ghostnetNavCollapsed ? 'ghostnet-nav-button--collapsed' : '',
+                isGhostNet && ghostnetNavAnimating ? 'ghostnet-nav-button--expanding' : ''
               ].filter(Boolean).join(' ')}
               onClick={() => handleNavigate(button.path)}
               style={{ fontSize: '1.5rem' }}
