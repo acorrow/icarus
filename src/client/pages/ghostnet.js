@@ -12,8 +12,12 @@ import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/ghostnet-formatters'
 import { sanitizeInaraText } from '../lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from '../lib/station-icons'
+<<<<<<< HEAD
 import DataTableShell, { TABLE_SCROLL_AREA_STYLE } from '../components/ghostnet/data-table-shell'
 import tableStyles from '../components/ghostnet/data-table-shell.module.css'
+=======
+import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/ghostnet-mock-data'
+>>>>>>> main
 import styles from './ghostnet.module.css'
 
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
@@ -774,6 +778,7 @@ function extractSystemDistance (route) {
   return null
 }
 
+<<<<<<< HEAD
 function generateMockTradeRoutes ({ systemName, cargoCapacity, count = 5 }) {
   const normalizedCapacity = Number.isFinite(Number(cargoCapacity)) && Number(cargoCapacity) > 0
     ? Math.round(Number(cargoCapacity))
@@ -898,6 +903,8 @@ function generateMockPristineLocations ({ systemName, count = 6 }) {
   }
 }
 
+=======
+>>>>>>> main
 function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   const [systemSelection, setSystemSelection] = useState('')
   const [systemInput, setSystemInput] = useState('')
@@ -1298,385 +1305,6 @@ function MissionsPanel () {
       </DataTableShell>
     </section>
   )
-}
-
-function normaliseCommodityKey (value) {
-  return typeof value === 'string' ? value.trim().toLowerCase() : ''
-}
-
-const NON_COMMODITY_KEYS = new Set(
-  ['drones', 'limpet', 'limpets']
-    .map(normaliseCommodityKey)
-    .filter(Boolean)
-)
-
-const MOCK_CARGO_MANIFEST_TEMPLATE = Object.freeze([
-  Object.freeze({
-    name: 'Palladium',
-    symbol: 'Palladium',
-    category: 'metals',
-    count: 48
-  }),
-  Object.freeze({
-    name: 'Tritium',
-    symbol: 'Tritium',
-    category: 'chemicals',
-    count: 64
-  }),
-  Object.freeze({
-    name: 'Consumer Technology',
-    symbol: 'Consumer Technology',
-    category: 'consumer items',
-    count: 30
-  })
-])
-
-const MOCK_COMMODITY_VALUATION_TEMPLATES = Object.freeze({
-  palladium: Object.freeze({
-    name: 'Palladium',
-    symbol: 'Palladium',
-    ghostnet: {
-      stationName: 'Moxon Dock',
-      systemName: 'LP 128-9',
-      stationType: 'Coriolis Starport',
-      price: 73250,
-      distanceLy: 18.6,
-      distanceLs: 612,
-      demandText: '▲▲▲ Demand surging',
-      demandIsLow: false,
-      updatedMinutesAgo: 42
-    },
-    ghostnetListings: [
-      {
-        stationName: 'Moxon Dock',
-        systemName: 'LP 128-9',
-        stationType: 'Coriolis Starport',
-        price: 73250,
-        distanceLy: 18.6,
-        distanceLs: 612,
-        demandText: '▲▲▲ Demand surging',
-        demandIsLow: false,
-        updatedMinutesAgo: 42
-      },
-      {
-        stationName: 'Jones Hub',
-        systemName: 'LP 122-32',
-        stationType: 'Orbis Starport',
-        price: 72120,
-        distanceLy: 26.4,
-        distanceLs: 954,
-        demandText: '▲▲ Demand climbing',
-        demandIsLow: false,
-        updatedMinutesAgo: 57
-      },
-      {
-        stationName: 'Clark Platform',
-        systemName: 'Phekda',
-        stationType: 'Outpost',
-        price: 70810,
-        distanceLy: 34.8,
-        distanceLs: 1840,
-        demandText: '▲ Demand stable',
-        demandIsLow: false,
-        updatedMinutesAgo: 89
-      }
-    ],
-    market: {
-      stationName: 'Jameson Memorial',
-      systemName: 'Shinrarta Dezhra',
-      sellPrice: 68950,
-      distanceLs: 513,
-      timestampMinutesAgo: 120
-    },
-    localHistory: {
-      best: {
-        stationName: 'Jameson Memorial',
-        systemName: 'Shinrarta Dezhra',
-        sellPrice: 68950,
-        distanceLs: 513,
-        timestampMinutesAgo: 120
-      },
-      entries: [
-        {
-          stationName: 'Jameson Memorial',
-          systemName: 'Shinrarta Dezhra',
-          sellPrice: 68950,
-          distanceLs: 513,
-          timestampMinutesAgo: 120,
-          source: 'journal'
-        },
-        {
-          stationName: 'Darnielle Gateway',
-          systemName: 'LHS 20',
-          sellPrice: 67210,
-          distanceLs: 412,
-          timestampMinutesAgo: 360,
-          source: 'journal'
-        }
-      ]
-    }
-  }),
-  tritium: Object.freeze({
-    name: 'Tritium',
-    symbol: 'Tritium',
-    ghostnet: {
-      stationName: 'Prospect Prospect',
-      systemName: 'Colonia',
-      stationType: 'Orbis Starport',
-      price: 50500,
-      distanceLy: 220.3,
-      distanceLs: 1420,
-      demandText: '▲▲ Refuelling effort',
-      demandIsLow: false,
-      updatedMinutesAgo: 28
-    },
-    ghostnetListings: [
-      {
-        stationName: 'Prospect Prospect',
-        systemName: 'Colonia',
-        stationType: 'Orbis Starport',
-        price: 50500,
-        distanceLy: 220.3,
-        distanceLs: 1420,
-        demandText: '▲▲ Refuelling effort',
-        demandIsLow: false,
-        updatedMinutesAgo: 28
-      },
-      {
-        stationName: 'Jaques Station',
-        systemName: 'Colonia',
-        stationType: 'Coriolis Starport',
-        price: 49875,
-        distanceLy: 220.3,
-        distanceLs: 940,
-        demandText: '▲ Demand steady',
-        demandIsLow: false,
-        updatedMinutesAgo: 46
-      },
-      {
-        stationName: 'Ratraii Freeport',
-        systemName: 'Ratraii',
-        stationType: 'Megaship',
-        price: 49200,
-        distanceLy: 236.8,
-        distanceLs: 178,
-        demandText: '▲ Fleet build-up',
-        demandIsLow: false,
-        updatedMinutesAgo: 73
-      }
-    ],
-    market: {
-      stationName: 'Davinci Port',
-      systemName: 'Colonia',
-      sellPrice: 47600,
-      distanceLs: 1280,
-      timestampMinutesAgo: 95
-    },
-    localHistory: {
-      best: {
-        stationName: 'Davinci Port',
-        systemName: 'Colonia',
-        sellPrice: 47600,
-        distanceLs: 1280,
-        timestampMinutesAgo: 95
-      },
-      entries: [
-        {
-          stationName: 'Davinci Port',
-          systemName: 'Colonia',
-          sellPrice: 47600,
-          distanceLs: 1280,
-          timestampMinutesAgo: 95,
-          source: 'journal'
-        },
-        {
-          stationName: 'Eagle Landing',
-          systemName: 'Tir',
-          sellPrice: 46820,
-          distanceLs: 2310,
-          timestampMinutesAgo: 410,
-          source: 'journal'
-        }
-      ]
-    }
-  }),
-  'consumer technology': Object.freeze({
-    name: 'Consumer Technology',
-    symbol: 'Consumer Technology',
-    ghostnet: {
-      stationName: 'Farseer Inc',
-      systemName: 'Deciat',
-      stationType: 'Planetary Port',
-      price: 19800,
-      distanceLy: 38.9,
-      distanceLs: 1440,
-      demandText: '▲▲▲ Tech boom',
-      demandIsLow: false,
-      updatedMinutesAgo: 18
-    },
-    ghostnetListings: [
-      {
-        stationName: 'Farseer Inc',
-        systemName: 'Deciat',
-        stationType: 'Planetary Port',
-        price: 19800,
-        distanceLy: 38.9,
-        distanceLs: 1440,
-        demandText: '▲▲▲ Tech boom',
-        demandIsLow: false,
-        updatedMinutesAgo: 18
-      },
-      {
-        stationName: 'Ohm City',
-        systemName: 'LHS 20',
-        stationType: 'Coriolis Starport',
-        price: 19240,
-        distanceLy: 42.3,
-        distanceLs: 962,
-        demandText: '▲▲ Market surge',
-        demandIsLow: false,
-        updatedMinutesAgo: 52
-      },
-      {
-        stationName: 'Azeban Orbital',
-        systemName: 'Eravate',
-        stationType: 'Coriolis Starport',
-        price: 18990,
-        distanceLy: 52.4,
-        distanceLs: 310,
-        demandText: '▲ Demand healthy',
-        demandIsLow: false,
-        updatedMinutesAgo: 77
-      }
-    ],
-    market: {
-      stationName: 'Cleve Hub',
-      systemName: 'Eravate',
-      sellPrice: 17650,
-      distanceLs: 452,
-      timestampMinutesAgo: 140
-    },
-    localHistory: {
-      best: {
-        stationName: 'Cleve Hub',
-        systemName: 'Eravate',
-        sellPrice: 17650,
-        distanceLs: 452,
-        timestampMinutesAgo: 140
-      },
-      entries: [
-        {
-          stationName: 'Cleve Hub',
-          systemName: 'Eravate',
-          sellPrice: 17650,
-          distanceLs: 452,
-          timestampMinutesAgo: 140,
-          source: 'journal'
-        },
-        {
-          stationName: 'Ackerman Market',
-          systemName: 'Eravate',
-          sellPrice: 16980,
-          distanceLs: 174,
-          timestampMinutesAgo: 300,
-          source: 'journal'
-        }
-      ]
-    }
-  })
-})
-
-function createMockCargoManifest () {
-  return MOCK_CARGO_MANIFEST_TEMPLATE.map(entry => ({ ...entry }))
-}
-
-function createMockCommodityValuations (cargoItems = []) {
-  const now = Date.now()
-  const minutesAgoToIso = minutes => new Date(now - (Number(minutes) || 0) * 60000).toISOString()
-
-  const enrichListing = listing => {
-    if (!listing || typeof listing !== 'object') return null
-    const next = { ...listing }
-    if (typeof next.updatedMinutesAgo === 'number') {
-      next.updatedAt = minutesAgoToIso(next.updatedMinutesAgo)
-      delete next.updatedMinutesAgo
-    }
-    if (typeof next.price === 'number') {
-      next.priceText = formatCredits(next.price, '--')
-    }
-    if (typeof next.distanceLy === 'number') {
-      next.distanceLyText = formatSystemDistance(next.distanceLy)
-    }
-    if (typeof next.distanceLs === 'number') {
-      next.distanceLsText = formatStationDistance(next.distanceLs)
-    }
-    return next
-  }
-
-  return cargoItems.reduce((acc, item) => {
-    const key = normaliseCommodityKey(item?.symbol) || normaliseCommodityKey(item?.name)
-    if (!key) return acc
-    const template = MOCK_COMMODITY_VALUATION_TEMPLATES[key]
-    if (!template) return acc
-
-    const clone = JSON.parse(JSON.stringify(template))
-
-    clone.ghostnet = enrichListing(clone.ghostnet) || null
-    clone.ghostnetListings = Array.isArray(clone.ghostnetListings)
-      ? clone.ghostnetListings.map(enrichListing).filter(Boolean)
-      : []
-
-    if (!clone.ghostnetEntry && clone.ghostnet) {
-      clone.ghostnetEntry = { ...clone.ghostnet }
-    }
-
-    if (!clone.ghostnetEntry && clone.ghostnetListings.length > 0) {
-      clone.ghostnetEntry = { ...clone.ghostnetListings[0] }
-    }
-
-    clone.market = clone.market && typeof clone.market === 'object'
-      ? {
-          ...clone.market,
-          timestamp: minutesAgoToIso(clone.market.timestampMinutesAgo),
-          distanceText: typeof clone.market.distanceLs === 'number'
-            ? formatStationDistance(clone.market.distanceLs)
-            : undefined
-        }
-      : null
-    if (clone.market) {
-      delete clone.market.timestampMinutesAgo
-    }
-
-    const historyEntries = Array.isArray(clone.localHistory?.entries)
-      ? clone.localHistory.entries.map(entry => ({
-          ...entry,
-          timestamp: minutesAgoToIso(entry.timestampMinutesAgo)
-        }))
-      : []
-
-    historyEntries.forEach(entry => {
-      delete entry.timestampMinutesAgo
-    })
-
-    const historyBest = clone.localHistory?.best && typeof clone.localHistory.best === 'object'
-      ? {
-          ...clone.localHistory.best,
-          timestamp: minutesAgoToIso(clone.localHistory.best.timestampMinutesAgo)
-        }
-      : null
-
-    if (historyBest) {
-      delete historyBest.timestampMinutesAgo
-    }
-
-    clone.localHistory = {
-      best: historyBest,
-      entries: historyEntries
-    }
-
-    acc.push(clone)
-    return acc
-  }, [])
 }
 
 function CargoHoldPanel () {
@@ -2372,7 +2000,7 @@ function CargoHoldPanel () {
         </div>
       </div>
 
-      <div className={`${styles.sectionFrameElevated} ${styles.sectionPaddingTight}`}>
+      <div className={styles.metricPanelShell}>
         <div className={styles.metricGrid}>
           <div className={styles.metricItem}>
             <span className={styles.metricLabel}>Cargo</span>
@@ -4540,6 +4168,28 @@ function generateAlertText () {
   return `${randomChoice(['ANOMALY', 'INTRUSION', 'SIGNAL'])} ${randomChoice(['DELTA', 'OMEGA', 'SIGMA'])} DETECTED · cascade ${randomInteger(1000, 9999)}`
 }
 
+const MENACE_ALERTS = [
+  formatted => `LEDGER IMBALANCE · ${formatted} TOKENS BELOW ZERO`,
+  formatted => `TRIBUTE DEFICIT DETECTED · ${formatted} TOKENS OUTSTANDING`,
+  formatted => `NEGATIVE CREDIT VECTOR · ${formatted} TOKENS OWED`
+]
+
+const MENACE_ECHOES = [
+  () => 'GhostNet growls: repay your tribute or be assimilated.',
+  () => 'GhostNet whispers from the void: settle the debt before the mesh tightens.',
+  () => 'GhostNet watches. Tribute is expected. Delay invites eradication.'
+]
+
+function generateMenaceLines (balance) {
+  const formatted = Number.isFinite(balance) ? balance.toLocaleString() : 'UNKNOWN'
+  const alertText = randomChoice(MENACE_ALERTS)(formatted)
+  const echoText = randomChoice(MENACE_ECHOES)()
+  return [
+    { type: 'alert', label: '!!!', text: alertText },
+    { type: 'system', label: 'ghostnet', text: echoText }
+  ]
+}
+
 function generateTerminalLine () {
   const generators = {
     command: () => ({ type: 'command', label: 'ghostnet@ship', text: generateCommandText() }),
@@ -4568,19 +4218,93 @@ function GhostnetTerminalOverlay () {
   )
   const cadenceRef = useRef()
   const timeoutRef = useRef(null)
+  const [tokenBalance, setTokenBalance] = useState(null)
+  const [tokenMode, setTokenMode] = useState(null)
+  const [tokenSimulation, setTokenSimulation] = useState(false)
+  const [tokenRemoteState, setTokenRemoteState] = useState({ enabled: false, mode: 'DISABLED' })
+  const [tokenLoading, setTokenLoading] = useState(false)
+  const [tokenActionPending, setTokenActionPending] = useState(false)
+  const tokenStateRef = useRef({ balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } })
 
   if (!cadenceRef.current) {
     cadenceRef.current = {
       mode: 'normal',
       queue: [],
       floodCountdown: randomInteger(24, 48),
-      recoveryCountdown: 0
+      recoveryCountdown: 0,
+      menaceCooldown: 0
     }
   }
+
+  useEffect(() => {
+    let isMounted = true
+    let unsubscribe
+
+    const applySnapshot = (payload = {}) => {
+      const snapshot = (payload && payload.snapshot) || payload
+      if (!snapshot || typeof snapshot !== 'object') return
+      const balance = Number.isFinite(snapshot.balance) ? snapshot.balance : null
+      const mode = typeof snapshot.mode === 'string' ? snapshot.mode : null
+      const simulation = Boolean(snapshot.simulation)
+      const remoteRaw = snapshot.remote || {}
+      const remoteState = {
+        enabled: Boolean(remoteRaw.enabled),
+        mode: typeof remoteRaw.mode === 'string' ? remoteRaw.mode : 'DISABLED',
+        synced: remoteRaw.synced === true
+      }
+
+      if (!isMounted) return
+      setTokenBalance(balance)
+      setTokenMode(mode)
+      setTokenSimulation(simulation)
+      setTokenRemoteState(remoteState)
+      setTokenLoading(false)
+      setTokenActionPending(false)
+      tokenStateRef.current = { balance, simulation, remote: remoteState }
+    }
+
+    setTokenLoading(true)
+    sendEvent('getTokenBalance')
+      .then(applySnapshot)
+      .catch(error => {
+        console.error('[GhostNet] Failed to load token balance', error)
+        if (!isMounted) return
+        setTokenBalance(null)
+        setTokenMode(null)
+        setTokenSimulation(false)
+        setTokenRemoteState({ enabled: false, mode: 'DISABLED' })
+        setTokenLoading(false)
+        setTokenActionPending(false)
+        tokenStateRef.current = { balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } }
+      })
+
+    unsubscribe = eventListener('ghostnetTokensUpdated', applySnapshot)
+
+    return () => {
+      isMounted = false
+      if (typeof unsubscribe === 'function') unsubscribe()
+    }
+  }, [])
 
   const advanceCadence = useCallback(() => {
     const state = cadenceRef.current
     const lines = []
+
+    const tokenState = tokenStateRef.current || {}
+    const hasNegativeBalance = Number.isFinite(tokenState.balance) && tokenState.balance < 0
+    if (hasNegativeBalance) {
+      if (!state.menaceCooldown || state.menaceCooldown <= 0) {
+        const menaceLines = generateMenaceLines(tokenState.balance)
+        menaceLines.forEach(base => {
+          lines.push(createTerminalLineWithId('menace', base))
+        })
+        state.menaceCooldown = randomInteger(12, 24)
+      } else {
+        state.menaceCooldown -= 1
+      }
+    } else {
+      state.menaceCooldown = 0
+    }
 
     const pushLine = base => {
       lines.push(createTerminalLineWithId('', base))
@@ -4693,6 +4417,47 @@ function GhostnetTerminalOverlay () {
     }
   }, [advanceCadence])
 
+  const handleAddTokens = useCallback(async () => {
+    setTokenActionPending(true)
+    try {
+      await sendEvent('awardTokens', {
+        amount: 100000,
+        metadata: { source: 'ghostnet-console' }
+      })
+    } catch (error) {
+      console.error('[GhostNet] Failed to award tokens from console', error)
+      setTokenActionPending(false)
+    }
+  }, [])
+
+  const tokenBalanceDisplay = useMemo(() => {
+    if (tokenLoading) return 'Syncing…'
+    if (!Number.isFinite(tokenBalance)) return '---'
+    try {
+      return tokenBalance.toLocaleString()
+    } catch (error) {
+      return String(tokenBalance)
+    }
+  }, [tokenBalance, tokenLoading])
+
+  const isNegativeBalance = Number.isFinite(tokenBalance) && tokenBalance < 0
+  const tokenButtonDisabled = tokenLoading || tokenActionPending
+
+  const tokenStatusText = useMemo(() => {
+    const ledgerLabel = tokenSimulation
+      ? 'Simulation ledger'
+      : tokenMode === 'LIVE'
+        ? 'Live ledger'
+        : 'Local ledger'
+    let remoteLabel
+    if (tokenRemoteState.enabled) {
+      remoteLabel = tokenRemoteState.mode === 'MIRROR' ? 'Remote mirror active' : 'Remote sync active'
+    } else {
+      remoteLabel = 'Local storage'
+    }
+    return `${ledgerLabel} · ${remoteLabel}`
+  }, [tokenSimulation, tokenMode, tokenRemoteState.enabled, tokenRemoteState.mode])
+
   const visibleLines = useMemo(() => {
     return terminalLines.slice(-TERMINAL_WINDOW)
   }, [terminalLines])
@@ -4708,6 +4473,26 @@ function GhostnetTerminalOverlay () {
           <div className={styles.terminalHeaderContent}>
             <span className={styles.terminalTitle}>Ship Uplink Console</span>
             <span className={styles.terminalStatus}>Channel mesh://ghostnet</span>
+            <div className={styles.terminalTokenRow}>
+              <span className={styles.terminalTokenLabel}>Tokens</span>
+              <span
+                className={[styles.terminalTokenValue, isNegativeBalance ? styles.terminalTokenValueNegative : ''].filter(Boolean).join(' ')}
+              >
+                {tokenBalanceDisplay}
+              </span>
+              <button
+                type='button'
+                className={styles.terminalTokenButton}
+                onClick={handleAddTokens}
+                disabled={tokenButtonDisabled}
+                aria-label='Request 100000 tokens'
+              >
+                {tokenActionPending ? '···' : '+'}
+              </button>
+            </div>
+            <div className={styles.terminalTokenMeta} aria-live='polite'>
+              {tokenStatusText}
+            </div>
           </div>
           <button
             type='button'

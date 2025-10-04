@@ -1,0 +1,6 @@
+[
+  { "timestamp": "2025-10-03T14:54:04Z", "event": "FSSSignalDiscovered", "SystemAddress": 22660918617513, "SignalName": "Kepler Gateway", "SignalType": "StationCoriolis", "IsStation": true },
+  { "timestamp": "2025-10-03T14:54:04Z", "event": "FSSSignalDiscovered", "SystemAddress": 22660918617513, "SignalName": "Queen Kathy's Pride X7F-B5X", "SignalType": "FleetCarrier", "IsStation": true },
+  { "timestamp": "2025-10-03T15:15:58Z", "event": "FSSSignalDiscovered", "SystemAddress": 22660918617513, "SignalName": "[BSIC] MFOB Rajingudon T9J-48T", "SignalType": "FleetCarrier", "IsStation": true },
+  { "timestamp": "2025-10-03T14:54:04Z", "event": "FSSSignalDiscovered", "SystemAddress": 22660918617513, "SignalName": "General Scientific Research", "SignalType": "Installation" }
+]

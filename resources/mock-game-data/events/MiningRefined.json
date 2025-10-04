@@ -1,0 +1,5 @@
+[
+  { "timestamp": "2025-10-03T17:19:14Z", "event": "MiningRefined", "Type": "$coltan_name;", "Type_Localised": "Coltan" },
+  { "timestamp": "2025-10-03T17:29:28Z", "event": "MiningRefined", "Type": "$praseodymium_name;", "Type_Localised": "Praseodymium" },
+  { "timestamp": "2025-10-03T17:33:24Z", "event": "MiningRefined", "Type": "$gallite_name;", "Type_Localised": "Gallite" }
+]

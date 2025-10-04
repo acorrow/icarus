@@ -43,6 +43,29 @@
 - Node-based Puppeteer/Playwright scripts inside the build container are **not** reliable because the sandbox lacks the required desktop dependencies. Always rely on the `browser_container` workflow above and link to its generated artifact in your notes.
 
 ## Development quickstart
+
+### Mock Elite Dangerous Log Data Generation
+
+#### Strategy: Event-Type-Separated Mock Files
+
+To ensure CODEX contributors have a comprehensive, decision-driven mock data set for UI and API development, the local AI agent scanned all Elite Dangerous game logs using PowerShell:
+
+  Get-Content 'C:\Users\Adam\Saved Games\Frontier Developments\Elite Dangerous\*.log'
+
+Every event type and data structure was catalogued. Instead of a single monolithic mock log, the agent created a folder (`resources/mock-game-data/events/`) with one file per event type (e.g., `ShipLocker.json`, `FSSSignalDiscovered.json`, `Docked.json`, etc.). Each file contains multiple entries, including common, edge, and rare cases.
+
+**Rationale:**
+- Explicit separation by event type makes it easy for CODEX to target, update, and extend mock data.
+- Multiple entries per file ensure coverage of typical, edge, and rare cases for robust testing.
+- This mirrors real log ingestion, but with curated, decision-driven examples.
+- Data was chosen to maximize coverage, highlight edge cases, and expose rare structures that may break naive parsers.
+
+**How to use:**
+- Treat each file as a source of canonical examples for its event type.
+- Extend files with new cases as needed, but keep rationale clear in comments or commit messages.
+- Use this folder to validate event normalization, error handling, and downstream logic.
+
+See `resources/mock-game-data/events/README.md` for details and rationale.
 - Install dependencies with `npm install`.
 - Duplicate `.env-example` to `.env` and point `LOG_DIR` at an Elite Dangerous journal directory when you need live data.
 - `npm run dev:web` starts the web client at <http://127.0.0.1:3000>; `npm run dev` launches the combined service stack at <http://127.0.0.1:3300>.
@@ -69,10 +92,12 @@
 - Mirror the structural patterns and layout conventions of other Icarus pages so the product feels cohesive, while still honoring GhostNet's unique identity.
 - GhostNet pages must never render beneath the secondary navigation rail—always supply navigation items through the `<Panel>` component so it applies the `layout__panel--secondary-navigation` spacing instead of mounting `PanelNavigation` manually.
 - Keep data tables outside of `SectionFrame` containers; tables should rely on GhostNet table shells (`dataTableContainer`, `dataTable`) for structure instead of being nested inside section frames.
+- Standardize list presentations around the shared GhostNet table wrappers (`DataTableShell` and companions). When building a new table or refreshing an existing one, slot headers and rows into these shells so scroll areas, padding, empty states, and ARIA wiring remain uniform across panels.
 - Table rows must never expand inline like a drawer. Selecting a row should always open a dedicated full-page view in the workspace, mirroring the behavior on the Find Trade Routes page. This ensures a clean experience on smaller displays.
 - Before introducing a new layout or page, inspect existing GhostNet surfaces and lift their structure directly—copy the baseline layout (navigation placement, section frames, typographic hierarchy, spacing rhythm) and adjust only the dynamic content. When in doubt, start from an existing component file and refactor it into shared primitives instead of authoring novel markup.
 - Favor composing UI from the shared layout primitives in `src/client/components` (e.g., `SectionFrame`, `SectionHeader`, table shells, detail drawers). If a new view needs a combination that does not yet exist, build the combination as a reusable component and place it alongside its peers so future pages can inherit it.
 - Consistency of data presentation is critical: station summaries should always follow the pattern `Icon → Name → Key Metrics → Secondary metadata`. Expanders and drawers must surface the same canonical fields (`status`, `ownership`, `location`, `throughput`, and `alerts`) in the same order across the app.
+- GhostNet now exposes shared primitives for these summaries—compose station surfaces with `StationSummary` and commodity views with `CommoditySummary` so iconography, metric stacks, and accessibility copy stay synchronized. If a view needs additional metadata, extend the shared component API instead of forking markup in-page.
 - Avoid ad-hoc styling or bespoke CSS for one-off views. Extend the GhostNet CSS tokens or shared utility classes, and document any new token additions with rationale and usage guidance.
 
 ### Palette hygiene

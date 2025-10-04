@@ -5,6 +5,20 @@ const path = require('path')
 // const sendKeys = require('sendkeys-js')
 // onst keycode = require('keycodes')
 const { UNKNOWN_VALUE } = require('../../shared/consts')
+const { TOKEN_REWARD_VALUES } = require('../../shared/token-config')
+
+const tokenLedger = global.TOKEN_LEDGER
+const TOKEN_BROADCAST_EVENT = 'ghostnetTokensUpdated'
+const TOKEN_REWARD_EVENT_MAP = {
+  Market: TOKEN_REWARD_VALUES.MARKET_SNAPSHOT,
+  CommodityPrices: TOKEN_REWARD_VALUES.MARKET_SNAPSHOT,
+  Outfitting: TOKEN_REWARD_VALUES.OUTFITTING_SNAPSHOT,
+  Shipyard: TOKEN_REWARD_VALUES.SHIPYARD_SNAPSHOT,
+  MissionCompleted: TOKEN_REWARD_VALUES.MISSION_COMPLETED,
+  MaterialCollected: TOKEN_REWARD_VALUES.MATERIAL_COLLECTED,
+  DataScanned: TOKEN_REWARD_VALUES.DATA_COLLECTED,
+  EngineerProgress: TOKEN_REWARD_VALUES.ENGINEER_PROGRESS
+}
 
 const { BROADCAST_EVENT: broadcastEvent } = global
 
@@ -56,12 +70,17 @@ class EventHandlers {
     this.navRoute = new NavRoute({ eliteLog, eliteJson, system: this.system })
     this.textToSpeech = new TextToSpeech({ eliteLog, eliteJson, cmdrStatus: this.cmdrStatus, shipStatus: this.shipStatus })
 
+    this.tokenLedger = tokenLedger
+    this.tokenRewardCache = new Set()
+    this.tokenRewardQueue = []
+
     return this
   }
 
   // logEventHandler is fired on every in-game log event
   logEventHandler (logEvent) {
     this.textToSpeech.logEventHandler(logEvent)
+    this._handleTokenRewards(logEvent)
   }
 
   gameStateChangeHandler (event) {
@@ -104,6 +123,40 @@ class EventHandlers {
           return preferences
         },
         getVoices: () => this.textToSpeech.getVoices(),
+        getTokenBalance: async () => {
+          if (!this.tokenLedger) {
+            return { balance: 0, simulation: true, mode: 'UNAVAILABLE' }
+          }
+          return await this.tokenLedger.getSnapshot()
+        },
+        getTokenLedger: async ({ limit = 100 } = {}) => {
+          if (!this.tokenLedger) {
+            return { snapshot: { balance: 0, simulation: true, mode: 'UNAVAILABLE' }, transactions: [] }
+          }
+          const [snapshot, transactions] = await Promise.all([
+            this.tokenLedger.getSnapshot(),
+            this.tokenLedger.listTransactions({ limit })
+          ])
+          return { snapshot, transactions }
+        },
+        awardTokens: async ({ amount = 0, metadata = {} } = {}) => {
+          if (!this.tokenLedger) {
+            return { error: 'TOKEN_LEDGER_UNAVAILABLE' }
+          }
+          const normalized = Math.max(0, Number(amount) || 0)
+          const entry = await this.tokenLedger.recordEarn(normalized, metadata)
+          await this._broadcastTokenUpdate(entry)
+          return entry
+        },
+        spendTokens: async ({ amount = 0, metadata = {} } = {}) => {
+          if (!this.tokenLedger) {
+            return { error: 'TOKEN_LEDGER_UNAVAILABLE' }
+          }
+          const normalized = Math.max(0, Number(amount) || 0)
+          const entry = await this.tokenLedger.recordSpend(normalized, metadata)
+          await this._broadcastTokenUpdate(entry)
+          return entry
+        },
         // getCodexEntries: () => {
         //   return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'codex', '_index.json')))
         // },
@@ -197,6 +250,66 @@ class EventHandlers {
       }
     }
     return this.eventHandlers
+  }
+
+  async _broadcastTokenUpdate (entry) {
+    if (!this.tokenLedger) return
+    try {
+      const snapshot = await this.tokenLedger.getSnapshot()
+      broadcastEvent(TOKEN_BROADCAST_EVENT, { snapshot, entry })
+    } catch (error) {
+      console.error('[TokenLedger] Failed to broadcast token update', error)
+    }
+  }
+
+  _handleTokenRewards (logEvent = {}) {
+    if (!this.tokenLedger) return
+    const rewardValue = TOKEN_REWARD_EVENT_MAP[logEvent.event]
+    if (!rewardValue) return
+
+    const cacheKey = this._getRewardCacheKey(logEvent)
+    if (this.tokenRewardCache.has(cacheKey)) return
+
+    this._rememberRewardKey(cacheKey)
+
+    this.tokenLedger.recordEarn(rewardValue, this._extractRewardMetadata(logEvent))
+      .then(entry => this._broadcastTokenUpdate(entry))
+      .catch(error => {
+        console.error('[TokenLedger] Failed to award tokens for event', logEvent.event, error)
+      })
+  }
+
+  _getRewardCacheKey (logEvent = {}) {
+    const { event = 'unknown', timestamp = '' } = logEvent
+    const identifiers = [logEvent.MarketID, logEvent.MissionID, logEvent.ShipType, logEvent.StationName, logEvent.Body]
+      .filter(Boolean)
+      .join('-')
+    return [event, timestamp, identifiers].filter(Boolean).join('#')
+  }
+
+  _rememberRewardKey (key) {
+    if (!key) return
+    this.tokenRewardCache.add(key)
+    this.tokenRewardQueue.push(key)
+    if (this.tokenRewardQueue.length > 1000) {
+      const oldest = this.tokenRewardQueue.shift()
+      if (oldest) this.tokenRewardCache.delete(oldest)
+    }
+  }
+
+  _extractRewardMetadata (logEvent = {}) {
+    const metadata = {
+      event: logEvent.event,
+      timestamp: logEvent.timestamp,
+      marketId: logEvent.MarketID,
+      station: logEvent.StationName,
+      missionId: logEvent.MissionID,
+      shipType: logEvent.ShipType,
+      body: logEvent.Body,
+      reward: TOKEN_REWARD_EVENT_MAP[logEvent.event]
+    }
+
+    return Object.fromEntries(Object.entries(metadata).filter(([, value]) => value !== undefined))
   }
 }
 
