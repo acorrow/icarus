@@ -383,82 +383,491 @@ export function generateMockTradeRoutes ({ systemName, cargoCapacity, count = 5 
   const normalizedCapacity = Number.isFinite(Number(cargoCapacity)) && Number(cargoCapacity) > 0
     ? Math.round(Number(cargoCapacity))
     : 256
-  const baseCommodity = null
-  const now = Date.now()
+  const resolvedSystem = typeof systemName === 'string' && systemName.trim()
+    ? systemName.trim()
+    : 'Eravate'
 
-  const formatPrice = value => `${Math.round(value).toLocaleString()} Cr`
+  const minutesAgoToIso = minutes => new Date(Date.now() - (Number(minutes) || 0) * 60000).toISOString()
 
-  return Array.from({ length: count }).map((_, index) => {
-    const id = index + 1
-    const profitPerUnit = 4500 + (index * 800)
-    const outboundBuyPrice = 1200 + (index * 150)
-    const outboundSellPrice = outboundBuyPrice + profitPerUnit
-    const returnBuyPrice = 900 + (index * 130)
-    const returnSellPrice = returnBuyPrice + Math.round(profitPerUnit * 0.65)
-    const routeDistanceLy = 12 + (index * 4)
-    const distanceLy = 5 + (index * 2)
-    const updated = new Date(now - index * 45 * 60000).toISOString()
+  const buildListing = (listing = {}, action) => {
+    if (!listing || typeof listing !== 'object') return null
+    const price = typeof listing.price === 'number' ? listing.price : null
+    const quantity = typeof listing.quantity === 'number' ? listing.quantity : null
+    const level = typeof listing.level === 'number' ? listing.level : null
+    const resolvedLevel = level ? Math.min(Math.max(Math.round(level), 1), 4) : null
+    const levelClass = listing.levelClass
+      || (resolvedLevel ? `supplydemandicon supplydemandicon${resolvedLevel}` : null)
+    const priceDiff = typeof listing.priceDiff === 'number' ? listing.priceDiff : null
+    const priceDiffPercent = typeof listing.priceDiffPercent === 'number' ? listing.priceDiffPercent : null
 
-    const outboundCommodity = baseCommodity || `Mock Commodity ${id}`
-    const returnCommodity = `Return Sample ${id}`
+    let priceDiffText = listing.priceDiffText
+    if (!priceDiffText && priceDiff !== null) {
+      const diffPrefix = priceDiff > 0 ? '+' : (priceDiff < 0 ? '-' : '')
+      priceDiffText = `${diffPrefix}${Math.abs(priceDiff).toLocaleString()} Cr`
+      if (priceDiffPercent !== null) {
+        const percentPrefix = priceDiffPercent > 0 ? '+' : (priceDiffPercent < 0 ? '-' : '')
+        priceDiffText = `${priceDiffText} (${percentPrefix}${Math.abs(priceDiffPercent)}%)`
+      }
+    }
 
     return {
-      summary: {
-        profitPerUnit,
-        profitPerUnitText: formatPrice(profitPerUnit),
-        profitPerTrip: profitPerUnit * normalizedCapacity,
-        profitPerTripText: formatPrice(profitPerUnit * normalizedCapacity),
-        profitPerHour: profitPerUnit * normalizedCapacity * 2,
-        profitPerHourText: formatPrice(profitPerUnit * normalizedCapacity * 2),
-        routeDistanceLy,
-        routeDistanceText: `${routeDistanceLy.toFixed(2)} Ly`,
-        distanceLy,
-        distanceText: `${distanceLy.toFixed(2)} Ly`,
-        updated
-      },
+      action,
+      commodity: listing.commodity || '',
+      commodityId: listing.commodityId ?? null,
+      commodityUrl: listing.commodityUrl || null,
+      price,
+      priceText: formatCredits(price, listing.priceText || '--'),
+      priceDiff,
+      priceDiffText: priceDiffText || null,
+      priceDiffPercent,
+      quantity,
+      quantityText: listing.quantityText || (quantity !== null ? `${Math.round(quantity).toLocaleString()} t` : ''),
+      levelClass,
+      level: resolvedLevel
+    }
+  }
+
+  const stationLocal = ({
+    station,
+    system,
+    stationType,
+    faction
+  }) => ({
+    station,
+    system,
+    stationType,
+    faction,
+    controllingFaction: faction,
+    StationFaction: faction ? { name: faction, Name: faction } : undefined
+  })
+
+  const formatStationMeta = value => {
+    if (typeof value !== 'number' || Number.isNaN(value)) return null
+    return {
+      value,
+      text: formatStationDistance(value)
+    }
+  }
+
+  const routeTemplates = [
+    {
       origin: {
-        local: {
-          station: `Sandbox Origin ${id}`,
-          system: systemName || `Sandbox System ${id}`
-        },
+        stationName: 'Cleve Hub',
+        stationType: 'Coriolis Starport',
+        systemName: resolvedSystem,
+        stationId: 128666762,
+        stationUrl: 'https://inara.cz/elite/station-market/128666762/',
+        factionName: 'Eravate Network',
+        stationDistance: formatStationMeta(452),
         buy: {
-          commodity: outboundCommodity,
-          price: outboundBuyPrice,
-          priceText: formatPrice(outboundBuyPrice),
-          quantity: 4500 - (index * 250),
-          quantityText: `${(4500 - (index * 250)).toLocaleString()} t`,
-          level: Math.min(3, (index % 3) + 1)
+          commodity: 'Tritium',
+          commodityId: 153,
+          commodityUrl: 'https://inara.cz/elite/commodity/153/',
+          price: 40700,
+          priceDiff: -35,
+          priceDiffPercent: -0.1,
+          quantity: 18450,
+          level: 3
         },
         sellReturn: {
-          commodity: returnCommodity,
-          price: returnSellPrice,
-          priceText: formatPrice(returnSellPrice),
-          quantity: 3200 - (index * 200),
-          quantityText: `${(3200 - (index * 200)).toLocaleString()} t`,
-          level: Math.min(3, ((index + 1) % 3) + 1)
+          commodity: 'Consumer Technology',
+          commodityId: 73,
+          commodityUrl: 'https://inara.cz/elite/commodity/73/',
+          price: 19820,
+          priceDiff: 75,
+          priceDiffPercent: 0.4,
+          quantity: 9200,
+          level: 2
         }
       },
       destination: {
-        local: {
-          station: `Sandbox Destination ${id}`,
-          system: `Neighbor System ${id}`
-        },
+        stationName: 'Dalton Gateway',
+        stationType: 'Orbis Starport',
+        systemName: 'LHS 3447',
+        stationId: 128666762 + 7,
+        stationUrl: 'https://inara.cz/elite/station-market/128666769/',
+        factionName: 'LHS 3447 Jet Power Inc',
+        stationDistance: formatStationMeta(1380),
         sell: {
-          commodity: outboundCommodity,
-          price: outboundSellPrice,
-          priceText: formatPrice(outboundSellPrice),
-          quantity: 3800 - (index * 180),
-          quantityText: `${(3800 - (index * 180)).toLocaleString()} t`,
-          level: Math.min(3, ((index + 2) % 3) + 1)
+          commodity: 'Tritium',
+          commodityId: 153,
+          commodityUrl: 'https://inara.cz/elite/commodity/153/',
+          price: 46120,
+          priceDiff: 210,
+          priceDiffPercent: 0.5,
+          quantity: 16400,
+          level: 3
         },
         buyReturn: {
-          commodity: returnCommodity,
-          price: returnBuyPrice,
-          priceText: formatPrice(returnBuyPrice),
-          quantity: 2600 - (index * 160),
-          quantityText: `${(2600 - (index * 160)).toLocaleString()} t`,
-          level: Math.min(3, (index % 4) + 1)
+          commodity: 'Consumer Technology',
+          commodityId: 73,
+          commodityUrl: 'https://inara.cz/elite/commodity/73/',
+          price: 14860,
+          priceDiff: -120,
+          priceDiffPercent: -0.8,
+          quantity: 13200,
+          level: 3
         }
+      },
+      summary: {
+        routeDistanceLy: 34.61,
+        distanceLy: 12.42,
+        updatedMinutesAgo: 22,
+        profitPerUnit: 5420,
+        averageProfitPercent: 28,
+        tripsPerHour: 2.2
+      }
+    },
+    {
+      origin: {
+        stationName: 'Ackerman Market',
+        stationType: 'Coriolis Starport',
+        systemName: resolvedSystem,
+        stationId: 128666764,
+        stationUrl: 'https://inara.cz/elite/station-market/128666764/',
+        factionName: 'Eravate Network',
+        stationDistance: formatStationMeta(174),
+        buy: {
+          commodity: 'Palladium',
+          commodityId: 41,
+          commodityUrl: 'https://inara.cz/elite/commodity/41/',
+          price: 46210,
+          priceDiff: -95,
+          priceDiffPercent: -0.2,
+          quantity: 9800,
+          level: 2
+        },
+        sellReturn: {
+          commodity: 'Marine Equipment',
+          commodityId: 94,
+          commodityUrl: 'https://inara.cz/elite/commodity/94/',
+          price: 6870,
+          priceDiff: 45,
+          priceDiffPercent: 0.6,
+          quantity: 6400,
+          level: 2
+        }
+      },
+      destination: {
+        stationName: 'Jameson Memorial',
+        stationType: 'Coriolis Starport',
+        systemName: 'Shinrarta Dezhra',
+        stationId: 128666780,
+        stationUrl: 'https://inara.cz/elite/station-market/128666780/',
+        factionName: 'Pilots Federation Local Branch',
+        stationDistance: formatStationMeta(447),
+        sell: {
+          commodity: 'Palladium',
+          commodityId: 41,
+          commodityUrl: 'https://inara.cz/elite/commodity/41/',
+          price: 52100,
+          priceDiff: 310,
+          priceDiffPercent: 0.6,
+          quantity: 13400,
+          level: 3
+        },
+        buyReturn: {
+          commodity: 'Marine Equipment',
+          commodityId: 94,
+          commodityUrl: 'https://inara.cz/elite/commodity/94/',
+          price: 3820,
+          priceDiff: -65,
+          priceDiffPercent: -1.2,
+          quantity: 9100,
+          level: 3
+        }
+      },
+      summary: {
+        routeDistanceLy: 93.12,
+        distanceLy: 46.56,
+        updatedMinutesAgo: 37,
+        profitPerUnit: 5890,
+        averageProfitPercent: 31,
+        tripsPerHour: 1.6
+      }
+    },
+    {
+      origin: {
+        stationName: 'Davinci Port',
+        stationType: 'Orbis Starport',
+        systemName: 'Colonia',
+        stationId: 3500000001,
+        stationUrl: 'https://inara.cz/elite/station-market/3500000001/',
+        factionName: 'Colonia Council',
+        stationDistance: formatStationMeta(1280),
+        buy: {
+          commodity: 'Reactive Armour',
+          commodityId: 116,
+          commodityUrl: 'https://inara.cz/elite/commodity/116/',
+          price: 83400,
+          priceDiff: -220,
+          priceDiffPercent: -0.3,
+          quantity: 6400,
+          level: 2
+        },
+        sellReturn: {
+          commodity: 'Tritium',
+          commodityId: 153,
+          commodityUrl: 'https://inara.cz/elite/commodity/153/',
+          price: 49760,
+          priceDiff: 180,
+          priceDiffPercent: 0.4,
+          quantity: 7800,
+          level: 3
+        }
+      },
+      destination: {
+        stationName: 'Jaques Station',
+        stationType: 'Coriolis Starport',
+        systemName: 'Colonia',
+        stationId: 3500000002,
+        stationUrl: 'https://inara.cz/elite/station-market/3500000002/',
+        factionName: 'Colonia Council',
+        stationDistance: formatStationMeta(940),
+        sell: {
+          commodity: 'Reactive Armour',
+          commodityId: 116,
+          commodityUrl: 'https://inara.cz/elite/commodity/116/',
+          price: 90540,
+          priceDiff: 320,
+          priceDiffPercent: 0.3,
+          quantity: 7200,
+          level: 2
+        },
+        buyReturn: {
+          commodity: 'Tritium',
+          commodityId: 153,
+          commodityUrl: 'https://inara.cz/elite/commodity/153/',
+          price: 42890,
+          priceDiff: -140,
+          priceDiffPercent: -0.3,
+          quantity: 10400,
+          level: 3
+        }
+      },
+      summary: {
+        routeDistanceLy: 2.86,
+        distanceLy: 0.94,
+        updatedMinutesAgo: 14,
+        profitPerUnit: 7130,
+        averageProfitPercent: 18,
+        tripsPerHour: 3.1
+      }
+    },
+    {
+      origin: {
+        stationName: 'Moxon Dock',
+        stationType: 'Coriolis Starport',
+        systemName: 'LP 128-9',
+        stationId: 128666790,
+        stationUrl: 'https://inara.cz/elite/station-market/128666790/',
+        factionName: 'LP 128-9 Gold Energy Partners',
+        stationDistance: formatStationMeta(872),
+        buy: {
+          commodity: 'Painite',
+          commodityId: 30,
+          commodityUrl: 'https://inara.cz/elite/commodity/30/',
+          price: 67850,
+          priceDiff: -410,
+          priceDiffPercent: -0.6,
+          quantity: 4200,
+          level: 2
+        },
+        sellReturn: {
+          commodity: 'Gold',
+          commodityId: 23,
+          commodityUrl: 'https://inara.cz/elite/commodity/23/',
+          price: 11650,
+          priceDiff: 90,
+          priceDiffPercent: 0.8,
+          quantity: 8300,
+          level: 2
+        }
+      },
+      destination: {
+        stationName: 'Hahn Gateway',
+        stationType: 'Orbis Starport',
+        systemName: 'Riedquat',
+        stationId: 128666812,
+        stationUrl: 'https://inara.cz/elite/station-market/128666812/',
+        factionName: 'Riedquat Gold Vision Ltd',
+        stationDistance: formatStationMeta(620),
+        sell: {
+          commodity: 'Painite',
+          commodityId: 30,
+          commodityUrl: 'https://inara.cz/elite/commodity/30/',
+          price: 74560,
+          priceDiff: 510,
+          priceDiffPercent: 0.7,
+          quantity: 5800,
+          level: 3
+        },
+        buyReturn: {
+          commodity: 'Gold',
+          commodityId: 23,
+          commodityUrl: 'https://inara.cz/elite/commodity/23/',
+          price: 8460,
+          priceDiff: -75,
+          priceDiffPercent: -0.9,
+          quantity: 9600,
+          level: 3
+        }
+      },
+      summary: {
+        routeDistanceLy: 53.18,
+        distanceLy: 18.26,
+        updatedMinutesAgo: 48,
+        profitPerUnit: 6710,
+        averageProfitPercent: 24,
+        tripsPerHour: 1.9
+      }
+    },
+    {
+      origin: {
+        stationName: 'The Prospect',
+        stationType: 'Megaship',
+        systemName: 'Colonia',
+        stationId: 3500000005,
+        stationUrl: 'https://inara.cz/elite/station-market/3500000005/',
+        factionName: 'Colonia Co-operative',
+        stationDistance: formatStationMeta(540),
+        buy: {
+          commodity: 'Low Temperature Diamonds',
+          commodityId: 64,
+          commodityUrl: 'https://inara.cz/elite/commodity/64/',
+          price: 121800,
+          priceDiff: -620,
+          priceDiffPercent: -0.5,
+          quantity: 3600,
+          level: 2
+        },
+        sellReturn: {
+          commodity: 'Tritium',
+          commodityId: 153,
+          commodityUrl: 'https://inara.cz/elite/commodity/153/',
+          price: 49890,
+          priceDiff: 210,
+          priceDiffPercent: 0.5,
+          quantity: 6200,
+          level: 3
+        }
+      },
+      destination: {
+        stationName: 'Jaques Station',
+        stationType: 'Coriolis Starport',
+        systemName: 'Colonia',
+        stationId: 3500000002,
+        stationUrl: 'https://inara.cz/elite/station-market/3500000002/',
+        factionName: 'Colonia Council',
+        stationDistance: formatStationMeta(940),
+        sell: {
+          commodity: 'Low Temperature Diamonds',
+          commodityId: 64,
+          commodityUrl: 'https://inara.cz/elite/commodity/64/',
+          price: 135200,
+          priceDiff: 760,
+          priceDiffPercent: 0.6,
+          quantity: 4100,
+          level: 3
+        },
+        buyReturn: {
+          commodity: 'Tritium',
+          commodityId: 153,
+          commodityUrl: 'https://inara.cz/elite/commodity/153/',
+          price: 43120,
+          priceDiff: -160,
+          priceDiffPercent: -0.3,
+          quantity: 8900,
+          level: 3
+        }
+      },
+      summary: {
+        routeDistanceLy: 2.12,
+        distanceLy: 0.71,
+        updatedMinutesAgo: 9,
+        profitPerUnit: 13400,
+        averageProfitPercent: 32,
+        tripsPerHour: 3.4
+      }
+    }
+  ]
+
+  return Array.from({ length: count }).map((_, index) => {
+    const template = routeTemplates[index % routeTemplates.length]
+
+    const originStation = template.origin.stationName
+    const destinationStation = template.destination.stationName
+
+    const originLocal = stationLocal({
+      station: originStation,
+      system: template.origin.systemName,
+      stationType: template.origin.stationType,
+      faction: template.origin.factionName
+    })
+
+    const destinationLocal = stationLocal({
+      station: destinationStation,
+      system: template.destination.systemName,
+      stationType: template.destination.stationType,
+      faction: template.destination.factionName
+    })
+
+    const profitPerUnit = template.summary.profitPerUnit
+    const profitPerTrip = profitPerUnit * normalizedCapacity
+    const tripsPerHour = template.summary.tripsPerHour || 2
+    const profitPerHour = profitPerTrip * tripsPerHour
+
+    const summary = {
+      routeDistanceLy: template.summary.routeDistanceLy,
+      routeDistanceText: formatSystemDistance(template.summary.routeDistanceLy, template.summary.routeDistanceText),
+      distanceLy: template.summary.distanceLy,
+      distanceText: formatSystemDistance(template.summary.distanceLy, template.summary.distanceText),
+      updated: minutesAgoToIso(template.summary.updatedMinutesAgo),
+      profitPerUnit,
+      profitPerUnitText: formatCredits(profitPerUnit, template.summary.profitPerUnitText || '--'),
+      averageProfitPercent: template.summary.averageProfitPercent,
+      averageProfitText: template.summary.averageProfitText
+        || (typeof template.summary.averageProfitPercent === 'number'
+          ? `Average Profit ${template.summary.averageProfitPercent > 0 ? '+' : ''}${template.summary.averageProfitPercent}%`
+          : null),
+      profitPerTrip,
+      profitPerTripText: formatCredits(profitPerTrip, template.summary.profitPerTripText || '--'),
+      profitPerHour,
+      profitPerHourText: formatCredits(profitPerHour, template.summary.profitPerHourText || '--')
+    }
+
+    const originDistance = template.origin.stationDistance || {}
+    const destinationDistance = template.destination.stationDistance || {}
+
+    return {
+      summary,
+      origin: {
+        stationName: originStation,
+        systemName: template.origin.systemName,
+        stationType: template.origin.stationType,
+        stationId: template.origin.stationId,
+        stationUrl: template.origin.stationUrl,
+        factionName: template.origin.factionName,
+        faction: template.origin.factionName,
+        stationDistanceText: originDistance.text || null,
+        stationDistanceLs: typeof originDistance.value === 'number' ? originDistance.value : null,
+        local: originLocal,
+        buy: buildListing(template.origin.buy, 'buy'),
+        sellReturn: buildListing(template.origin.sellReturn, 'sell')
+      },
+      destination: {
+        stationName: destinationStation,
+        systemName: template.destination.systemName,
+        stationType: template.destination.stationType,
+        stationId: template.destination.stationId,
+        stationUrl: template.destination.stationUrl,
+        factionName: template.destination.factionName,
+        faction: template.destination.factionName,
+        stationDistanceText: destinationDistance.text || null,
+        stationDistanceLs: typeof destinationDistance.value === 'number' ? destinationDistance.value : null,
+        local: destinationLocal,
+        sell: buildListing(template.destination.sell, 'sell'),
+        buyReturn: buildListing(template.destination.buyReturn, 'buy')
       }
     }
   })
