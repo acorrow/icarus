@@ -63,7 +63,7 @@ describe('Ghost Net page', () => {
 
     expect(mockSendEvent).toHaveBeenCalledWith('getTokenBalance')
     expect(await screen.findByText(/tokens/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /request 100000 tokens/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /trigger a simulated jackpot payout/i })).toBeInTheDocument()
   })
 })
 

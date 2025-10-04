@@ -10,7 +10,11 @@ const {
   getRemoteLedgerConfig,
   TOKEN_REMOTE_MODES
 } = require('../../shared/token-config')
-const { isGhostnetTokenCurrencyEnabled } = require('../../shared/feature-flags')
+const {
+  isGhostnetTokenCurrencyEnabled,
+  isTokenJackpotEnabled,
+  isTokenRecoveryCompatibilityEnabled
+} = require('../../shared/feature-flags')
 
 const DEFAULT_REMOTE_TIMEOUT = 8000
 const DEFAULT_REMOTE_RETRY_DELAY = 750
@@ -27,6 +31,7 @@ const REMOTE_RETRY_LOG_FILENAME = 'remote-retry.log'
 
 const NEGATIVE_RECOVERY_THRESHOLD = -500000
 const NEGATIVE_RECOVERY_CREDIT_AMOUNT = 1000000
+const DEFAULT_JACKPOT_MULTIPLIER = 100
 
 class RemoteLedgerError extends Error {
   constructor (message, options = {}) {
@@ -252,6 +257,20 @@ class TokenLedger {
       : 0
     this.remoteRetries = configuredRetries
 
+    const jackpotFlag = options.jackpotEnabled !== undefined
+      ? Boolean(options.jackpotEnabled)
+      : isTokenJackpotEnabled()
+    const compatibilityFlag = options.negativeRecoveryCompatibility !== undefined
+      ? Boolean(options.negativeRecoveryCompatibility)
+      : isTokenRecoveryCompatibilityEnabled()
+    this.jackpotEnabled = jackpotFlag
+    this.jackpotMultiplier = Number.isFinite(options.jackpotMultiplier) && options.jackpotMultiplier > 1
+      ? Math.floor(options.jackpotMultiplier)
+      : DEFAULT_JACKPOT_MULTIPLIER
+    this.negativeRecoveryCompatibility = jackpotFlag
+      ? Boolean(options.negativeRecoveryCompatibility ?? false)
+      : compatibilityFlag
+
     this._writeQueue = Promise.resolve()
     this._state = { balance: this.initialBalance }
     this._transactions = []
@@ -264,7 +283,8 @@ class TokenLedger {
       armed: true,
       lastTriggeredAt: null,
       lastTriggeredEntryId: null,
-      pending: null
+      pending: null,
+      awaitingJackpot: false
     }
   }
 
@@ -335,31 +355,66 @@ class TokenLedger {
     return [...this._transactions]
   }
 
-  async recordEarn (amount, metadata = {}) {
-    return this._recordTransaction('earn', Math.abs(amount), metadata)
+  async recordEarn (amount, metadata = {}, options = {}) {
+    return this._recordTransaction('earn', Math.abs(amount), metadata, options)
   }
 
   async recordSpend (amount, metadata = {}) {
     return this._recordTransaction('spend', Math.abs(amount), metadata)
   }
 
-  async _recordTransaction (type, amount, metadata) {
+  async _recordTransaction (type, amount, metadata, options = {}) {
     const normalizedAmount = Number.isFinite(amount) ? amount : 0
-    const delta = type === 'earn' ? normalizedAmount : -normalizedAmount
     const metadataWithReason = { ...(metadata || {}) }
     const reason = resolveReason(type, metadataWithReason)
     metadataWithReason.reason = reason
+    const randomFn = typeof options.random === 'function' ? options.random : Math.random
 
     return this._enqueue(async () => {
       await this.init()
       const timestamp = new Date().toISOString()
       const previousBalance = this._state.balance ?? this.initialBalance
+      const baseDelta = type === 'earn' ? normalizedAmount : -normalizedAmount
+      const projectedBalance = previousBalance + baseDelta
+
+      const recoveryEvaluation = this._shouldTriggerNegativeBalanceRecovery({
+        type,
+        amount: normalizedAmount,
+        metadata: metadataWithReason,
+        previousBalance,
+        nextBalance: projectedBalance,
+        delta: baseDelta,
+        options
+      }) || {}
+
+      const legacyRecovery = Boolean(recoveryEvaluation.scheduleRecovery)
+      const jackpotApplied = Boolean(recoveryEvaluation.jackpot)
+      const thresholdCrossed = Boolean(recoveryEvaluation.thresholdCrossed)
+      const multiplier = Number.isFinite(recoveryEvaluation.multiplier)
+        ? Math.max(1, Math.floor(recoveryEvaluation.multiplier))
+        : this.jackpotMultiplier
+
+      let appliedAmount = normalizedAmount
+      if (jackpotApplied) {
+        appliedAmount = Math.round(normalizedAmount * multiplier)
+        metadataWithReason.jackpot = true
+        metadataWithReason.multiplier = multiplier
+        metadataWithReason.jackpotSource = recoveryEvaluation.jackpotSource || 'negative-balance-jackpot'
+        if (recoveryEvaluation.jackpotCelebrationId) {
+          metadataWithReason.jackpotCelebrationId = recoveryEvaluation.jackpotCelebrationId
+        } else {
+          const celebrationSeed = Math.floor((randomFn() || 0) * 1e9)
+          metadataWithReason.jackpotCelebrationId = celebrationSeed.toString(36)
+        }
+      }
+
+      const delta = type === 'earn' ? appliedAmount : -appliedAmount
       this._state.balance = previousBalance + delta
 
       const entry = {
         id: createEntryId(),
         type,
-        amount: normalizedAmount,
+        amount: appliedAmount,
         delta,
         balance: this._state.balance,
         timestamp,
@@ -367,23 +422,28 @@ class TokenLedger {
         mode: this.mode
       }
 
-      const triggeredRecovery = this._shouldTriggerNegativeBalanceRecovery(previousBalance, this._state.balance, delta)
-      if (triggeredRecovery) {
+      if (legacyRecovery || jackpotApplied || thresholdCrossed) {
         entry.metadata.recoveryTriggered = true
         entry.metadata.recoveryThreshold = NEGATIVE_RECOVERY_THRESHOLD
+      }
+
+      if (jackpotApplied) {
+        this._negativeRecovery.lastTriggeredAt = timestamp
+        this._negativeRecovery.lastTriggeredEntryId = entry.id
       }
 
       let queuedForRetry = false
 
       if (this.remoteClient && this.remoteClient.isEnabled()) {
         try {
-          const remoteResult = await this.remoteClient.recordTransaction(type, normalizedAmount, metadataWithReason)
+          const remoteResult = await this.remoteClient.recordTransaction(type, appliedAmount, metadataWithReason)
           if (remoteResult && Number.isFinite(remoteResult.balance)) {
             this._state.balance = remoteResult.balance
             entry.balance = remoteResult.balance
             const syncedAt = new Date().toISOString()
             this._lastRemoteSyncAt = syncedAt
             this._lastRemoteError = null
+            this._updateNegativeRecoveryArming(remoteResult.balance)
             entry.remote = this._describeRemoteState({
               synced: true,
               attempts: remoteResult.attempts || 1,
@@ -433,63 +493,140 @@ class TokenLedger {
         throw error
       }
 
-      const logLine = `[${timestamp}] user=${this.userId} type=${type} amount=${normalizedAmount} delta=${delta} balance=${this._state.balance} reason=${reason}\n`
+      const logLine = `[${timestamp}] user=${this.userId} type=${type} amount=${appliedAmount} delta=${delta} balance=${this._state.balance} reason=${reason}\n`
       await this._appendLedgerLog(logLine)
 
       const remoteStatus = entry.remote?.enabled ? (entry.remote.synced ? 'remote:synced' : 'remote:pending') : 'remote:disabled'
       const pendingCount = this._pendingRemote.length
-      console.log(`[TokenLedger] user=${this.userId} ${type} ${normalizedAmount} (delta ${delta}) -> balance ${this._state.balance} [${this.mode}] [${remoteStatus} pending=${pendingCount}]`, metadataWithReason)
-      if (triggeredRecovery) {
+      console.log(`[TokenLedger] user=${this.userId} ${type} ${appliedAmount} (delta ${delta}) -> balance ${this._state.balance} [${this.mode}] [${remoteStatus} pending=${pendingCount}]`, metadataWithReason)
+      if (legacyRecovery) {
         console.log(`[TokenLedger] user=${this.userId} negative balance recovery scheduled at ${this._state.balance}`, {
           threshold: NEGATIVE_RECOVERY_THRESHOLD,
           triggeredBy: entry.id
         })
         this._scheduleNegativeBalanceRecovery(entry)
+      } else if (jackpotApplied) {
+        console.log(`[TokenLedger] user=${this.userId} jackpot multiplier applied`, {
+          multiplier,
+          entryId: entry.id,
+          balance: this._state.balance
+        })
+      } else if (thresholdCrossed) {
+        console.log(`[TokenLedger] user=${this.userId} negative balance jackpot armed`, {
+          threshold: NEGATIVE_RECOVERY_THRESHOLD,
+          entryId: entry.id,
+          balance: this._state.balance
+        })
       } else if (this.isSimulation() && this._state.balance > NEGATIVE_RECOVERY_THRESHOLD) {
         this._negativeRecovery.armed = true
+      }
+
+      if (!legacyRecovery) {
+        this._updateNegativeRecoveryArming(this._state.balance)
       }
       return entry
     })
   }
 
-  _shouldTriggerNegativeBalanceRecovery (previousBalance, nextBalance, delta) {
-    if (!this._negativeRecovery) return false
-    if (!this.isSimulation()) return false
-    if (!Number.isFinite(previousBalance) || !Number.isFinite(nextBalance)) return false
+  _shouldTriggerNegativeBalanceRecovery (context = {}) {
+    if (!this._negativeRecovery) return null
+    if (!this.isSimulation()) return null
 
-    if (delta >= 0) {
+    const {
+      type,
+      previousBalance,
+      nextBalance,
+      delta,
+      options = {}
+    } = context
+
+    if (!Number.isFinite(previousBalance) || !Number.isFinite(nextBalance)) return null
+    if (typeof type !== 'string') return null
+
+    if (type === 'spend') {
+      if (delta >= 0) {
+        if (nextBalance > NEGATIVE_RECOVERY_THRESHOLD) {
+          this._negativeRecovery.armed = true
+        }
+        return null
+      }
+
       if (nextBalance > NEGATIVE_RECOVERY_THRESHOLD) {
         this._negativeRecovery.armed = true
+        this._negativeRecovery.awaitingJackpot = false
+        return null
       }
-      return false
-    }
 
-    if (nextBalance > NEGATIVE_RECOVERY_THRESHOLD) {
-      this._negativeRecovery.armed = true
-      return false
-    }
+      if (previousBalance <= NEGATIVE_RECOVERY_THRESHOLD) {
+        this._negativeRecovery.armed = false
+        if (!this.negativeRecoveryCompatibility) {
+          this._negativeRecovery.awaitingJackpot = true
+        }
+        return null
+      }
 
-    if (previousBalance <= NEGATIVE_RECOVERY_THRESHOLD) {
+      if (this._negativeRecovery.pending) {
+        return null
+      }
+
+      if (!this._negativeRecovery.armed) {
+        return null
+      }
+
+      this._negativeRecovery.lastThresholdCrossedAt = new Date().toISOString()
       this._negativeRecovery.armed = false
-      return false
+
+      if (this.negativeRecoveryCompatibility) {
+        this._negativeRecovery.awaitingJackpot = false
+        return { scheduleRecovery: true }
+      }
+
+      this._negativeRecovery.awaitingJackpot = true
+      return { thresholdCrossed: true }
     }
 
-    if (this._negativeRecovery.pending) {
-      return false
+    if (type === 'earn') {
+      if (this.negativeRecoveryCompatibility || !this.jackpotEnabled) {
+        if (nextBalance > NEGATIVE_RECOVERY_THRESHOLD) {
+          this._negativeRecovery.armed = true
+        }
+        return null
+      }
+
+      if (options.jackpotEligible === false) {
+        if (nextBalance > NEGATIVE_RECOVERY_THRESHOLD) {
+          this._negativeRecovery.armed = true
+        }
+        this._negativeRecovery.awaitingJackpot = false
+        return null
+      }
+
+      if (!this._negativeRecovery.awaitingJackpot) {
+        if (nextBalance > NEGATIVE_RECOVERY_THRESHOLD) {
+          this._negativeRecovery.armed = true
+        }
+        return null
+      }
+
+      if (previousBalance >= 0) {
+        return null
+      }
+
+      this._negativeRecovery.awaitingJackpot = false
+      return {
+        jackpot: true,
+        multiplier: this.jackpotMultiplier,
+        jackpotSource: 'negative-balance-jackpot'
+      }
     }
 
-    if (!this._negativeRecovery.armed) {
-      return false
-    }
-
-    this._negativeRecovery.lastThresholdCrossedAt = new Date().toISOString()
-    this._negativeRecovery.armed = false
-    return true
+    return null
   }
 
   _scheduleNegativeBalanceRecovery (triggerEntry) {
     if (!this._negativeRecovery) return null
     if (!this.isSimulation()) return null
+    if (!this.negativeRecoveryCompatibility) return null
     if (this._negativeRecovery.pending) {
       return this._negativeRecovery.pending
     }
@@ -504,7 +641,7 @@ class TokenLedger {
     }
 
     const schedule = Promise.resolve()
-      .then(() => this.recordEarn(NEGATIVE_RECOVERY_CREDIT_AMOUNT, metadata))
+      .then(() => this.recordEarn(NEGATIVE_RECOVERY_CREDIT_AMOUNT, metadata, { jackpotEligible: false }))
       .then(entry => {
         this._negativeRecovery.lastTriggeredAt = new Date().toISOString()
         this._negativeRecovery.lastTriggeredEntryId = entry?.id || null
@@ -811,6 +948,9 @@ class TokenLedger {
       return
     }
     this._negativeRecovery.armed = balance > NEGATIVE_RECOVERY_THRESHOLD
+    if (balance > NEGATIVE_RECOVERY_THRESHOLD) {
+      this._negativeRecovery.awaitingJackpot = false
+    }
   }
 
   async _persistState () {

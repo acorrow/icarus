@@ -25,7 +25,7 @@ The remote mirror is only activated when `ICARUS_TOKENS_REMOTE_MODE=MIRROR` **an
 
 ## Client behaviour
 
-- The GhostNet console footer now renders the live token balance, a status badge describing whether the ledger is simulated or mirrored, and a grant button that awards `100000` tokens via the `awardTokens` socket event.
+- The GhostNet console footer now renders the live token balance, a status badge describing whether the ledger is simulated or mirrored, and a grant button that triggers a simulated jackpot payout via the `triggerJackpot` socket event. The helper multiplies a random base credit by the jackpot multiplier so testers can rehearse the full celebration sequence on demand.
 - When the balance drops below zero, GhostNet injects “menacing” warnings into the console feed to remind the commander that tribute is overdue.
 - Balance updates arrive via the existing `ghostnetTokensUpdated` broadcast; the UI also polls `getTokenBalance` on page load.
 
