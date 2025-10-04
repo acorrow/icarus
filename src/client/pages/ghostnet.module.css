@@ -302,7 +302,7 @@
   justify-content: center;
   width: 1.9rem;
   height: 1.9rem;
-  border-radius: 50%;
+  border-radius: 0;
   border: 1px solid var(--ghostnet-border-strong);
   background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 68%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 46%, transparent));
   color: var(--ghostnet-color-text-strong);
@@ -351,7 +351,7 @@ button.terminalTokenButton:disabled {
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 1.1rem;
-  border-radius: 999px;
+  border-radius: 0;
   border: 1px solid var(--ghostnet-border-strong);
   background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 72%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent));
   color: var(--ghostnet-color-text-strong);
@@ -997,7 +997,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
   color: var(--ghostnet-accent);
   padding: 0.6rem 1.15rem;
-  border-radius: 999px;
+  border-radius: 0;
   font-size: 0.85rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -1010,7 +1010,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 
 .tradeFiltersSubmit {
   border: none;
-  border-radius: 999px;
+  border-radius: 0;
   background: linear-gradient(90deg, var(--ghostnet-accent), color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent));
   color: #0c061f;
   padding: 0.6rem 1.4rem;
@@ -2047,6 +2047,11 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 
 .ghostnet :global(.ghostnet-panel-table .button--secondary:hover) {
   background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent);
+}
+
+.ghostnet :global(button),
+.ghostnet :global(.button) {
+  border-radius: 0;
 }
 
 .ghostnet :global(.ghostnet-panel-table .pristine-mining__inspector) {
