@@ -11,6 +11,7 @@ import {
   getEngineerDistanceLy,
   getEngineerProgressState
 } from 'lib/ghostnet/engineering-utils'
+import { DataTableShell } from '../../components/ghostnet/data-table-shell'
 import styles from '../ghostnet.module.css'
 
 export default function GhostnetEngineeringOpportunitiesPage () {
@@ -27,6 +28,9 @@ export default function GhostnetEngineeringOpportunitiesPage () {
     { name: 'Engineering Opportunities', icon: 'engineer', active: true },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
   ]), [router])
+
+  const hasCraftable = componentReady && craftable.length > 0
+  const tableStatus = componentReady ? (hasCraftable ? 'populated' : 'empty') : 'loading'
 
   const recomputeCraftable = useCallback((nextBlueprints) => {
     const summaries = createCraftableBlueprintSummary(nextBlueprints)
@@ -158,111 +162,103 @@ export default function GhostnetEngineeringOpportunitiesPage () {
                   </div>
                 </div>
 
-                {!componentReady && (
-                  <div className={styles.tableIdleState}>Synchronising manifest…</div>
-                )}
-
-                {componentReady && craftable.length === 0 && (
-                  <div className={styles.tableEmptyState}>
-                    No blueprints are currently within reach. Top up on materials or unlock additional engineers to expand the
-                    list.
-                  </div>
-                )}
-
-                {componentReady && craftable.length > 0 && (
-                  <div className={styles.dataTableContainer}>
-                    <table className={`${styles.dataTable} ${styles.dataTableDense}`}>
-                      <thead>
-                        <tr>
-                          <th>Blueprint</th>
-                          <th className='hidden-medium'>Grade</th>
-                          <th>Materials Ready</th>
-                          <th>Workshop Destination</th>
+                <DataTableShell
+                  ariaLabel='Craftable engineering blueprints'
+                  emptyMessage='No blueprints are currently within reach. Top up on materials or unlock additional engineers to expand the list.'
+                  hasData={hasCraftable}
+                  loadingMessage='Synchronising manifest…'
+                  status={tableStatus}
+                  tableClassName={styles.dataTableDense}
+                >
+                  <thead>
+                    <tr>
+                      <th>Blueprint</th>
+                      <th className='hidden-medium'>Grade</th>
+                      <th>Materials Ready</th>
+                      <th>Workshop Destination</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {craftable.map(item => {
+                      const moduleList = Array.isArray(item.blueprint?.modules) ? item.blueprint.modules : []
+                      return (
+                        <tr
+                          key={item.blueprint.symbol}
+                          data-ghostnet-table-row='visible'
+                          className={styles.tableRowInteractive}
+                          role='link'
+                          tabIndex={0}
+                          aria-label={`View engineering detail for ${item.blueprint.name}`}
+                          onClick={() => handleRowActivate(item.blueprint.symbol)}
+                          onKeyDown={event => {
+                            if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                              event.preventDefault()
+                              handleRowActivate(item.blueprint.symbol)
+                            }
+                          }}
+                        >
+                          <td>
+                            <div className={styles.opportunityName}>{item.blueprint.name}</div>
+                            <div className={styles.tableSubtext}>{item.blueprint.originalName}</div>
+                            {moduleList.length > 0 && (
+                              <div className={styles.moduleTags}>
+                                {moduleList.map(module => (
+                                  <span key={`${item.blueprint.symbol}_${module}`} className={styles.moduleTag}>
+                                    {module}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            <div className={`${styles.gradeBadge} visible-medium`}>G{item.grade.grade}</div>
+                          </td>
+                          <td className='hidden-medium'>
+                            <div className={styles.gradeBadge}>G{item.grade.grade}</div>
+                          </td>
+                          <td>
+                            <ul className={styles.materialList}>
+                              {item.grade.components.map(component => (
+                                <li
+                                  key={`${item.blueprint.symbol}_${item.grade.grade}_${component.symbol || component.name}`}
+                                  className={styles.materialItem}
+                                >
+                                  <span className={styles.materialName}>{component.name}</span>
+                                  <span className={styles.materialCount}>
+                                    {formatNumber(component.cost)} / {formatNumber(component.count)}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </td>
+                          <td>
+                            <ul className={styles.engineerList}>
+                              {item.engineers.map(engineer => {
+                                const distanceLy = getEngineerDistanceLy(currentSystem, engineer)
+                                const { state, label } = getEngineerProgressState(engineer, item.grade.grade)
+                                const engineerClassName = `${styles.engineerItem} ${state === 'locked'
+                                  ? styles.engineerStateLocked
+                                  : state === 'mastered'
+                                    ? styles.engineerStateMastered
+                                    : styles.engineerStateUnlocked}`
+                                return (
+                                  <li key={`${item.blueprint.symbol}_${engineer.name}`} className={engineerClassName}>
+                                    <span className={styles.engineerName}>{engineer.name}</span>
+                                    <span className={styles.engineerMeta}>
+                                      <span>{engineer.system || 'Unknown System'}</span>
+                                      {typeof distanceLy === 'number' && distanceLy > 0 && (
+                                        <span>{distanceLy.toFixed(1)} Ly</span>
+                                      )}
+                                    </span>
+                                    <span className={styles.engineerStatus}>{label}</span>
+                                  </li>
+                                )
+                              })}
+                            </ul>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {craftable.map(item => {
-                          const moduleList = Array.isArray(item.blueprint?.modules) ? item.blueprint.modules : []
-                          return (
-                            <tr
-                              key={item.blueprint.symbol}
-                              data-ghostnet-table-row='visible'
-                              className={styles.tableRowInteractive}
-                              role='link'
-                              tabIndex={0}
-                              aria-label={`View engineering detail for ${item.blueprint.name}`}
-                              onClick={() => handleRowActivate(item.blueprint.symbol)}
-                              onKeyDown={event => {
-                                if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
-                                  event.preventDefault()
-                                  handleRowActivate(item.blueprint.symbol)
-                                }
-                              }}
-                            >
-                              <td>
-                                <div className={styles.opportunityName}>{item.blueprint.name}</div>
-                                <div className={styles.tableSubtext}>{item.blueprint.originalName}</div>
-                                {moduleList.length > 0 && (
-                                  <div className={styles.moduleTags}>
-                                    {moduleList.map(module => (
-                                      <span key={`${item.blueprint.symbol}_${module}`} className={styles.moduleTag}>
-                                        {module}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                                <div className={`${styles.gradeBadge} visible-medium`}>G{item.grade.grade}</div>
-                              </td>
-                              <td className='hidden-medium'>
-                                <div className={styles.gradeBadge}>G{item.grade.grade}</div>
-                              </td>
-                              <td>
-                                <ul className={styles.materialList}>
-                                  {item.grade.components.map(component => (
-                                    <li
-                                      key={`${item.blueprint.symbol}_${item.grade.grade}_${component.symbol || component.name}`}
-                                      className={styles.materialItem}
-                                    >
-                                      <span className={styles.materialName}>{component.name}</span>
-                                      <span className={styles.materialCount}>
-                                        {formatNumber(component.cost)} / {formatNumber(component.count)}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </td>
-                              <td>
-                                <ul className={styles.engineerList}>
-                                  {item.engineers.map(engineer => {
-                                    const distanceLy = getEngineerDistanceLy(currentSystem, engineer)
-                                    const { state, label } = getEngineerProgressState(engineer, item.grade.grade)
-                                    const engineerClassName = `${styles.engineerItem} ${state === 'locked'
-                                      ? styles.engineerStateLocked
-                                      : state === 'mastered'
-                                        ? styles.engineerStateMastered
-                                        : styles.engineerStateUnlocked}`
-                                    return (
-                                      <li key={`${item.blueprint.symbol}_${engineer.name}`} className={engineerClassName}>
-                                        <span className={styles.engineerName}>{engineer.name}</span>
-                                        <span className={styles.engineerMeta}>
-                                          <span>{engineer.system || 'Unknown System'}</span>
-                                          {typeof distanceLy === 'number' && distanceLy > 0 && (
-                                            <span>{distanceLy.toFixed(1)} Ly</span>
-                                          )}
-                                        </span>
-                                        <span className={styles.engineerStatus}>{label}</span>
-                                      </li>
-                                    )
-                                  })}
-                                </ul>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                      )
+                    })}
+                  </tbody>
+                </DataTableShell>
               </div>
             </div>
           </div>

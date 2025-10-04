@@ -1817,14 +1817,6 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 
 
 
-.detailEmptyState {
-  padding: 2rem;
-  text-align: center;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
-  font-size: 0.95rem;
-}
-
-
 .stationRowSelected {
   background: color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent);
 }
