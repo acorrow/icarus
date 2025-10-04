@@ -180,68 +180,91 @@ export default function GhostnetEngineeringOpportunitiesPage () {
                   </thead>
                   <tbody>
                     {craftable.map(item => {
-                      const moduleList = Array.isArray(item.blueprint?.modules) ? item.blueprint.modules : []
+                      // Socket-driven blueprint payloads can be partial during SSR/static export, so guard before rendering rows.
+                      const moduleList = Array.isArray(item?.blueprint?.modules) ? item.blueprint.modules : []
+                      const grade = item?.grade || {}
+                      const gradeLevel = typeof grade.grade === 'number' ? grade.grade : 0
+                      const requiredComponents = Array.isArray(grade.components) ? grade.components : []
+                      const engineerList = Array.isArray(item?.engineers) ? item.engineers : []
+                      const blueprintName = item?.blueprint?.name || 'Unknown blueprint'
+                      const blueprintSymbol = item?.blueprint?.symbol || blueprintName
+                      const originalName = item?.blueprint?.originalName || null
+
+                      if (!item?.blueprint) {
+                        return null
+                      }
+
                       return (
                         <tr
-                          key={item.blueprint.symbol}
+                          key={blueprintSymbol}
                           data-ghostnet-table-row='visible'
                           className={styles.tableRowInteractive}
                           role='link'
                           tabIndex={0}
-                          aria-label={`View engineering detail for ${item.blueprint.name}`}
-                          onClick={() => handleRowActivate(item.blueprint.symbol)}
+                          aria-label={`View engineering detail for ${blueprintName}`}
+                          onClick={() => handleRowActivate(blueprintSymbol)}
                           onKeyDown={event => {
                             if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
                               event.preventDefault()
-                              handleRowActivate(item.blueprint.symbol)
+                              handleRowActivate(blueprintSymbol)
                             }
                           }}
                         >
                           <td>
-                            <div className={styles.opportunityName}>{item.blueprint.name}</div>
-                            <div className={styles.tableSubtext}>{item.blueprint.originalName}</div>
+                            <div className={styles.opportunityName}>{blueprintName}</div>
+                            {originalName && (
+                              <div className={styles.tableSubtext}>{originalName}</div>
+                            )}
                             {moduleList.length > 0 && (
                               <div className={styles.moduleTags}>
                                 {moduleList.map(module => (
-                                  <span key={`${item.blueprint.symbol}_${module}`} className={styles.moduleTag}>
+                                  <span key={`${blueprintSymbol}_${module}`} className={styles.moduleTag}>
                                     {module}
                                   </span>
                                 ))}
                               </div>
                             )}
-                            <div className={`${styles.gradeBadge} visible-medium`}>G{item.grade.grade}</div>
+                            <div className={`${styles.gradeBadge} visible-medium`}>G{gradeLevel}</div>
                           </td>
                           <td className='hidden-medium'>
-                            <div className={styles.gradeBadge}>G{item.grade.grade}</div>
+                            <div className={styles.gradeBadge}>G{gradeLevel}</div>
                           </td>
                           <td>
                             <ul className={styles.materialList}>
-                              {item.grade.components.map(component => (
-                                <li
-                                  key={`${item.blueprint.symbol}_${item.grade.grade}_${component.symbol || component.name}`}
-                                  className={styles.materialItem}
-                                >
-                                  <span className={styles.materialName}>{component.name}</span>
-                                  <span className={styles.materialCount}>
-                                    {formatNumber(component.cost)} / {formatNumber(component.count)}
-                                  </span>
-                                </li>
-                              ))}
+                              {requiredComponents.map(component => {
+                                const componentKey = component?.symbol || component?.name || 'component'
+                                const componentName = component?.name || 'Unknown material'
+                                const cost = typeof component?.cost === 'number' ? component.cost : 0
+                                const count = typeof component?.count === 'number' ? component.count : 0
+
+                                return (
+                                  <li
+                                    key={`${blueprintSymbol}_${gradeLevel}_${componentKey}`}
+                                    className={styles.materialItem}
+                                  >
+                                    <span className={styles.materialName}>{componentName}</span>
+                                    <span className={styles.materialCount}>
+                                      {formatNumber(cost)} / {formatNumber(count)}
+                                    </span>
+                                  </li>
+                                )
+                              })}
                             </ul>
                           </td>
                           <td>
                             <ul className={styles.engineerList}>
-                              {item.engineers.map(engineer => {
+                              {engineerList.map(engineer => {
+                                const engineerName = engineer?.name || 'Unknown engineer'
                                 const distanceLy = getEngineerDistanceLy(currentSystem, engineer)
-                                const { state, label } = getEngineerProgressState(engineer, item.grade.grade)
+                                const { state, label } = getEngineerProgressState(engineer, gradeLevel)
                                 const engineerClassName = `${styles.engineerItem} ${state === 'locked'
                                   ? styles.engineerStateLocked
                                   : state === 'mastered'
                                     ? styles.engineerStateMastered
                                     : styles.engineerStateUnlocked}`
                                 return (
-                                  <li key={`${item.blueprint.symbol}_${engineer.name}`} className={engineerClassName}>
-                                    <span className={styles.engineerName}>{engineer.name}</span>
+                                  <li key={`${blueprintSymbol}_${engineerName}`} className={engineerClassName}>
+                                    <span className={styles.engineerName}>{engineerName}</span>
                                     <span className={styles.engineerMeta}>
                                       <span>{engineer.system || 'Unknown System'}</span>
                                       {typeof distanceLy === 'number' && distanceLy > 0 && (

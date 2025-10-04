@@ -196,7 +196,13 @@ function SocketProvider ({ children }) {
   )
 }
 
-function useSocket () { return useContext(SocketContext) }
+function useSocket () {
+  const context = useContext(SocketContext)
+  if (context && typeof context === 'object') {
+    return context
+  }
+  return defaultSocketState
+}
 
 function sendEvent (name, message = null) {
   if (isLayoutSandbox()) {

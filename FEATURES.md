@@ -14,5 +14,10 @@
 - Rows still expand inline to power the navigation inspector; documented TODO tracks migration to a dedicated detail surface.
 - Expansion code is annotated in `PristineMiningPanel` and referenced in `AGENTS.md` for follow-up.
 
+## Engineering Opportunities (ENGINEERING_OPPORTUNITIES)
+- Hardened the engineering blueprint table to tolerate partial blueprint payloads by guarding blueprint, grade, and engineer metadata before rendering.
+- Table rows now derive keys and ARIA labels from sanitized blueprint identifiers so static export and SSR do not crash when socket context is unavailable.
+- Material counts and engineer listings normalise undefined values to keep DataTableShell populated states accessible.
+
 ## Test Coverage
 - Added unit tests for `DataTableShell` to confirm table rendering, empty messaging, and loading indicators respect shared ARIA semantics.
