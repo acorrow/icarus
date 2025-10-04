@@ -194,6 +194,7 @@
 }
 
 .terminalShell {
+  position: relative;
   width: 100%;
   max-width: none;
   background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-surface) 92%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 100%);
@@ -209,6 +210,57 @@
   overflow: hidden;
 }
 
+.terminalCelebration {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 320ms ease, filter 320ms ease;
+  background: radial-gradient(circle at 50% 15%, color-mix(in srgb, var(--ghostnet-color-success) 18%, transparent) 0%, transparent 55%),
+    linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-success) 6%, transparent) 0%, transparent 68%);
+  mix-blend-mode: screen;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.terminalCelebrationActive {
+  opacity: 1;
+  filter: saturate(135%);
+}
+
+.terminalCelebrationStream {
+  display: flex;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0 1.2rem;
+  overflow: hidden;
+  align-items: stretch;
+}
+
+.terminalCelebrationGlyph {
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  font-size: 1.05rem;
+  color: color-mix(in srgb, var(--ghostnet-color-success) 95%, transparent);
+  text-shadow: 0 0 1.65rem color-mix(in srgb, var(--ghostnet-color-success) 60%, transparent);
+  opacity: 0;
+  animation-name: terminalCreditGlyphFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  letter-spacing: 0.12em;
+  transform-origin: center;
+}
+
+.terminalCelebrationGlyph:nth-child(odd) {
+  font-size: 0.96rem;
+}
+
+.terminalCelebrationGlyph:nth-child(even) {
+  font-size: 1.12rem;
+}
+
 .terminalHeader {
   display: flex;
   align-items: center;
@@ -216,6 +268,12 @@
   padding: 1rem 1.5rem 0.75rem 1.5rem;
   background: color-mix(in srgb, var(--ghostnet-color-primary) 12%, transparent);
   border-bottom: 1px solid var(--ghostnet-border-soft);
+}
+
+.terminalHeader,
+.terminalBody {
+  position: relative;
+  z-index: 1;
 }
 
 .terminalHeaderContent {
@@ -453,6 +511,11 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 72%, transparent);
 }
 
+.terminalPromptCredit {
+  color: color-mix(in srgb, var(--ghostnet-color-success) 96%, transparent);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-success) 58%, transparent);
+}
+
 .terminalText {
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 82%, transparent);
 }
@@ -486,6 +549,12 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 92%, transparent);
 }
 
+.terminalTextCredit {
+  color: color-mix(in srgb, var(--ghostnet-color-success) 90%, transparent);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--ghostnet-color-success) 60%, transparent);
+  letter-spacing: 0.2em;
+}
+
 @keyframes terminalLineReveal {
   from {
     transform: translateY(0.35rem);
@@ -494,6 +563,23 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes terminalCreditGlyphFall {
+  0% {
+    transform: translate3d(0, -110%, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 120%, 0);
+    opacity: 0;
   }
 }
 

@@ -36,6 +36,13 @@ A dedicated retry queue flushes pending transactions sequentially. Each queued t
 
 When `ghostnetTokenCurrencyEnabled` is set to `true` the same infrastructure prepares the payload but marks credits with `reason: "inara-credit"` instead of `"inara-simulated-credit"`. The outbound request body and metadata can be reused when the production submission path is wired in.
 
+## Negative balance recovery
+
+- Simulation mode keeps commanders from spiralling indefinitely: when the local ledger balance crosses **-500,000** tokens, the next spend transaction records `metadata.recoveryTriggered: true` and schedules a `negative-balance-recovery` credit for **+1,000,000** tokens.
+- The recovery credit is stored like any other transaction and emits a `ghostnetTokensUpdated` broadcast containing the new entry. The GhostNet console listens for `metadata.event === 'negative-balance-recovery'` to trigger a green glyph celebration and insert the message “A mysterious intercepted signal proved valuable. GhostNet uploaded it automatically and awarded you credits.”
+- Recovery only fires once per threshold crossing; the ledger re-arms the guard after the balance climbs above -500,000 so future deficits can produce fresh celebration events. The scheduling helper records failures and re-arms if a write error occurs so future transactions can try again.
+- Future gameplay hooks (e.g. discovering valuable scans) can reuse the same celebration plumbing by emitting transactions with a distinct `metadata.event` and pointing the UI handler at the new identifier.
+
 ## API proxies
 
 The Next.js API routes under `src/client/pages/api/` call `token-currency.js` to debit the ledger after each INARA request. The helper measures request/response byte size, annotates the spend with the endpoint name, HTTP status, and any error string, and leaves the ledger to decide whether the operation is simulated or mirrored. This keeps the proxies agnostic to the storage backend while ensuring every lookup is billed consistently.

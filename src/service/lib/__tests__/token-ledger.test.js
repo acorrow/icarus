@@ -147,4 +147,47 @@ describe('TokenLedger', () => {
     const retryLog = await fs.readFile(path.join(ledger.storageDir, 'remote-retry.log'), 'utf8')
     expect(retryLog).toMatch(/network down/)
   })
+
+  it('awards a recovery credit when the simulation balance crosses the negative threshold', async () => {
+    const ledger = new TokenLedger({
+      storageDir: tempDir,
+      initialBalance: 0,
+      mode: TokenLedger.TOKEN_MODES.SIMULATION
+    })
+
+    await ledger.bootstrap()
+
+    const spendEntry = await ledger.recordSpend(600000, { reason: 'test-threshold' })
+    expect(spendEntry.balance).toBeLessThan(0)
+    expect(spendEntry.metadata.recoveryTriggered).toBe(true)
+
+    const pendingRecovery = ledger._negativeRecovery?.pending
+    if (pendingRecovery) {
+      await pendingRecovery
+    }
+
+    const transactions = await ledger.listTransactions()
+    expect(transactions).toHaveLength(2)
+    const recoveryEntry = transactions[1]
+    expect(recoveryEntry.type).toBe('earn')
+    expect(recoveryEntry.amount).toBe(1000000)
+    expect(recoveryEntry.metadata.reason).toBe('negative-balance-recovery')
+    expect(recoveryEntry.metadata.event).toBe('negative-balance-recovery')
+    expect(recoveryEntry.metadata.threshold).toBe(-500000)
+    expect(await ledger.getBalance()).toBe(400000)
+
+    const secondSpend = await ledger.recordSpend(950000, { reason: 'test-second-threshold' })
+    expect(secondSpend.metadata.recoveryTriggered).toBe(true)
+    const secondPending = ledger._negativeRecovery?.pending
+    if (secondPending) {
+      await secondPending
+    }
+
+    const finalBalance = await ledger.getBalance()
+    expect(finalBalance).toBeGreaterThan(0)
+    const finalTransactions = await ledger.listTransactions()
+    expect(finalTransactions).toHaveLength(4)
+    const autoCredits = finalTransactions.filter(tx => tx.metadata?.event === 'negative-balance-recovery')
+    expect(autoCredits).toHaveLength(2)
+  })
 })

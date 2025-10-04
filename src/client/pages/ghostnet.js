@@ -4053,6 +4053,25 @@ const MENACE_ECHOES = [
   () => 'GhostNet watches. Tribute is expected. Delay invites eradication.'
 ]
 
+const CREDIT_GLYPH_SYMBOLS = [
+  '₿', '¤', 'Ξ', '§', '₪', '¥', '₡', '₢', '₣', '₤', '₥', '₦', '₧', '₨', '₩', '₪', '₫', '€', '£', '₭', '₮', '₯', '₰', '₱', '฿', '₾', '✧', '✦', '✺', '✹', '✶', '✸', '✳', '⊚', '⊛'
+]
+
+const CREDIT_CELEBRATION_MESSAGE = 'A mysterious intercepted signal proved valuable. GhostNet uploaded it automatically and awarded you credits.'
+
+function generateCreditGlyphsConfig (count = 32) {
+  const seed = Date.now().toString(36)
+  return Array.from({ length: count }).map((_, index) => {
+    return {
+      id: `credit-glyph-${seed}-${index}-${Math.random().toString(16).slice(2, 6)}`,
+      symbol: randomChoice(CREDIT_GLYPH_SYMBOLS),
+      duration: randomInteger(2600, 4600),
+      delay: randomInteger(0, 2400),
+      drift: randomInteger(-12, 12) / 10
+    }
+  })
+}
+
 function generateMenaceLines (balance) {
   const formatted = Number.isFinite(balance) ? balance.toLocaleString() : 'UNKNOWN'
   const alertText = randomChoice(MENACE_ALERTS)(formatted)
@@ -4091,6 +4110,7 @@ function GhostnetTerminalOverlay () {
   )
   const cadenceRef = useRef()
   const timeoutRef = useRef(null)
+  const [creditCelebration, setCreditCelebration] = useState(null)
   const [tokenBalance, setTokenBalance] = useState(null)
   const [tokenMode, setTokenMode] = useState(null)
   const [tokenSimulation, setTokenSimulation] = useState(false)
@@ -4098,6 +4118,7 @@ function GhostnetTerminalOverlay () {
   const [tokenLoading, setTokenLoading] = useState(false)
   const [tokenActionPending, setTokenActionPending] = useState(false)
   const tokenStateRef = useRef({ balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } })
+  const celebrationRef = useRef({ entryId: null, timeouts: [], messageDisplayed: false })
 
   if (!cadenceRef.current) {
     cadenceRef.current = {
@@ -4108,6 +4129,68 @@ function GhostnetTerminalOverlay () {
       menaceCooldown: 0
     }
   }
+
+  const clearCelebrationTimeouts = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const ref = celebrationRef.current
+    if (!ref) return
+    if (Array.isArray(ref.timeouts)) {
+      ref.timeouts.forEach(id => window.clearTimeout(id))
+    }
+    ref.timeouts = []
+  }, [])
+
+  const triggerCreditCelebration = useCallback((entry = {}) => {
+    if (typeof window === 'undefined') return
+    if (!entry || typeof entry !== 'object') return
+    const entryId = entry.id || null
+    if (!entryId) return
+
+    const ref = celebrationRef.current
+    if (ref.entryId === entryId) return
+
+    clearCelebrationTimeouts()
+
+    const glyphs = generateCreditGlyphsConfig()
+    setCreditCelebration({ entryId, glyphs })
+    celebrationRef.current = {
+      entryId,
+      glyphs,
+      timeouts: [],
+      messageDisplayed: false
+    }
+
+    const messageDelay = 5200
+    const celebrationDuration = 7200
+
+    const messageTimeout = window.setTimeout(() => {
+      celebrationRef.current.messageDisplayed = true
+      setTerminalLines(previous => {
+        const messageLine = createTerminalLineWithId('credit-message', {
+          type: 'credit',
+          label: 'ghostnet',
+          text: CREDIT_CELEBRATION_MESSAGE
+        })
+        let next = [...previous, messageLine]
+        if (next.length > TERMINAL_BUFFER) {
+          next = next.slice(next.length - TERMINAL_BUFFER)
+        }
+        return next
+      })
+    }, messageDelay)
+
+    const completionTimeout = window.setTimeout(() => {
+      setCreditCelebration(current => {
+        if (!current || current.entryId !== entryId) return current
+        return null
+      })
+      celebrationRef.current.entryId = null
+      celebrationRef.current.timeouts = []
+      celebrationRef.current.messageDisplayed = true
+    }, celebrationDuration)
+
+    celebrationRef.current.timeouts = [messageTimeout, completionTimeout]
+  }, [clearCelebrationTimeouts, setTerminalLines])
 
   useEffect(() => {
     let isMounted = true
@@ -4134,6 +4217,16 @@ function GhostnetTerminalOverlay () {
       setTokenLoading(false)
       setTokenActionPending(false)
       tokenStateRef.current = { balance, simulation, remote: remoteState }
+
+      if (
+        isMounted &&
+        simulation &&
+        payload.entry &&
+        payload.entry.metadata &&
+        payload.entry.metadata.event === 'negative-balance-recovery'
+      ) {
+        triggerCreditCelebration(payload.entry)
+      }
     }
 
     setTokenLoading(true)
@@ -4156,8 +4249,9 @@ function GhostnetTerminalOverlay () {
     return () => {
       isMounted = false
       if (typeof unsubscribe === 'function') unsubscribe()
+      clearCelebrationTimeouts()
     }
-  }, [])
+  }, [triggerCreditCelebration, clearCelebrationTimeouts])
 
   const advanceCadence = useCallback(() => {
     const state = cadenceRef.current
@@ -4342,6 +4436,28 @@ function GhostnetTerminalOverlay () {
   return (
     <div className={`${styles.terminal} ${collapsed ? styles.terminalCollapsed : ''}`}>
       <div className={styles.terminalShell} role='region' aria-label='Ghost Net ship uplink activity log'>
+        <div
+          className={[styles.terminalCelebration, creditCelebration ? styles.terminalCelebrationActive : ''].filter(Boolean).join(' ')}
+          aria-hidden='true'
+        >
+          {creditCelebration ? (
+            <div className={styles.terminalCelebrationStream}>
+              {creditCelebration.glyphs.map(glyph => (
+                <span
+                  key={glyph.id}
+                  className={styles.terminalCelebrationGlyph}
+                  style={{
+                    animationDuration: `${glyph.duration}ms`,
+                    animationDelay: `${glyph.delay}ms`,
+                    transform: `translateZ(0) skewY(${glyph.drift}deg)`
+                  }}
+                >
+                  {glyph.symbol}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
         <div className={styles.terminalHeader}>
           <div className={styles.terminalHeaderContent}>
             <span className={styles.terminalTitle}>Ship Uplink Console</span>
@@ -4390,6 +4506,7 @@ function GhostnetTerminalOverlay () {
               else if (line.type === 'decrypt') promptClassNames.push(styles.terminalPromptDecrypt)
               else if (line.type === 'glitch') promptClassNames.push(styles.terminalPromptGlitch)
               else if (line.type === 'system') promptClassNames.push(styles.terminalPromptSystem)
+              else if (line.type === 'credit') promptClassNames.push(styles.terminalPromptCredit)
 
               const textClassNames = [styles.terminalText]
               if (line.type === 'alert') textClassNames.push(styles.terminalTextAlert)
@@ -4398,6 +4515,7 @@ function GhostnetTerminalOverlay () {
               if (line.type === 'decrypt') textClassNames.push(styles.terminalTextDecrypt)
               if (line.type === 'glitch') textClassNames.push(styles.terminalTextGlitch)
               if (line.type === 'system') textClassNames.push(styles.terminalTextSystem)
+              if (line.type === 'credit') textClassNames.push(styles.terminalTextCredit)
 
               return (
                 <li key={line.id} className={styles.terminalLine}>

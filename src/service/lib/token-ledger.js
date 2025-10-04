@@ -25,6 +25,9 @@ const TRANSACTIONS_FILENAME = 'transactions.jsonl'
 const LEDGER_LOG_FILENAME = 'ledger.log'
 const REMOTE_RETRY_LOG_FILENAME = 'remote-retry.log'
 
+const NEGATIVE_RECOVERY_THRESHOLD = -500000
+const NEGATIVE_RECOVERY_CREDIT_AMOUNT = 1000000
+
 class RemoteLedgerError extends Error {
   constructor (message, options = {}) {
     super(message)
@@ -257,6 +260,12 @@ class TokenLedger {
     this._remoteRetryTimer = null
     this._lastRemoteSyncAt = null
     this._lastRemoteError = null
+    this._negativeRecovery = {
+      armed: true,
+      lastTriggeredAt: null,
+      lastTriggeredEntryId: null,
+      pending: null
+    }
   }
 
   async init () {
@@ -267,6 +276,7 @@ class TokenLedger {
     await this._loadLedgerStateFromDisk()
     await this._loadTransactionsFromDisk()
     await this._syncRemoteSnapshot()
+    this._updateNegativeRecoveryArming()
     if (this._pendingRemote.length > 0) {
       this._scheduleRemoteRetry()
     }
@@ -357,6 +367,12 @@ class TokenLedger {
         mode: this.mode
       }
 
+      const triggeredRecovery = this._shouldTriggerNegativeBalanceRecovery(previousBalance, this._state.balance, delta)
+      if (triggeredRecovery) {
+        entry.metadata.recoveryTriggered = true
+        entry.metadata.recoveryThreshold = NEGATIVE_RECOVERY_THRESHOLD
+      }
+
       let queuedForRetry = false
 
       if (this.remoteClient && this.remoteClient.isEnabled()) {
@@ -423,8 +439,88 @@ class TokenLedger {
       const remoteStatus = entry.remote?.enabled ? (entry.remote.synced ? 'remote:synced' : 'remote:pending') : 'remote:disabled'
       const pendingCount = this._pendingRemote.length
       console.log(`[TokenLedger] user=${this.userId} ${type} ${normalizedAmount} (delta ${delta}) -> balance ${this._state.balance} [${this.mode}] [${remoteStatus} pending=${pendingCount}]`, metadataWithReason)
+      if (triggeredRecovery) {
+        console.log(`[TokenLedger] user=${this.userId} negative balance recovery scheduled at ${this._state.balance}`, {
+          threshold: NEGATIVE_RECOVERY_THRESHOLD,
+          triggeredBy: entry.id
+        })
+        this._scheduleNegativeBalanceRecovery(entry)
+      } else if (this.isSimulation() && this._state.balance > NEGATIVE_RECOVERY_THRESHOLD) {
+        this._negativeRecovery.armed = true
+      }
       return entry
     })
+  }
+
+  _shouldTriggerNegativeBalanceRecovery (previousBalance, nextBalance, delta) {
+    if (!this._negativeRecovery) return false
+    if (!this.isSimulation()) return false
+    if (!Number.isFinite(previousBalance) || !Number.isFinite(nextBalance)) return false
+
+    if (delta >= 0) {
+      if (nextBalance > NEGATIVE_RECOVERY_THRESHOLD) {
+        this._negativeRecovery.armed = true
+      }
+      return false
+    }
+
+    if (nextBalance > NEGATIVE_RECOVERY_THRESHOLD) {
+      this._negativeRecovery.armed = true
+      return false
+    }
+
+    if (previousBalance <= NEGATIVE_RECOVERY_THRESHOLD) {
+      this._negativeRecovery.armed = false
+      return false
+    }
+
+    if (this._negativeRecovery.pending) {
+      return false
+    }
+
+    if (!this._negativeRecovery.armed) {
+      return false
+    }
+
+    this._negativeRecovery.lastThresholdCrossedAt = new Date().toISOString()
+    this._negativeRecovery.armed = false
+    return true
+  }
+
+  _scheduleNegativeBalanceRecovery (triggerEntry) {
+    if (!this._negativeRecovery) return null
+    if (!this.isSimulation()) return null
+    if (this._negativeRecovery.pending) {
+      return this._negativeRecovery.pending
+    }
+
+    const metadata = {
+      reason: 'negative-balance-recovery',
+      source: 'token-ledger',
+      event: 'negative-balance-recovery',
+      triggeredBy: triggerEntry?.id || null,
+      threshold: NEGATIVE_RECOVERY_THRESHOLD,
+      simulation: true
+    }
+
+    const schedule = Promise.resolve()
+      .then(() => this.recordEarn(NEGATIVE_RECOVERY_CREDIT_AMOUNT, metadata))
+      .then(entry => {
+        this._negativeRecovery.lastTriggeredAt = new Date().toISOString()
+        this._negativeRecovery.lastTriggeredEntryId = entry?.id || null
+        this._negativeRecovery.pending = null
+        this._negativeRecovery.armed = entry?.balance > NEGATIVE_RECOVERY_THRESHOLD
+        return entry
+      })
+      .catch(error => {
+        this._negativeRecovery.pending = null
+        console.error('[TokenLedger] Failed to apply negative balance recovery credit', error)
+        this._negativeRecovery.armed = this._state.balance > NEGATIVE_RECOVERY_THRESHOLD
+        return null
+      })
+
+    this._negativeRecovery.pending = schedule
+    return schedule
   }
 
   _calculateRetryDelay (attempt = 0) {
@@ -465,6 +561,7 @@ class TokenLedger {
     } else {
       await this._persistState()
     }
+    this._updateNegativeRecoveryArming()
   }
 
   async _loadTransactionsFromDisk () {
@@ -676,6 +773,7 @@ class TokenLedger {
         this._state.balance = snapshot.balance
         this._lastRemoteSyncAt = new Date().toISOString()
         this._lastRemoteError = null
+        this._updateNegativeRecoveryArming()
         await this._persistState()
       }
       return snapshot
@@ -704,6 +802,15 @@ class TokenLedger {
       mode: this.remoteClient.mode || TOKEN_REMOTE_MODES.DISABLED,
       ...overrides
     }
+  }
+
+  _updateNegativeRecoveryArming (balance = this._state.balance) {
+    if (!this._negativeRecovery) return
+    if (!Number.isFinite(balance)) {
+      this._negativeRecovery.armed = true
+      return
+    }
+    this._negativeRecovery.armed = balance > NEGATIVE_RECOVERY_THRESHOLD
   }
 
   async _persistState () {
