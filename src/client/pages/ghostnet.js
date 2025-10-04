@@ -16,6 +16,42 @@ import { stationIconFromType, getStationIconName } from '../lib/station-icons'
 import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/ghostnet-mock-data'
 import styles from './ghostnet.module.css'
 
+export const TERMINAL_PROMPT_TYPE_CLASS_MAP = {
+  command: styles.terminalPromptCommand,
+  response: styles.terminalPromptResponse,
+  alert: styles.terminalPromptAlert,
+  cipher: styles.terminalPromptCipher,
+  binary: styles.terminalPromptBinary,
+  decrypt: styles.terminalPromptDecrypt,
+  glitch: styles.terminalPromptGlitch,
+  system: styles.terminalPromptSystem,
+  credit: styles.terminalPromptCredit,
+  transaction: styles.terminalPromptTransaction,
+  simulation: styles.terminalPromptSimulation,
+  jackpot: styles.terminalPromptJackpot,
+  jackpotGlyph: styles.terminalPromptJackpotGlyph,
+  jackpotFloodGlyph: styles.terminalPromptJackpotFloodGlyph,
+  jackpotSummary: styles.terminalPromptJackpotSummary,
+  debitGlyph: styles.terminalPromptDebitGlyph
+}
+
+export const TERMINAL_TEXT_TYPE_CLASS_MAP = {
+  alert: styles.terminalTextAlert,
+  cipher: styles.terminalTextCipher,
+  binary: styles.terminalTextBinary,
+  decrypt: styles.terminalTextDecrypt,
+  glitch: styles.terminalTextGlitch,
+  system: styles.terminalTextSystem,
+  credit: styles.terminalTextCredit,
+  transaction: styles.terminalTextTransaction,
+  simulation: styles.terminalTextSimulation,
+  jackpot: styles.terminalTextJackpot,
+  jackpotGlyph: styles.terminalTextJackpotGlyph,
+  jackpotFloodGlyph: styles.terminalTextJackpotFloodGlyph,
+  jackpotSummary: styles.terminalTextJackpotSummary,
+  debitGlyph: styles.terminalTextDebitGlyph
+}
+
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
   'Loadout',
   'ModuleBuy',
@@ -4643,6 +4679,142 @@ const CURRENCY_GLYPHS = [
   '₿', '¤', 'Ξ', '§', '₪', '¥', '₡', '₢', '₣', '₤', '₥', '₦', '₧', '₨', '₩', '₫', '€', '£', '₭', '₮', '₯', '₰', '₱', '฿', '₾'
 ]
 
+function generateCurrencyCascadeString (length = 96) {
+  return Array.from({ length }).map(() => randomChoice(CURRENCY_GLYPHS)).join('')
+}
+
+const DEBIT_GLYPHS = ['✖', '⛔', '⚠', '!', '−', '↓', '×', '⨯', '▾', '✕', '⛓']
+
+function generateDebitGlyphString (length = 72) {
+  const debitPool = [...DEBIT_GLYPHS, ...'XXXX----!!!!']
+  return Array.from({ length }).map(() => randomChoice(debitPool)).join('')
+}
+
+export function createTransactionSequence (entry = {}, { simulation = false, prefersReducedMotion = false } = {}) {
+  const lines = []
+  const metadata = entry.metadata || {}
+  const source = extractLedgerSource(metadata)
+  const reason = extractLedgerReason(metadata)
+  const alias = randomChoice(TRANSACTION_ALIAS_WORDS)
+  const vectorLabel = randomChoice(TRANSACTION_VECTOR_LABELS)
+  const operation = randomChoice(TRANSACTION_OPERATIONS)
+  const signal = randomChoice(TRANSACTION_SIGNAL_WORDS)
+  const typeLabel = entry.type === 'spend' ? 'DEBIT' : 'CREDIT'
+  const sign = entry.type === 'spend' ? '-' : '+'
+  const amountRaw = Number.isFinite(entry.delta) ? Math.abs(entry.delta) : Math.abs(entry.amount || 0)
+  const amountLabel = formatTokenAmount(amountRaw)
+  const balanceLabel = formatTokenAmount(Number.isFinite(entry.balance) ? entry.balance : null)
+  const jackpotActive = Boolean(metadata.jackpot)
+  const isDebit = entry.type === 'spend'
+  const glyphLineType = jackpotActive ? 'jackpotFloodGlyph' : isDebit ? 'debitGlyph' : 'glitch'
+  const glyphLabelChoices = jackpotActive
+    ? ['₿Ξ₿Ξ', 'Ξ₪Ξ₪', '₿₿₿₿₿', '₪₪₪₪₪₪', 'ΞΞΞΞΞΞ']
+    : isDebit
+      ? ['⚠⚠⚠⚠', '!!⚠!!', '⛔⛔', '✖✖✖✖']
+      : ['####', '₿₿₿₿', 'ΞΞΞΞ', 'ΔΔΔΔ', 'ΦΦΦΦ', '++++']
+
+  const makeGlyphText = () => {
+    if (glyphLineType === 'jackpotFloodGlyph') {
+      return generateCurrencyCascadeString(randomInteger(72, 132))
+    }
+    if (glyphLineType === 'debitGlyph') {
+      return generateDebitGlyphString(randomInteger(48, 88))
+    }
+    return generateGlitchString(randomInteger(54, 96))
+  }
+
+  const makeGlyphLine = seedSuffix => ({
+    type: glyphLineType,
+    label: randomChoice(glyphLabelChoices),
+    text: makeGlyphText(),
+    seed: seedSuffix ? `txn-glyph-${seedSuffix}` : 'txn-glyph'
+  })
+
+  if (simulation) {
+    lines.push({
+      line: {
+        type: 'simulation',
+        label: randomChoice(['sim', 'mesh', 'echo']),
+        text: `${randomChoice(SIMULATION_BADGES)} · ${randomChoice(SIMULATION_TRAILS)}`,
+        seed: 'txn-sim'
+      },
+      delay: prefersReducedMotion ? 0 : randomInteger(40, 120)
+    })
+  }
+
+  const sourceLabel = randomChoice(TRANSACTION_SOURCE_PREFIXES)
+  const metadataLines = [
+    {
+      type: 'transaction',
+      label: typeLabel,
+      text: `${sign}${amountLabel} TOKENS · ${vectorLabel.toUpperCase()} ${alias.toUpperCase()}`,
+      seed: 'txn-meta-primary'
+    },
+    {
+      type: 'transaction',
+      label: sourceLabel,
+      text: `${sourceLabel} ${source} · ${operation}`,
+      seed: 'txn-meta-source'
+    },
+    {
+      type: 'transaction',
+      label: 'reason',
+      text: `${reason} ${randomChoice(TRANSACTION_REASON_SUFFIXES)} · ${randomChoice(TRANSACTION_SIGNAL_WORDS)} ${signal}`,
+      seed: 'txn-meta-reason'
+    }
+  ]
+
+  if (Number.isFinite(entry.balance)) {
+    metadataLines.push({
+      type: 'transaction',
+      label: 'ledger',
+      text: `Balance ${balanceLabel} tokens · channel stabilised`,
+      seed: 'txn-meta-balance'
+    })
+  }
+
+  const glyphLineCount = prefersReducedMotion ? Math.max(1, Math.ceil(metadataLines.length / 2)) : metadataLines.length + 1
+  const glyphLines = Array.from({ length: glyphLineCount }).map((_, index) => makeGlyphLine(index))
+
+  metadataLines.forEach((meta, index) => {
+    const glyph = glyphLines[index % glyphLines.length]
+    lines.push({ line: glyph })
+    lines.push({ line: meta })
+  })
+
+  if (!prefersReducedMotion && glyphLines.length > 0) {
+    lines.push({ line: glyphLines[glyphLines.length - 1] })
+  }
+
+  return lines
+}
+
+export function createJackpotFloodConfig (entry = {}, { prefersReducedMotion = false } = {}) {
+  const metadata = entry.metadata || {}
+  const jackpotActive = Boolean(metadata.jackpot)
+  const floodDuration = prefersReducedMotion ? 900 : randomInteger(2200, 3000)
+  const floodLines = []
+  const floodLabelChoices = jackpotActive
+    ? ['₿Ξ₿Ξ₿Ξ', 'ΞΞΞΞΞΞ', '₪₪₪₪₪₪', '₾₾₾₾₾₾']
+    : ['₿₿₿₿', 'ΞΞΞΞ', '####', '₪₪₪₪', 'ΔΔΔΔ']
+  const floodCount = prefersReducedMotion ? 6 : Math.max(18, Math.round(floodDuration / 52))
+  for (let index = 0; index < floodCount; index += 1) {
+    floodLines.push({
+      line: {
+        type: jackpotActive ? 'jackpotFloodGlyph' : 'glitch',
+        label: randomChoice(floodLabelChoices),
+        text: jackpotActive
+          ? generateCurrencyCascadeString(randomInteger(96, 156))
+          : generateGlitchString(randomInteger(64, 112)),
+        seed: `jackpot-flood-${index}`
+      },
+      delay: prefersReducedMotion ? 60 : randomInteger(18, 64)
+    })
+  }
+
+  return { floodLines, floodDuration, jackpotActive }
+}
+
 function generateGlitchString (length = 64) {
   const baseGlyphs = [
     '@', '%', '&', '*', '/', '\\', '|', '<', '>', '^', '~', '?', '!', '$', ':', ';', '_', '[', ']', '{', '}', '(', ')',
@@ -5077,85 +5249,7 @@ function GhostnetTerminalOverlay () {
   }, [clearCelebrationTimeouts, setTerminalLines])
 
   const buildTransactionSequence = useCallback((entry = {}, { simulation = false } = {}) => {
-    const lines = []
-    const metadata = entry.metadata || {}
-    const source = extractLedgerSource(metadata)
-    const reason = extractLedgerReason(metadata)
-    const alias = randomChoice(TRANSACTION_ALIAS_WORDS)
-    const vectorLabel = randomChoice(TRANSACTION_VECTOR_LABELS)
-    const operation = randomChoice(TRANSACTION_OPERATIONS)
-    const signal = randomChoice(TRANSACTION_SIGNAL_WORDS)
-    const typeLabel = entry.type === 'spend' ? 'DEBIT' : 'CREDIT'
-    const sign = entry.type === 'spend' ? '-' : '+' 
-    const amountRaw = Number.isFinite(entry.delta) ? Math.abs(entry.delta) : Math.abs(entry.amount || 0)
-    const amountLabel = formatTokenAmount(amountRaw)
-    const balanceLabel = formatTokenAmount(Number.isFinite(entry.balance) ? entry.balance : null)
-    const glyphLabelChoices = ['####', '₿₿₿₿', 'ΞΞΞΞ', 'ΔΔΔΔ', 'ΦΦΦΦ', '++++']
-
-    const makeGlyphLine = seedSuffix => ({
-      type: 'glitch',
-      label: randomChoice(glyphLabelChoices),
-      text: generateGlitchString(randomInteger(54, 96)),
-      seed: seedSuffix ? `txn-glyph-${seedSuffix}` : 'txn-glyph'
-    })
-
-    if (simulation) {
-      lines.push({
-        line: {
-          type: 'simulation',
-          label: randomChoice(['sim', 'mesh', 'echo']),
-          text: `${randomChoice(SIMULATION_BADGES)} · ${randomChoice(SIMULATION_TRAILS)}`,
-          seed: 'txn-sim'
-        },
-        delay: prefersReducedMotion ? 0 : randomInteger(40, 120)
-      })
-    }
-
-    const sourceLabel = randomChoice(TRANSACTION_SOURCE_PREFIXES)
-    const metadataLines = [
-      {
-        type: 'transaction',
-        label: typeLabel,
-        text: `${sign}${amountLabel} TOKENS · ${vectorLabel.toUpperCase()} ${alias.toUpperCase()}`,
-        seed: 'txn-meta-primary'
-      },
-      {
-        type: 'transaction',
-        label: sourceLabel,
-        text: `${sourceLabel} ${source} · ${operation}`,
-        seed: 'txn-meta-source'
-      },
-      {
-        type: 'transaction',
-        label: 'reason',
-        text: `${reason} ${randomChoice(TRANSACTION_REASON_SUFFIXES)} · ${randomChoice(TRANSACTION_SIGNAL_WORDS)} ${signal}`,
-        seed: 'txn-meta-reason'
-      }
-    ]
-
-    if (Number.isFinite(entry.balance)) {
-      metadataLines.push({
-        type: 'transaction',
-        label: 'ledger',
-        text: `Balance ${balanceLabel} tokens · channel stabilised`,
-        seed: 'txn-meta-balance'
-      })
-    }
-
-    const glyphLineCount = prefersReducedMotion ? Math.max(1, Math.ceil(metadataLines.length / 2)) : metadataLines.length + 1
-    const glyphLines = Array.from({ length: glyphLineCount }).map((_, index) => makeGlyphLine(index))
-
-    metadataLines.forEach((meta, index) => {
-      const glyph = glyphLines[index % glyphLines.length]
-      lines.push({ line: glyph })
-      lines.push({ line: meta })
-    })
-
-    if (!prefersReducedMotion && glyphLines.length > 0) {
-      lines.push({ line: glyphLines[glyphLines.length - 1] })
-    }
-
-    return lines
+    return createTransactionSequence(entry, { simulation, prefersReducedMotion })
   }, [prefersReducedMotion])
 
   const triggerJackpotMilestone = useCallback(() => {
@@ -5192,8 +5286,7 @@ function GhostnetTerminalOverlay () {
 
     triggerCreditCelebration(entry, { message: summary, messageLabel: 'ghostnet', messageType: 'jackpotSummary' })
 
-    const floodDuration = prefersReducedMotion ? 900 : randomInteger(2200, 3000)
-    const floodLines = []
+    const { floodLines, floodDuration } = createJackpotFloodConfig(entry, { prefersReducedMotion })
 
     if (simulation) {
       floodLines.push({
@@ -5204,19 +5297,6 @@ function GhostnetTerminalOverlay () {
           seed: 'jackpot-sim'
         },
         delay: 0
-      })
-    }
-
-    const floodCount = prefersReducedMotion ? 6 : Math.max(18, Math.round(floodDuration / 52))
-    for (let index = 0; index < floodCount; index += 1) {
-      floodLines.push({
-        line: {
-          type: 'glitch',
-          label: randomChoice(['₿₿₿₿', 'ΞΞΞΞ', '####', '₪₪₪₪', 'ΔΔΔΔ']),
-          text: generateGlitchString(randomInteger(64, 112)),
-          seed: `jackpot-flood-${index}`
-        },
-        delay: prefersReducedMotion ? 60 : randomInteger(18, 64)
       })
     }
 
@@ -5678,34 +5758,12 @@ function GhostnetTerminalOverlay () {
           <ul className={styles.terminalFeed}>
             {visibleLines.map(line => {
               const promptClassNames = [styles.terminalPrompt]
-              if (line.type === 'command') promptClassNames.push(styles.terminalPromptCommand)
-              else if (line.type === 'response') promptClassNames.push(styles.terminalPromptResponse)
-              else if (line.type === 'alert') promptClassNames.push(styles.terminalPromptAlert)
-              else if (line.type === 'cipher') promptClassNames.push(styles.terminalPromptCipher)
-              else if (line.type === 'binary') promptClassNames.push(styles.terminalPromptBinary)
-              else if (line.type === 'decrypt') promptClassNames.push(styles.terminalPromptDecrypt)
-              else if (line.type === 'glitch') promptClassNames.push(styles.terminalPromptGlitch)
-              else if (line.type === 'system') promptClassNames.push(styles.terminalPromptSystem)
-              else if (line.type === 'credit') promptClassNames.push(styles.terminalPromptCredit)
-              else if (line.type === 'transaction') promptClassNames.push(styles.terminalPromptTransaction)
-              else if (line.type === 'simulation') promptClassNames.push(styles.terminalPromptSimulation)
-              else if (line.type === 'jackpot') promptClassNames.push(styles.terminalPromptJackpot)
-              else if (line.type === 'jackpotGlyph') promptClassNames.push(styles.terminalPromptJackpotGlyph)
-              else if (line.type === 'jackpotSummary') promptClassNames.push(styles.terminalPromptJackpotSummary)
+              const promptTypeClass = line.type ? TERMINAL_PROMPT_TYPE_CLASS_MAP[line.type] : null
+              if (promptTypeClass) promptClassNames.push(promptTypeClass)
 
               const textClassNames = [styles.terminalText]
-              if (line.type === 'alert') textClassNames.push(styles.terminalTextAlert)
-              if (line.type === 'cipher') textClassNames.push(styles.terminalTextCipher)
-              if (line.type === 'binary') textClassNames.push(styles.terminalTextBinary)
-              if (line.type === 'decrypt') textClassNames.push(styles.terminalTextDecrypt)
-              if (line.type === 'glitch') textClassNames.push(styles.terminalTextGlitch)
-              if (line.type === 'system') textClassNames.push(styles.terminalTextSystem)
-              if (line.type === 'credit') textClassNames.push(styles.terminalTextCredit)
-              if (line.type === 'transaction') textClassNames.push(styles.terminalTextTransaction)
-              if (line.type === 'simulation') textClassNames.push(styles.terminalTextSimulation)
-              if (line.type === 'jackpot') textClassNames.push(styles.terminalTextJackpot)
-              if (line.type === 'jackpotGlyph') textClassNames.push(styles.terminalTextJackpotGlyph)
-              if (line.type === 'jackpotSummary') textClassNames.push(styles.terminalTextJackpotSummary)
+              const textTypeClass = line.type ? TERMINAL_TEXT_TYPE_CLASS_MAP[line.type] : null
+              if (textTypeClass) textClassNames.push(textTypeClass)
 
               return (
                 <li key={line.id} className={styles.terminalLine}>
