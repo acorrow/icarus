@@ -4,8 +4,11 @@ const path = require('path')
 // const pjXML = require('pjxml')
 // const sendKeys = require('sendkeys-js')
 // onst keycode = require('keycodes')
+const crypto = require('crypto')
+
 const { UNKNOWN_VALUE } = require('../../shared/consts')
 const { TOKEN_REWARD_VALUES } = require('../../shared/token-config')
+const { isGhostnetTokenCurrencyEnabled } = require('../../shared/feature-flags')
 
 const tokenLedger = global.TOKEN_LEDGER
 const TOKEN_BROADCAST_EVENT = 'ghostnetTokensUpdated'
@@ -71,8 +74,13 @@ class EventHandlers {
     this.textToSpeech = new TextToSpeech({ eliteLog, eliteJson, cmdrStatus: this.cmdrStatus, shipStatus: this.shipStatus })
 
     this.tokenLedger = tokenLedger
+    // Caches keep track of the most recent rewards so a replayed log does not double-award tokens
     this.tokenRewardCache = new Set()
     this.tokenRewardQueue = []
+    this.tokenCurrencyEnabled = isGhostnetTokenCurrencyEnabled()
+    this.simulateInaraExchange = !this.tokenCurrencyEnabled
+    this.inaraSimulationCache = new Set()
+    this.inaraSimulationQueue = []
 
     return this
   }
@@ -81,6 +89,7 @@ class EventHandlers {
   logEventHandler (logEvent) {
     this.textToSpeech.logEventHandler(logEvent)
     this._handleTokenRewards(logEvent)
+    this._simulateInaraExchange(logEvent)
   }
 
   gameStateChangeHandler (event) {
@@ -277,6 +286,100 @@ class EventHandlers {
       .catch(error => {
         console.error('[TokenLedger] Failed to award tokens for event', logEvent.event, error)
       })
+  }
+
+  _simulateInaraExchange (logEvent = {}) {
+    if (!this.tokenLedger) return
+    if (!logEvent || typeof logEvent !== 'object') return
+    const eventName = logEvent.event
+    if (typeof eventName !== 'string' || !eventName) return
+
+    let payload
+    try {
+      payload = this._buildSimulatedInaraPayload(logEvent)
+    } catch (error) {
+      console.warn('[TokenLedger] Failed to build INARA simulation payload', error)
+      return
+    }
+
+    if (!payload) return
+
+    let serialized
+    try {
+      serialized = JSON.stringify(payload)
+    } catch (error) {
+      console.warn('[TokenLedger] Failed to serialise INARA simulation payload', error)
+      return
+    }
+
+    const bytes = Buffer.byteLength(serialized, 'utf8')
+    if (!Number.isFinite(bytes) || bytes <= 0) return
+
+    const cacheKey = this._getInaraSimulationCacheKey(logEvent, serialized)
+    if (this.inaraSimulationCache.has(cacheKey)) return
+    this._rememberInaraSimulationKey(cacheKey)
+
+    const metadata = {
+      reason: this.simulateInaraExchange ? 'inara-simulated-credit' : 'inara-credit',
+      event: eventName,
+      timestamp: logEvent.timestamp,
+      requestBytes: bytes,
+      simulated: this.simulateInaraExchange,
+      source: 'inara-data-exchange'
+    }
+
+    this.tokenLedger.recordEarn(bytes, metadata)
+      .then(entry => this._broadcastTokenUpdate(entry))
+      .catch(error => {
+        console.error('[TokenLedger] Failed to award tokens for INARA exchange', error)
+      })
+  }
+
+  _buildSimulatedInaraPayload (logEvent = {}) {
+    const safeEvent = JSON.parse(JSON.stringify(logEvent))
+    return {
+      header: {
+        appName: 'GhostNetTokenSim',
+        appVersion: '1.0.0',
+        commanderName: safeEvent?.Commander || null,
+        simulated: true
+      },
+      events: [
+        {
+          eventName: safeEvent.event || 'unknown',
+          eventTimestamp: safeEvent.timestamp || null,
+          eventData: safeEvent
+        }
+      ]
+    }
+  }
+
+  _getInaraSimulationCacheKey (logEvent = {}, serializedPayload = '') {
+    const { event = 'unknown', timestamp = '' } = logEvent
+    const identifiers = [
+      logEvent.MissionID,
+      logEvent.MarketID,
+      logEvent.JournalID,
+      logEvent.EntryID,
+      logEvent.ShipID,
+      logEvent.StationName,
+      logEvent.Body
+    ]
+      .filter(value => value !== undefined && value !== null)
+      .join('-')
+
+    const hash = crypto.createHash('sha1').update(serializedPayload).digest('hex')
+    return ['inara', event, timestamp, identifiers, hash].filter(Boolean).join('#')
+  }
+
+  _rememberInaraSimulationKey (key) {
+    if (!key) return
+    this.inaraSimulationCache.add(key)
+    this.inaraSimulationQueue.push(key)
+    if (this.inaraSimulationQueue.length > 1000) {
+      const oldest = this.inaraSimulationQueue.shift()
+      if (oldest) this.inaraSimulationCache.delete(oldest)
+    }
   }
 
   _getRewardCacheKey (logEvent = {}) {

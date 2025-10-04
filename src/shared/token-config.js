@@ -8,6 +8,10 @@ const TOKEN_REMOTE_MODES = {
   MIRROR: 'MIRROR'
 }
 
+const DEFAULT_REMOTE_RETRIES = 2
+const DEFAULT_REMOTE_RETRY_DELAY = 750
+const MAX_REMOTE_RETRY_DELAY = 15000
+
 function getTokenMode (env = process.env) {
   const raw = (env.ICARUS_TOKENS_MODE || '').trim().toUpperCase()
   return raw === TOKEN_MODES.LIVE ? TOKEN_MODES.LIVE : TOKEN_MODES.SIMULATION
@@ -71,19 +75,37 @@ function getRemoteLedgerTimeout (env = process.env) {
   return 8000
 }
 
+function getRemoteLedgerRetries (env = process.env) {
+  const raw = Number.parseInt((env.ICARUS_TOKENS_REMOTE_RETRIES || '').trim(), 10)
+  if (Number.isFinite(raw) && raw >= 0) return raw
+  return DEFAULT_REMOTE_RETRIES
+}
+
+function getRemoteLedgerRetryDelay (env = process.env) {
+  const raw = Number.parseInt((env.ICARUS_TOKENS_REMOTE_RETRY_DELAY_MS || '').trim(), 10)
+  if (Number.isFinite(raw) && raw > 0) {
+    return Math.min(raw, MAX_REMOTE_RETRY_DELAY)
+  }
+  return DEFAULT_REMOTE_RETRY_DELAY
+}
+
 function getRemoteLedgerConfig (env = process.env) {
   const mode = getRemoteLedgerMode(env)
   const endpoint = getRemoteLedgerEndpoint(env)
   const apiKey = getRemoteLedgerApiKey(env)
   const timeout = getRemoteLedgerTimeout(env)
   const enabled = mode !== TOKEN_REMOTE_MODES.DISABLED && endpoint.length > 0
+  const retries = getRemoteLedgerRetries(env)
+  const retryDelayMs = getRemoteLedgerRetryDelay(env)
 
   return {
     mode,
     endpoint,
     apiKey,
     timeout,
-    enabled
+    enabled,
+    retries,
+    retryDelayMs
   }
 }
 
@@ -102,5 +124,7 @@ module.exports = {
   getInitialTokenBalance,
   getRemoteLedgerMode,
   getRemoteLedgerConfig,
+  getRemoteLedgerRetries,
+  getRemoteLedgerRetryDelay,
   isRemoteLedgerEnabled
 }

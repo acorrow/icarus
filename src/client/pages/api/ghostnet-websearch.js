@@ -9,6 +9,7 @@ import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
 import { appendGhostnetLogEntry } from './ghostnet-log-utils.js'
+import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
 
 const logPath = path.join(process.cwd(), 'ghostnet-websearch.log')
 function logGhostnetSearch(entry) {
@@ -323,6 +324,11 @@ export default async function handler(req, res) {
   const url = `https://inara.cz/elite/nearest-outfitting/?${params.toString()}`
   logGhostnetSearch(`REQUEST: shipId=${shipId} system=${system} url=${url}`)
 
+  const requestBytes = estimateByteSize(url)
+  let responseText = ''
+  let responseStatus = null
+  let caughtError = null
+
   try {
     const response = await fetch(url, {
       headers: {
@@ -330,24 +336,25 @@ export default async function handler(req, res) {
         'Accept-Language': 'en-US,en;q=0.9'
       }
     })
+    responseStatus = response.status
     if (!response.ok) throw new Error('GHOSTNET request failed')
-    const html = await response.text()
+    responseText = await response.text()
 
-    if (/No station within [\d,]+ Ly range found/i.test(html)) {
+    if (/No station within [\d,]+ Ly range found/i.test(responseText)) {
       logGhostnetSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} NO_RESULTS`)
       res.status(200).json({ results: [], message: 'No station within range found on GHOSTNET.' })
       return
     }
 
     let tableHtml = null
-    const headingIdx = html.indexOf('SHIPS, MODULES AND PERSONAL EQUIPMENT SEARCH RESULTS')
+    const headingIdx = responseText.indexOf('SHIPS, MODULES AND PERSONAL EQUIPMENT SEARCH RESULTS')
     if (headingIdx !== -1) {
-      const afterHeading = html.slice(headingIdx)
+      const afterHeading = responseText.slice(headingIdx)
       const tableMatch = afterHeading.match(/<table[\s\S]*?<\/table>/i)
       if (tableMatch) tableHtml = tableMatch[0]
     }
     if (!tableHtml) {
-      const tableMatch = html.match(/<table[\s\S]*?<\/table>/i)
+      const tableMatch = responseText.match(/<table[\s\S]*?<\/table>/i)
       if (tableMatch) tableHtml = tableMatch[0]
     }
 
@@ -403,7 +410,25 @@ export default async function handler(req, res) {
     logGhostnetSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} results=${results.length}`)
     res.status(200).json({ results })
   } catch (err) {
+    caughtError = err
     logGhostnetSearch(`ERROR: shipId=${shipId} system=${system} url=${url} error=${err}`)
     res.status(500).json({ error: 'Failed to fetch or parse GHOSTNET results', details: err.message })
+  } finally {
+    const metadata = {
+      reason: caughtError ? 'inara-request-error' : 'inara-request',
+      method: 'GET',
+      status: responseStatus,
+      shipId,
+      system,
+      error: caughtError ? caughtError.message : undefined
+    }
+    await spendTokensForInaraExchange({
+      endpoint: url,
+      requestBytes,
+      responseBytes: estimateByteSize(responseText),
+      metadata
+    }).catch(ledgerError => {
+      logGhostnetSearch(`TOKEN_LEDGER_ERROR: ${ledgerError}`)
+    })
   }
 }
