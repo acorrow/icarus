@@ -1,5 +1,5 @@
 module.exports = {
-  roots: ['<rootDir>/src/client'],
+  roots: ['<rootDir>/src/client', '<rootDir>/src/service'],
   testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['<rootDir>/test/setupTests.js'],
   moduleNameMapper: {
