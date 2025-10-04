@@ -22,7 +22,7 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
 - After the build, launch one of the sanctioned rendering targets:
   - Preferred production snapshot: `npm run serve:export` (serves <http://127.0.0.1:4100> once `npm run build:client` has finished).
   - Fast iteration: `npm run dev:web` (Next.js dev server on <http://127.0.0.1:3000> without SWC).
-- Use the `browser_container` Playwright helper to capture a screenshot **for each iteration of your UI work**. Always reference the screenshot path in your final notes so reviewers can trace the visual verification. Set the viewport to `1280x720`, wait for the DOM to settle, and capture full-page shots unless the task specifies otherwise.
+- Use the `browser_container` Playwright helper to capture a screenshot **for each iteration of your UI work**. Always reference the screenshot path in your final notes so reviewers can trace the visual verification. Set the viewport to `1280x720`, wait for the DOM to settle, and capture full-page shots unless the task specifies otherwise. The dedicated helper in `scripts/browser/screenshot_ghostnet.py` waits for the workspace fade-in to finish so loaders are never captured.
 - Treat every GUI task as an iterative design exercise. After you collect each screenshot, compare it against the task requirements and ask yourself:
   - Does this state fulfill the user request, both functionally and visually?
   - Are there lingering rough edges (spacing, alignment, color usage, accessibility) that would distract a commander interacting with the page?
@@ -37,21 +37,17 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
   1. Run `npm test -- --runInBand --config jest.config.js` (serial mode keeps Jest aligned with `jest.config.js`). The repo includes the optional dependency `@next/swc-linux-x64-gnu@12.3.4` so the build will not fail on missing SWC binaries.
   2. Run `npm run build:client` to regenerate the static export required for screenshots.
   3. In a dedicated shell start one of the preview servers above.
-  4. Use the `browser_container` Playwright helper to open the running URL and call `page.screenshot(...)`. The container has the required GTK/Atk libraries, so Chromium launches reliably. Example:
+  4. Use the `browser_container` Playwright helper to run `scripts/browser/screenshot_ghostnet.py` against the running URL. The container has the required GTK/Atk libraries, so Chromium launches reliably. Example:
 
      ```python
      import asyncio
-     from playwright.async_api import async_playwright
+
+     from scripts.browser.screenshot_ghostnet import capture, DEFAULT_OUTPUT, DEFAULT_URL, DEFAULT_VIEWPORT
+
 
      async def main():
-         async with async_playwright() as p:
-             browser = await p.chromium.launch()
-             page = await browser.new_page()
-             await page.set_viewport_size({'width': 1280, 'height': 720})
-             await page.goto('http://127.0.0.1:4100/ghostnet.html', wait_until='domcontentloaded')
-             await page.wait_for_timeout(1000)
-             await page.screenshot(path='artifacts/ghostnet.png', full_page=True)
-             await browser.close()
+         await capture(DEFAULT_URL, DEFAULT_OUTPUT, DEFAULT_VIEWPORT)
+
 
      asyncio.run(main())
      ```
