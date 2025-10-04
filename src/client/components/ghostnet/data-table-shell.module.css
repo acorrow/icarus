@@ -1,27 +1,35 @@
 .container {
+  --table-shell-padding-inline: clamp(1.35rem, 2.4vw, 2rem);
+  --table-shell-padding-block: clamp(1.35rem, 2vw, 1.75rem);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 1.35rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 30%, transparent);
   background: linear-gradient(
-    180deg,
+    165deg,
     color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 0%,
-    color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent) 100%
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 8%, transparent) 100%
   );
-  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
-  border-radius: 1.25rem;
-  box-shadow: 0 1.75rem 3.5rem color-mix(in srgb, var(--ghostnet-color-background) 75%, transparent);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 1.6rem 3.5rem color-mix(in srgb, var(--ghostnet-color-background) 80%, transparent);
+  backdrop-filter: blur(12px);
   overflow: hidden;
+  min-height: 0;
 }
 
 .dataTableContainer {
   position: relative;
-  border-radius: 1.15rem;
+  border-radius: 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 34%, transparent);
   background: linear-gradient(
       175deg,
-      color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent) 0%,
-      color-mix(in srgb, var(--ghostnet-color-primary-dark) 12%, transparent) 45%,
+      color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent) 0%,
+      color-mix(in srgb, var(--ghostnet-color-primary-dark) 10%, transparent) 45%,
       transparent 100%
     ),
-    linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-background) 95%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 100%);
-  box-shadow: 0 1.65rem 3.75rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
+    linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-background) 95%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-background) 93%, transparent) 100%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ghostnet-color-primary) 26%, transparent),
+    0 1.45rem 3.25rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
   overflow: hidden;
 }
 
@@ -206,8 +214,8 @@
 }
 
 .tableSortIndicator {
-  font-size: 0.85rem;
-  color: var(--ghostnet-accent);
+  font-size: 0.78rem;
+  color: var(--ghostnet-subdued);
 }
 
 .tableRowInteractive {
@@ -261,16 +269,22 @@
 }
 
 .message {
+  padding: 0.85rem var(--table-shell-padding-inline);
   color: var(--ghostnet-muted);
-  padding: 1.25rem 2rem;
+  background: color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent);
 }
 
 .messageBorder {
-  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
 }
 
 .state {
-  padding: 2rem;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
 }
 
 .stateMuted {
@@ -279,6 +293,8 @@
 
 .stateError {
   color: var(--ghostnet-color-warning);
+  border-color: color-mix(in srgb, var(--ghostnet-color-warning) 50%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ghostnet-color-warning) 32%, transparent);
 }
 
 .tableSubtext {
@@ -311,10 +327,13 @@
 
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0 1.5rem 1rem;
+  gap: 1.25rem;
+  padding: var(--table-shell-padding-block) var(--table-shell-padding-inline)
+    calc(var(--table-shell-padding-block) - 0.6rem);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 93%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
 }
 
 .headerMain {
@@ -326,45 +345,48 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .scrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1.35rem;
+  padding: var(--table-shell-padding-block) var(--table-shell-padding-inline);
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--ghostnet-color-primary-dark) 78%, transparent) 0%,
-    color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent) 100%
+    color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 10%, transparent) 100%
   );
-  scrollbar-color: color-mix(in srgb, var(--ghostnet-color-primary) 60%, transparent)
-    color-mix(in srgb, var(--ghostnet-color-background) 85%, transparent);
+  scrollbar-color: color-mix(in srgb, var(--ghostnet-color-primary) 55%, transparent)
+    color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);
 }
 
 .scrollArea::-webkit-scrollbar {
-  width: 0.65rem;
+  width: 0.55rem;
 }
 
 .scrollArea::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--ghostnet-color-background) 75%, transparent);
-  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
+  border-radius: 0.55rem;
 }
 
 .scrollArea::-webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--ghostnet-color-primary) 75%, transparent) 0%,
-    color-mix(in srgb, var(--ghostnet-color-primary-dark) 85%, transparent) 100%
+    color-mix(in srgb, var(--ghostnet-color-primary) 70%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 82%, transparent) 100%
   );
-  border-radius: 0.65rem;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ghostnet-color-background) 55%, transparent) inset;
+  border-radius: 0.55rem;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ghostnet-color-background) 55%, transparent) inset;
 }
 
 .scrollArea::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--ghostnet-color-primary) 85%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-primary) 82%, transparent) 0%,
     color-mix(in srgb, var(--ghostnet-color-primary-dark) 90%, transparent) 100%
   );
 }

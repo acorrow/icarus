@@ -2,7 +2,8 @@ import React from 'react'
 import styles from './data-table-shell.module.css'
 
 export const TABLE_SCROLL_AREA_STYLE = Object.freeze({
-  maxHeight: 'calc(100vh - 360px)',
+  maxHeight: 'calc(100vh - 300px)',
+  minHeight: '18rem',
   overflowY: 'auto'
 })
 
