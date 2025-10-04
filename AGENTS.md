@@ -43,6 +43,29 @@
 - Node-based Puppeteer/Playwright scripts inside the build container are **not** reliable because the sandbox lacks the required desktop dependencies. Always rely on the `browser_container` workflow above and link to its generated artifact in your notes.
 
 ## Development quickstart
+
+### Mock Elite Dangerous Log Data Generation
+
+#### Strategy: Event-Type-Separated Mock Files
+
+To ensure CODEX contributors have a comprehensive, decision-driven mock data set for UI and API development, the local AI agent scanned all Elite Dangerous game logs using PowerShell:
+
+  Get-Content 'C:\Users\Adam\Saved Games\Frontier Developments\Elite Dangerous\*.log'
+
+Every event type and data structure was catalogued. Instead of a single monolithic mock log, the agent created a folder (`resources/mock-game-data/events/`) with one file per event type (e.g., `ShipLocker.json`, `FSSSignalDiscovered.json`, `Docked.json`, etc.). Each file contains multiple entries, including common, edge, and rare cases.
+
+**Rationale:**
+- Explicit separation by event type makes it easy for CODEX to target, update, and extend mock data.
+- Multiple entries per file ensure coverage of typical, edge, and rare cases for robust testing.
+- This mirrors real log ingestion, but with curated, decision-driven examples.
+- Data was chosen to maximize coverage, highlight edge cases, and expose rare structures that may break naive parsers.
+
+**How to use:**
+- Treat each file as a source of canonical examples for its event type.
+- Extend files with new cases as needed, but keep rationale clear in comments or commit messages.
+- Use this folder to validate event normalization, error handling, and downstream logic.
+
+See `resources/mock-game-data/events/README.md` for details and rationale.
 - Install dependencies with `npm install`.
 - Duplicate `.env-example` to `.env` and point `LOG_DIR` at an Elite Dangerous journal directory when you need live data.
 - `npm run dev:web` starts the web client at <http://127.0.0.1:3000>; `npm run dev` launches the combined service stack at <http://127.0.0.1:3300>.
