@@ -1100,7 +1100,7 @@ const FILTER_TOGGLE_BUTTON_STYLE = {
   background: 'rgba(127, 233, 255, 0.12)',
   border: '1px solid rgba(127, 233, 255, 0.4)',
   color: 'var(--ghostnet-accent)',
-  borderRadius: '.35rem',
+  borderRadius: '0',
   padding: '0 1rem',
   fontSize: '0.85rem',
   cursor: 'pointer',
@@ -1132,7 +1132,7 @@ const FILTER_SUMMARY_TEXT_STYLE = {
 const FILTER_SUMMARY_REFRESH_BUTTON_STYLE = {
   width: '2.1rem',
   height: '2.1rem',
-  borderRadius: '999px',
+  borderRadius: '0',
   border: '1px solid var(--color-info)',
   background: 'rgba(206, 237, 255, 0.18)',
   color: 'var(--color-info)',
