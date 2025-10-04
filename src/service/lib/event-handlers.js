@@ -10,6 +10,7 @@ const { UNKNOWN_VALUE } = require('../../shared/consts')
 const { TOKEN_REWARD_VALUES } = require('../../shared/token-config')
 const { isGhostnetTokenCurrencyEnabled } = require('../../shared/feature-flags')
 
+const InaraClient = require('./inara-client')
 const tokenLedger = global.TOKEN_LEDGER
 const TOKEN_BROADCAST_EVENT = 'ghostnetTokensUpdated'
 const TOKEN_REWARD_EVENT_MAP = {
@@ -81,6 +82,7 @@ class EventHandlers {
     this.simulateInaraExchange = !this.tokenCurrencyEnabled
     this.inaraSimulationCache = new Set()
     this.inaraSimulationQueue = []
+    this.inaraClient = new InaraClient()
 
     return this
   }
@@ -288,7 +290,7 @@ class EventHandlers {
       })
   }
 
-  _simulateInaraExchange (logEvent = {}) {
+  async _simulateInaraExchange (logEvent = {}) {
     if (!this.tokenLedger) return
     if (!logEvent || typeof logEvent !== 'object') return
     const eventName = logEvent.event
@@ -319,20 +321,57 @@ class EventHandlers {
     if (this.inaraSimulationCache.has(cacheKey)) return
     this._rememberInaraSimulationKey(cacheKey)
 
+    let submissionResult
+    try {
+      submissionResult = await this._submitInaraExchange({ serializedPayload: serialized })
+    } catch (error) {
+      console.error('[TokenLedger] Failed to submit INARA exchange', error)
+      return
+    }
+
+    const sent = Boolean(submissionResult && submissionResult.success)
+    const resultError = submissionResult && submissionResult.error
     const metadata = {
       reason: this.simulateInaraExchange ? 'inara-simulated-credit' : 'inara-credit',
       event: eventName,
       timestamp: logEvent.timestamp,
       requestBytes: bytes,
       simulated: this.simulateInaraExchange,
+      sent,
       source: 'inara-data-exchange'
     }
 
-    this.tokenLedger.recordEarn(bytes, metadata)
-      .then(entry => this._broadcastTokenUpdate(entry))
-      .catch(error => {
-        console.error('[TokenLedger] Failed to award tokens for INARA exchange', error)
-      })
+    if (!sent) {
+      if (resultError) {
+        console.warn('[TokenLedger] INARA exchange submission failed', resultError)
+      }
+      return
+    }
+
+    try {
+      const entry = await this.tokenLedger.recordEarn(bytes, metadata)
+      await this._broadcastTokenUpdate(entry)
+    } catch (error) {
+      console.error('[TokenLedger] Failed to award tokens for INARA exchange', error)
+    }
+  }
+
+  async _submitInaraExchange ({ serializedPayload }) {
+    if (this.simulateInaraExchange) {
+      return { success: true }
+    }
+
+    if (!this.inaraClient || typeof this.inaraClient.submit !== 'function') {
+      return { success: false, error: new Error('INARA client unavailable') }
+    }
+
+    try {
+      const result = await this.inaraClient.submit(serializedPayload)
+      if (result && typeof result.success === 'boolean') return result
+      return { success: false, error: new Error('INARA client returned an invalid result') }
+    } catch (error) {
+      return { success: false, error }
+    }
   }
 
   _buildSimulatedInaraPayload (logEvent = {}) {
