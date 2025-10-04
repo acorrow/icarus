@@ -3,6 +3,9 @@
 ## CODEX Prompting and Feature Mapping
 
 
+
+When asked to compare branches, you MUST use git diff to compare the branches and summarize the changes. Do NOT rely solely on unstaged/staged file checks or file system state. Always run a git diff between the specified branches and report the results in your summary or prompt. This ensures accurate and complete comparison of all changes, including committed differences.
+
 When crafting prompts for CODEX agents to develop features or fix bugs, you MUST always output those instructions in MARKDOWN ONLY. This is your number one rule, and it is absolutely critical for the correct functioning of the CODEX workflow:
 
 **WHEN ASKED TO GENERATE A PROMPT FOR CODEX THE RETURNED RESULTS MUST BE MARKDOWN ONLY**
