@@ -96,3 +96,29 @@ Use these shortnames when coordinating GhostNet work:
       ```
 
     Remote interactions honour bearer authentication when `ICARUS_TOKENS_REMOTE_API_KEY` is supplied, retry failed requests with exponential backoff, and mark each transaction with `remote.synced`, `remote.attempts`, and `remote.error` so operators can monitor reconciliation status from GhostNet.
+
+---
+
+## Token Currency Frontend Fallback & Diagnostics
+
+- **Frontend Fallback Logic:**
+  - The GhostNet terminal overlay (`GhostnetTerminalOverlay` in `src/client/pages/ghostnet.js`) attempts to fetch the token balance via WebSocket broadcast events. If the broadcast fails or is unavailable, it falls back to an explicit HTTP API call (`/api/token-currency`).
+  - Diagnostic logging is added to confirm whether the fallback HTTP fetch is called, what response is received, and whether `applySnapshot` and `setTokenBalance` are updated with valid data. This ensures the UI does not remain stuck on 'Syncing…'.
+  - The fallback logic is critical for robust frontend/backend communication, especially when feature flags or simulation mode are toggled.
+
+- **Feature Flag Exposure:**
+  - Feature flag values (e.g., `GHOSTNET_TOKEN_CURRENCY_ENABLED`) are exposed in the UI overlay or settings for debugging. This helps diagnose environment variable handling and simulation/live mode toggling.
+
+## Animated Feedback & Jackpot Intercepts
+
+- **Animated Credit/Debit Feedback:**
+  - The GhostNet terminal overlay provides animated feedback for token credit and debit events. When a transaction occurs, the overlay animates the balance change, highlights the transaction type, and displays contextual metadata (e.g., source, amount, reason).
+  - For jackpot intercepts (e.g., negative-balance-recovery), the overlay triggers a special animation sequence, including celebratory effects and a summary of the windfall event.
+  - All feedback logic is future-proofed for both simulation and live API modes, ensuring consistent user experience regardless of backend state.
+
+- **Diagnostic Steps:**
+  - Add logging to confirm fallback logic, API responses, and UI state transitions.
+  - Validate that `applySnapshot` and `setTokenBalance` are called with correct data.
+  - Ensure animated feedback triggers for all relevant transaction types, including jackpot intercepts.
+
+Implementation notes and diagnostic steps for these features are maintained here to ensure CODEX agents and contributors have a canonical reference for frontend/backend sync, feature flag handling, and animated feedback logic.
