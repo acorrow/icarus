@@ -183,7 +183,7 @@ export default function EngineeringBlueprintDetailPage () {
 
   return (
     <Layout connected={connected} active={active} ready={ready} loader={!componentReady}>
-      <Panel layout='full-width' scrollable navigation={navigationItems}>
+      <Panel layout='full-width' scrollable navigation={navigationItems} className={styles.ghostnetPanel}>
         <div className={styles.ghostnet}>
           <div className={styles.engineeringDetailContainer}>
             <div className={styles.engineeringDetailBackRow}>

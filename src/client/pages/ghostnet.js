@@ -4462,9 +4462,21 @@ export default function GhostnetPage() {
 
   return (
     <Layout connected={connected} active={socketActive} ready={ready} loader={false}>
-      <Panel layout='full-width' navigation={navigationItems} search={false}>
+      <Panel
+        layout='full-width'
+        scrollable
+        navigation={navigationItems}
+        search={false}
+        className={styles.ghostnetPanel}
+      >
         <div className={ghostnetClassName}>
           <div className={styles.hero}>
+            <div className={styles.heroHeader}>
+              <h1 className={styles.heroTitle}>GhostNet Operations</h1>
+              <p className={styles.heroSubtitle}>
+                Synthesise trade intelligence, mission alerts, and refinery telemetry in one continuous sweep.
+              </p>
+            </div>
             <aside className={styles.heroStatus} role='complementary' aria-label='Signal Brief'>
               <dl className={styles.heroStatusList}>
                 <div className={styles.heroStatusItem}>

@@ -15,6 +15,12 @@
   --ghostnet-color-success: #29f3c3;
   /* Warning and error feedback across the GhostNet UI */
   --ghostnet-color-warning: #ff5fc1;
+  /* Scrollbar track colour for the workspace viewport */
+  --ghostnet-color-scroll-track: color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);
+  /* Scrollbar thumb colour that keeps the square silhouette readable */
+  --ghostnet-color-scroll-thumb: color-mix(in srgb, var(--ghostnet-color-primary) 62%, transparent);
+  /* Outline used to crispen the scrollbar thumb edges */
+  --ghostnet-color-scroll-thumb-border: color-mix(in srgb, var(--ghostnet-color-primary-dark) 46%, transparent);
 }
 
 .ghostnet-spinner {

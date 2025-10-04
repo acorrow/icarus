@@ -106,7 +106,7 @@ export default function GhostnetEngineeringOpportunitiesPage () {
 
   return (
     <Layout connected={connected} active={active} ready={ready} loader={!componentReady}>
-      <Panel layout='full-width' scrollable navigation={navigationItems}>
+      <Panel layout='full-width' scrollable navigation={navigationItems} className={styles.ghostnetPanel}>
         <div className={styles.ghostnet}>
           <div className={styles.hero}>
             <div className={styles.heroHeader}>
@@ -135,20 +135,18 @@ export default function GhostnetEngineeringOpportunitiesPage () {
 
           <div className={styles.shell}>
             <div className={styles.sectionGroup}>
-              <div className={`${styles.sectionFrame} ${styles.sectionPadding}`}>
-                <div className={styles.opportunityIntro}>
-                  <p className={styles.sectionHint}>
-                    Track the optimal workshop to visit for each upgrade. We surface only the blueprints you can afford this
-                    moment, factoring in material trades and recent crafts.
-                  </p>
-                  <p className={styles.sectionHint}>
-                    Material tallies update as the Ghost Net ingests new journal entries, so keep the console running while you
-                    gather resources.
-                  </p>
-                </div>
-              </div>
+              <section className={styles.opportunityIntro}>
+                <p className={styles.sectionHint}>
+                  Track the optimal workshop to visit for each upgrade. We surface only the blueprints you can afford this
+                  moment, factoring in material trades and recent crafts.
+                </p>
+                <p className={styles.sectionHint}>
+                  Material tallies update as the Ghost Net ingests new journal entries, so keep the console running while you
+                  gather resources.
+                </p>
+              </section>
 
-              <div className={styles.tableSection}>
+              <section className={styles.tableSection}>
                 <div className={styles.tableSectionHeader}>
                   <div>
                     <h2 className={styles.tableSectionTitle}>Ready for fabrication</h2>
@@ -263,7 +261,7 @@ export default function GhostnetEngineeringOpportunitiesPage () {
                     </table>
                   </div>
                 )}
-              </div>
+              </section>
             </div>
           </div>
         </div>

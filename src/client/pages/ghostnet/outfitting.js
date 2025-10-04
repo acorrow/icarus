@@ -1,6 +1,6 @@
+import { useEffect } from 'react'
 import Layout from 'components/layout'
 import Panel from 'components/panel'
-import PanelNavigation from 'components/panel-navigation'
 import styles from '../ghostnet.module.css'
 
 const navItems = [
@@ -19,12 +19,28 @@ const navItems = [
 ]
 
 export default function GhostnetOutfittingPage () {
+  useEffect(() => {
+    if (typeof document === 'undefined' || !document.body) return undefined
+    document.body.classList.add('ghostnet-theme')
+    return () => document.body.classList.remove('ghostnet-theme')
+  }, [])
+
   return (
     <Layout>
-      <PanelNavigation items={navItems} />
-      <Panel layout='full-width' scrollable>
-        <div className={styles.placeholder}>
-          Outfitting tools coming soon
+      <Panel layout='full-width' scrollable navigation={navItems} className={styles.ghostnetPanel}>
+        <div className={styles.ghostnet}>
+          <div className={styles.hero}>
+            <div className={styles.heroHeader}>
+              <h1 className={styles.heroTitle}>Outfitting Tools</h1>
+              <p className={styles.heroSubtitle}>
+                Ship build intelligence is in fabrication. Stay tuned for modular loadouts and curated upgrade paths.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.shell}>
+            <div className={styles.placeholder}>Outfitting consoles are coming online soon.</div>
+          </div>
         </div>
       </Panel>
     </Layout>

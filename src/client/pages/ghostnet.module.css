@@ -21,6 +21,9 @@
   --ghostnet-accent: var(--ghostnet-color-primary-light);
   --ghostnet-highlight: color-mix(in srgb, var(--ghostnet-color-primary-light) 18%, transparent);
   --ghostnet-highlight-strong: color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
+  --ghostnet-scrollbar-track: var(--ghostnet-color-scroll-track);
+  --ghostnet-scrollbar-thumb: var(--ghostnet-color-scroll-thumb);
+  --ghostnet-scrollbar-thumb-border: var(--ghostnet-color-scroll-thumb-border);
   --ghostnet-table-header: linear-gradient(
     180deg,
     color-mix(in srgb, var(--ghostnet-color-primary) 82%, transparent) 0%,
@@ -52,6 +55,36 @@
   inset: 0;
   background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent) 100%);
   pointer-events: none;
+}
+
+.ghostnetPanel :global(.layout__panel-scroll) {
+  padding: 0;
+  background: var(--ghostnet-bg);
+  scrollbar-color: var(--ghostnet-scrollbar-thumb) var(--ghostnet-scrollbar-track);
+  scrollbar-width: thin;
+}
+
+.ghostnetPanel :global(.layout__panel-scroll::-webkit-scrollbar) {
+  width: 14px;
+  background-color: var(--ghostnet-scrollbar-track);
+}
+
+
+.ghostnetPanel :global(.layout__panel-scroll::-webkit-scrollbar-track) {
+  background: var(--ghostnet-scrollbar-track);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-scrollbar-thumb-border) 40%, transparent);
+  border-radius: 0;
+}
+
+.ghostnetPanel :global(.layout__panel-scroll::-webkit-scrollbar-thumb) {
+  background: var(--ghostnet-scrollbar-thumb);
+  border: 1px solid var(--ghostnet-scrollbar-thumb-border);
+  border-radius: 0;
+  box-shadow: 0 0 1.5rem color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
+}
+
+.ghostnetPanel :global(.layout__panel-scroll::-webkit-scrollbar-thumb:hover) {
+  background: color-mix(in srgb, var(--ghostnet-scrollbar-thumb) 70%, var(--ghostnet-color-primary-light));
 }
 
 .arrival {
@@ -934,6 +967,8 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 .opportunityIntro {
   display: grid;
   gap: 0.75rem;
+  max-width: 46rem;
+  padding-bottom: 1.5rem;
 }
 
 .opportunityName {
@@ -1926,16 +1961,17 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 }
 
 .placeholder {
-  margin: 2.5rem auto;
-  max-width: 36rem;
-  padding: 3rem 2.5rem;
+  margin: 3rem auto;
+  max-width: 40rem;
+  padding: 2.75rem 3rem;
   text-align: center;
-  color: var(--ghostnet-muted);
-  font-size: 1.35rem;
-  border-radius: 1.5rem;
-  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
-  background: linear-gradient(160deg, color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent), color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent));
-  box-shadow: 0 1.85rem 4rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
+  color: var(--ghostnet-text-soft);
+  font-size: 1.1rem;
+  line-height: 1.65;
+  border-radius: 1rem;
+  border: 1px solid var(--ghostnet-border-regular);
+  background: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
+  box-shadow: 0 1.35rem 3.2rem color-mix(in srgb, var(--ghostnet-shadow) 58%, transparent);
 }
 
 .ghostnet :global(.ghostnet-surface) {
