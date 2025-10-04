@@ -21,11 +21,13 @@ async def capture(url: str, output_path: str, viewport: Dict[str, int]) -> None:
         await page.goto(url, wait_until="domcontentloaded")
         await page.wait_for_selector(".layout__main", state="attached")
         await page.wait_for_function(
-            "selector => {"
-            "  const element = document.querySelector(selector);"
-            "  if (!element) { return false; }"
-            "  return window.getComputedStyle(element).opacity === '1';"
-            "}",
+            """
+            selector => {
+              const element = document.querySelector(selector);
+              if (!element) { return false; }
+              return window.getComputedStyle(element).opacity === '1';
+            }
+            """,
             arg=".layout__main",
             timeout=15000,
         )
