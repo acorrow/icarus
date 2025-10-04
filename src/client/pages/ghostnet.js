@@ -5561,9 +5561,8 @@ function GhostnetTerminalOverlay () {
   const handleAddTokens = useCallback(async () => {
     setTokenActionPending(true)
     try {
-      await sendEvent('awardTokens', {
-        amount: 100000,
-        metadata: { source: 'ghostnet-console' }
+      await sendEvent('triggerJackpot', {
+        source: 'ghostnet-console'
       })
     } catch (error) {
       console.error('[GhostNet] Failed to award tokens from console', error)
@@ -5654,7 +5653,7 @@ function GhostnetTerminalOverlay () {
                 className={styles.terminalTokenButton}
                 onClick={handleAddTokens}
                 disabled={tokenButtonDisabled}
-                aria-label='Request 100000 tokens'
+                aria-label='Trigger a simulated jackpot payout'
               >
                 {tokenActionPending ? '···' : '+'}
               </button>

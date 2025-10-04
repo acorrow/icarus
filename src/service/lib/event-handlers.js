@@ -12,6 +12,24 @@ const { isGhostnetTokenCurrencyEnabled } = require('../../shared/feature-flags')
 
 const tokenLedger = global.TOKEN_LEDGER
 const TOKEN_BROADCAST_EVENT = 'ghostnetTokensUpdated'
+const JACKPOT_BASE_MIN = 2500
+const JACKPOT_BASE_MAX = 12500
+const JACKPOT_MULTIPLIER_FALLBACK = 100
+
+function randomInteger (min, max) {
+  const minimum = Math.ceil(Number.isFinite(min) ? min : 0)
+  const maximum = Math.floor(Number.isFinite(max) ? max : minimum)
+  if (maximum < minimum) return minimum
+  return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum
+}
+
+function createCelebrationId () {
+  try {
+    return crypto.randomBytes(6).toString('hex')
+  } catch (error) {
+    return `${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 8)}`
+  }
+}
 const TOKEN_REWARD_EVENT_MAP = {
   Market: TOKEN_REWARD_VALUES.MARKET_SNAPSHOT,
   CommodityPrices: TOKEN_REWARD_VALUES.MARKET_SNAPSHOT,
@@ -157,6 +175,50 @@ class EventHandlers {
           await this._broadcastTokenUpdate(entry)
           return entry
         },
+        triggerJackpot: async ({ baseAmount, multiplier, source = 'ghostnet-console', celebrationId } = {}) => {
+          if (!this.tokenLedger) {
+            return { error: 'TOKEN_LEDGER_UNAVAILABLE' }
+          }
+
+          const simulation = typeof this.tokenLedger.isSimulation === 'function'
+            ? this.tokenLedger.isSimulation()
+            : false
+
+          const normalizedBase = Number.isFinite(baseAmount) && baseAmount > 0
+            ? Math.floor(baseAmount)
+            : randomInteger(JACKPOT_BASE_MIN, JACKPOT_BASE_MAX)
+
+          const fallbackMultiplier = Number.isFinite(this.tokenLedger?.jackpotMultiplier) && this.tokenLedger.jackpotMultiplier > 1
+            ? Math.floor(this.tokenLedger.jackpotMultiplier)
+            : JACKPOT_MULTIPLIER_FALLBACK
+
+          const normalizedMultiplier = Number.isFinite(multiplier) && multiplier > 1
+            ? Math.floor(multiplier)
+            : fallbackMultiplier
+
+          const jackpotAmount = Math.max(1, normalizedBase) * Math.max(2, normalizedMultiplier)
+          const celebration = typeof celebrationId === 'string' && celebrationId.trim()
+            ? celebrationId.trim()
+            : createCelebrationId()
+
+          const metadata = {
+            reason: 'negative-balance-recovery',
+            event: 'negative-balance-recovery',
+            source,
+            simulation,
+            jackpot: true,
+            multiplier: normalizedMultiplier,
+            jackpotSource: 'manual-jackpot-trigger',
+            jackpotCelebrationId: celebration,
+            recoveryTriggered: true,
+            recoveryThreshold: -500000,
+            baseAmount: normalizedBase
+          }
+
+          const entry = await this.tokenLedger.recordEarn(jackpotAmount, metadata, { jackpotEligible: false })
+          await this._broadcastTokenUpdate(entry)
+          return entry
+        },
         spendTokens: async ({ amount = 0, metadata = {} } = {}) => {
           if (!this.tokenLedger) {
             return { error: 'TOKEN_LEDGER_UNAVAILABLE' }
@@ -265,7 +327,13 @@ class EventHandlers {
     if (!this.tokenLedger) return
     try {
       const snapshot = await this.tokenLedger.getSnapshot()
-      broadcastEvent(TOKEN_BROADCAST_EVENT, { snapshot, entry })
+      const broadcastEntry = entry
+        ? {
+            ...entry,
+            metadata: entry.metadata ? { ...entry.metadata } : entry.metadata
+          }
+        : entry
+      broadcastEvent(TOKEN_BROADCAST_EVENT, { snapshot, entry: broadcastEntry })
     } catch (error) {
       console.error('[TokenLedger] Failed to broadcast token update', error)
     }

@@ -148,11 +148,13 @@ describe('TokenLedger', () => {
     expect(retryLog).toMatch(/network down/)
   })
 
-  it('awards a recovery credit when the simulation balance crosses the negative threshold', async () => {
+  it('awards a recovery credit in compatibility mode when the balance crosses the negative threshold', async () => {
     const ledger = new TokenLedger({
       storageDir: tempDir,
       initialBalance: 0,
-      mode: TokenLedger.TOKEN_MODES.SIMULATION
+      mode: TokenLedger.TOKEN_MODES.SIMULATION,
+      jackpotEnabled: false,
+      negativeRecoveryCompatibility: true
     })
 
     await ledger.bootstrap()
@@ -189,5 +191,49 @@ describe('TokenLedger', () => {
     expect(finalTransactions).toHaveLength(4)
     const autoCredits = finalTransactions.filter(tx => tx.metadata?.event === 'negative-balance-recovery')
     expect(autoCredits).toHaveLength(2)
+  })
+
+  it('applies a jackpot multiplier to the next earn when recovering from a negative balance', async () => {
+    const randomSpy = jest.spyOn(global.Math, 'random').mockReturnValue(0.123456789)
+
+    const ledger = new TokenLedger({
+      storageDir: tempDir,
+      initialBalance: 0,
+      mode: TokenLedger.TOKEN_MODES.SIMULATION,
+      jackpotEnabled: true,
+      negativeRecoveryCompatibility: false,
+      jackpotMultiplier: 100
+    })
+
+    await ledger.bootstrap()
+
+    const spendEntry = await ledger.recordSpend(600000, { reason: 'jackpot-threshold' })
+    expect(spendEntry.metadata.recoveryTriggered).toBe(true)
+    expect(spendEntry.metadata.recoveryThreshold).toBe(-500000)
+    expect(spendEntry.metadata.jackpot).toBeUndefined()
+
+    const earnEntry = await ledger.recordEarn(2000, { reason: 'recovery-earn' })
+    expect(earnEntry.amount).toBe(200000)
+    expect(earnEntry.delta).toBe(200000)
+    expect(earnEntry.metadata.jackpot).toBe(true)
+    expect(earnEntry.metadata.multiplier).toBe(100)
+    expect(earnEntry.metadata.jackpotSource).toBe('negative-balance-jackpot')
+    expect(earnEntry.metadata.recoveryThreshold).toBe(-500000)
+    expect(typeof earnEntry.metadata.jackpotCelebrationId).toBe('string')
+    expect(earnEntry.metadata.jackpotCelebrationId.length).toBeGreaterThan(0)
+
+    expect(await ledger.getBalance()).toBe(earnEntry.balance)
+    expect(earnEntry.balance).toBe(spendEntry.balance + earnEntry.amount)
+    expect(ledger._negativeRecovery.pending).toBeNull()
+    expect(ledger._negativeRecovery.awaitingJackpot).toBe(false)
+
+    const transactions = await ledger.listTransactions()
+    expect(transactions).toHaveLength(2)
+    const [loggedSpend, jackpotEarn] = transactions
+    expect(loggedSpend.metadata.recoveryTriggered).toBe(true)
+    expect(jackpotEarn.metadata.jackpot).toBe(true)
+    expect(jackpotEarn.amount).toBe(200000)
+
+    randomSpy.mockRestore()
   })
 })

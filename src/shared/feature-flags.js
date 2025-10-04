@@ -24,11 +24,36 @@ function resolveFlag (primaryKey, env = process.env) {
   return false
 }
 
+function hasFlagKey (primaryKey, env = process.env) {
+  if (!env) return false
+  if (Object.prototype.hasOwnProperty.call(env, primaryKey)) {
+    return true
+  }
+  const fallbackKey = primaryKey.toUpperCase()
+  if (fallbackKey !== primaryKey && Object.prototype.hasOwnProperty.call(env, fallbackKey)) {
+    return true
+  }
+  return false
+}
+
 function isGhostnetTokenCurrencyEnabled (env = process.env) {
   return resolveFlag('ghostnetTokenCurrencyEnabled', env)
 }
 
+function isTokenJackpotEnabled (env = process.env) {
+  return resolveFlag('ghostnetTokenJackpotEnabled', env)
+}
+
+function isTokenRecoveryCompatibilityEnabled (env = process.env) {
+  if (!hasFlagKey('ghostnetTokenRecoveryCompatEnabled', env)) {
+    return true
+  }
+  return resolveFlag('ghostnetTokenRecoveryCompatEnabled', env)
+}
+
 module.exports = {
   isGhostnetTokenCurrencyEnabled,
-  _private: { normalizeFlagValue, resolveFlag }
+  isTokenJackpotEnabled,
+  isTokenRecoveryCompatibilityEnabled,
+  _private: { normalizeFlagValue, resolveFlag, hasFlagKey }
 }
