@@ -5,9 +5,9 @@
    version="1.1"
    x="0px"
    y="0px"
-   width="2906.8284"
+   width="2400"
    height="575.92804"
-   viewBox="0 0 2906.8284 575.92803"
+   viewBox="0 0 2400 575.92803"
    enable-background="new 0 0 960 866.838"
    xml:space="preserve"
    id="svg4"
@@ -26,14 +26,14 @@
    inkscape:pageopacity="0.0"
    inkscape:pagecheckerboard="true"
    inkscape:deskcolor="#d1d1d1"
-   inkscape:zoom="0.25"
-   inkscape:cx="-200"
-   inkscape:cy="846"
-   inkscape:window-width="3440"
-   inkscape:window-height="1369"
-   inkscape:window-x="1072"
-   inkscape:window-y="-8"
-   inkscape:window-maximized="1"
+   inkscape:zoom="0.5"
+   inkscape:cx="1520"
+   inkscape:cy="189"
+   inkscape:window-width="933"
+   inkscape:window-height="1211"
+   inkscape:window-x="2067"
+   inkscape:window-y="50"
+   inkscape:window-maximized="0"
    inkscape:current-layer="svg4" />
 
 <g
@@ -72,31 +72,37 @@
    style="fill:#8c5cff;fill-opacity:1;stroke:#000000;stroke-width:10;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1">
 		<polygon
    fill="#FFFFFF"
-   points="569.746,590.411 656.577,746.5 694.093,684.808 753.061,701.318 960,701.318 960,731.318 748.939,731.318 707.907,719.829 655.423,806.137 574.254,660.226 492.042,866.838 434.437,612.011 365.838,824.21 287.055,686.616 235.606,731.318 0,731.318 0,701.318 224.394,701.318 294.945,640.021 358.162,750.428 439.563,498.626 499.958,765.799 "
+   points="365.838,824.21 287.055,686.616 235.606,731.318 0,731.318 0,701.318 224.394,701.318 294.945,640.021 358.162,750.428 439.563,498.626 499.958,765.799 569.746,590.411 656.577,746.5 694.093,684.808 753.061,701.318 960,701.318 960,731.318 748.939,731.318 707.907,719.829 655.423,806.137 574.254,660.226 492.042,866.838 434.437,612.011 "
    id="polygon4"
    style="fill:#8c5cff;fill-opacity:1;stroke:#000000;stroke-width:10;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1" />
 	</g>
 </g></g>
 <g
    id="g2"
-   transform="matrix(0.85120753,0,0,0.85120753,-180.35523,19.573158)"><text
+   transform="matrix(0.85120753,0,0,0.85120753,-180.35523,19.573158)" /><g
+   id="g5"
+   transform="translate(-8,44)"><text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:600px;font-family:'Euro Caps';-inkscape-font-specification:'Euro Caps';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:15;stroke-linejoin:bevel;stroke-dasharray:none"
-     x="949.79718"
-     y="378.97531"
-     id="text1"><tspan
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:432.462px;font-family:'Euro Caps';-inkscape-font-specification:'Euro Caps, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:19.8327;stroke-linejoin:bevel;stroke-dasharray:none;paint-order:stroke fill markers"
+     x="671.7348"
+     y="272.2106"
+     id="text1"
+     transform="scale(0.96209536,1.039398)"><tspan
        sodipodi:role="line"
        id="tspan1"
-       x="949.79718"
-       y="378.97531"
-       style="stroke-width:15">GHOSTNET</tspan></text><text
+       x="671.7348"
+       y="272.2106"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:432.462px;font-family:'Euro Caps';-inkscape-font-specification:'Euro Caps, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke-width:19.8327;stroke-dasharray:none"
+       dx="0 -27.999104 -30.332361 -23.332586 -11.666293 -13.999552 -30.332361 -4.6665173">GHOSTNET</tspan></text><text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:320px;font-family:'Euro Caps';-inkscape-font-specification:'Euro Caps';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:12;stroke-linejoin:bevel;stroke-dasharray:none"
-     x="990.59796"
-     y="606.94214"
-     id="text2"><tspan
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:210.058px;font-family:'Euro Caps';-inkscape-font-specification:'Euro Caps, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:13.0575;stroke-linejoin:bevel;stroke-dasharray:none;paint-order:stroke fill markers"
+     x="667.43073"
+     y="461.81253"
+     id="text1-9"
+     transform="scale(1.0156951,0.98454743)"><tspan
        sodipodi:role="line"
-       id="tspan2"
-       x="990.59796"
-       y="606.94214"
-       style="stroke-width:12;stroke-dasharray:none">A.t.l.a.s Protocol</tspan></text></g></svg>
+       id="tspan1-4"
+       x="667.43073"
+       y="461.81253"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:210.058px;font-family:'Euro Caps';-inkscape-font-specification:'Euro Caps, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke-width:13.0575;stroke-dasharray:none"
+       dx="0 0 0 0 0 0 0 0 0 0 0 -26.11496 -8.7049866 -8.7049866 -5.2229919 -5.2229919 -5.2229919 -5.2229919 -8.7049866">A.T.L.A.S. PROTOCOL</tspan></text></g></svg>
