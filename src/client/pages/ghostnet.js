@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, Fragment } from 'react'
+
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
@@ -12,12 +13,9 @@ import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/ghostnet-formatters'
 import { sanitizeInaraText } from '../lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from '../lib/station-icons'
-<<<<<<< HEAD
 import DataTableShell, { TABLE_SCROLL_AREA_STYLE } from '../components/ghostnet/data-table-shell'
 import tableStyles from '../components/ghostnet/data-table-shell.module.css'
-=======
 import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/ghostnet-mock-data'
->>>>>>> main
 import styles from './ghostnet.module.css'
 
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
@@ -778,7 +776,6 @@ function extractSystemDistance (route) {
   return null
 }
 
-<<<<<<< HEAD
 function generateMockTradeRoutes ({ systemName, cargoCapacity, count = 5 }) {
   const normalizedCapacity = Number.isFinite(Number(cargoCapacity)) && Number(cargoCapacity) > 0
     ? Math.round(Number(cargoCapacity))
@@ -902,9 +899,6 @@ function generateMockPristineLocations ({ systemName, count = 6 }) {
     systemName: baseSystem
   }
 }
-
-=======
->>>>>>> main
 function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   const [systemSelection, setSystemSelection] = useState('')
   const [systemInput, setSystemInput] = useState('')
