@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, within, act } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import GhostnetPage from '../pages/ghostnet'
 
 jest.mock('next/router', () => ({
@@ -35,17 +35,12 @@ describe('Ghost Net page', () => {
     mockEventListener.mockImplementation(() => () => {})
   })
 
-  it('renders the contextual hero heading and status summary', async () => {
+  it('renders without a hero summary or redundant page title', async () => {
     await act(async () => { render(<GhostnetPage />) })
 
     expect(screen.queryByRole('heading', { level: 1, name: /ghostnet operations/i })).not.toBeInTheDocument()
-    expect(await screen.findByRole('heading', { level: 1, name: /trade routes/i })).toBeInTheDocument()
-
-    const statusPanel = await screen.findByRole('complementary', { name: /trade routes uplink status/i })
-    expect(within(statusPanel).getByText(/signal focus/i)).toBeInTheDocument()
-    expect(within(statusPanel).getByText(/trade routes/i)).toBeInTheDocument()
-    expect(within(statusPanel).getByText(/routing sync/i)).toBeInTheDocument()
-    expect(within(statusPanel).getByText(/live/i)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
   })
 
   it('exposes key Ghost Net panels for missions and mining', async () => {
