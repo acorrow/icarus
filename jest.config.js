@@ -1,5 +1,5 @@
 module.exports = {
-  roots: ['<rootDir>/src/client', '<rootDir>/src/service'],
+  roots: ['<rootDir>/src/client', '<rootDir>/src/service', '<rootDir>/test'],
   testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['<rootDir>/test/setupTests.js'],
   moduleNameMapper: {
@@ -12,5 +12,6 @@ module.exports = {
   transform: {
     '^.+\\.(js|jsx)$': 'babel-jest'
   },
+  transformIgnorePatterns: ['/node_modules/(?!cheerio/)'],
   testMatch: ['**/__tests__/**/*.{test,spec}.[jt]s?(x)']
 }
