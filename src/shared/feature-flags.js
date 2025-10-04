@@ -16,7 +16,7 @@ function resolveFlag (primaryKey, env = process.env) {
     const parsed = normalizeFlagValue(env[primaryKey])
     if (parsed !== null) return parsed
   }
-  const fallbackKey = primaryKey.toUpperCase()
+  const fallbackKey = primaryKey.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase()
   if (fallbackKey !== primaryKey && Object.prototype.hasOwnProperty.call(env, fallbackKey)) {
     const parsed = normalizeFlagValue(env[fallbackKey])
     if (parsed !== null) return parsed
