@@ -1114,6 +1114,12 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   white-space: nowrap;
 }
 
+.tableSortIcon {
+  margin-left: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--ghostnet-accent);
+}
+
 .dataTable tbody tr {
   background: color-mix(in srgb, var(--ghostnet-color-surface) 85%, var(--ghostnet-color-background) 15%);
   border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
@@ -1138,6 +1144,70 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   color: var(--ghostnet-ink);
   text-transform: none !important;
   vertical-align: middle;
+}
+
+.tradeRouteOverviewCell {
+  padding: 1rem;
+  vertical-align: top;
+}
+
+.tradeRouteSummary {
+  width: 100%;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-primary) 10%, transparent) 100%);
+  border-radius: 1rem;
+}
+
+.tradeRouteValueCell {
+  padding: 0.85rem 1rem;
+  text-align: right;
+}
+
+.tradeRouteValuePrimary {
+  display: block;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.tradeRouteValueSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--ghostnet-muted);
+  min-height: 1rem;
+}
+
+.tradeRouteValuePlaceholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 46%, transparent);
+}
+
+.quantityIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+}
+
+.quantityIndicatorArrow {
+  line-height: 1;
+}
+
+.quantityIndicatorValue {
+  color: var(--ghostnet-muted);
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+}
+
+@media (max-width: 1400px) {
+  .tradeRouteValueSecondary {
+    display: none;
+  }
 }
 
 .nonCommodityRow {

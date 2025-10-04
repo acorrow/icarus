@@ -3,6 +3,13 @@ import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
 import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
+import DataTableShell, {
+  DataTableHead,
+  DataTableBody,
+  DataTableRow,
+  DataTableHeaderCell,
+  DataTableCell
+} from '../components/data-table-shell'
 import StationSummary, { StationIcon, DemandIndicator } from '../components/ghostnet/station-summary'
 import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
@@ -359,110 +366,199 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   renderQuantityIndicator,
   factionStandings
 }) {
-  const originLocal = route?.origin?.local
-  const destinationLocal = route?.destination?.local
+  const originLocal = route?.origin?.local || {}
+  const destinationLocal = route?.destination?.local || {}
 
   const originInfo = getRouteStationInfo(route, 'origin')
   const destinationInfo = getRouteStationInfo(route, 'destination')
 
-  const originStation = originInfo.station || '--'
-  const originSystemName = originInfo.system || ''
-  const destinationStation = destinationInfo.station || '--'
-  const destinationSystemName = destinationInfo.system || ''
+  const originStation = sanitizeInaraText(originInfo.station) || originInfo.station || '--'
+  const originSystemName = sanitizeInaraText(originInfo.system) || originInfo.system || ''
+  const destinationStation = sanitizeInaraText(destinationInfo.station) || destinationInfo.station || '--'
+  const destinationSystemName = sanitizeInaraText(destinationInfo.system) || destinationInfo.system || ''
 
   const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
   const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
   const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
   const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
 
-  const originStationClassName = originStandingDisplay.className || undefined
-  const destinationStationClassName = destinationStandingDisplay.className || undefined
   const originStationColor = originStandingDisplay.color
   const destinationStationColor = destinationStandingDisplay.color
   const originStationTitle = originStandingDisplay.title
   const destinationStationTitle = destinationStandingDisplay.title
+
+  const originStationType = sanitizeInaraText(originLocal?.stationType || originLocal?.type || route?.origin?.stationType || route?.origin?.type)
+  const destinationStationType = sanitizeInaraText(destinationLocal?.stationType || destinationLocal?.type || route?.destination?.stationType || route?.destination?.type)
+
   const outboundInfo = getRouteCommodityInfo(route, 'outbound')
   const returnInfo = getRouteCommodityInfo(route, 'return')
+  const outboundBuy = outboundInfo.buy || {}
+  const outboundSell = outboundInfo.sell || {}
+  const returnBuy = returnInfo.buy || {}
+  const returnSell = returnInfo.sell || {}
 
-  const outboundCommodity = sanitizeInaraText(outboundInfo.commodity) || outboundInfo.commodity || '--'
-  const returnCommodity = sanitizeInaraText(returnInfo.commodity) || returnInfo.commodity || '--'
-  const outboundBuyPrice = sanitizeInaraText(outboundInfo.buy?.priceText) || outboundInfo.buy?.priceText || '--'
-  const returnSellPrice = sanitizeInaraText(returnInfo.sell?.priceText) || returnInfo.sell?.priceText || '--'
+  const outboundCommodityName = sanitizeInaraText(outboundInfo.commodity) || outboundInfo.commodity || '--'
+  const returnCommodityName = sanitizeInaraText(returnInfo.commodity) || returnInfo.commodity || ''
 
-  const outboundSupplyIndicator = renderQuantityIndicator(outboundInfo.buy, 'supply')
-  const outboundDemandIndicator = renderQuantityIndicator(outboundInfo.sell, 'demand')
-  const returnSupplyIndicator = renderQuantityIndicator(returnInfo.buy, 'supply')
-  const returnDemandIndicator = renderQuantityIndicator(returnInfo.sell, 'demand')
-  const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
+  const outboundBuyPrice = sanitizeInaraText(outboundBuy.priceText) || outboundBuy.priceText || ''
+  const outboundSellPrice = sanitizeInaraText(outboundSell.priceText) || outboundSell.priceText || ''
+  const returnSellPrice = sanitizeInaraText(returnSell.priceText) || returnSell.priceText || ''
+
+  const outboundSupplyIndicator = renderQuantityIndicator(outboundBuy, 'supply', `Supply for ${outboundCommodityName} at ${originStation}`)
+  const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand', `Demand for ${outboundCommodityName} at ${destinationStation}`)
+  const returnSupplyIndicator = renderQuantityIndicator(returnBuy, 'supply', returnCommodityName ? `Supply for ${returnCommodityName} at ${destinationStation}` : 'Return supply at destination')
+  const returnDemandIndicator = renderQuantityIndicator(returnSell, 'demand', returnCommodityName ? `Demand for ${returnCommodityName} at ${originStation}` : 'Return demand at origin')
+  const indicatorPlaceholder = <span className={styles.tradeRouteValuePlaceholder}>--</span>
 
   const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
   const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
   const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
-  const routeDistanceDisplay = formatSystemDistance(route?.summary?.routeDistanceLy ?? route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.routeDistanceText || route?.summary?.distanceText || route?.distanceDisplay)
-  const systemDistanceDisplay = formatSystemDistance(route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.distanceText || route?.distanceDisplay)
+
+  const routeDistanceDisplay = formatSystemDistance(
+    route?.summary?.routeDistanceLy ?? route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance,
+    route?.summary?.routeDistanceText || route?.summary?.distanceText || route?.distanceDisplay
+  )
+  const systemDistanceDisplay = formatSystemDistance(
+    route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance,
+    route?.summary?.distanceText || route?.distanceDisplay
+  )
+  const stationDistanceDisplay = formatStationDistance(
+    route?.summary?.distanceLs ?? route?.destination?.distanceLs ?? route?.distanceLs ?? route?.origin?.distanceLs,
+    route?.summary?.distanceLsText || route?.destination?.distanceLsText || route?.distanceLsText || route?.origin?.distanceLsText
+  )
   const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
 
   const originIconName = getStationIconName(originLocal, route?.origin)
   const destinationIconName = getStationIconName(destinationLocal, route?.destination)
-  const caretSymbol = String.fromCharCode(0x203A)
+
+  const commodityCategory = outboundBuy.category || outboundBuy.commodityCategory || outboundSell.category || outboundSell.commodityCategory || ''
+  const quantityValue = typeof route?.summary?.cargoCapacity === 'number'
+    ? `${Math.round(route.summary.cargoCapacity).toLocaleString()} t`
+    : (typeof route?.cargoCapacity === 'number' ? `${Math.round(route.cargoCapacity).toLocaleString()} t` : '')
+
+  const valueSecondaryParts = []
+  if (profitPerTrip && profitPerTrip !== '--') valueSecondaryParts.push(`Trip ${profitPerTrip}`)
+  if (profitPerHour && profitPerHour !== '--') valueSecondaryParts.push(`Hour ${profitPerHour}`)
+  if (updatedDisplay && updatedDisplay !== '--') valueSecondaryParts.push(`Updated ${updatedDisplay}`)
+  const valueSecondary = valueSecondaryParts.join(' • ')
+
+  const sourceMetrics = []
+  if (outboundBuyPrice) sourceMetrics.push({ label: 'Buy', value: outboundBuyPrice, priority: true })
+  if (outboundSupplyIndicator) sourceMetrics.push({ label: 'Supply', value: outboundSupplyIndicator, priority: true })
+  if (returnDemandIndicator) sourceMetrics.push({ label: 'Return Demand', value: returnDemandIndicator })
+
+  const destinationMetrics = []
+  if (outboundSellPrice) destinationMetrics.push({ label: 'Sell', value: outboundSellPrice, priority: true })
+  if (outboundDemandIndicator) destinationMetrics.push({ label: 'Demand', value: outboundDemandIndicator, priority: true })
+  if (returnSupplyIndicator) destinationMetrics.push({ label: 'Return Supply', value: returnSupplyIndicator })
+  if (returnSellPrice) destinationMetrics.push({ label: 'Return Sell', value: returnSellPrice })
+
+  const itemSubtexts = []
+  if (returnCommodityName) itemSubtexts.push(`Return: ${returnCommodityName}`)
+  if (outboundSellPrice) itemSubtexts.push(`Sell: ${outboundSellPrice}`)
+
+  const distanceSecondaryParts = [stationDistanceDisplay, systemDistanceDisplay].filter(value => value && value !== '--')
 
   const handleClick = () => onSelect(route, index)
   const handleKeyDown = event => onKeyDown(event, route, index)
 
   return (
-    <tr
-      className={styles.tableRowInteractive}
-      data-ghostnet-table-row='pending'
+    <DataTableRow
+      interactive
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      role='button'
-      tabIndex={0}
-      aria-label={`View trade route details for ${originStation} to ${destinationStation}`}
+      ariaLabel={`View trade route details for ${originStation} to ${destinationStation}`}
+      dataState='pending'
     >
-      <td className={styles.tableCellCaret} aria-hidden='true'>
-        {caretSymbol}
-      </td>
-      <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-        <div className={styles.tableCellInline}>
-          {originIconName && <StationIcon icon={originIconName} color={originStationColor} />}
-          <span
-            style={{ fontWeight: 600, color: originStationColor }}
-            className={originStationClassName}
-            title={originStationTitle}
-          >
-            {originStation}
-          </span>
-        </div>
-      </td>
-      <td className={`hidden-small ${styles.tableCellTop}`}>{originSystemName || '--'}</td>
-      <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-        <div className={styles.tableCellInline}>
-          {destinationIconName && <StationIcon icon={destinationIconName} color={destinationStationColor} />}
-          <span
-            style={{ fontWeight: 600, color: destinationStationColor }}
-            className={destinationStationClassName}
-            title={destinationStationTitle}
-          >
-            {destinationStation}
-          </span>
-        </div>
-      </td>
-      <td className={`hidden-small ${styles.tableCellTop}`}>{destinationSystemName || '--'}</td>
-      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}><strong>{outboundCommodity}</strong></td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundBuyPrice}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundSupplyIndicator || indicatorPlaceholder}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundDemandIndicator || indicatorPlaceholder}</td>
-      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}><strong>{returnCommodity}</strong></td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnSellPrice}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnSupplyIndicator || indicatorPlaceholder}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnDemandIndicator || indicatorPlaceholder}</td>
-      <td className={`text-right ${styles.tableCellTop}`}>{profitPerTon || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{profitPerTrip || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{profitPerHour || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{routeDistanceDisplay || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{systemDistanceDisplay || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{updatedDisplay || '--'}</td>
-    </tr>
+      <DataTableCell scope='row' className={styles.tradeRouteOverviewCell}>
+        <TransferContextSummary
+          className={styles.tradeRouteSummary}
+          item={{
+            icon: <CommodityIcon category={commodityCategory} size={24} />,
+            name: outboundCommodityName,
+            quantity: quantityValue,
+            price: outboundSellPrice ? `@ ${outboundSellPrice}` : '',
+            subtexts: itemSubtexts,
+            ariaLabel: `Outbound commodity ${outboundCommodityName}`
+          }}
+          source={{
+            icon: originIconName ? <StationIcon icon={originIconName} size={22} color={originStationColor} /> : null,
+            name: originStation,
+            color: originStationColor,
+            subtexts: [originSystemName, originStationType].filter(Boolean),
+            metrics: sourceMetrics,
+            ariaLabel: `Origin station ${originStation}${originSystemName ? ` in ${originSystemName}` : ''}`
+          }}
+          destination={{
+            icon: destinationIconName ? <StationIcon icon={destinationIconName} size={22} color={destinationStationColor} /> : null,
+            name: destinationStation,
+            color: destinationStationColor,
+            subtexts: [destinationSystemName, destinationStationType].filter(Boolean),
+            metrics: destinationMetrics,
+            ariaLabel: `Destination station ${destinationStation}${destinationSystemName ? ` in ${destinationSystemName}` : ''}`
+          }}
+          distance={{
+            label: 'Route',
+            value: routeDistanceDisplay || '--',
+            secondary: distanceSecondaryParts.join(' • ')
+          }}
+          value={{
+            icon: <CreditsIcon size={20} />,
+            label: 'Profit',
+            value: profitPerTon && profitPerTon !== '--' ? profitPerTon : (profitPerTrip || '--'),
+            secondary: valueSecondary
+          }}
+        />
+      </DataTableCell>
+      <DataTableCell
+        align='right'
+        className={styles.tradeRouteValueCell}
+        title={`Origin buy price for ${outboundCommodityName}`}
+      >
+        <span className={styles.tradeRouteValuePrimary}>{outboundBuyPrice || '--'}</span>
+        <span className={styles.tradeRouteValueSecondary}>
+          {outboundSupplyIndicator || indicatorPlaceholder}
+        </span>
+      </DataTableCell>
+      <DataTableCell
+        align='right'
+        className={styles.tradeRouteValueCell}
+        title={`Destination sell price for ${outboundCommodityName}`}
+      >
+        <span className={styles.tradeRouteValuePrimary}>{outboundSellPrice || '--'}</span>
+        <span className={styles.tradeRouteValueSecondary}>
+          {outboundDemandIndicator || indicatorPlaceholder}
+        </span>
+      </DataTableCell>
+      <DataTableCell
+        align='right'
+        className={styles.tradeRouteValueCell}
+        title='Profitability for this route'
+      >
+        <span className={styles.tradeRouteValuePrimary}>{profitPerTon || '--'}</span>
+        <span className={styles.tradeRouteValueSecondary}>
+          {valueSecondary || indicatorPlaceholder}
+        </span>
+      </DataTableCell>
+      <DataTableCell
+        align='right'
+        className={styles.tradeRouteValueCell}
+        title='Route distance between systems'
+      >
+        <span className={styles.tradeRouteValuePrimary}>{routeDistanceDisplay || '--'}</span>
+        <span className={styles.tradeRouteValueSecondary}>
+          {systemDistanceDisplay && routeDistanceDisplay !== systemDistanceDisplay ? systemDistanceDisplay : indicatorPlaceholder}
+        </span>
+      </DataTableCell>
+      <DataTableCell
+        align='right'
+        className={styles.tradeRouteValueCell}
+        title='Destination station distance from arrival point'
+      >
+        <span className={styles.tradeRouteValuePrimary}>{stationDistanceDisplay || '--'}</span>
+        <span className={styles.tradeRouteValueSecondary}>{indicatorPlaceholder}</span>
+      </DataTableCell>
+    </DataTableRow>
   )
 })
 
@@ -1137,24 +1233,11 @@ const FILTER_SUMMARY_REFRESH_ICON_STYLE = {
 }
 
 const DEFAULT_SORT_DIRECTION = {
-  origin: 'asc',
-  originSystem: 'asc',
-  destination: 'asc',
-  destinationSystem: 'asc',
-  outboundCommodity: 'asc',
-  outboundBuyPrice: 'desc',
-  outboundSupply: 'desc',
-  outboundDemand: 'desc',
-  returnCommodity: 'asc',
-  returnSellPrice: 'desc',
-  returnSupply: 'desc',
-  returnDemand: 'desc',
+  buyPrice: 'desc',
+  sellPrice: 'desc',
   profitPerTon: 'desc',
-  profitPerTrip: 'desc',
-  profitPerHour: 'desc',
   routeDistance: 'asc',
-  distance: 'asc',
-  updated: 'desc'
+  stationDistance: 'asc'
 }
 
 function parseNumberFromText (value) {
@@ -1215,6 +1298,40 @@ function extractRouteDistance (route) {
     route?.summary?.routeDistanceText,
     route?.summary?.distanceText,
     route?.distanceDisplay
+  ]
+  for (const textValue of textCandidates) {
+    const parsed = parseNumberFromText(textValue)
+    if (parsed !== null) return parsed
+  }
+  return null
+}
+
+function extractStationDistance (route) {
+  if (!route) return null
+  const numericCandidates = [
+    route?.summary?.stationDistanceLs,
+    route?.summary?.distanceLs,
+    route?.destination?.distanceLs,
+    route?.origin?.distanceLs,
+    route?.distanceLs,
+    route?.origin?.buy?.distanceLs,
+    route?.destination?.sell?.distanceLs,
+    route?.destination?.buyReturn?.distanceLs,
+    route?.origin?.sellReturn?.distanceLs
+  ]
+  for (const value of numericCandidates) {
+    if (typeof value === 'number' && !Number.isNaN(value)) return value
+  }
+  const textCandidates = [
+    route?.summary?.stationDistanceText,
+    route?.summary?.distanceLsText,
+    route?.destination?.distanceLsText,
+    route?.origin?.distanceLsText,
+    route?.distanceLsText,
+    route?.origin?.buy?.distanceLsText,
+    route?.destination?.sell?.distanceLsText,
+    route?.destination?.buyReturn?.distanceLsText,
+    route?.origin?.sellReturn?.distanceLsText
   ]
   for (const textValue of textCandidates) {
     const parsed = parseNumberFromText(textValue)
@@ -3135,7 +3252,7 @@ function TradeRoutesPanel () {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
-  const [sortField, setSortField] = useState('distance')
+  const [sortField, setSortField] = useState('profitPerTon')
   const [sortDirection, setSortDirection] = useState('asc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(false)
   const [selectedRouteContext, setSelectedRouteContext] = useState(null)
@@ -3388,66 +3505,36 @@ function TradeRoutesPanel () {
 
     const directionFactor = sortDirection === 'asc' ? 1 : -1
 
-    const getValue = route => {
+    const getNumericValue = route => {
+      const outbound = getRouteCommodityInfo(route, 'outbound')
       switch (sortField) {
-        case 'origin':
-          return getRouteStationInfo(route, 'origin').station
-        case 'originSystem':
-          return getRouteStationInfo(route, 'origin').system
-        case 'destination':
-          return getRouteStationInfo(route, 'destination').station
-        case 'destinationSystem':
-          return getRouteStationInfo(route, 'destination').system
-        case 'outboundCommodity':
-          return getRouteCommodityInfo(route, 'outbound').commodity
-        case 'outboundBuyPrice':
-          return extractPriceValue(getRouteCommodityInfo(route, 'outbound').buy)
-        case 'outboundSupply':
-          return extractQuantityValue(getRouteCommodityInfo(route, 'outbound').buy)
-        case 'outboundDemand':
-          return extractQuantityValue(getRouteCommodityInfo(route, 'outbound').sell)
-        case 'returnCommodity':
-          return getRouteCommodityInfo(route, 'return').commodity
-        case 'returnSellPrice':
-          return extractPriceValue(getRouteCommodityInfo(route, 'return').sell)
-        case 'returnSupply':
-          return extractQuantityValue(getRouteCommodityInfo(route, 'return').buy)
-        case 'returnDemand':
-          return extractQuantityValue(getRouteCommodityInfo(route, 'return').sell)
+        case 'buyPrice':
+          return extractPriceValue(outbound.buy)
+        case 'sellPrice':
+          return extractPriceValue(outbound.sell)
         case 'profitPerTon':
           return extractProfitPerTon(route)
-        case 'profitPerTrip':
-          return extractProfitPerTrip(route)
-        case 'profitPerHour':
-          return extractProfitPerHour(route)
         case 'routeDistance':
           return extractRouteDistance(route)
-        case 'distance':
-          return extractSystemDistance(route)
-        case 'updated':
-          return extractUpdatedAt(route)
+        case 'stationDistance':
+          return extractStationDistance(route)
         default:
-          return null
+          return extractProfitPerTon(route)
       }
     }
 
     return [...list].sort((a, b) => {
-      const aValue = getValue(a)
-      const bValue = getValue(b)
-      const aIsNumber = typeof aValue === 'number' && Number.isFinite(aValue)
-      const bIsNumber = typeof bValue === 'number' && Number.isFinite(bValue)
+      const aValue = getNumericValue(a)
+      const bValue = getNumericValue(b)
 
-      if (aIsNumber && bIsNumber) {
+      if (typeof aValue === 'number' && Number.isFinite(aValue) && typeof bValue === 'number' && Number.isFinite(bValue)) {
         if (aValue === bValue) return 0
         return (aValue < bValue ? -1 : 1) * directionFactor
       }
 
-      const aString = typeof aValue === 'string' ? aValue : (aValue ?? '')
-      const bString = typeof bValue === 'string' ? bValue : (bValue ?? '')
-      if (!aString && !bString) return 0
-      if (!aString) return 1
-      if (!bString) return -1
-      return aString.localeCompare(bString, undefined, { sensitivity: 'base' }) * directionFactor
+      if (typeof aValue === 'number' && Number.isFinite(aValue)) return -1 * directionFactor
+      if (typeof bValue === 'number' && Number.isFinite(bValue)) return 1 * directionFactor
+      return 0
     })
   }, [sortField, sortDirection])
 
@@ -3469,14 +3556,6 @@ function TradeRoutesPanel () {
       handleSortChange(field)
     }
   }, [handleSortChange])
-
-  const renderSortArrow = field => {
-    if (sortField !== field) return null
-    const arrow = sortDirection === 'asc' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
-    return (
-      <span style={{ color: 'var(--ghostnet-accent)', marginLeft: '0.35rem', fontSize: '0.8rem' }}>{arrow}</span>
-    )
-  }
 
   useEffect(() => {
     const filtered = filterRoutes(rawRoutes)
@@ -3613,7 +3692,7 @@ function TradeRoutesPanel () {
     setSelectedRouteContext(null)
   }, [])
 
-  const renderQuantityIndicator = (entry, type) => {
+  const renderQuantityIndicator = (entry, type, contextLabel = '') => {
     if (!entry) return null
     const quantityText = entry?.quantityText || (typeof entry?.quantity === 'number' && !Number.isNaN(entry.quantity)
       ? entry.quantity.toLocaleString()
@@ -3621,11 +3700,24 @@ function TradeRoutesPanel () {
     const level = typeof entry?.level === 'number' && entry.level > 0 ? Math.min(entry.level, 4) : null
     const symbol = type === 'supply' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
     const icon = level ? symbol.repeat(Math.min(level, 3)) : symbol
-    const color = type === 'supply' ? '#5bd1a5' : '#ff6b6b'
+    const color = type === 'supply' ? 'var(--ghostnet-color-success)' : 'var(--ghostnet-color-warning)'
+    const directionDescription = type === 'supply'
+      ? (entry?.isLow ? 'Low supply' : 'Supply signal')
+      : (entry?.isLow ? 'Lower demand' : 'Demand signal')
+    const indicatorTitleParts = [directionDescription]
+    if (level) indicatorTitleParts.push(`level ${level}`)
+    if (quantityText) indicatorTitleParts.push(`${quantityText} units`)
+    if (contextLabel) indicatorTitleParts.push(contextLabel)
+    const indicatorTitle = indicatorTitleParts.join(' · ')
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85em' }}>
-        <span style={{ color }}>{icon}</span>
-        <span style={{ color: '#bbb' }}>{quantityText || '--'}</span>
+      <span
+        className={styles.quantityIndicator}
+        aria-label={indicatorTitle}
+        title={indicatorTitle}
+        role='text'
+      >
+        <span className={styles.quantityIndicatorArrow} aria-hidden='true' style={{ color }}>{icon}</span>
+        <span className={styles.quantityIndicatorValue}>{quantityText || '--'}</span>
       </span>
     )
   }
@@ -3677,197 +3769,76 @@ function TradeRoutesPanel () {
   }, [routes, detailViewActive])
 
   const renderRoutesTable = () => (
-    <div className={styles.dataTableContainer}>
-      <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
+    <DataTableShell
+      dense
+      fixed
+      ariaLabelledby='trade-routes-filters-heading'
+      ariaLabel='Trade routes results'
+    >
       <colgroup>
-        <col style={{ width: '3%' }} />
-        <col style={{ width: '16%' }} />
-        <col style={{ width: '12%' }} />
-        <col style={{ width: '16%' }} />
-        <col style={{ width: '12%' }} />
-        <col style={{ width: '12%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '12%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '8%' }} />
+        <col style={{ width: '46%' }} />
+        <col style={{ width: '13.5%' }} />
+        <col style={{ width: '13.5%' }} />
+        <col style={{ width: '13.5%' }} />
+        <col style={{ width: '6.75%' }} />
+        <col style={{ width: '6.75%' }} />
       </colgroup>
-      <thead>
+      <DataTableHead>
         <tr>
-          <th aria-hidden='true' className={styles.tableCellCaret} />
-          <th
-            className={`${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('origin')}
-            onKeyDown={event => handleSortKeyDown(event, 'origin')}
-            tabIndex={0}
-            aria-sort={sortField === 'origin' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          <DataTableHeaderCell scope='col'>Route Overview</DataTableHeaderCell>
+          <DataTableHeaderCell
+            align='right'
+            sortable
+            onClick={() => handleSortChange('buyPrice')}
+            onKeyDown={event => handleSortKeyDown(event, 'buyPrice')}
+            sortDirection={sortField === 'buyPrice' ? sortDirection : undefined}
+            ariaSort={sortField === 'buyPrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined}
           >
-            Origin Station{renderSortArrow('origin')}
-          </th>
-          <th
-            className={`hidden-small ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('originSystem')}
-            onKeyDown={event => handleSortKeyDown(event, 'originSystem')}
-            tabIndex={0}
-            aria-sort={sortField === 'originSystem' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+            Buy Price
+          </DataTableHeaderCell>
+          <DataTableHeaderCell
+            align='right'
+            sortable
+            onClick={() => handleSortChange('sellPrice')}
+            onKeyDown={event => handleSortKeyDown(event, 'sellPrice')}
+            sortDirection={sortField === 'sellPrice' ? sortDirection : undefined}
+            ariaSort={sortField === 'sellPrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined}
           >
-            Origin System{renderSortArrow('originSystem')}
-          </th>
-          <th
-            className={`${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('destination')}
-            onKeyDown={event => handleSortKeyDown(event, 'destination')}
-            tabIndex={0}
-            aria-sort={sortField === 'destination' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Destination Station{renderSortArrow('destination')}
-          </th>
-          <th
-            className={`hidden-small ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('destinationSystem')}
-            onKeyDown={event => handleSortKeyDown(event, 'destinationSystem')}
-            tabIndex={0}
-            aria-sort={sortField === 'destinationSystem' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Destination System{renderSortArrow('destinationSystem')}
-          </th>
-          <th
-            className={`hidden-small ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('outboundCommodity')}
-            onKeyDown={event => handleSortKeyDown(event, 'outboundCommodity')}
-            tabIndex={0}
-            aria-sort={sortField === 'outboundCommodity' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Outbound Commodity{renderSortArrow('outboundCommodity')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('outboundBuyPrice')}
-            onKeyDown={event => handleSortKeyDown(event, 'outboundBuyPrice')}
-            tabIndex={0}
-            aria-sort={sortField === 'outboundBuyPrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Buy Price{renderSortArrow('outboundBuyPrice')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('outboundSupply')}
-            onKeyDown={event => handleSortKeyDown(event, 'outboundSupply')}
-            tabIndex={0}
-            aria-sort={sortField === 'outboundSupply' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Supply{renderSortArrow('outboundSupply')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('outboundDemand')}
-            onKeyDown={event => handleSortKeyDown(event, 'outboundDemand')}
-            tabIndex={0}
-            aria-sort={sortField === 'outboundDemand' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Demand{renderSortArrow('outboundDemand')}
-          </th>
-          <th
-            className={`hidden-small ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('returnCommodity')}
-            onKeyDown={event => handleSortKeyDown(event, 'returnCommodity')}
-            tabIndex={0}
-            aria-sort={sortField === 'returnCommodity' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Return Commodity{renderSortArrow('returnCommodity')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('returnSellPrice')}
-            onKeyDown={event => handleSortKeyDown(event, 'returnSellPrice')}
-            tabIndex={0}
-            aria-sort={sortField === 'returnSellPrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Sell Price{renderSortArrow('returnSellPrice')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('returnSupply')}
-            onKeyDown={event => handleSortKeyDown(event, 'returnSupply')}
-            tabIndex={0}
-            aria-sort={sortField === 'returnSupply' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Return Supply{renderSortArrow('returnSupply')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('returnDemand')}
-            onKeyDown={event => handleSortKeyDown(event, 'returnDemand')}
-            tabIndex={0}
-            aria-sort={sortField === 'returnDemand' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Return Demand{renderSortArrow('returnDemand')}
-          </th>
-          <th
-            className={`text-right ${styles.tableHeaderInteractive}`}
+            Sell Price
+          </DataTableHeaderCell>
+          <DataTableHeaderCell
+            align='right'
+            sortable
             onClick={() => handleSortChange('profitPerTon')}
             onKeyDown={event => handleSortKeyDown(event, 'profitPerTon')}
-            tabIndex={0}
-            aria-sort={sortField === 'profitPerTon' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+            sortDirection={sortField === 'profitPerTon' ? sortDirection : undefined}
+            ariaSort={sortField === 'profitPerTon' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined}
           >
-            Profit/Ton{renderSortArrow('profitPerTon')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('profitPerTrip')}
-            onKeyDown={event => handleSortKeyDown(event, 'profitPerTrip')}
-            tabIndex={0}
-            aria-sort={sortField === 'profitPerTrip' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Profit/Trip{renderSortArrow('profitPerTrip')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('profitPerHour')}
-            onKeyDown={event => handleSortKeyDown(event, 'profitPerHour')}
-            tabIndex={0}
-            aria-sort={sortField === 'profitPerHour' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Profit/Hour{renderSortArrow('profitPerHour')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            Profit/Ton
+          </DataTableHeaderCell>
+          <DataTableHeaderCell
+            align='right'
+            sortable
             onClick={() => handleSortChange('routeDistance')}
             onKeyDown={event => handleSortKeyDown(event, 'routeDistance')}
-            tabIndex={0}
-            aria-sort={sortField === 'routeDistance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+            sortDirection={sortField === 'routeDistance' ? sortDirection : undefined}
+            ariaSort={sortField === 'routeDistance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined}
           >
-            Route Distance{renderSortArrow('routeDistance')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('distance')}
-            onKeyDown={event => handleSortKeyDown(event, 'distance')}
-            tabIndex={0}
-            aria-sort={sortField === 'distance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+            Route Distance
+          </DataTableHeaderCell>
+          <DataTableHeaderCell
+            align='right'
+            sortable
+            onClick={() => handleSortChange('stationDistance')}
+            onKeyDown={event => handleSortKeyDown(event, 'stationDistance')}
+            sortDirection={sortField === 'stationDistance' ? sortDirection : undefined}
+            ariaSort={sortField === 'stationDistance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined}
           >
-            Distance{renderSortArrow('distance')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('updated')}
-            onKeyDown={event => handleSortKeyDown(event, 'updated')}
-            tabIndex={0}
-            aria-sort={sortField === 'updated' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Updated{renderSortArrow('updated')}
-          </th>
+            Station Distance
+          </DataTableHeaderCell>
         </tr>
-      </thead>
-      <tbody>
+      </DataTableHead>
+      <DataTableBody>
         {routes.map((route, index) => (
           <TradeRouteTableRow
             key={`route-${index}`}
@@ -3879,9 +3850,8 @@ function TradeRoutesPanel () {
             factionStandings={factionStandings}
           />
         ))}
-      </tbody>
-      </table>
-    </div>
+      </DataTableBody>
+    </DataTableShell>
   )
 
   const renderRouteDetailView = () => {
@@ -3915,11 +3885,13 @@ function TradeRoutesPanel () {
 
     const outboundCommodity = outboundBuy?.commodity || outboundSell?.commodity || route?.commodity || '--'
     const returnCommodity = returnBuy?.commodity || returnSell?.commodity || '--'
+    const outboundCommodityName = sanitizeInaraText(outboundCommodity) || outboundCommodity || '--'
+    const returnCommodityName = sanitizeInaraText(returnCommodity) || returnCommodity || '--'
 
-    const outboundSupplyIndicator = renderQuantityIndicator(outboundBuy, 'supply')
-    const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand')
-    const returnSupplyIndicator = renderQuantityIndicator(returnBuy, 'supply')
-    const returnDemandIndicator = renderQuantityIndicator(returnSell, 'demand')
+    const outboundSupplyIndicator = renderQuantityIndicator(outboundBuy, 'supply', `Supply for ${outboundCommodityName} at ${originStation}`)
+    const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand', `Demand for ${outboundCommodityName} at ${destinationStation}`)
+    const returnSupplyIndicator = renderQuantityIndicator(returnBuy, 'supply', returnCommodityName ? `Supply for ${returnCommodityName} at ${destinationStation}` : 'Return supply at destination')
+    const returnDemandIndicator = renderQuantityIndicator(returnSell, 'demand', returnCommodityName ? `Demand for ${returnCommodityName} at ${originStation}` : 'Return demand at origin')
     const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
 
     const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
@@ -3936,8 +3908,6 @@ function TradeRoutesPanel () {
       <span style={{ color: 'var(--ghostnet-subdued)', fontWeight: 600 }}>{text}</span>
     )
 
-    const outboundCommodityName = sanitizeInaraText(outboundCommodity) || outboundCommodity || '--'
-    const returnCommodityName = sanitizeInaraText(returnCommodity) || returnCommodity || '--'
     const outboundBuyPrice = sanitizeInaraText(outboundBuy?.priceText) || outboundBuy?.priceText || ''
     const outboundSellPrice = sanitizeInaraText(outboundSell?.priceText) || outboundSell?.priceText || ''
     const originStanding = originStandingStatusText
