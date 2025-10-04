@@ -64,3 +64,26 @@ export async function spendTokensForInaraExchange ({
   }
   return ledger.recordSpend(totalBytes, enrichedMetadata)
 }
+
+export default async function handler (req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', ['GET'])
+    res.status(405).json({ error: 'METHOD_NOT_ALLOWED' })
+    return
+  }
+
+  try {
+    const userId = typeof req.query?.userId === 'string'
+      ? req.query.userId
+      : Array.isArray(req.query?.userId)
+        ? req.query.userId[0]
+        : req.headers['x-ghostnet-token-user'] || 'local'
+    const ledger = await getTokenLedgerInstance(userId)
+    const snapshot = await ledger.getSnapshot()
+    res.setHeader('Cache-Control', 'no-store')
+    res.status(200).json({ snapshot })
+  } catch (error) {
+    console.error('[GhostNet][Tokens][API] Failed to retrieve token snapshot', error)
+    res.status(500).json({ error: 'TOKEN_LEDGER_UNAVAILABLE' })
+  }
+}

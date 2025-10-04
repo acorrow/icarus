@@ -4979,6 +4979,7 @@ function GhostnetTerminalOverlay () {
   const balanceFlashTimeoutRef = useRef(null)
   const animatedBalanceRef = useRef(null)
   const recentLogRef = useRef([])
+  const tokenDiagnosticsRef = useRef({ fetchId: 0, fetchStart: null, lastMethod: null })
   const prefersReducedMotion = usePrefersReducedMotion()
 
   if (!cadenceRef.current) {
@@ -4994,6 +4995,16 @@ function GhostnetTerminalOverlay () {
   useEffect(() => {
     animatedBalanceRef.current = tokenBalanceAnimated
   }, [tokenBalanceAnimated])
+
+  const logTokenDiagnostic = useCallback((phase, details = {}) => {
+    const now = Date.now()
+    const timestamp = new Date(now).toISOString()
+    try {
+      console.log('[GhostNet][Tokens][Diagnostics]', phase, { timestamp, ...details })
+    } catch (error) {
+      console.log('[GhostNet][Tokens][Diagnostics]', phase, timestamp)
+    }
+  }, [])
 
   const clearSequenceTimeouts = useCallback(() => {
     if (typeof window === 'undefined') return
@@ -5363,8 +5374,15 @@ function GhostnetTerminalOverlay () {
   useEffect(() => {
     let isMounted = true
     let unsubscribe
+    let fallbackTimeoutId = null
 
-    const applySnapshot = (payload = {}) => {
+    const diagnostics = tokenDiagnosticsRef.current || {}
+    diagnostics.fetchId = (diagnostics.fetchId || 0) + 1
+    diagnostics.fetchStart = Date.now()
+    diagnostics.lastMethod = 'websocket'
+    const fetchId = diagnostics.fetchId
+
+    const applySnapshot = (payload = {}, meta = {}) => {
       const snapshot = (payload && payload.snapshot) || payload
       if (!snapshot || typeof snapshot !== 'object') return
       const previousState = tokenStateRef.current || {}
@@ -5378,6 +5396,14 @@ function GhostnetTerminalOverlay () {
         mode: typeof remoteRaw.mode === 'string' ? remoteRaw.mode : 'DISABLED',
         synced: remoteRaw.synced === true
       }
+
+      const elapsedMs = typeof diagnostics.fetchStart === 'number' ? Date.now() - diagnostics.fetchStart : null
+      logTokenDiagnostic('apply-snapshot', {
+        fetchId: meta.fetchId ?? fetchId,
+        source: meta.source || 'unknown',
+        elapsedMs,
+        payload: snapshot
+      })
 
       if (!isMounted) return
       setTokenBalance(balance)
@@ -5423,32 +5449,158 @@ function GhostnetTerminalOverlay () {
       }
     }
 
+    const performHttpFallback = async ({ reason, error } = {}) => {
+      if (typeof window === 'undefined' || typeof window.fetch !== 'function') {
+        logTokenDiagnostic('http-fallback-unavailable', { fetchId, reason })
+        throw new Error('HTTP_FALLBACK_UNAVAILABLE')
+      }
+
+      const url = '/api/token-currency?snapshot=1'
+      const start = Date.now()
+      logTokenDiagnostic('http-fallback-start', { fetchId, reason, error })
+
+      let response
+      try {
+        response = await window.fetch(url, { method: 'GET', cache: 'no-store' })
+      } catch (networkError) {
+        logTokenDiagnostic('http-fallback-error', {
+          fetchId,
+          reason,
+          error: networkError?.message || networkError
+        })
+        throw networkError
+      }
+
+      const durationMs = Date.now() - start
+      let data = null
+      try {
+        data = await response.json()
+      } catch (parseError) {
+        logTokenDiagnostic('http-fallback-parse-error', {
+          fetchId,
+          durationMs,
+          error: parseError?.message || parseError
+        })
+        throw parseError
+      }
+
+      if (!response.ok) {
+        logTokenDiagnostic('http-fallback-error', {
+          fetchId,
+          status: response.status,
+          durationMs,
+          payload: data
+        })
+        throw new Error(`HTTP_FALLBACK_${response.status}`)
+      }
+
+      const payload = data && typeof data === 'object' && 'snapshot' in data ? data : { snapshot: data }
+      logTokenDiagnostic('http-fallback-success', {
+        fetchId,
+        status: response.status,
+        durationMs,
+        payload
+      })
+      return payload
+    }
+
     setTokenLoading(true)
-    sendEvent('getTokenBalance')
-      .then(applySnapshot)
+    logTokenDiagnostic('fetch-start', { fetchId, method: 'websocket', reason: 'initial-load' })
+
+    const websocketPromise = sendEvent('getTokenBalance')
+      .then(payload => {
+        const durationMs = Date.now() - diagnostics.fetchStart
+        logTokenDiagnostic('fetch-response', { fetchId, method: 'websocket', durationMs, payload })
+        return { payload, method: 'websocket' }
+      })
       .catch(error => {
-        console.error('[GhostNet] Failed to load token balance', error)
-        if (!isMounted) return
-        setTokenBalance(null)
-        setTokenMode(null)
-        setTokenSimulation(false)
-        setTokenRemoteState({ enabled: false, mode: 'DISABLED' })
-        setTokenLoading(false)
-        setTokenActionPending(false)
-        tokenStateRef.current = { balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } }
+        logTokenDiagnostic('fetch-error', { fetchId, method: 'websocket', error: error?.message || error })
+        throw error
       })
 
-    unsubscribe = eventListener('ghostnetTokensUpdated', applySnapshot)
+    const FALLBACK_DELAY_MS = 450
+    const fallbackPromise = typeof window !== 'undefined'
+      ? new Promise((resolve, reject) => {
+        fallbackTimeoutId = window.setTimeout(async () => {
+          try {
+            const payload = await performHttpFallback({ reason: 'websocket-timeout' })
+            resolve({ payload, method: 'http' })
+          } catch (error) {
+            logTokenDiagnostic('http-fallback-error', {
+              fetchId,
+              reason: 'websocket-timeout',
+              error: error?.message || error
+            })
+            reject(error)
+          }
+        }, FALLBACK_DELAY_MS)
+      })
+      : null
+
+    const settleSnapshot = async () => {
+      let result
+      try {
+        result = fallbackPromise
+          ? await Promise.race([websocketPromise, fallbackPromise])
+          : await websocketPromise
+      } catch (error) {
+        try {
+          const payload = await performHttpFallback({ reason: 'websocket-error', error: error?.message || error })
+          result = { payload, method: 'http' }
+        } catch (fallbackError) {
+          logTokenDiagnostic('fetch-failure', {
+            fetchId,
+            error: fallbackError?.message || fallbackError
+          })
+          if (!isMounted) return
+          console.error('[GhostNet] Failed to load token balance', fallbackError)
+          setTokenBalance(null)
+          setTokenMode(null)
+          setTokenSimulation(false)
+          setTokenRemoteState({ enabled: false, mode: 'DISABLED' })
+          setTokenLoading(false)
+          setTokenActionPending(false)
+          tokenStateRef.current = { balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } }
+          return
+        }
+      }
+
+      if (!isMounted || !result) return
+
+      if (typeof window !== 'undefined' && fallbackTimeoutId) {
+        window.clearTimeout(fallbackTimeoutId)
+        fallbackTimeoutId = null
+      }
+
+      diagnostics.lastMethod = result.method
+      const durationMs = Date.now() - diagnostics.fetchStart
+      logTokenDiagnostic('fetch-complete', { fetchId, method: result.method, durationMs })
+      applySnapshot(result.payload, {
+        fetchId,
+        source: result.method === 'websocket' ? 'websocket-response' : 'http-fallback'
+      })
+    }
+
+    settleSnapshot()
+
+    unsubscribe = eventListener('ghostnetTokensUpdated', payload => {
+      applySnapshot(payload, { source: 'broadcast' })
+    })
 
     return () => {
       isMounted = false
       if (typeof unsubscribe === 'function') unsubscribe()
-      clearCelebrationTimeouts()
-      clearSequenceTimeouts()
-      clearBalanceAnimation()
-      if (typeof window !== 'undefined' && balanceFlashTimeoutRef.current) {
-        window.clearTimeout(balanceFlashTimeoutRef.current)
-        balanceFlashTimeoutRef.current = null
+      if (typeof window !== 'undefined') {
+        if (fallbackTimeoutId) {
+          window.clearTimeout(fallbackTimeoutId)
+        }
+        clearCelebrationTimeouts()
+        clearSequenceTimeouts()
+        clearBalanceAnimation()
+        if (balanceFlashTimeoutRef.current) {
+          window.clearTimeout(balanceFlashTimeoutRef.current)
+          balanceFlashTimeoutRef.current = null
+        }
       }
     }
   }, [
@@ -5458,7 +5610,8 @@ function GhostnetTerminalOverlay () {
     triggerJackpotMilestone,
     clearCelebrationTimeouts,
     clearSequenceTimeouts,
-    clearBalanceAnimation
+    clearBalanceAnimation,
+    logTokenDiagnostic
   ])
 
   useEffect(() => eventListener('newLogEntry', log => {
@@ -5478,7 +5631,23 @@ function GhostnetTerminalOverlay () {
         menaceLines.forEach(base => {
           lines.push(createTerminalLineWithId('menace', base))
         })
-        state.menaceCooldown = randomInteger(12, 24)
+        state.menaceCooldown = randomInteger(2, 5)
+
+        const syntheticId = `menace-jackpot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+        const debtMagnitude = Math.max(1, Math.round(Math.abs(tokenState.balance || 0) * 0.05))
+        const menaceEntry = {
+          id: syntheticId,
+          type: 'spend',
+          delta: -Math.max(1000, debtMagnitude || randomInteger(800, 3200)),
+          balance: Number.isFinite(tokenState.balance) ? tokenState.balance : null,
+          metadata: {
+            event: 'negative-balance-menace',
+            reason: 'negative-balance-menace',
+            source: 'ghostnet-menace'
+          }
+        }
+        triggerJackpotMilestone()
+        triggerJackpotSequence(menaceEntry, { simulation: Boolean(tokenState.simulation) })
       } else {
         state.menaceCooldown -= 1
       }
@@ -5569,7 +5738,7 @@ function GhostnetTerminalOverlay () {
     }
 
     return { lines, delay }
-  }, [])
+  }, [triggerJackpotMilestone, triggerJackpotSequence])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
