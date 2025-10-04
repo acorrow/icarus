@@ -24,6 +24,13 @@
   --ghostnet-scrollbar-track: var(--ghostnet-color-scroll-track);
   --ghostnet-scrollbar-thumb: var(--ghostnet-color-scroll-thumb);
   --ghostnet-scrollbar-thumb-border: var(--ghostnet-color-scroll-thumb-border);
+  /* Terminal glyph treatments for jackpots and debits */
+  --ghostnet-terminal-jackpot-flood: color-mix(in srgb, var(--ghostnet-color-success) 88%, transparent);
+  --ghostnet-terminal-jackpot-flood-shadow: color-mix(in srgb, var(--ghostnet-color-success) 58%, transparent);
+  --ghostnet-terminal-jackpot-flood-accent: color-mix(in srgb, var(--ghostnet-color-primary-light) 28%, transparent);
+  --ghostnet-terminal-debit: color-mix(in srgb, var(--ghostnet-color-warning) 92%, transparent);
+  --ghostnet-terminal-debit-shadow: color-mix(in srgb, var(--ghostnet-color-warning) 64%, transparent);
+  --ghostnet-terminal-debit-contrast: color-mix(in srgb, var(--ghostnet-color-text-strong) 94%, transparent);
   --ghostnet-table-header: linear-gradient(
     180deg,
     color-mix(in srgb, var(--ghostnet-color-primary) 82%, transparent) 0%,
@@ -501,9 +508,23 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   color: color-mix(in srgb, var(--ghostnet-color-primary-light) 82%, transparent);
 }
 
+.terminalPromptJackpotFloodGlyph {
+  color: var(--ghostnet-terminal-jackpot-flood);
+  text-shadow:
+    0 0 18px var(--ghostnet-terminal-jackpot-flood-shadow),
+    0 0 28px var(--ghostnet-terminal-jackpot-flood-accent);
+  animation: terminalJackpotFloodPulse 1.6s ease-in-out infinite;
+}
+
 .terminalPromptJackpotSummary {
   color: var(--ghostnet-color-success);
   text-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-success) 48%, transparent);
+}
+
+.terminalPromptDebitGlyph {
+  color: var(--ghostnet-terminal-debit);
+  text-shadow: 0 0 16px var(--ghostnet-terminal-debit-shadow);
+  animation: terminalDebitGlyphPulse 1.8s steps(2, end) infinite;
 }
 
 .terminalText {
@@ -572,11 +593,29 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   animation: terminalJackpotGlyph 1.4s ease-in-out infinite;
 }
 
+.terminalTextJackpotFloodGlyph {
+  color: var(--ghostnet-terminal-jackpot-flood);
+  text-shadow:
+    0 0 18px var(--ghostnet-terminal-jackpot-flood-shadow),
+    0 0 36px var(--ghostnet-terminal-jackpot-flood-accent);
+  letter-spacing: 0.22em;
+  animation: terminalJackpotFloodGlyphDrift 2s linear infinite;
+}
+
 .terminalTextJackpotSummary {
   color: var(--ghostnet-color-success);
   font-weight: 600;
   letter-spacing: 0.18em;
   text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-success) 52%, transparent);
+}
+
+.terminalTextDebitGlyph {
+  color: var(--ghostnet-terminal-debit-contrast);
+  letter-spacing: 0.24em;
+  text-shadow:
+    0 0 16px var(--ghostnet-terminal-debit-shadow),
+    0 0 24px color-mix(in srgb, var(--ghostnet-color-warning) 46%, transparent);
+  animation: terminalDebitGlyphPulse 1.8s steps(2, end) infinite;
 }
 
 @keyframes terminalLineReveal {
@@ -640,6 +679,57 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   }
   100% {
     text-shadow: 0 0 16px color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent);
+  }
+}
+
+@keyframes terminalJackpotFloodPulse {
+  0% {
+    opacity: 0.72;
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.72;
+  }
+}
+
+@keyframes terminalJackpotFloodGlyphDrift {
+  0% {
+    text-shadow:
+      0 0 18px var(--ghostnet-terminal-jackpot-flood-shadow),
+      0 0 26px var(--ghostnet-terminal-jackpot-flood-accent);
+  }
+  50% {
+    text-shadow:
+      0 0 22px var(--ghostnet-terminal-jackpot-flood-shadow),
+      0 0 42px var(--ghostnet-terminal-jackpot-flood-accent);
+  }
+  100% {
+    text-shadow:
+      0 0 18px var(--ghostnet-terminal-jackpot-flood-shadow),
+      0 0 26px var(--ghostnet-terminal-jackpot-flood-accent);
+  }
+}
+
+@keyframes terminalDebitGlyphPulse {
+  0% {
+    opacity: 0.76;
+    text-shadow:
+      0 0 12px var(--ghostnet-terminal-debit-shadow),
+      0 0 18px color-mix(in srgb, var(--ghostnet-color-warning) 40%, transparent);
+  }
+  50% {
+    opacity: 1;
+    text-shadow:
+      0 0 22px var(--ghostnet-terminal-debit-shadow),
+      0 0 32px color-mix(in srgb, var(--ghostnet-color-warning) 60%, transparent);
+  }
+  100% {
+    opacity: 0.76;
+    text-shadow:
+      0 0 12px var(--ghostnet-terminal-debit-shadow),
+      0 0 18px color-mix(in srgb, var(--ghostnet-color-warning) 40%, transparent);
   }
 }
 

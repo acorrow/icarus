@@ -1,6 +1,12 @@
 import React from 'react'
 import { render, screen, act } from '@testing-library/react'
-import GhostnetPage from '../pages/ghostnet'
+import GhostnetPage, {
+  createTransactionSequence,
+  createJackpotFloodConfig,
+  TERMINAL_PROMPT_TYPE_CLASS_MAP,
+  TERMINAL_TEXT_TYPE_CLASS_MAP
+} from '../pages/ghostnet'
+import styles from '../pages/ghostnet.module.css'
 
 jest.mock('next/router', () => ({
   useRouter: () => ({
@@ -58,5 +64,54 @@ describe('Ghost Net page', () => {
     expect(mockSendEvent).toHaveBeenCalledWith('getTokenBalance')
     expect(await screen.findByText(/tokens/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /request 100000 tokens/i })).toBeInTheDocument()
+  })
+})
+
+describe('Ghost Net terminal sequences', () => {
+  it('creates jackpot flood glyph lines when metadata marks a jackpot', () => {
+    const entry = {
+      id: 'jackpot-entry',
+      type: 'earn',
+      delta: 5000,
+      balance: 18000,
+      metadata: { jackpot: true }
+    }
+
+    const sequence = createTransactionSequence(entry, { prefersReducedMotion: true })
+    const lineTypes = sequence
+      .map(item => (item?.line && item.line.type) || item.type)
+      .filter(Boolean)
+
+    expect(lineTypes).toContain('jackpotFloodGlyph')
+  })
+
+  it('creates debit glyph lines for spend transactions', () => {
+    const entry = {
+      id: 'debit-entry',
+      type: 'spend',
+      delta: -720,
+      balance: 7200,
+      metadata: { reason: 'test-spend' }
+    }
+
+    const sequence = createTransactionSequence(entry, { prefersReducedMotion: true })
+    const lineTypes = sequence
+      .map(item => (item?.line && item.line.type) || item.type)
+      .filter(Boolean)
+
+    expect(lineTypes).toContain('debitGlyph')
+  })
+
+  it('generates jackpot flood config with emerald glyph types', () => {
+    const { floodLines } = createJackpotFloodConfig({ metadata: { jackpot: true } }, { prefersReducedMotion: true })
+    expect(floodLines).not.toHaveLength(0)
+    expect(floodLines.every(item => item?.line?.type === 'jackpotFloodGlyph')).toBe(true)
+  })
+
+  it('maps new glyph types to the expected CSS tokens', () => {
+    expect(TERMINAL_PROMPT_TYPE_CLASS_MAP.jackpotFloodGlyph).toBe(styles.terminalPromptJackpotFloodGlyph)
+    expect(TERMINAL_TEXT_TYPE_CLASS_MAP.jackpotFloodGlyph).toBe(styles.terminalTextJackpotFloodGlyph)
+    expect(TERMINAL_PROMPT_TYPE_CLASS_MAP.debitGlyph).toBe(styles.terminalPromptDebitGlyph)
+    expect(TERMINAL_TEXT_TYPE_CLASS_MAP.debitGlyph).toBe(styles.terminalTextDebitGlyph)
   })
 })
