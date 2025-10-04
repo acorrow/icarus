@@ -1,6 +1,7 @@
 /* global WebSocket, CustomEvent */
 import { createContext, useState, useContext, useEffect } from 'react'
 import notification from 'lib/notification'
+import { getMockShipStatus, getMockSystemData } from './ghostnet-mock-data'
 
 let socket = null // Store socket connection (defaults to null)
 let callbackHandlers = {} // Store callbacks waiting to be executed (pending response from server)
@@ -17,9 +18,24 @@ const socketOptions = {
   notifications: true
 }
 
+function isLayoutSandbox () {
+  if (typeof window === 'undefined') return false
+  return Boolean(window.__GHOSTNET_LAYOUT_SANDBOX__)
+}
+
 function socketDebugMessage () { /* console.log(...arguments) */ }
 
 function connect (setSocketState) {
+  if (isLayoutSandbox()) {
+    setSocketState(prevState => ({
+      ...prevState,
+      connected: true,
+      ready: true,
+      active: false
+    }))
+    return
+  }
+
   if (typeof window === 'undefined' || typeof WebSocket === 'undefined') return
   if (socket !== null) return
 
@@ -146,6 +162,19 @@ function connect (setSocketState) {
 
 const SocketContext = createContext()
 
+function handleSandboxEvent (name, message) {
+  switch (name) {
+    case 'getShipStatus':
+      return getMockShipStatus()
+    case 'getSystem':
+      return getMockSystemData(message?.name)
+    case 'getLoadingStatus':
+      return { loadingComplete: true }
+    default:
+      return null
+  }
+}
+
 function SocketProvider ({ children }) {
   const [socketState, setSocketState] = useState(defaultSocketState)
 
@@ -170,6 +199,9 @@ function SocketProvider ({ children }) {
 function useSocket () { return useContext(SocketContext) }
 
 function sendEvent (name, message = null) {
+  if (isLayoutSandbox()) {
+    return Promise.resolve(handleSandboxEvent(name, message))
+  }
   if (typeof WebSocket === 'undefined') {
     return Promise.resolve(null)
   }
