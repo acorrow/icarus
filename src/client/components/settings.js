@@ -82,8 +82,6 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
 }
 
 function GhostnetSettings () {
-  const patreonUrl = 'https://www.patreon.com/artieghostnet'
-  const patreonWindowFeatures = 'noopener,noreferrer'
   const [useMockData, setUseMockData] = useState(false)
   const [assimilationDuration, setAssimilationDuration] = useState(ASSIMILATION_DURATION_DEFAULT)
   const [saved, setSaved] = useState(false)
@@ -149,21 +147,6 @@ function GhostnetSettings () {
         <button type='submit' style={{ fontSize: '1.1rem' }}>Save</button>
         {saved && <span className='text-success' style={{ marginLeft: '1rem' }}>Saved!</span>}
       </form>
-      <hr style={{ margin: '2rem 0 1rem 0' }} />
-      <section>
-        <h4 className='text-primary' style={{ marginBottom: '0.5rem' }}>Support GHOSTNET</h4>
-        <p className='text-muted' style={{ fontSize: '0.95rem', marginBottom: '1rem' }}>
-          Show your support for GHOSTNET and access exclusive updates on Patreon.
-        </p>
-        <button
-          type='button'
-          className='button'
-          onClick={() => typeof window !== 'undefined' && window.open(patreonUrl, '_blank', patreonWindowFeatures)}
-          style={{ fontSize: '1.05rem' }}
-        >
-          Visit GHOSTNET on Patreon
-        </button>
-      </section>
     </div>
   )
 }
