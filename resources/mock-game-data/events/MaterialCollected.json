@@ -1,0 +1,5 @@
+[
+  { "timestamp": "2025-10-03T17:20:41Z", "event": "MaterialCollected", "Category": "Raw", "Name": "nickel", "Count": 3 },
+  { "timestamp": "2025-10-03T17:22:15Z", "event": "MaterialCollected", "Category": "Raw", "Name": "carbon", "Count": 3 },
+  { "timestamp": "2025-10-03T17:30:07Z", "event": "MaterialCollected", "Category": "Raw", "Name": "phosphorus", "Count": 3 }
+]
