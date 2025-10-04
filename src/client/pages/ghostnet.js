@@ -59,6 +59,45 @@ const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
 const STATION_TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }
 
+const HERO_CONTENT = {
+  tradeRoutes: {
+    title: 'Trade Routes',
+    subtitle: 'Plot the richest supply loops anchored to your current system and allied demand clusters.',
+    statusLabel: 'Trade routes uplink status',
+    status: [
+      { label: 'Signal Focus', value: 'Trade Routes' },
+      { label: 'Routing Sync', value: 'Live' }
+    ]
+  },
+  cargoHold: {
+    title: 'Cargo Hold',
+    subtitle: 'Audit your manifest in real time, highlighting tonnage, legality, and storage pressure.',
+    statusLabel: 'Cargo manifest telemetry',
+    status: [
+      { label: 'Signal Focus', value: 'Cargo Hold' },
+      { label: 'Manifest Sync', value: 'Live' }
+    ]
+  },
+  missions: {
+    title: 'Missions Board',
+    subtitle: 'Monitor active contracts and time-sensitive opportunities streamed straight from station logs.',
+    statusLabel: 'Mission board feed status',
+    status: [
+      { label: 'Signal Focus', value: 'Missions' },
+      { label: 'Board Feed', value: 'Streaming' }
+    ]
+  },
+  pristineMining: {
+    title: 'Pristine Mining Locations',
+    subtitle: 'Surface the highest-yield rings and surface deposits suited to your refinery and ship loadout.',
+    statusLabel: 'Prospecting intelligence status',
+    status: [
+      { label: 'Signal Focus', value: 'Pristine Mining' },
+      { label: 'Prospect Sync', value: 'Active' }
+    ]
+  }
+}
+
 function getMissionsCacheStorage () {
   if (typeof window === 'undefined') {
     return { entries: {} }
@@ -4577,6 +4616,7 @@ export default function GhostnetPage() {
   ]), [activeTab])
 
   const ghostnetClassName = [styles.ghostnet, arrivalMode ? styles.arrival : ''].filter(Boolean).join(' ')
+  const heroContent = HERO_CONTENT[activeTab] || HERO_CONTENT.tradeRoutes
 
   return (
     <Layout connected={connected} active={socketActive} ready={ready} loader={false}>
@@ -4590,23 +4630,27 @@ export default function GhostnetPage() {
         <div className={ghostnetClassName}>
           <div className={styles.hero}>
             <div className={styles.heroHeader}>
-              <h1 className={styles.heroTitle}>GhostNet Operations</h1>
-              <p className={styles.heroSubtitle}>
-                Synthesise trade intelligence, mission alerts, and refinery telemetry in one continuous sweep.
-              </p>
+              <h1 className={styles.heroTitle}>{heroContent.title}</h1>
+              {heroContent.subtitle && (
+                <p className={styles.heroSubtitle}>{heroContent.subtitle}</p>
+              )}
             </div>
-            <aside className={styles.heroStatus} role='complementary' aria-label='Signal Brief'>
-              <dl className={styles.heroStatusList}>
-                <div className={styles.heroStatusItem}>
-                  <dt className={styles.heroStatusLabel}>Uplink</dt>
-                  <dd className={styles.heroStatusValue}>Linking</dd>
-                </div>
-                <div className={styles.heroStatusItem}>
-                  <dt className={styles.heroStatusLabel}>Focus</dt>
-                  <dd className={styles.heroStatusValue}>Idle</dd>
-                </div>
-              </dl>
-            </aside>
+            {heroContent.status?.length > 0 && (
+              <aside
+                className={styles.heroStatus}
+                role='complementary'
+                aria-label={heroContent.statusLabel || 'Panel status'}
+              >
+                <dl className={styles.heroStatusList}>
+                  {heroContent.status.map(item => (
+                    <div key={item.label} className={styles.heroStatusItem}>
+                      <dt className={styles.heroStatusLabel}>{item.label}</dt>
+                      <dd className={styles.heroStatusValue}>{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </aside>
+            )}
           </div>
           <div className={styles.shell}>
             <div className={styles.tabPanels}>
