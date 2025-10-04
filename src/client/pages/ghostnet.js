@@ -5800,7 +5800,6 @@ export default function GhostnetPage() {
     { name: 'Cargo Hold', icon: 'cargo', active: activeTab === 'cargoHold', onClick: () => setActiveTab('cargoHold') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
-    { name: 'Engineering Opportunities', icon: 'engineer', active: false, url: '/ghostnet/engineering' },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
 
   ]), [activeTab])
