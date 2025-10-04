@@ -12,6 +12,7 @@ const proxy = httpProxy.createProxyServer({})
 const WebSocket = require('ws')
 const yargs = require('yargs')
 const packageJson = require('../../package.json')
+const TokenLedger = require('./lib/token-ledger')
 
 const commandLineArgs = yargs
   .help()
@@ -101,6 +102,9 @@ global.LOG_DIR = LOG_DIR
 global.USING_MOCK_DATA = USING_MOCK_DATA
 global.BROADCAST_EVENT = broadcastEvent
 
+const tokenLedger = new TokenLedger()
+global.TOKEN_LEDGER = tokenLedger
+
 // Initalise simple in-memory object cache (reset when program restarted)
 global.CACHE = {
   SYSTEMS: {}
@@ -177,6 +181,14 @@ webSocketServer.on('error', function (error) {
 })
 
 async function startService () {
+  try {
+    const snapshot = await tokenLedger.bootstrap()
+    console.log(`[TokenLedger] Bootstrapped in ${snapshot.mode} mode with balance ${snapshot.balance}`)
+    broadcastEvent('ghostnetTokensUpdated', { snapshot })
+  } catch (error) {
+    console.error('Failed to bootstrap token ledger', error)
+  }
+
   try {
     console.log('Initializing log readers before starting web server…')
     await init()

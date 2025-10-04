@@ -237,6 +237,83 @@
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
 }
 
+.terminalTokenRow {
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+}
+
+.terminalTokenLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
+}
+
+.terminalTokenValue {
+  font-size: 0.96rem;
+  letter-spacing: 0.08em;
+  color: var(--ghostnet-color-text-strong);
+  min-width: 5rem;
+  text-align: right;
+}
+
+.terminalTokenValueNegative {
+  color: var(--ghostnet-color-warning);
+  text-shadow: 0 0 0.8rem color-mix(in srgb, var(--ghostnet-color-warning) 55%, transparent);
+}
+
+.terminalTokenButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  border: 1px solid var(--ghostnet-border-strong);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 68%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 46%, transparent));
+  color: var(--ghostnet-color-text-strong);
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  box-shadow: 0 0 0 transparent;
+}
+
+button.terminalTokenButton:hover:not([disabled]),
+button.terminalTokenButton:focus-visible:not([disabled]) {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 84%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 58%, transparent));
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
+}
+
+button.terminalTokenButton:focus-visible:not([disabled]) {
+  outline: 2px solid color-mix(in srgb, var(--ghostnet-color-primary-light) 90%, transparent);
+  outline-offset: 3px;
+}
+
+button.terminalTokenButton:active:not([disabled]) {
+  transform: translateY(1px);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary-dark) 72%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--ghostnet-color-primary-dark) 40%, transparent);
+}
+
+button.terminalTokenButton:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.terminalTokenMeta {
+  margin-top: 0.35rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 54%, transparent);
+}
+
 .terminalToggle {
   position: relative;
   display: inline-flex;
