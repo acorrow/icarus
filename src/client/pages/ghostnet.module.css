@@ -361,6 +361,14 @@
   text-shadow: 0 0 0.8rem color-mix(in srgb, var(--ghostnet-color-warning) 55%, transparent);
 }
 
+.terminalTokenValueFlashCredit {
+  animation: terminalTokenFlashCredit 680ms ease;
+}
+
+.terminalTokenValueFlashDebit {
+  animation: terminalTokenFlashDebit 680ms ease;
+}
+
 .terminalTokenButton {
   display: inline-flex;
   align-items: center;
@@ -554,6 +562,30 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-success) 58%, transparent);
 }
 
+.terminalPromptTransaction {
+  color: color-mix(in srgb, var(--ghostnet-color-success) 88%, transparent);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-success) 40%, transparent);
+}
+
+.terminalPromptSimulation {
+  color: var(--ghostnet-color-warning);
+  animation: terminalSimulationPulse 1.4s ease-in-out infinite;
+}
+
+.terminalPromptJackpot {
+  color: var(--ghostnet-color-primary);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-primary) 65%, transparent);
+}
+
+.terminalPromptJackpotGlyph {
+  color: color-mix(in srgb, var(--ghostnet-color-primary-light) 82%, transparent);
+}
+
+.terminalPromptJackpotSummary {
+  color: var(--ghostnet-color-success);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-success) 48%, transparent);
+}
+
 .terminalText {
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 82%, transparent);
 }
@@ -593,6 +625,40 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   letter-spacing: 0.2em;
 }
 
+.terminalTextTransaction {
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 92%, transparent);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.terminalTextSimulation {
+  color: var(--ghostnet-color-warning);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  animation: terminalSimulationTextPulse 1.4s ease-in-out infinite;
+}
+
+.terminalTextJackpot {
+  color: var(--ghostnet-color-primary);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 22px color-mix(in srgb, var(--ghostnet-color-primary) 58%, transparent);
+  animation: terminalJackpotShimmer 2.2s linear infinite;
+}
+
+.terminalTextJackpotGlyph {
+  color: color-mix(in srgb, var(--ghostnet-color-primary-light) 88%, transparent);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-primary-light) 55%, transparent);
+  animation: terminalJackpotGlyph 1.4s ease-in-out infinite;
+}
+
+.terminalTextJackpotSummary {
+  color: var(--ghostnet-color-success);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-success) 52%, transparent);
+}
+
 @keyframes terminalLineReveal {
   from {
     transform: translateY(0.35rem);
@@ -618,6 +684,79 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   100% {
     transform: translate3d(0, 120%, 0);
     opacity: 0;
+  }
+}
+
+@keyframes terminalSimulationPulse {
+  0% {
+    color: color-mix(in srgb, var(--ghostnet-color-warning) 72%, transparent);
+  }
+  50% {
+    color: color-mix(in srgb, var(--ghostnet-color-primary-light) 90%, transparent);
+  }
+  100% {
+    color: color-mix(in srgb, var(--ghostnet-color-warning) 72%, transparent);
+  }
+}
+
+@keyframes terminalSimulationTextPulse {
+  0% {
+    text-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-warning) 60%, transparent);
+  }
+  50% {
+    text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-primary) 55%, transparent);
+  }
+  100% {
+    text-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-warning) 60%, transparent);
+  }
+}
+
+@keyframes terminalJackpotShimmer {
+  0% {
+    text-shadow: 0 0 16px color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent);
+  }
+  50% {
+    text-shadow: 0 0 28px color-mix(in srgb, var(--ghostnet-color-primary-light) 70%, transparent);
+  }
+  100% {
+    text-shadow: 0 0 16px color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent);
+  }
+}
+
+@keyframes terminalJackpotGlyph {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 0.65;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes terminalTokenFlashCredit {
+  0% {
+    color: var(--ghostnet-color-success);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-success) 60%, transparent);
+  }
+  100% {
+    color: var(--ghostnet-color-text-strong);
+    text-shadow: none;
+  }
+}
+
+@keyframes terminalTokenFlashDebit {
+  0% {
+    color: var(--ghostnet-color-warning);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-warning) 58%, transparent);
+  }
+  100% {
+    color: var(--ghostnet-color-text-strong);
+    text-shadow: none;
   }
 }
 
