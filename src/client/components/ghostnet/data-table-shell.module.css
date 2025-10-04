@@ -1,0 +1,435 @@
+.container {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
+  border-radius: 1.25rem;
+  box-shadow: 0 1.75rem 3.5rem color-mix(in srgb, var(--ghostnet-color-background) 75%, transparent);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.dataTableContainer {
+  position: relative;
+  border-radius: 1.15rem;
+  background: linear-gradient(
+      175deg,
+      color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent) 0%,
+      color-mix(in srgb, var(--ghostnet-color-primary-dark) 12%, transparent) 45%,
+      transparent 100%
+    ),
+    linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-background) 95%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-background) 94%, transparent) 100%);
+  box-shadow: 0 1.65rem 3.75rem color-mix(in srgb, var(--ghostnet-color-background) 78%, transparent);
+  overflow: hidden;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  color: var(--ghostnet-ink);
+  line-height: 1.45;
+  background: transparent;
+}
+
+.dataTableFixed {
+  table-layout: fixed;
+}
+
+.dataTableDense td {
+  line-height: 1.35;
+}
+
+.dataTable thead {
+  background: var(--ghostnet-table-header);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
+}
+
+.dataTable thead tr {
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
+  background: var(--ghostnet-table-header);
+}
+
+.dataTable thead th {
+  padding: 0.75rem 1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 88%, transparent);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dataTable tbody tr {
+  background: color-mix(in srgb, var(--ghostnet-color-surface) 85%, var(--ghostnet-color-background) 15%);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
+  transition: background 0.25s ease, transform 0.25s ease;
+  font-size: 0.95rem;
+}
+
+.dataTable tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 22%, var(--ghostnet-color-background) 78%);
+}
+
+.dataTable tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.dataTable tbody tr:hover {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 24%, var(--ghostnet-color-surface) 76%);
+}
+
+.dataTable td {
+  padding: 0.75rem 1rem;
+  color: var(--ghostnet-ink);
+  text-transform: none !important;
+  vertical-align: middle;
+}
+
+.nonCommodityRow {
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 40%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.nonCommodityRow td {
+  padding: 0.45rem 0.75rem;
+}
+
+.nonCommodityRowContent {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.nonCommodityLabel {
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+}
+
+.nonCommodityTag {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+}
+
+.nonCommodityQuantity {
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  margin-left: auto;
+  color: var(--ghostnet-muted);
+}
+
+.dataTable :global([data-ghostnet-table-row]) {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition-delay: var(--ghostnet-row-delay, 0s);
+}
+
+.dataTable :global([data-ghostnet-table-row='visible']) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tableCellTop {
+  vertical-align: top;
+}
+
+.tableCellTight {
+  padding: 0.6rem 0.75rem;
+}
+
+.tableCellCompact {
+  padding: 0.5rem 0.65rem;
+}
+
+.tableCellCaret {
+  padding: 0.6rem 0.35rem;
+  text-align: center;
+  vertical-align: top;
+  color: var(--ghostnet-accent);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.tableCellWrap {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.tableCellInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tableHeaderInteractive {
+  cursor: pointer;
+  user-select: none;
+}
+
+.tableHeaderInteractive:focus-visible {
+  outline: 2px solid var(--ghostnet-color-success);
+  outline-offset: 2px;
+}
+
+.tableHeaderButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tableHeaderButton:focus-visible {
+  outline: 2px solid var(--ghostnet-color-success);
+  outline-offset: 2px;
+}
+
+.tableHeaderButtonActive {
+  color: var(--ghostnet-accent);
+}
+
+.tableSortIndicator {
+  font-size: 0.85rem;
+  color: var(--ghostnet-accent);
+}
+
+.tableRowInteractive {
+  cursor: pointer;
+}
+
+.tableRowInteractive:hover {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent);
+}
+
+.tableRowExpanded {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent) !important;
+}
+
+.tableRowExpanded:hover {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent) !important;
+}
+
+.tableDetailRow {
+  background: transparent !important;
+}
+
+.tableDetailRow td {
+  background: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
+  padding: 0 1.5rem 1.5rem;
+}
+
+.tableDetailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  color: var(--ghostnet-muted);
+}
+
+.tableDetailSection span {
+  line-height: 1.4;
+}
+
+.tableTextNeutral {
+  color: var(--ghostnet-accent);
+}
+
+.tableTextSuccess {
+  color: var(--ghostnet-color-success);
+}
+
+.tableTextDanger {
+  color: var(--ghostnet-color-warning);
+}
+
+.message {
+  color: var(--ghostnet-muted);
+  padding: 1.25rem 2rem;
+}
+
+.messageBorder {
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
+}
+
+.state {
+  padding: 2rem;
+}
+
+.stateMuted {
+  color: var(--ghostnet-muted);
+}
+
+.stateError {
+  color: var(--ghostnet-color-warning);
+}
+
+.tableSubtext {
+  color: var(--ghostnet-muted);
+  font-size: 0.82rem;
+  margin-top: 0.35rem;
+}
+
+.tableMetaMuted {
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.tableWarning {
+  color: var(--ghostnet-color-warning);
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+}
+
+.tableMutedNote {
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
+  font-size: 0.75rem;
+  margin-top: 0.45rem;
+}
+
+.tableIndicatorPlaceholder {
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.5rem 1rem;
+}
+
+.headerMain {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.headerControls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.scrollArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 78%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-background) 90%, transparent) 100%
+  );
+  scrollbar-color: color-mix(in srgb, var(--ghostnet-color-primary) 60%, transparent)
+    color-mix(in srgb, var(--ghostnet-color-background) 85%, transparent);
+}
+
+.scrollArea::-webkit-scrollbar {
+  width: 0.65rem;
+}
+
+.scrollArea::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--ghostnet-color-background) 75%, transparent);
+  border-radius: 0.65rem;
+}
+
+.scrollArea::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ghostnet-color-primary) 75%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 85%, transparent) 100%
+  );
+  border-radius: 0.65rem;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ghostnet-color-background) 55%, transparent) inset;
+}
+
+.scrollArea::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ghostnet-color-primary) 85%, transparent) 0%,
+    color-mix(in srgb, var(--ghostnet-color-primary-dark) 90%, transparent) 100%
+  );
+}
+
+.container :global(.text-primary) {
+  color: var(--ghostnet-accent);
+}
+
+.container :global(.text-secondary) {
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 85%, transparent);
+}
+
+.container :global(.text-muted),
+.container :global(.ghostnet-muted) {
+  color: var(--ghostnet-muted);
+}
+
+.container :global(.ghostnet-spinner__label) {
+  color: var(--ghostnet-muted);
+}
+
+.container :global(.ghostnet-spinner__icon) {
+  border-color: var(--ghostnet-accent);
+  border-right-color: transparent;
+}
+
+.container :global(.button--active) {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  border-color: color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
+}
+
+.container :global(.button--active:hover) {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent);
+}
+
+.container :global(.button--icon) {
+  color: var(--ghostnet-ink);
+}
+
+.container :global(.button--icon:hover),
+.container :global(.button--secondary:hover) {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent);
+}
+
+.container :global(.button--secondary) {
+  color: var(--ghostnet-accent);
+}
+
+.container :global(.pristine-mining__detail) {
+  background: color-mix(in srgb, var(--ghostnet-color-background) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent);
+}
+
+.container :global(.pristine-mining__detail-status) {
+  color: var(--ghostnet-muted);
+}
+
+.container :global(.pristine-mining__detail-links span) {
+  color: var(--ghostnet-accent);
+}
+
+.container :global(.pristine-mining__detail-status--error) {
+  color: var(--ghostnet-color-warning);
+}
+
+.container :global(.pristine-mining__inspector) {
+  border-left: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent);
+}

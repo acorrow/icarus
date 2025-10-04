@@ -12,6 +12,8 @@ import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/ghostnet-formatters'
 import { sanitizeInaraText } from '../lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from '../lib/station-icons'
+import DataTableShell, { TABLE_SCROLL_AREA_STYLE } from '../components/ghostnet/data-table-shell'
+import tableStyles from '../components/ghostnet/data-table-shell.module.css'
 import styles from './ghostnet.module.css'
 
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
@@ -55,7 +57,6 @@ function normaliseName (value) {
 
 const MISSIONS_CACHE_KEY = 'icarus.ghostnetMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
-const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
 const STATION_TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }
 
 function getMissionsCacheStorage () {
@@ -323,13 +324,13 @@ function getFactionStandingDisplay(factionName, standings) {
   let className = null
   let color = 'var(--ghostnet-subdued)'
   if (normalizedStanding === 'ally') {
-    className = styles.tableTextSuccess
+    className = tableStyles.tableTextSuccess
     color = '#29f3c3'
   } else if (normalizedStanding === 'hostile') {
-    className = styles.tableTextDanger
+    className = tableStyles.tableTextDanger
     color = '#ff5fc1'
   } else if (normalizedStanding) {
-    className = styles.tableTextNeutral
+    className = tableStyles.tableTextNeutral
     color = 'var(--ghostnet-accent)'
   }
 
@@ -858,6 +859,45 @@ function generateMockTradeRoutes ({ systemName, cargoCapacity, count = 5 }) {
   })
 }
 
+function generateMockPristineLocations ({ systemName, count = 6 }) {
+  const baseSystem = systemName && systemName.trim() ? systemName.trim() : 'Sandbox System'
+  const bodyTypes = ['Icy Body', 'High Metal Content World', 'Rocky Ice World', 'Rocky Body']
+  const ringTypes = ['Metallic', 'Metal Rich', 'Icy', 'Rocky']
+  const reservesLevels = ['Pristine', 'Major', 'High']
+  const now = Date.now()
+
+  const createDistanceText = (value, unit) => `${value.toLocaleString(undefined, { maximumFractionDigits: unit === 'Ly' ? 2 : 0 })} ${unit}`
+
+  const locations = Array.from({ length: count }).map((_, index) => {
+    const ordinal = index + 1
+    const bodyDistanceLs = 450 + (index * 120)
+    const distanceLy = 12 + (index * 3.4)
+
+    return {
+      system: index % 2 === 0 ? baseSystem : `${baseSystem} Cluster ${String.fromCharCode(65 + index)}`,
+      body: `${baseSystem.split(' ')[0] || 'Sandbox'} ${ordinal} ${String.fromCharCode(65 + (index % 3))}`,
+      bodyType: bodyTypes[index % bodyTypes.length],
+      ringType: `${ringTypes[index % ringTypes.length]} Ring`,
+      reservesLevel: reservesLevels[index % reservesLevels.length],
+      bodyDistanceLs,
+      bodyDistanceText: createDistanceText(bodyDistanceLs, 'Ls'),
+      distanceLy,
+      distanceText: createDistanceText(distanceLy, 'Ly'),
+      isTargetSystem: index % 2 === 0,
+      systemUrl: '#',
+      bodyUrl: '#',
+      updatedAt: new Date(now - index * 45 * 60000).toISOString()
+    }
+  })
+
+  return {
+    locations,
+    message: `Mock pristine mining results aligned with ${baseSystem}.`,
+    sourceUrl: 'https://ghost.net/mock/pristine-mining',
+    systemName: baseSystem
+  }
+}
+
 function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   const [systemSelection, setSystemSelection] = useState('')
   const [systemInput, setSystemInput] = useState('')
@@ -1184,95 +1224,78 @@ function MissionsPanel () {
         </p>
         {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       </div>
-      <div className='ghostnet-panel-table'>
-        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-          {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
-              {displayMessage}
-            </div>
-          )}
-          {status === 'idle' && (
-            <div className={styles.tableIdleState}>
-              Waiting for current system information...
-            </div>
-          )}
-          {status === 'loading' && (
-            <div className={styles.tableIdleState}>Linking mission beacons…</div>
-          )}
-          {status === 'error' && !error && (
-            <div className={styles.tableErrorState}>Unable to load missions.</div>
-          )}
-          {status === 'empty' && (
-            <div className={styles.tableEmptyState}>
-              No mining missions located near {displaySystemName || 'your current system'}.
-            </div>
-          )}
-          {status === 'populated' && missions.length > 0 && (
-            <div className={styles.dataTableContainer}>
-              <table className={styles.dataTable}>
-                <thead>
-                  <tr>
-                  <th>Faction</th>
-                  <th>System</th>
-                  <th className='hidden-small text-right'>Distance</th>
-                  <th className='hidden-small text-right'>Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {missions.map((mission, index) => {
-                  const key = `${mission.system || 'unknown'}-${mission.faction || 'faction'}-${index}`
-                  const distanceDisplay = formatSystemDistance(mission.distanceLy, mission.distanceText)
-                  const updatedDisplay = formatRelativeTime(mission.updatedAt || mission.updatedText)
-                  const isTargetSystem = mission.isTargetSystem
-                  const factionKey = normaliseFactionKey(mission.faction)
-                  const factionInfo = factionKey ? factionStandings[factionKey] : null
-                  const standingClass = factionInfo?.standing === 'ally'
-                    ? styles.tableTextSuccess
-                    : factionInfo?.standing === 'hostile'
-                      ? styles.tableTextDanger
-                      : styles.tableTextNeutral
-                  const standingLabel = factionInfo?.relation || (factionInfo?.standing
-                    ? `${factionInfo.standing.charAt(0).toUpperCase()}${factionInfo.standing.slice(1)}`
-                    : null)
-                  const reputationLabel = typeof factionInfo?.reputation === 'number'
-                    ? formatReputationPercent(factionInfo.reputation)
-                    : null
-                  const factionTitle = [standingLabel, reputationLabel && `Reputation ${reputationLabel}`]
-                    .filter(Boolean)
-                    .join(' · ') || undefined
+      <DataTableShell
+        status={status}
+        message={displayMessage}
+        idleContent='Waiting for current system information...'
+        loadingContent={<div className={`${tableStyles.state} ${tableStyles.stateMuted}`}>Linking mission beacons…</div>}
+        errorContent={status === 'error' && !error ? 'Unable to load missions.' : null}
+        emptyContent={`No mining missions located near ${displaySystemName || 'your current system'}.`}
+        aria-label='Mining missions'
+      >
+        {status === 'populated' && missions.length > 0 ? (
+          <table className={tableStyles.dataTable}>
+            <thead>
+              <tr>
+                <th>Faction</th>
+                <th>System</th>
+                <th className='hidden-small text-right'>Distance</th>
+                <th className='hidden-small text-right'>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {missions.map((mission, index) => {
+                const key = `${mission.system || 'unknown'}-${mission.faction || 'faction'}-${index}`
+                const distanceDisplay = formatSystemDistance(mission.distanceLy, mission.distanceText)
+                const updatedDisplay = formatRelativeTime(mission.updatedAt || mission.updatedText)
+                const isTargetSystem = mission.isTargetSystem
+                const factionKey = normaliseFactionKey(mission.faction)
+                const factionInfo = factionKey ? factionStandings[factionKey] : null
+                const standingClass = factionInfo?.standing === 'ally'
+                  ? tableStyles.tableTextSuccess
+                  : factionInfo?.standing === 'hostile'
+                    ? tableStyles.tableTextDanger
+                    : tableStyles.tableTextNeutral
+                const standingLabel = factionInfo?.relation || (factionInfo?.standing
+                  ? `${factionInfo.standing.charAt(0).toUpperCase()}${factionInfo.standing.slice(1)}`
+                  : null)
+                const reputationLabel = typeof factionInfo?.reputation === 'number'
+                  ? formatReputationPercent(factionInfo.reputation)
+                  : null
+                const factionTitle = [standingLabel, reputationLabel && `Reputation ${reputationLabel}`]
+                  .filter(Boolean)
+                  .join(' · ') || undefined
 
-                  return (
-                    <tr key={key} data-ghostnet-table-row='pending'>
-                      <td className={`${styles.tableCellTop}`}>
-                        {mission.faction
-                          ? (
+                return (
+                  <tr key={key} data-ghostnet-table-row='pending'>
+                    <td className={tableStyles.tableCellTop}>
+                      {mission.faction
+                        ? (
                             <span className={standingClass} title={factionTitle}>{mission.faction}</span>
-                            )
-                          : '--'}
-                      </td>
-                      <td className={styles.tableCellTop}>
-                        <div className={`${styles.tableCellInline} text-no-wrap`}>
-                          {isTargetSystem
-                            ? (
+                          )
+                        : '--'}
+                    </td>
+                    <td className={tableStyles.tableCellTop}>
+                      <div className={`${tableStyles.tableCellInline} text-no-wrap`}>
+                        {isTargetSystem
+                          ? (
                               <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
-                              )
-                            : (
+                            )
+                          : (
                               <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
-                              )}
-                          {mission.system || '--'}
-                        </div>
-                      </td>
-                      <td className={`${styles.tableCellTop} hidden-small text-right`}>{distanceDisplay || '--'}</td>
-                      <td className={`${styles.tableCellTop} hidden-small text-right`}>{updatedDisplay || mission.updatedText || '--'}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
+                            )}
+                        {mission.system || '--'}
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.tableCellTop} hidden-small text-right`}>{distanceDisplay || '--'}</td>
+                    <td className={`${tableStyles.tableCellTop} hidden-small text-right`}>{updatedDisplay || mission.updatedText || '--'}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        ) : null}
+      </DataTableShell>
     </section>
   )
 }
@@ -2571,174 +2594,181 @@ function CargoHoldPanel () {
                 </div>
               </div>
 
-              <div className='ghostnet-panel-table'>
-                <div className='scrollable' style={STATION_TABLE_SCROLL_AREA_STYLE}>
-                  {listings.length === 0 ? (
-                    <div className={styles.detailEmptyState}>
-                      No GHOSTNET listings available for this commodity.
-                    </div>
-                  ) : (
-                    <div className={styles.dataTableContainer}>
-                      <table className={`${styles.dataTable} ${styles.dataTableFixed}`}>
-                        <colgroup>
-                          <col style={{ width: '38%' }} />
-                          <col style={{ width: '18%' }} />
-                          <col style={{ width: '18%' }} />
-                          <col style={{ width: '12%' }} />
-                          <col style={{ width: '14%' }} />
-                        </colgroup>
-                        <thead>
-                          <tr>
-                            <th>Station</th>
-                            <th
-                              scope='col'
-                              aria-sort={getHeaderSortState('distanceLy')}
-                            >
-                              <button
-                                type='button'
-                                className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLy' ? styles.tableHeaderButtonActive : ''}`}
-                                onClick={() => toggleStationSort('distanceLy')}
-                              >
-                                Distance
-                                {stationSortField === 'distanceLy' && (
-                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
-                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
-                                  </span>
-                                )}
-                              </button>
-                            </th>
-                            <th
-                              scope='col'
-                              aria-sort={getHeaderSortState('distanceLs')}
-                            >
-                              <button
-                                type='button'
-                                className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLs' ? styles.tableHeaderButtonActive : ''}`}
-                                onClick={() => toggleStationSort('distanceLs')}
-                              >
-                                Station Distance
-                                {stationSortField === 'distanceLs' && (
-                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
-                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
-                                  </span>
-                                )}
-                              </button>
-                            </th>
-                            <th>Demand</th>
-                            <th
-                              scope='col'
-                              aria-sort={getHeaderSortState('price')}
-                            >
-                              <button
-                                type='button'
-                                className={`${styles.tableHeaderButton} ${stationSortField === 'price' ? styles.tableHeaderButtonActive : ''}`}
-                                onClick={() => toggleStationSort('price')}
-                              >
-                                Price
-                                {stationSortField === 'price' && (
-                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
-                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
-                                  </span>
-                                )}
-                              </button>
-                            </th>
+              <DataTableShell
+                status={listings.length === 0 ? 'empty' : 'populated'}
+                emptyContent={(
+                  <div data-table-shell-state='raw' className={styles.detailEmptyState}>
+                    No GHOSTNET listings available for this commodity.
+                  </div>
+                )}
+                scrollAreaStyle={STATION_TABLE_SCROLL_AREA_STYLE}
+                aria-label='Station listings'
+              >
+                {listings.length > 0 ? (
+                  <table className={`${tableStyles.dataTable} ${tableStyles.dataTableFixed}`}>
+                    <colgroup>
+                      <col style={{ width: '38%' }} />
+                      <col style={{ width: '18%' }} />
+                      <col style={{ width: '18%' }} />
+                      <col style={{ width: '12%' }} />
+                      <col style={{ width: '14%' }} />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th>Station</th>
+                        <th
+                          scope='col'
+                          aria-sort={getHeaderSortState('distanceLy')}
+                        >
+                          <button
+                            type='button'
+                            className={`${tableStyles.tableHeaderButton} ${stationSortField === 'distanceLy' ? tableStyles.tableHeaderButtonActive : ''}`}
+                            onClick={() => toggleStationSort('distanceLy')}
+                          >
+                            Distance
+                            {stationSortField === 'distanceLy' && (
+                              <span className={tableStyles.tableSortIndicator} aria-hidden='true'>
+                                {stationSortDirection === 'asc' ? '▲' : '▼'}
+                              </span>
+                            )}
+                          </button>
+                        </th>
+                        <th
+                          scope='col'
+                          aria-sort={getHeaderSortState('distanceLs')}
+                        >
+                          <button
+                            type='button'
+                            className={`${tableStyles.tableHeaderButton} ${stationSortField === 'distanceLs' ? tableStyles.tableHeaderButtonActive : ''}`}
+                            onClick={() => toggleStationSort('distanceLs')}
+                          >
+                            Station Distance
+                            {stationSortField === 'distanceLs' && (
+                              <span className={tableStyles.tableSortIndicator} aria-hidden='true'>
+                                {stationSortDirection === 'asc' ? '▲' : '▼'}
+                              </span>
+                            )}
+                          </button>
+                        </th>
+                        <th>Demand</th>
+                        <th
+                          scope='col'
+                          aria-sort={getHeaderSortState('price')}
+                        >
+                          <button
+                            type='button'
+                            className={`${tableStyles.tableHeaderButton} ${stationSortField === 'price' ? tableStyles.tableHeaderButtonActive : ''}`}
+                            onClick={() => toggleStationSort('price')}
+                          >
+                            Price
+                            {stationSortField === 'price' && (
+                              <span className={tableStyles.tableSortIndicator} aria-hidden='true'>
+                                {stationSortDirection === 'asc' ? '▲' : '▼'}
+                              </span>
+                            )}
+                          </button>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {listings.map((listing, listingIndex) => {
+                        const isSelected = listing.__id === defaultSelectedId
+                        const stationIcon = stationIconFromType(listing.stationType || '')
+                        const systemDistanceDisplay = formatSystemDistance(listing.distanceLy, listing.distanceLyText)
+                        const stationDistanceDisplay = formatStationDistance(listing.distanceLs, listing.distanceLsText)
+                        const demandDisplay = sanitizeInaraText(listing.demandText) || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
+                        const updatedDisplay = listing.updatedAt
+                          ? formatRelativeTime(listing.updatedAt)
+                          : (listing.updatedText || '')
+                        const priceDisplay = formatCredits(listing.price, listing.priceText || '--')
+                        const rowClasses = [tableStyles.tableRowInteractive]
+                        if (isSelected) rowClasses.push(styles.stationRowSelected)
+
+                        const handleListingKeyDown = event => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            handleStationContextSelect(listing.__id)
+                          }
+                        }
+
+                        return (
+                          <tr
+                            key={listing.__id || `${detail.key}-listing-${listingIndex}`}
+                            className={rowClasses.join(' ')}
+                            onClick={() => handleStationContextSelect(listing.__id)}
+                            onKeyDown={handleListingKeyDown}
+                            tabIndex={0}
+                            role='button'
+                            aria-pressed={isSelected}
+                            data-ghostnet-table-row='visible'
+                          >
+                            <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellWrap}`}>
+                              <StationSummary
+                                iconName={stationIcon}
+                                name={listing.stationName || 'Unknown Station'}
+                                system={listing.systemName || 'Unknown System'}
+                                stationType={listing.stationType || ''}
+                                isSelected={isSelected}
+                              />
+                            </td>
+                            <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellWrap}`}>{systemDistanceDisplay || '--'}</td>
+                            <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellWrap}`}>{stationDistanceDisplay || '--'}</td>
+                            <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellWrap}`}>
+                              {((listing.demandText || demandDisplay) && (listing.demandText || demandDisplay).toString().trim())
+                                ? (
+                                    <DemandIndicator
+                                      label={listing.demandText || demandDisplay}
+                                      fallbackLabel={demandDisplay}
+                                      isLow={Boolean(listing.demandIsLow)}
+                                    />
+                                  )
+                                : '--'}
+                            </td>
+                            <td className={`text-right ${tableStyles.tableCellTop} ${tableStyles.tableCellCompact}`}>
+                              <div>{priceDisplay}</div>
+                              {updatedDisplay ? (
+                                <div className={tableStyles.tableMetaMuted}>Updated {updatedDisplay}</div>
+                              ) : null}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {listings.map((listing, listingIndex) => {
-                            const isSelected = listing.__id === defaultSelectedId
-                            const stationIcon = stationIconFromType(listing.stationType || '')
-                            const systemDistanceDisplay = formatSystemDistance(listing.distanceLy, listing.distanceLyText)
-                            const stationDistanceDisplay = formatStationDistance(listing.distanceLs, listing.distanceLsText)
-                            const demandDisplay = sanitizeInaraText(listing.demandText) || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
-                            const updatedDisplay = listing.updatedAt
-                              ? formatRelativeTime(listing.updatedAt)
-                              : (listing.updatedText || '')
-                            const priceDisplay = formatCredits(listing.price, listing.priceText || '--')
-                            const rowClasses = [styles.tableRowInteractive]
-                            if (isSelected) rowClasses.push(styles.stationRowSelected)
-
-                            const handleListingKeyDown = event => {
-                              if (event.key === 'Enter' || event.key === ' ') {
-                                event.preventDefault()
-                                handleStationContextSelect(listing.__id)
-                              }
-                            }
-
-                            return (
-                              <tr
-                                key={listing.__id || `${detail.key}-listing-${listingIndex}`}
-                                className={rowClasses.join(' ')}
-                                onClick={() => handleStationContextSelect(listing.__id)}
-                                onKeyDown={handleListingKeyDown}
-                                tabIndex={0}
-                                role='button'
-                                aria-pressed={isSelected}
-                                data-ghostnet-table-row='visible'
-                              >
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  <StationSummary
-                                    iconName={stationIcon}
-                                    name={listing.stationName || 'Unknown Station'}
-                                    system={listing.systemName || 'Unknown System'}
-                                    stationType={listing.stationType || ''}
-                                    isSelected={isSelected}
-                                  />
-                                </td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{systemDistanceDisplay || '--'}</td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{stationDistanceDisplay || '--'}</td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  {((listing.demandText || demandDisplay) && (listing.demandText || demandDisplay).toString().trim())
-                                    ? (
-                                      <DemandIndicator
-                                        label={listing.demandText || demandDisplay}
-                                        fallbackLabel={demandDisplay}
-                                        isLow={Boolean(listing.demandIsLow)}
-                                      />
-                                      )
-                                    : '--'}
-                                </td>
-                                <td className={`text-right ${styles.tableCellTop} ${styles.tableCellCompact}`}>
-                                  <div>{priceDisplay}</div>
-                                  {updatedDisplay ? (
-                                    <div className={styles.tableMetaMuted}>Updated {updatedDisplay}</div>
-                                  ) : null}
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </div>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                ) : null}
+              </DataTableShell>
             </div>
           )
         })()
         : (
           <>
-            <div className='ghostnet-panel-table'>
-              <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-                {commodityContext ? (
-                  <CommoditySummary
-                    summary={commodityContext}
-                    shipSourceSegment={shipSourceSegment}
-                    className={styles.transferSummaryBar}
-                    valueIcon={<CreditsIcon size={22} />}
-                  />
-                ) : null}
+            <DataTableShell
+              status={status}
+              beforeTableContent={(
+                <>
+                  {commodityContext ? (
+                    <CommoditySummary
+                      summary={commodityContext}
+                      shipSourceSegment={shipSourceSegment}
+                      className={styles.transferSummaryBar}
+                      valueIcon={<CreditsIcon size={22} />}
+                    />
+                  ) : null}
 
-                {renderStatusBanner()}
-                {usingMockCargo && hasCargo ? (
-                  <div className={styles.inlineNoticeMuted}>
-                    Showing mock cargo manifest for development while your hold is empty in-game.
-                  </div>
-                ) : null}
-
-                {status === 'ready' && hasCargo && hasDisplayableRows && (
-                  <div className={styles.dataTableContainer} ref={tableContainerRef}>
-                    <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
+                  {renderStatusBanner()}
+                  {usingMockCargo && hasCargo ? (
+                    <div className={styles.inlineNoticeMuted}>
+                      Showing mock cargo manifest for development while your hold is empty in-game.
+                    </div>
+                  ) : null}
+                </>
+              )}
+              showContentWhen={['ready']}
+              contentRef={tableContainerRef}
+              aria-label='Cargo manifest'
+            >
+              {status === 'ready' && hasCargo && hasDisplayableRows ? (
+                    <table className={`${tableStyles.dataTable} ${tableStyles.dataTableFixed} ${tableStyles.dataTableDense}`}>
                       <colgroup>
                         <col style={{ width: '32%' }} />
                         <col style={{ width: '8%' }} />
@@ -2834,7 +2864,7 @@ function CargoHoldPanel () {
                     const contextSummary = isContextRow ? commodityContext : null
                     const contextDistance = contextSummary ? formatStationDistance(contextSummary.distanceLs, contextSummary.distanceLsText) : ''
                     const contextSystemDistance = contextSummary ? formatSystemDistance(contextSummary.distanceLy, contextSummary.distanceLyText) : ''
-                    const rowClassNames = [styles.tableRowInteractive]
+                    const rowClassNames = [tableStyles.tableRowInteractive]
                     if (isContextRow) rowClassNames.push(styles.tableRowContext)
 
                     const handleRowKeyDown = event => {
@@ -2855,7 +2885,7 @@ function CargoHoldPanel () {
                         role='button'
                         aria-label={`Open ${(item?.name || item?.symbol || 'commodity')} detail`}
                       >
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                        <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>
                           <div className={styles.commodityCell}>
                             <div className={styles.commodityCellIcon}>
                               <CommodityIcon category={item?.category} size={22} />
@@ -2863,13 +2893,13 @@ function CargoHoldPanel () {
                             <div className={styles.commodityCellText}>
                               <div className={styles.commodityCellTitle}>{item?.name || item?.symbol || 'Unknown'}</div>
                               {item?.symbol && item?.symbol !== item?.name && (
-                                <div className={styles.tableSubtext}>{item.symbol}</div>
+                                <div className={tableStyles.tableSubtext}>{item.symbol}</div>
                               )}
                               {entry?.errors?.ghostnet && !entry?.ghostnet && (
-                                <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
+                                <div className={tableStyles.tableWarning}>{entry.errors.ghostnet}</div>
                               )}
                               {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
-                                <div className={styles.tableWarning}>{entry.errors.market}</div>
+                                <div className={tableStyles.tableWarning}>{entry.errors.market}</div>
                               )}
                               {isContextRow && contextSummary?.stationName && (
                                 <div className={styles.tableContextIndicator}>
@@ -2888,8 +2918,8 @@ function CargoHoldPanel () {
                             </div>
                           </div>
                         </td>
-                        <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{quantity.toLocaleString()}</td>
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                        <td className={`text-right ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>{quantity.toLocaleString()}</td>
+                        <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>
                           {localEntriesForDisplay.length > 0
                             ? localEntriesForDisplay.map((entryInfo, entryIndex) => renderLocalEntry(entryInfo.label, entryInfo.entry, {
                                 highlight: entryInfo.highlight,
@@ -2898,30 +2928,30 @@ function CargoHoldPanel () {
                               }))
                             : <div>--</div>}
                           {remainingCount > 0 && (
-                            <div className={styles.tableMutedNote}>+ {remainingCount} more recorded markets</div>
+                            <div className={tableStyles.tableMutedNote}>+ {remainingCount} more recorded markets</div>
                           )}
                         </td>
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                        <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>
                           <div>{ghostnetPriceDisplay}</div>
                           {ghostnetStation && (
-                            <div className={styles.tableSubtext}>
+                            <div className={tableStyles.tableSubtext}>
                               {ghostnetStation}
                               {ghostnetSystem ? ` · ${ghostnetSystem}` : ''}
                             </div>
                           )}
                           {ghostnetDemand && (
-                            <div className={styles.tableMetaMuted}>
+                            <div className={tableStyles.tableMetaMuted}>
                               Demand: {ghostnetDemandIndicator || ghostnetDemand}
                             </div>
                           )}
                           {ghostnetUpdated && (
-                            <div className={styles.tableMetaMuted}>Updated {ghostnetUpdated}</div>
+                            <div className={tableStyles.tableMetaMuted}>Updated {ghostnetUpdated}</div>
                           )}
                         </td>
-                        <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>
+                        <td className={`text-right ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>
                           <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
                           {typeof localValue === 'number' && typeof ghostnetValue === 'number' && Math.abs(localValue - ghostnetValue) > 0.01 && (
-                            <div className={styles.tableMetaMuted}>
+                            <div className={tableStyles.tableMetaMuted}>
                               GHOSTNET {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
                             </div>
                           )}
@@ -2933,12 +2963,12 @@ function CargoHoldPanel () {
                           const animationDelay = (commodityRows.length + index) * 0.03
                           const quantityDisplay = Number(row.quantity) || 0
                           return (
-                            <tr key={`${row.key}-non-${index}`} className={styles.nonCommodityRow} style={{ animationDelay: `${animationDelay}s` }}>
+                            <tr key={`${row.key}-non-${index}`} className={tableStyles.nonCommodityRow} style={{ animationDelay: `${animationDelay}s` }}>
                               <td colSpan={5}>
-                                <div className={styles.nonCommodityRowContent}>
-                                  <span className={styles.nonCommodityLabel}>{row.item?.name || row.item?.symbol || 'Unknown'}</span>
-                                  <span className={styles.nonCommodityTag}>Not a Commodity</span>
-                                  <span className={styles.nonCommodityQuantity}>{quantityDisplay.toLocaleString()} in cargo</span>
+                                <div className={tableStyles.nonCommodityRowContent}>
+                                  <span className={tableStyles.nonCommodityLabel}>{row.item?.name || row.item?.symbol || 'Unknown'}</span>
+                                  <span className={tableStyles.nonCommodityTag}>Not a Commodity</span>
+                                  <span className={tableStyles.nonCommodityQuantity}>{quantityDisplay.toLocaleString()} in cargo</span>
                                 </div>
                               </td>
                             </tr>
@@ -2946,11 +2976,8 @@ function CargoHoldPanel () {
                         })}
                       </tbody>
                     </table>
-                  </div>
-                )}
-              </div>
-            </div>
-
+              ) : null}
+            </DataTableShell>
             <div className={styles.tableFootnote}>
               In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
             </div>
@@ -3427,8 +3454,7 @@ function TradeRoutesPanel () {
   }, [routes, detailViewActive])
 
   const renderRoutesTable = () => (
-    <div className={styles.dataTableContainer}>
-      <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
+    <table className={`${tableStyles.dataTable} ${tableStyles.dataTableFixed} ${tableStyles.dataTableDense}`}>
       <colgroup>
         <col style={{ width: '4%' }} />
         <col style={{ width: '20%' }} />
@@ -3444,13 +3470,13 @@ function TradeRoutesPanel () {
       </colgroup>
       <thead>
         <tr>
-          <th aria-hidden='true' className={styles.tableCellCaret} />
+          <th aria-hidden='true' className={tableStyles.tableCellCaret} />
           <th>Origin</th>
           <th>Destination</th>
           <th className='hidden-small'>Outbound Commodity</th>
           <th className='hidden-small'>Return Commodity</th>
           <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            className={`hidden-small text-right ${tableStyles.tableHeaderInteractive}`}
             onClick={() => handleSortChange('profitPerTon')}
             onKeyDown={event => handleSortKeyDown(event, 'profitPerTon')}
             tabIndex={0}
@@ -3461,7 +3487,7 @@ function TradeRoutesPanel () {
           <th className='hidden-small text-right'>Profit/Trip</th>
           <th className='hidden-small text-right'>Profit/Hour</th>
           <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            className={`hidden-small text-right ${tableStyles.tableHeaderInteractive}`}
             onClick={() => handleSortChange('routeDistance')}
             onKeyDown={event => handleSortKeyDown(event, 'routeDistance')}
             tabIndex={0}
@@ -3470,7 +3496,7 @@ function TradeRoutesPanel () {
             Route Distance{renderSortArrow('routeDistance')}
           </th>
           <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            className={`hidden-small text-right ${tableStyles.tableHeaderInteractive}`}
             onClick={() => handleSortChange('distance')}
             onKeyDown={event => handleSortKeyDown(event, 'distance')}
             tabIndex={0}
@@ -3515,7 +3541,7 @@ function TradeRoutesPanel () {
           const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand')
           const returnSupplyIndicator = renderQuantityIndicator(returnBuy, 'supply')
           const returnDemandIndicator = renderQuantityIndicator(returnSell, 'demand')
-          const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
+          const indicatorPlaceholder = <span className={tableStyles.tableIndicatorPlaceholder}>--</span>
 
           const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
           const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
@@ -3532,7 +3558,7 @@ function TradeRoutesPanel () {
           return (
             <React.Fragment key={rowKey}>
               <tr
-                className={styles.tableRowInteractive}
+                className={tableStyles.tableRowInteractive}
                 data-ghostnet-table-row='pending'
                 onClick={() => handleRouteSelect(route, index)}
                 onKeyDown={event => handleRouteKeyDown(event, route, index)}
@@ -3540,11 +3566,11 @@ function TradeRoutesPanel () {
                 tabIndex={0}
                 aria-label={`View trade route details for ${originStation} to ${destinationStation}`}
               >
-                <td className={styles.tableCellCaret} aria-hidden='true'>
+                <td className={tableStyles.tableCellCaret} aria-hidden='true'>
                   {caretSymbol}
                 </td>
-                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                  <div className={styles.tableCellInline}>
+                <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellWrap}`}>
+                  <div className={tableStyles.tableCellInline}>
                     {originIconName && <StationIcon icon={originIconName} color={originStationColor} />}
                     <span
                       style={{ fontWeight: 600, color: originStationColor }}
@@ -3555,8 +3581,8 @@ function TradeRoutesPanel () {
                     </span>
                   </div>
                 </td>
-                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                  <div className={styles.tableCellInline}>
+                <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellWrap}`}>
+                  <div className={tableStyles.tableCellInline}>
                     {destinationIconName && <StationIcon icon={destinationIconName} color={destinationStationColor} />}
                     <span
                       style={{ fontWeight: 600, color: destinationStationColor }}
@@ -3567,25 +3593,24 @@ function TradeRoutesPanel () {
                     </span>
                   </div>
                 </td>
-                <td className={`hidden-small text-left text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>
+                <td className={`hidden-small text-left text-no-transform ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>
                   <strong>{outboundCommodity || '--'}</strong>
                 </td>
-                <td className={`hidden-small text-left text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>
+                <td className={`hidden-small text-left text-no-transform ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>
                   <strong>{returnCommodity || '--'}</strong>
                 </td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{profitPerTon || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{profitPerTrip || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{profitPerHour || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{routeDistanceDisplay || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{systemDistanceDisplay || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{updatedDisplay || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>{profitPerTon || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>{profitPerTrip || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>{profitPerHour || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>{routeDistanceDisplay || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>{systemDistanceDisplay || '--'}</td>
+                <td className={`hidden-small text-right text-no-transform ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>{updatedDisplay || '--'}</td>
               </tr>
             </React.Fragment>
           )
         })}
       </tbody>
-      </table>
-    </div>
+    </table>
   )
 
   const renderRouteDetailView = () => {
@@ -3624,7 +3649,7 @@ function TradeRoutesPanel () {
     const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand')
     const returnSupplyIndicator = renderQuantityIndicator(returnBuy, 'supply')
     const returnDemandIndicator = renderQuantityIndicator(returnSell, 'demand')
-    const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
+    const indicatorPlaceholder = <span className={tableStyles.tableIndicatorPlaceholder}>--</span>
 
     const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
     const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
@@ -4006,32 +4031,25 @@ function TradeRoutesPanel () {
         )}
       </div>
       {detailViewActive ? (
-        <div className='ghostnet-panel-table'>
-          <div className={`scrollable ${styles.routeDetailScrollArea}`} style={TABLE_SCROLL_AREA_STYLE}>
-            {renderRouteDetailView()}
-          </div>
-        </div>
+        <DataTableShell
+          scrollAreaClassName={styles.routeDetailScrollArea}
+          scrollAreaStyle={TABLE_SCROLL_AREA_STYLE}
+          beforeTableContent={renderRouteDetailView()}
+          status='detail'
+          aria-label='Trade route detail'
+        />
       ) : (
-        <div className='ghostnet-panel-table'>
-          <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-            {message && status !== 'idle' && status !== 'loading' && (
-              <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
-            )}
-            {status === 'idle' && (
-              <div className={styles.tableIdleState}>Tune the filters and pulse refresh to surface profitable corridors.</div>
-            )}
-            {status === 'loading' && (
-              <LoadingSpinner label='Loading trade routes…' />
-            )}
-            {status === 'error' && (
-              <div className={styles.tableErrorState}>{error || 'Unable to fetch trade routes.'}</div>
-            )}
-            {status === 'empty' && (
-              <div className={styles.tableEmptyState}>No profitable routes detected near {selectedSystemName || 'Unknown System'}.</div>
-            )}
-            {status === 'populated' && renderRoutesTable()}
-          </div>
-        </div>
+        <DataTableShell
+          status={status}
+          message={message}
+          idleContent='Tune the filters and pulse refresh to surface profitable corridors.'
+          loadingContent={<LoadingSpinner label='Loading trade routes…' />}
+          errorContent={error || 'Unable to fetch trade routes.'}
+          emptyContent={`No profitable routes detected near ${selectedSystemName || 'Unknown System'}.`}
+          aria-label='Trade routes'
+        >
+          {status === 'populated' ? renderRoutesTable() : null}
+        </DataTableShell>
       )}
     </section>
   )
@@ -4068,25 +4086,63 @@ function PristineMiningPanel () {
   const displaySystemName = useMemo(() => {
     if (trimmedSystem) return trimmedSystem
     if (currentSystem?.name) return currentSystem.name
+    if ((status === 'populated' || status === 'empty') && locations.length > 0) {
+      const locationSystem = locations[0]?.system
+      if (typeof locationSystem === 'string' && locationSystem.trim()) {
+        return locationSystem
+      }
+    }
     return ''
-  }, [trimmedSystem, currentSystem])
+  }, [trimmedSystem, currentSystem, status, locations])
 
   useEffect(() => {
+    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('ghostnetUseMockData') === 'true'
+
     if (!trimmedSystem) {
+      if (shouldUseMockData) {
+        const { locations: mockLocations, message: mockMessage, sourceUrl: mockSourceUrl } = generateMockPristineLocations({
+          systemName: ''
+        })
+
+        setLocations(mockLocations)
+        setStatus(mockLocations.length > 0 ? 'populated' : 'empty')
+        setError('')
+        setMessage(mockMessage)
+        setSourceUrl(mockSourceUrl)
+        setLastUpdatedAt(Date.now())
+        return
+      }
+
       setLocations([])
       setStatus('idle')
       setError('')
       setMessage('')
       setSourceUrl('')
+      setLastUpdatedAt(null)
       return
     }
 
     let cancelled = false
 
-    setStatus('loading')
     setError('')
     setMessage('')
     setLastUpdatedAt(null)
+
+    if (shouldUseMockData) {
+      const { locations: mockLocations, message: mockMessage, sourceUrl: mockSourceUrl } = generateMockPristineLocations({
+        systemName: trimmedSystem
+      })
+
+      setLocations(mockLocations)
+      setStatus(mockLocations.length > 0 ? 'populated' : 'empty')
+      setError('')
+      setMessage(mockMessage)
+      setSourceUrl(mockSourceUrl)
+      setLastUpdatedAt(Date.now())
+      return
+    }
+
+    setStatus('loading')
 
     fetch('/api/ghostnet-pristine-mining', {
       method: 'POST',
@@ -4265,37 +4321,19 @@ function PristineMiningPanel () {
         </p>
         {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
       </div>
-      <div
-        className={`ghostnet-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
+      <DataTableShell
+        className={`pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
+        scrollAreaClassName={`pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
+        status={status}
+        message={displayMessage}
+        idleContent='Waiting for current system information...'
+        loadingContent={<div className={`${tableStyles.state} ${tableStyles.stateMuted}`}>Triangulating pristine reserves…</div>}
+        errorContent={!error ? 'Unable to load pristine mining locations.' : null}
+        emptyContent={`No pristine signatures detected near ${displaySystemName || 'your current system'}.`}
+        aria-label='Pristine mining locations'
       >
-        <div
-          className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
-          style={TABLE_SCROLL_AREA_STYLE}
-        >
-          {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
-              {displayMessage}
-            </div>
-          )}
-          {status === 'idle' && (
-            <div className={styles.tableIdleState}>
-              Waiting for current system information...
-            </div>
-          )}
-          {status === 'loading' && (
-            <div className={styles.tableIdleState}>Triangulating pristine reserves…</div>
-          )}
-          {status === 'error' && !error && (
-            <div className={styles.tableErrorState}>Unable to load pristine mining locations.</div>
-          )}
-          {status === 'empty' && (
-            <div className={styles.tableEmptyState}>
-              No pristine signatures detected near {displaySystemName || 'your current system'}.
-            </div>
-          )}
-          {status === 'populated' && locations.length > 0 && (
-            <div className={styles.dataTableContainer}>
-              <table className={styles.dataTable}>
+        {status === 'populated' && locations.length > 0 ? (
+              <table className={tableStyles.dataTable}>
                 <thead>
                   <tr>
                     <th>Body</th>
@@ -4319,7 +4357,7 @@ function PristineMiningPanel () {
                   return (
                     <Fragment key={key}>
                       <tr
-                        className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
+                        className={`${tableStyles.tableRowInteractive} ${isExpanded ? tableStyles.tableRowExpanded : ''}`}
                         data-ghostnet-table-row='pending'
                         role='button'
                         tabIndex={0}
@@ -4327,16 +4365,16 @@ function PristineMiningPanel () {
                         onClick={() => handleLocationToggle(location, key)}
                         onKeyDown={event => handleLocationKeyDown(event, location, key)}
                       >
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                        <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span className='ghostnet-accent'>{location.body || '--'}</span>
                             {detailText && (
-                              <span className={styles.tableSubtext}>{detailText}</span>
+                              <span className={tableStyles.tableSubtext}>{detailText}</span>
                             )}
                           </div>
                         </td>
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div className={`${styles.tableCellInline} text-no-wrap`}>
+                        <td className={`${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>
+                          <div className={`${tableStyles.tableCellInline} text-no-wrap`}>
                             {location.isTargetSystem
                               ? (
                                 <i className='icon system-object-icon icarus-terminal-location-filled ghostnet-accent' style={{ marginRight: '.5rem' }} />
@@ -4347,11 +4385,11 @@ function PristineMiningPanel () {
                             <span className='ghostnet-accent'>{location.system || '--'}</span>
                           </div>
                         </td>
-                        <td className={`hidden-small text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{bodyDistanceDisplay || '--'}</td>
-                        <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
+                        <td className={`hidden-small text-right text-no-wrap ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>{bodyDistanceDisplay || '--'}</td>
+                        <td className={`text-right text-no-wrap ${tableStyles.tableCellTop} ${tableStyles.tableCellTight}`}>{distanceDisplay || '--'}</td>
                       </tr>
                       {isExpanded && (
-                        <tr className={`${styles.tableDetailRow} ghostnet-table-detail-row`} data-ghostnet-table-row='pending'>
+                        <tr className={`${tableStyles.tableDetailRow} ghostnet-table-detail-row`} data-ghostnet-table-row='pending'>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
@@ -4391,10 +4429,9 @@ function PristineMiningPanel () {
                 })}
                 </tbody>
               </table>
-            </div>
-          )}
-        </div>
-        <div className={`pristine-mining__inspector${inspectorReserved ? ' pristine-mining__inspector--reserved' : ''}`}>
+        ) : null}
+      </DataTableShell>
+      <div className={`pristine-mining__inspector${inspectorReserved ? ' pristine-mining__inspector--reserved' : ''}`}>
           {inspectorReserved && detailLoadingKey === expandedLocationKey && (
             <div className='pristine-mining__inspector-status'>Loading system details...</div>
           )}
@@ -4408,7 +4445,6 @@ function PristineMiningPanel () {
             />
           )}
         </div>
-      </div>
     </section>
   )
 }

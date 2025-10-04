@@ -123,3 +123,12 @@ You can run ICARUS Terminal in development mode without building a native binary
 You can access the web client at http://localhost:3300
 
 Note: You may also need to create a `.env` file with a `LOG_DIR` entry so it can find your game data, see `.env-example`.
+
+### GhostNet data tables
+
+GhostNet panels should render tables through the shared `DataTableShell` component in `src/client/components/ghostnet/data-table-shell.js`. The shell applies the panel container, scroll behavior, and common table styling from `data-table-shell.module.css`, and exposes props for status messaging and empty/error/idle banners. When adding a new table:
+
+* Import `DataTableShell` (and `TABLE_SCROLL_AREA_STYLE` when you need a non-default scroll height) along with the CSS module if you need the structural classes.
+* Pass `status`, `message`, and optional state props (`idleContent`, `loadingContent`, `errorContent`, `emptyContent`) so the shell can render banners consistently.
+* Provide the table markup as `children`; the shell will wrap it in the standard container. Use `beforeTableContent`/`afterTableContent` for controls or footnotes that should sit inside the scroll region.
+* Apply table-specific class names from `data-table-shell.module.css` (via the `tableStyles` import) instead of defining new selectors in `ghostnet.module.css`.
