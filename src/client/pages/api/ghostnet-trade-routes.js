@@ -317,7 +317,7 @@ const allowedPriceAges = new Set(['8', '16', '24', '48', '72'])
 const allowedPadSizes = new Set(['1', '2', '3'])
 const allowedStationDistances = new Set(['0', '100', '500', '1000', '2000', '5000', '10000', '15000', '20000', '25000', '50000', '100000'])
 const allowedSurfaceOptions = new Set(['0', '1', '2'])
-const allowedPowers = new Set(['', '1', '2', '3', '4', '5', '7', '8', '9', '10', '11', '12', '13'])
+const allowedPowers = new Set(['', '0', '-1', '1', '2', '3', '4', '5', '7', '8', '9', '10', '11', '12', '13'])
 const allowedSupplyDemand = new Set(['0', '100', '500', '1000', '2500', '5000', '10000', '50000'])
 const allowedOrder = new Set(['0', '1', '2', '3', '4'])
 
