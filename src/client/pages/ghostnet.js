@@ -3,7 +3,8 @@ import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
 import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
-import StationSummary, { StationIcon, DemandIndicator } from '../components/ghostnet/station-summary'
+import { StationDisplay, CommodityDisplay, StationIcon } from '../components/ghostnet/entity-display'
+import { DemandIndicator } from '../components/ghostnet/station-summary'
 import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
 import CopyOnClick from '../components/copy-on-click'
@@ -411,6 +412,44 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const returnDemandIndicator = renderQuantityIndicator(returnInfo.sell, 'demand')
   const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
 
+  const originStationMeta = originStandingDisplay.statusDescription
+    ? [originStandingDisplay.statusDescription]
+    : []
+  const destinationStationMeta = destinationStandingDisplay.statusDescription
+    ? [destinationStandingDisplay.statusDescription]
+    : []
+
+  const outboundCategory = outboundInfo.buy?.category || outboundInfo.sell?.category || 'default'
+  const returnCategory = returnInfo.buy?.category || returnInfo.sell?.category || 'default'
+
+  const outboundDemandValue = outboundDemandIndicator || indicatorPlaceholder
+  const returnDemandValue = returnDemandIndicator || indicatorPlaceholder
+
+  const hasOriginStation = originStation && originStation !== '--'
+  const hasDestinationStation = destinationStation && destinationStation !== '--'
+
+  const outboundStationInfo = hasOriginStation
+    ? {
+        name: originStation,
+        system: originSystemName,
+        price: outboundBuyPrice && outboundBuyPrice !== '--' ? <>Buy {outboundBuyPrice}</> : null,
+        demandOut: outboundSupplyIndicator
+          ? <>Supply: {outboundSupplyIndicator}</>
+          : null
+      }
+    : null
+
+  const returnStationInfo = hasDestinationStation
+    ? {
+        name: destinationStation,
+        system: destinationSystemName,
+        price: returnSellPrice && returnSellPrice !== '--' ? <>Sell {returnSellPrice}</> : null,
+        demandOut: returnSupplyIndicator
+          ? <>Supply: {returnSupplyIndicator}</>
+          : null
+      }
+    : null
+
   const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
   const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
   const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
@@ -439,36 +478,48 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
         {caretSymbol}
       </td>
       <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-        <div className={styles.tableCellInline}>
-          {originIconName && <StationIcon icon={originIconName} color={originStationColor} />}
-          <span
-            style={{ fontWeight: 600, color: originStationColor }}
-            className={originStationClassName}
-            title={originStationTitle}
-          >
-            {originStation}
-          </span>
-        </div>
+        <StationDisplay
+          icon={originIconName ? <StationIcon icon={originIconName} color={originStationColor} /> : null}
+          name={originStation}
+          system={originSystemName || '--'}
+          meta={originStationMeta}
+          nameClassName={originStationClassName}
+          nameStyle={{ color: originStationColor }}
+          nameTitle={originStationTitle}
+        />
       </td>
       <td className={`hidden-small ${styles.tableCellTop}`}>{originSystemName || '--'}</td>
       <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-        <div className={styles.tableCellInline}>
-          {destinationIconName && <StationIcon icon={destinationIconName} color={destinationStationColor} />}
-          <span
-            style={{ fontWeight: 600, color: destinationStationColor }}
-            className={destinationStationClassName}
-            title={destinationStationTitle}
-          >
-            {destinationStation}
-          </span>
-        </div>
+        <StationDisplay
+          icon={destinationIconName ? <StationIcon icon={destinationIconName} color={destinationStationColor} /> : null}
+          name={destinationStation}
+          system={destinationSystemName || '--'}
+          meta={destinationStationMeta}
+          nameClassName={destinationStationClassName}
+          nameStyle={{ color: destinationStationColor }}
+          nameTitle={destinationStationTitle}
+        />
       </td>
       <td className={`hidden-small ${styles.tableCellTop}`}>{destinationSystemName || '--'}</td>
-      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}><strong>{outboundCommodity}</strong></td>
+      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}>
+        <CommodityDisplay
+          icon={<CommodityIcon category={outboundCategory} size={22} />}
+          name={outboundCommodity}
+          demandIn={outboundDemandValue}
+          station={outboundStationInfo}
+        />
+      </td>
       <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundBuyPrice}</td>
       <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundSupplyIndicator || indicatorPlaceholder}</td>
       <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundDemandIndicator || indicatorPlaceholder}</td>
-      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}><strong>{returnCommodity}</strong></td>
+      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}>
+        <CommodityDisplay
+          icon={<CommodityIcon category={returnCategory} size={22} />}
+          name={returnCommodity}
+          demandIn={returnDemandValue}
+          station={returnStationInfo}
+        />
+      </td>
       <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnSellPrice}</td>
       <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnSupplyIndicator || indicatorPlaceholder}</td>
       <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnDemandIndicator || indicatorPlaceholder}</td>
@@ -2817,12 +2868,12 @@ function CargoHoldPanel () {
                                 data-ghostnet-table-row='visible'
                               >
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  <StationSummary
+                                  <StationDisplay
                                     iconName={stationIcon}
                                     name={listing.stationName || 'Unknown Station'}
                                     system={listing.systemName || 'Unknown System'}
-                                    stationType={listing.stationType || ''}
-                                    isSelected={isSelected}
+                                    meta={[listing.stationType || ''].filter(Boolean)}
+                                    badge={isSelected ? 'In Context' : null}
                                   />
                                 </td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{systemDistanceDisplay || '--'}</td>
@@ -2934,6 +2985,52 @@ function CargoHoldPanel () {
                     const ghostnetPriceDisplay = typeof ghostnetPrice === 'number' ? formatCredits(ghostnetPrice, '--') : '--'
                     const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
 
+                    const demandInDisplay = ghostnetDemandIndicator || (ghostnetDemand ? ghostnetDemand : null)
+                    const commodityMeta = []
+                    if (item?.symbol && item?.symbol !== item?.name) {
+                      commodityMeta.push(item.symbol)
+                    }
+
+                    const commodityDetailChildren = []
+                    if (entry?.errors?.ghostnet && !entry?.ghostnet) {
+                      commodityDetailChildren.push(
+                        <div key='ghostnet-error' className={styles.tableWarning}>{entry.errors.ghostnet}</div>
+                      )
+                    }
+                    if (entry?.errors?.market && !entry?.market && marketStatus !== 'missing') {
+                      commodityDetailChildren.push(
+                        <div key='market-error' className={styles.tableWarning}>{entry.errors.market}</div>
+                      )
+                    }
+                    if (isContextRow && contextSummary?.stationName) {
+                      commodityDetailChildren.push(
+                        <div key='context' className={styles.tableContextIndicator}>
+                          <span className={styles.tableContextLabel}>Station Context</span>
+                          <span className={styles.tableContextValue}>
+                            {contextSummary.stationName}
+                            {contextSummary.systemName ? ` · ${contextSummary.systemName}` : ''}
+                          </span>
+                          {(contextSystemDistance || contextDistance) && (
+                            <span className={styles.tableContextFootnote}>
+                              {[contextSystemDistance, contextDistance].filter(Boolean).join(' / ')}
+                            </span>
+                          )}
+                        </div>
+                      )
+                    }
+
+                    const stationDemandOutDisplay = ghostnetDemandIndicator || (ghostnetDemand ? ghostnetDemand : null)
+                    const associatedStation = ghostnetStation
+                      ? {
+                          name: ghostnetStation,
+                          system: ghostnetSystem,
+                          price: ghostnetPriceDisplay,
+                          demandOut: stationDemandOutDisplay
+                            ? (<span>Demand Out: {stationDemandOutDisplay}</span>)
+                            : null
+                        }
+                      : null
+
                     const localEntriesForDisplay = []
                     if (localBestEntry) {
                       localEntriesForDisplay.push({
@@ -2996,37 +3093,15 @@ function CargoHoldPanel () {
                         aria-label={`Open ${(item?.name || item?.symbol || 'commodity')} detail`}
                       >
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div className={styles.commodityCell}>
-                            <div className={styles.commodityCellIcon}>
-                              <CommodityIcon category={item?.category} size={22} />
-                            </div>
-                            <div className={styles.commodityCellText}>
-                              <div className={styles.commodityCellTitle}>{item?.name || item?.symbol || 'Unknown'}</div>
-                              {item?.symbol && item?.symbol !== item?.name && (
-                                <div className={styles.tableSubtext}>{item.symbol}</div>
-                              )}
-                              {entry?.errors?.ghostnet && !entry?.ghostnet && (
-                                <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
-                              )}
-                              {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
-                                <div className={styles.tableWarning}>{entry.errors.market}</div>
-                              )}
-                              {isContextRow && contextSummary?.stationName && (
-                                <div className={styles.tableContextIndicator}>
-                                  <span className={styles.tableContextLabel}>Station Context</span>
-                                  <span className={styles.tableContextValue}>
-                                    {contextSummary.stationName}
-                                    {contextSummary.systemName ? ` · ${contextSummary.systemName}` : ''}
-                                  </span>
-                                  {(contextSystemDistance || contextDistance) && (
-                                    <span className={styles.tableContextFootnote}>
-                                      {[contextSystemDistance, contextDistance].filter(Boolean).join(' / ')}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                          <CommodityDisplay
+                            icon={<CommodityIcon category={item?.category} size={22} />}
+                            name={item?.name || item?.symbol || 'Unknown'}
+                            demandIn={demandInDisplay || '--'}
+                            meta={commodityMeta}
+                            station={associatedStation}
+                          >
+                            {commodityDetailChildren}
+                          </CommodityDisplay>
                         </td>
                         <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{quantity.toLocaleString()}</td>
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
@@ -3043,17 +3118,6 @@ function CargoHoldPanel () {
                         </td>
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                           <div>{ghostnetPriceDisplay}</div>
-                          {ghostnetStation && (
-                            <div className={styles.tableSubtext}>
-                              {ghostnetStation}
-                              {ghostnetSystem ? ` · ${ghostnetSystem}` : ''}
-                            </div>
-                          )}
-                          {ghostnetDemand && (
-                            <div className={styles.tableMetaMuted}>
-                              Demand: {ghostnetDemandIndicator || ghostnetDemand}
-                            </div>
-                          )}
                           {ghostnetUpdated && (
                             <div className={styles.tableMetaMuted}>Updated {ghostnetUpdated}</div>
                           )}
