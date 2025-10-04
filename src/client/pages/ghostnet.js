@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, Fragment } from 'react'
+import { isGhostnetTokenCurrencyEnabled } from '../../shared/feature-flags'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import Icons from '../lib/icons'
@@ -4111,6 +4112,7 @@ function GhostnetTerminalOverlay () {
   const cadenceRef = useRef()
   const timeoutRef = useRef(null)
   const [creditCelebration, setCreditCelebration] = useState(null)
+  const [tokenCurrencyEnabled, setTokenCurrencyEnabled] = useState(false)
   const [tokenBalance, setTokenBalance] = useState(null)
   const [tokenMode, setTokenMode] = useState(null)
   const [tokenSimulation, setTokenSimulation] = useState(false)
@@ -4119,6 +4121,10 @@ function GhostnetTerminalOverlay () {
   const [tokenActionPending, setTokenActionPending] = useState(false)
   const tokenStateRef = useRef({ balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } })
   const celebrationRef = useRef({ entryId: null, timeouts: [], messageDisplayed: false })
+
+  useEffect(() => {
+    setTokenCurrencyEnabled(isGhostnetTokenCurrencyEnabled())
+  }, [])
 
   if (!cadenceRef.current) {
     cadenceRef.current = {
@@ -4193,6 +4199,8 @@ function GhostnetTerminalOverlay () {
   }, [clearCelebrationTimeouts, setTerminalLines])
 
   useEffect(() => {
+    if (!tokenCurrencyEnabled) return
+
     let isMounted = true
     let unsubscribe
 
@@ -4229,9 +4237,35 @@ function GhostnetTerminalOverlay () {
       }
     }
 
+
     setTokenLoading(true)
     sendEvent('getTokenBalance')
-      .then(applySnapshot)
+      .then(snapshot => {
+        console.log('[GhostNet] WebSocket token snapshot:', snapshot)
+        applySnapshot(snapshot)
+        // Fallback: if balance is not finite, try HTTP API
+        const snap = (snapshot && snapshot.snapshot) || snapshot
+        if (!snap || !Number.isFinite(snap.balance)) {
+          console.log('[GhostNet] Fallback to HTTP /api/token-currency')
+          fetch('/api/token-currency')
+            .then(res => res.json())
+            .then(data => {
+              console.log('[GhostNet] HTTP token-currency response:', data)
+              applySnapshot(data)
+            })
+            .catch(error => {
+              console.error('[GhostNet] HTTP token-currency fetch failed', error)
+              if (!isMounted) return
+              setTokenBalance(null)
+              setTokenMode(null)
+              setTokenSimulation(false)
+              setTokenRemoteState({ enabled: false, mode: 'DISABLED' })
+              setTokenLoading(false)
+              setTokenActionPending(false)
+              tokenStateRef.current = { balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } }
+            })
+        }
+      })
       .catch(error => {
         console.error('[GhostNet] Failed to load token balance', error)
         if (!isMounted) return
@@ -4251,7 +4285,7 @@ function GhostnetTerminalOverlay () {
       if (typeof unsubscribe === 'function') unsubscribe()
       clearCelebrationTimeouts()
     }
-  }, [triggerCreditCelebration, clearCelebrationTimeouts])
+  }, [tokenCurrencyEnabled, triggerCreditCelebration, clearCelebrationTimeouts])
 
   const advanceCadence = useCallback(() => {
     const state = cadenceRef.current
@@ -4398,6 +4432,7 @@ function GhostnetTerminalOverlay () {
   }, [])
 
   const tokenBalanceDisplay = useMemo(() => {
+    if (!tokenCurrencyEnabled) return 'Disabled'
     if (tokenLoading) return 'Syncing…'
     if (!Number.isFinite(tokenBalance)) return '---'
     try {
@@ -4405,12 +4440,13 @@ function GhostnetTerminalOverlay () {
     } catch (error) {
       return String(tokenBalance)
     }
-  }, [tokenBalance, tokenLoading])
+  }, [tokenCurrencyEnabled, tokenBalance, tokenLoading])
 
   const isNegativeBalance = Number.isFinite(tokenBalance) && tokenBalance < 0
-  const tokenButtonDisabled = tokenLoading || tokenActionPending
+  const tokenButtonDisabled = !tokenCurrencyEnabled || tokenLoading || tokenActionPending
 
   const tokenStatusText = useMemo(() => {
+    if (!tokenCurrencyEnabled) return 'Token currency disabled'
     const ledgerLabel = tokenSimulation
       ? 'Simulation ledger'
       : tokenMode === 'LIVE'
@@ -4423,7 +4459,7 @@ function GhostnetTerminalOverlay () {
       remoteLabel = 'Local storage'
     }
     return `${ledgerLabel} · ${remoteLabel}`
-  }, [tokenSimulation, tokenMode, tokenRemoteState.enabled, tokenRemoteState.mode])
+  }, [tokenCurrencyEnabled, tokenSimulation, tokenMode, tokenRemoteState.enabled, tokenRemoteState.mode])
 
   const visibleLines = useMemo(() => {
     return terminalLines.slice(-TERMINAL_WINDOW)
@@ -4462,26 +4498,30 @@ function GhostnetTerminalOverlay () {
           <div className={styles.terminalHeaderContent}>
             <span className={styles.terminalTitle}>Ship Uplink Console</span>
             <span className={styles.terminalStatus}>Channel mesh://ghostnet</span>
-            <div className={styles.terminalTokenRow}>
-              <span className={styles.terminalTokenLabel}>Tokens</span>
-              <span
-                className={[styles.terminalTokenValue, isNegativeBalance ? styles.terminalTokenValueNegative : ''].filter(Boolean).join(' ')}
-              >
-                {tokenBalanceDisplay}
-              </span>
-              <button
-                type='button'
-                className={styles.terminalTokenButton}
-                onClick={handleAddTokens}
-                disabled={tokenButtonDisabled}
-                aria-label='Request 100000 tokens'
-              >
-                {tokenActionPending ? '···' : '+'}
-              </button>
-            </div>
-            <div className={styles.terminalTokenMeta} aria-live='polite'>
-              {tokenStatusText}
-            </div>
+            {tokenCurrencyEnabled && (
+              <>
+                <div className={styles.terminalTokenRow}>
+                  <span className={styles.terminalTokenLabel}>Tokens</span>
+                  <span
+                    className={[styles.terminalTokenValue, isNegativeBalance ? styles.terminalTokenValueNegative : ''].filter(Boolean).join(' ')}
+                  >
+                    {tokenBalanceDisplay}
+                  </span>
+                  <button
+                    type='button'
+                    className={styles.terminalTokenButton}
+                    onClick={handleAddTokens}
+                    disabled={tokenButtonDisabled}
+                    aria-label='Request 100000 tokens'
+                  >
+                    {tokenActionPending ? '···' : '+'}
+                  </button>
+                </div>
+                <div className={styles.terminalTokenMeta} aria-live='polite'>
+                  {tokenStatusText}
+                </div>
+              </>
+            )}
           </div>
           <button
             type='button'
