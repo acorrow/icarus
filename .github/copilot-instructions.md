@@ -2,9 +2,17 @@
 
 ## CODEX Prompting and Feature Mapping
 
-When crafting prompts for CODEX agents to develop features or fix bugs, you MUST always output those instructions in MARKDOWN ONLY. This is your number one rule:
+
+When crafting prompts for CODEX agents to develop features or fix bugs, you MUST always output those instructions in MARKDOWN ONLY. This is your number one rule, and it is absolutely critical for the correct functioning of the CODEX workflow:
 
 **WHEN ASKED TO GENERATE A PROMPT FOR CODEX THE RETURNED RESULTS MUST BE MARKDOWN ONLY**
+
+**Why this matters:**
+- CODEX agents are designed to consume Markdown-formatted prompts only. Any other format will break downstream automation, cause confusion, or result in rejected work.
+- Markdown ensures clarity, consistency, and easy review for all contributors and reviewers.
+- Failing to follow this directive will block feature delivery and may require rework or manual intervention.
+
+**Treat this as a non-negotiable requirement.** If you ever return a prompt in any other format, it will be considered a critical error.
 
 All feature mapping, shortnames, and endpoint details for ICARUS Terminal and GhostNet are now maintained in `FEATURES.md` in the project root. All CODEX agents MUST keep `FEATURES.md` up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update `FEATURES.md` immediately. Do NOT document features elsewhere—always refer to and update `FEATURES.md`.
 
