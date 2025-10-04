@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, Fragment } from 'react'
 import Layout from '../components/layout'
-import Panel from '../components/panel'
+import PanelNavigation from '../components/panel-navigation'
 import Icons from '../lib/icons'
 import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
 import StationSummary, { StationIcon, DemandIndicator } from '../components/ghostnet/station-summary'
@@ -2716,14 +2716,7 @@ function CargoHoldPanel () {
                     </div>
                   ) : (
                     <div className={styles.dataTableContainer}>
-                      <table className={`${styles.dataTable} ${styles.dataTableFixed}`}>
-                        <colgroup>
-                          <col style={{ width: '38%' }} />
-                          <col style={{ width: '18%' }} />
-                          <col style={{ width: '18%' }} />
-                          <col style={{ width: '12%' }} />
-                          <col style={{ width: '14%' }} />
-                        </colgroup>
+                      <table className={styles.dataTable}>
                         <thead>
                           <tr>
                             <th>Station</th>
@@ -2875,14 +2868,7 @@ function CargoHoldPanel () {
 
                 {status === 'ready' && hasCargo && hasDisplayableRows && (
                   <div className={styles.dataTableContainer} ref={tableContainerRef}>
-                    <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
-                      <colgroup>
-                        <col style={{ width: '32%' }} />
-                        <col style={{ width: '8%' }} />
-                        <col style={{ width: '20%' }} />
-                        <col style={{ width: '24%' }} />
-                        <col style={{ width: '16%' }} />
-                      </colgroup>
+                    <table className={`${styles.dataTable} ${styles.dataTableDense}`}>
                       <thead>
                         <tr>
                           <th>Commodity</th>
@@ -3712,28 +3698,7 @@ function TradeRoutesPanel () {
 
   const renderRoutesTable = () => (
     <div className={styles.dataTableContainer}>
-      <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
-      <colgroup>
-        <col style={{ width: '3%' }} />
-        <col style={{ width: '16%' }} />
-        <col style={{ width: '12%' }} />
-        <col style={{ width: '16%' }} />
-        <col style={{ width: '12%' }} />
-        <col style={{ width: '12%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '12%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '8%' }} />
-      </colgroup>
+      <table className={`${styles.dataTable} ${styles.dataTableDense}`}>
       <thead>
         <tr>
           <th aria-hidden='true' className={styles.tableCellCaret} />
@@ -5824,34 +5789,35 @@ export default function GhostnetPage() {
 
   const ghostnetClassName = [styles.ghostnet, arrivalMode ? styles.arrival : ''].filter(Boolean).join(' ')
   return (
-    <Layout connected={connected} active={socketActive} ready={ready} loader={false}>
-      <Panel
-        layout='full-width'
-        scrollable
-        navigation={navigationItems}
-        search={false}
-        className={styles.ghostnetPanel}
-      >
-        <div className={ghostnetClassName}>
-          <div className={styles.shell}>
-            <div className={styles.tabPanels}>
-              <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
-                <TradeRoutesPanel />
+    <Layout connected={connected} active={socketActive} ready={ready} loader={false} className={styles.ghostnetLayout}>
+      <div className={styles.ghostnetViewport}>
+        <div className={styles.ghostnetNavigation}>
+          <PanelNavigation items={navigationItems} search={false} />
+        </div>
+        <div className={styles.ghostnetContentArea}>
+          <div className={styles.ghostnetScrollRegion}>
+            <div className={ghostnetClassName}>
+              <div className={styles.shell}>
+                <div className={styles.tabPanels}>
+                  <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+                    <TradeRoutesPanel />
+                  </div>
+                  <div style={{ display: activeTab === 'cargoHold' ? 'block' : 'none' }}>
+                    <CargoHoldPanel />
+                  </div>
+                  <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
+                    <MissionsPanel />
+                  </div>
+                  <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
+                    <PristineMiningPanel />
+                  </div>
+                </div>
               </div>
-              <div style={{ display: activeTab === 'cargoHold' ? 'block' : 'none' }}>
-                <CargoHoldPanel />
-              </div>
-              <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
-                <MissionsPanel />
-              </div>
-              <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
-                <PristineMiningPanel />
-              </div>
+              <GhostnetTerminalOverlay />
             </div>
           </div>
-          <GhostnetTerminalOverlay />
         </div>
-      </Panel>
+      </div>
     </Layout>
   )
 }
