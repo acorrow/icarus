@@ -74,6 +74,7 @@ class EventHandlers {
     this.textToSpeech = new TextToSpeech({ eliteLog, eliteJson, cmdrStatus: this.cmdrStatus, shipStatus: this.shipStatus })
 
     this.tokenLedger = tokenLedger
+    // Caches keep track of the most recent rewards so a replayed log does not double-award tokens
     this.tokenRewardCache = new Set()
     this.tokenRewardQueue = []
     this.tokenCurrencyEnabled = isGhostnetTokenCurrencyEnabled()

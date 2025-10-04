@@ -103,7 +103,48 @@ describe('TokenLedger', () => {
 
     const entry = await ledger.recordEarn(200, { reason: 'sync-test' })
     expect(remoteClient.recordTransaction).toHaveBeenCalledWith('earn', 200, { reason: 'sync-test' })
-    expect(entry.remote).toMatchObject({ enabled: true, synced: true })
+    expect(entry.remote).toMatchObject({ enabled: true, synced: true, pending: 0 })
+    expect(typeof entry.remote.lastSyncedAt).toBe('string')
     expect(await ledger.getBalance()).toBe(1100)
+  })
+
+  it('queues remote retries and resolves once the service recovers', async () => {
+    const remoteClient = {
+      mode: TokenLedger.REMOTE_MODES.MIRROR,
+      isEnabled: jest.fn(() => true),
+      fetchSnapshot: jest.fn().mockResolvedValue({ balance: 25 }),
+      recordTransaction: jest
+        .fn()
+        .mockRejectedValueOnce(new Error('network down'))
+        .mockResolvedValueOnce({ balance: 15, attempts: 1 })
+    }
+
+    const ledger = new TokenLedger({
+      storageDir: tempDir,
+      initialBalance: 25,
+      remoteClient,
+      remote: { mode: TokenLedger.REMOTE_MODES.MIRROR, endpoint: 'https://example.com/tokens', enabled: true, retryDelayMs: 10 }
+    })
+
+    await ledger.bootstrap()
+
+    const entry = await ledger.recordSpend(10, { reason: 'retry-test' })
+    expect(remoteClient.recordTransaction).toHaveBeenCalledTimes(1)
+    expect(entry.remote.synced).toBe(false)
+    expect(ledger._pendingRemote.length).toBe(1)
+
+    // Force the retry to run immediately
+    ledger._pendingRemote[0].nextAttemptAt = Date.now()
+    await ledger._processRemoteQueue()
+
+    expect(remoteClient.recordTransaction).toHaveBeenCalledTimes(2)
+    const transactions = await ledger.listTransactions()
+    const updatedEntry = transactions.find(tx => tx.id === entry.id)
+    expect(updatedEntry.remote.synced).toBe(true)
+    expect(updatedEntry.remote.error).toBeNull()
+    expect(await ledger.getBalance()).toBe(15)
+
+    const retryLog = await fs.readFile(path.join(ledger.storageDir, 'remote-retry.log'), 'utf8')
+    expect(retryLog).toMatch(/network down/)
   })
 })
