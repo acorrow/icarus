@@ -102,7 +102,8 @@ global.LOG_DIR = LOG_DIR
 global.USING_MOCK_DATA = USING_MOCK_DATA
 global.BROADCAST_EVENT = broadcastEvent
 
-const tokenLedger = new TokenLedger()
+const tokenLedgerUserId = process.env.GHOSTNET_TOKEN_USER_ID || process.env.ICARUS_COMMANDER_ID || 'local'
+const tokenLedger = new TokenLedger({ userId: tokenLedgerUserId })
 global.TOKEN_LEDGER = tokenLedger
 
 // Initalise simple in-memory object cache (reset when program restarted)

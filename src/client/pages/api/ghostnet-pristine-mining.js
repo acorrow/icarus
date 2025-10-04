@@ -1,6 +1,7 @@
 import fetch from 'node-fetch'
 import https from 'https'
 import { load } from 'cheerio'
+import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
 
 const BASE_URL = 'https://inara.cz'
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -137,21 +138,26 @@ export default async function handler (req, res) {
     return
   }
 
-  try {
-    const system = typeof req.body?.system === 'string' ? req.body.system.trim() : ''
-    const targetSystem = system || 'Sol'
-    const url = buildGhostnetUrl(targetSystem)
+  const system = typeof req.body?.system === 'string' ? req.body.system.trim() : ''
+  const targetSystem = system || 'Sol'
+  const url = buildGhostnetUrl(targetSystem)
+  const requestBytes = estimateByteSize(url)
+  let responseText = ''
+  let responseStatus = null
+  let caughtError = null
 
+  try {
     const response = await fetch(url, {
       agent: ipv4HttpsAgent,
       headers: GHOSTNET_REQUEST_HEADERS
     })
+    responseStatus = response.status
     if (!response.ok) {
       throw new Error(`GHOSTNET request failed with status ${response.status}`)
     }
 
-    const html = await response.text()
-    const locations = parseBodies(html, targetSystem)
+    responseText = await response.text()
+    const locations = parseBodies(responseText, targetSystem)
 
     res.status(200).json({
       locations,
@@ -160,8 +166,23 @@ export default async function handler (req, res) {
       message: `Showing pristine mining locations within ${MAX_DISTANCE_LY} Ly of ${targetSystem}.`
     })
   } catch (error) {
+    caughtError = error
     res.status(500).json({
       error: error.message || 'Failed to fetch pristine mining locations.'
     })
+  } finally {
+    const metadata = {
+      reason: caughtError ? 'inara-request-error' : 'inara-request',
+      method: 'GET',
+      status: responseStatus,
+      system: targetSystem,
+      error: caughtError ? caughtError.message : undefined
+    }
+    await spendTokensForInaraExchange({
+      endpoint: url,
+      requestBytes,
+      responseBytes: estimateByteSize(responseText),
+      metadata
+    }).catch(() => {})
   }
 }

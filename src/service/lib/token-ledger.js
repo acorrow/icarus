@@ -10,11 +10,28 @@ const {
   getRemoteLedgerConfig,
   TOKEN_REMOTE_MODES
 } = require('../../shared/token-config')
+const { isGhostnetTokenCurrencyEnabled } = require('../../shared/feature-flags')
 
 const DEFAULT_REMOTE_TIMEOUT = 8000
 
 const LEDGER_FILENAME = 'ledger.json'
 const TRANSACTIONS_FILENAME = 'transactions.jsonl'
+const LEDGER_LOG_FILENAME = 'ledger.log'
+
+function normalizeUserId (value) {
+  if (!value) return 'local'
+  const normalized = String(value).trim()
+  if (!normalized) return 'local'
+  return normalized.replace(/[\\/:]/g, '_')
+}
+
+function resolveReason (type, metadata = {}) {
+  if (typeof metadata.reason === 'string' && metadata.reason.trim()) {
+    return metadata.reason.trim()
+  }
+  const source = metadata.endpoint || metadata.event || metadata.source || 'token-currency'
+  return `${type}:${source}`
+}
 
 function createEntryId () {
   return `${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 10)}`
@@ -28,9 +45,12 @@ class RemoteLedgerClient {
     this.timeout = Number.isFinite(config.timeout) && config.timeout > 0 ? config.timeout : DEFAULT_REMOTE_TIMEOUT
     this.fetchImpl = config.fetchImpl || (typeof fetch === 'function' ? fetch : null)
     this.enabled = config.enabled !== undefined ? Boolean(config.enabled) : null
+    this.userId = config.userId || 'local'
+    this.featureEnabled = config.featureEnabled !== undefined ? config.featureEnabled : true
   }
 
   isEnabled () {
+    if (!this.featureEnabled) return false
     if (this.enabled !== null) {
       return this.enabled && this.baseUrl && typeof this.fetchImpl === 'function'
     }
@@ -38,14 +58,19 @@ class RemoteLedgerClient {
   }
 
   async fetchSnapshot () {
-    return this._request('/tokens/balance', { method: 'GET' })
+    const path = `/api/token-ledger/${encodeURIComponent(this.userId)}`
+    return this._request(path, { method: 'GET' })
   }
 
   async recordTransaction (type, amount, metadata = {}) {
-    const path = type === 'earn' ? '/tokens/earn' : '/tokens/spend'
-    return this._request(path, {
+    const reason = resolveReason(type, metadata)
+    const endpoint = type === 'earn'
+      ? `/api/token-ledger/${encodeURIComponent(this.userId)}/credit`
+      : `/api/token-ledger/${encodeURIComponent(this.userId)}/debit`
+
+    return this._request(endpoint, {
       method: 'POST',
-      body: JSON.stringify({ amount, metadata })
+      body: JSON.stringify({ amount, reason })
     })
   }
 
@@ -102,22 +127,28 @@ class RemoteLedgerClient {
 }
 
 function createRemoteLedgerClient (config = {}) {
+  const featureEnabled = config.featureEnabled !== undefined ? config.featureEnabled : true
   const fetchImpl = config.fetchImpl || (typeof fetch === 'function' ? fetch : null)
+  if (!featureEnabled) return null
   if (config.enabled === false) return null
   if (!fetchImpl) return null
-  if (config.mode === TOKEN_REMOTE_MODES.DISABLED && !config.enabled) return null
-  if (!(config.endpoint || '').trim()) return null
-  return new RemoteLedgerClient({ ...config, fetchImpl })
+  if ((config.mode === TOKEN_REMOTE_MODES.DISABLED && !config.enabled) || !(config.endpoint || '').trim()) return null
+  return new RemoteLedgerClient({ ...config, fetchImpl, featureEnabled })
 }
 
 class TokenLedger {
   constructor (options = {}) {
     this.mode = options.mode || getTokenMode()
     this.initialBalance = options.initialBalance ?? getInitialTokenBalance()
-    this.storageDir = options.storageDir || path.join(Preferences.preferencesDir(), 'tokens')
+    this.userId = normalizeUserId(options.userId)
+    this.featureEnabled = options.featureEnabled !== undefined ? options.featureEnabled : isGhostnetTokenCurrencyEnabled()
+    const baseStorage = options.storageDir || path.join(Preferences.preferencesDir(), 'tokens')
+    this.storageDir = path.join(baseStorage, this.userId)
     this.ledgerPath = path.join(this.storageDir, LEDGER_FILENAME)
     this.transactionsPath = path.join(this.storageDir, TRANSACTIONS_FILENAME)
+    this.ledgerLogPath = path.join(this.storageDir, LEDGER_LOG_FILENAME)
     this.remoteConfig = options.remote ? { ...getRemoteLedgerConfig(), ...options.remote } : getRemoteLedgerConfig()
+    this.remoteConfig = { ...this.remoteConfig, featureEnabled: this.featureEnabled, userId: this.userId }
     if (options.remoteFetch) {
       this.remoteConfig = { ...this.remoteConfig, fetchImpl: options.remoteFetch }
     }
@@ -189,6 +220,7 @@ class TokenLedger {
   }
 
   isSimulation () {
+    if (!this.featureEnabled) return true
     return shouldSimulateTokenTransfers({ ICARUS_TOKENS_MODE: this.mode })
   }
 
@@ -226,6 +258,9 @@ class TokenLedger {
   async _recordTransaction (type, amount, metadata) {
     const normalizedAmount = Number.isFinite(amount) ? amount : 0
     const delta = type === 'earn' ? normalizedAmount : -normalizedAmount
+    const metadataWithReason = { ...(metadata || {}) }
+    const reason = resolveReason(type, metadataWithReason)
+    metadataWithReason.reason = reason
 
     return this._enqueue(async () => {
       await this.init()
@@ -238,12 +273,12 @@ class TokenLedger {
         delta,
         balance: this._state.balance,
         timestamp,
-        metadata: metadata || {},
+        metadata: metadataWithReason,
         mode: this.mode
       }
 
       if (this.remoteClient && this.remoteClient.isEnabled()) {
-        const remoteResult = await this.remoteClient.recordTransaction(type, normalizedAmount, metadata).catch(() => null)
+        const remoteResult = await this.remoteClient.recordTransaction(type, normalizedAmount, metadataWithReason).catch(() => null)
         if (remoteResult && Number.isFinite(remoteResult.balance)) {
           this._state.balance = remoteResult.balance
           entry.balance = remoteResult.balance
@@ -260,8 +295,10 @@ class TokenLedger {
       this._transactions.push(entry)
       await this._persistState()
       await fs.appendFile(this.transactionsPath, `${JSON.stringify(entry)}\n`)
+      const logLine = `[${timestamp}] user=${this.userId} type=${type} amount=${normalizedAmount} delta=${delta} balance=${this._state.balance} reason=${reason}\n`
+      await fs.appendFile(this.ledgerLogPath, logLine)
       const remoteStatus = entry.remote?.enabled ? (entry.remote.synced ? 'remote:synced' : 'remote:pending') : 'remote:disabled'
-      console.log(`[TokenLedger] ${type} ${normalizedAmount} (delta ${delta}) -> balance ${this._state.balance} [${this.mode}] [${remoteStatus}]`, metadata)
+      console.log(`[TokenLedger] user=${this.userId} ${type} ${normalizedAmount} (delta ${delta}) -> balance ${this._state.balance} [${this.mode}] [${remoteStatus}]`, metadata)
       return entry
     })
   }
@@ -283,17 +320,18 @@ class TokenLedger {
 
   _describeRemoteState (overrides = {}) {
     if (!this.remoteClient) {
-      return { enabled: false, mode: TOKEN_REMOTE_MODES.DISABLED, ...overrides }
+      return { enabled: false, mode: TOKEN_REMOTE_MODES.DISABLED, userId: this.userId, ...overrides }
     }
     return {
       enabled: this.remoteClient.isEnabled(),
       mode: this.remoteClient.mode || TOKEN_REMOTE_MODES.DISABLED,
+      userId: this.userId,
       ...overrides
     }
   }
 
   async _persistState () {
-    await fs.writeJson(this.ledgerPath, { balance: this._state.balance, updatedAt: new Date().toISOString() }, { spaces: 2 })
+    await fs.writeJson(this.ledgerPath, { balance: this._state.balance, updatedAt: new Date().toISOString(), userId: this.userId }, { spaces: 2 })
   }
 
   _enqueue (fn) {

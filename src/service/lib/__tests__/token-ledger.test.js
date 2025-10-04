@@ -69,8 +69,18 @@ describe('TokenLedger', () => {
     const balance = await ledger.getBalance()
     expect(balance).toBe(125)
 
-    const ledgerFile = await fs.readJson(path.join(tempDir, 'ledger.json'))
+    const ledgerFile = await fs.readJson(ledger.ledgerPath)
     expect(ledgerFile.balance).toBe(125)
+  })
+
+  it('writes human readable log entries for transactions', async () => {
+    const ledger = new TokenLedger({ storageDir: tempDir, initialBalance: 0 })
+    await ledger.bootstrap()
+    await ledger.recordEarn(75, { reason: 'log-test' })
+    const logPath = path.join(ledger.storageDir, 'ledger.log')
+    const logContent = await fs.readFile(logPath, 'utf8')
+    expect(logContent).toMatch(/log-test/)
+    expect(logContent).toMatch(/user=local/)
   })
 
   it('mirrors transactions to a remote ledger when configured', async () => {

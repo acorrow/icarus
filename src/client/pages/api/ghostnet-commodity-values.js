@@ -4,6 +4,7 @@ import os from 'os'
 import https from 'https'
 import fetch from 'node-fetch'
 import { load } from 'cheerio'
+import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
 
 const GHOSTNET_BASE_URL = 'https://inara.cz'
 const GHOSTNET_COMMODITY_SEARCH_URL = `${GHOSTNET_BASE_URL}/elite/commodities/`
@@ -230,17 +231,25 @@ async function loadCommodityOptions () {
   cachedCommodityOptionsPromise = (async () => {
     const url = new URL(GHOSTNET_COMMODITY_SEARCH_URL)
     url.searchParams.set('formbrief', '1')
-    const response = await fetch(url.toString(), {
-      agent: ipv4HttpsAgent,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'
+
+    const requestBytes = estimateByteSize(url.toString())
+    let responseText = ''
+    let responseStatus = null
+    let fetchError = null
+
+    try {
+      const response = await fetch(url.toString(), {
+        agent: ipv4HttpsAgent,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'
+        }
+      })
+      responseStatus = response.status
+      if (!response.ok) {
+        throw new Error(`GHOSTNET commodity list request failed with status ${response.status}`)
       }
-    })
-    if (!response.ok) {
-      throw new Error(`GHOSTNET commodity list request failed with status ${response.status}`)
-    }
-    const html = await response.text()
-    const $ = load(html)
+      responseText = await response.text()
+      const $ = load(responseText)
     const optionMap = new Map()
     $("select[name='pa1[]'] option").each((_, element) => {
       const value = cleanText($(element).attr('value'))
@@ -268,10 +277,28 @@ async function loadCommodityOptions () {
       }
     })
 
-    cachedCommodityOptions = optionMap
-    cachedCommodityOptionsFetchedAt = Date.now()
-    cachedCommodityOptionsPromise = null
-    return optionMap
+      cachedCommodityOptions = optionMap
+      cachedCommodityOptionsFetchedAt = Date.now()
+      cachedCommodityOptionsPromise = null
+      return optionMap
+    } catch (err) {
+      fetchError = err
+      throw err
+    } finally {
+      const metadata = {
+        reason: fetchError ? 'inara-request-error' : 'inara-request',
+        method: 'GET',
+        status: responseStatus,
+        phase: 'commodity-options',
+        error: fetchError ? fetchError.message : undefined
+      }
+      await spendTokensForInaraExchange({
+        endpoint: url.toString(),
+        requestBytes,
+        responseBytes: estimateByteSize(responseText),
+        metadata
+      }).catch(() => {})
+    }
   })().catch(err => {
     cachedCommodityOptionsPromise = null
     throw err
@@ -380,17 +407,43 @@ async function fetchCommoditySearchListings ({ commodityId, commodityName, nearS
   params.append('pa1[]', commodityId)
   if (nearSystem) params.set('ps1', nearSystem)
   const url = `${GHOSTNET_COMMODITY_SEARCH_URL}?${params.toString()}`
-  const response = await fetch(url, {
-    agent: ipv4HttpsAgent,
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'
+  const requestBytes = estimateByteSize(url)
+  let responseText = ''
+  let responseStatus = null
+  let fetchError = null
+
+  try {
+    const response = await fetch(url, {
+      agent: ipv4HttpsAgent,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'
+      }
+    })
+    responseStatus = response.status
+    if (!response.ok) {
+      throw new Error(`GHOSTNET commodity search failed with status ${response.status}`)
     }
-  })
-  if (!response.ok) {
-    throw new Error(`GHOSTNET commodity search failed with status ${response.status}`)
+    responseText = await response.text()
+    return parseCommoditySearchResults(responseText)
+  } catch (err) {
+    fetchError = err
+    throw err
+  } finally {
+    const metadata = {
+      reason: fetchError ? 'inara-request-error' : 'inara-request',
+      method: 'GET',
+      status: responseStatus,
+      commodityId,
+      system: nearSystem || null,
+      error: fetchError ? fetchError.message : undefined
+    }
+    await spendTokensForInaraExchange({
+      endpoint: url,
+      requestBytes,
+      responseBytes: estimateByteSize(responseText),
+      metadata
+    }).catch(() => {})
   }
-  const html = await response.text()
-  return parseCommoditySearchResults(html)
 }
 
 function cleanText (value) {

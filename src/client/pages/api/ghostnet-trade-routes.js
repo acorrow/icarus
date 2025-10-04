@@ -8,6 +8,7 @@ import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
 import { appendGhostnetLogEntry } from './ghostnet-log-utils.js'
+import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
 
 const logPath = path.join(process.cwd(), 'ghostnet-trade-routes.log')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -469,6 +470,11 @@ export default async function handler(req, res) {
   const url = `https://inara.cz/elite/market-traderoutes/?${params.toString()}`
   logGhostnetTrade(`REQUEST: system=${system} url=${url}`)
 
+  const requestBytes = estimateByteSize(url)
+  let responseText = ''
+  let responseStatus = null
+  let caughtError = null
+
   try {
     const response = await fetch(url, {
       headers: {
@@ -477,10 +483,11 @@ export default async function handler(req, res) {
       },
       agent: ipv4HttpsAgent
     })
+    responseStatus = response.status
     if (!response.ok) throw new Error('GHOSTNET request failed')
-    const html = await response.text()
+    responseText = await response.text()
 
-    const routes = parseTradeRoutes(html)
+    const routes = parseTradeRoutes(responseText)
     if (!routes.length) {
       logGhostnetTrade(`RESPONSE: system=${system} url=${url} NO_RESULTS`)
       res.status(200).json({ results: [], message: 'No trade routes found on GHOSTNET.' })
@@ -921,7 +928,24 @@ export default async function handler(req, res) {
     logGhostnetTrade(`RESPONSE: system=${system} url=${url} results=${enrichedResults.length}`)
     res.status(200).json({ results: enrichedResults })
   } catch (err) {
+    caughtError = err
     logGhostnetTrade(`ERROR: system=${system} url=${url} error=${err}`)
     res.status(500).json({ error: 'Failed to fetch or parse GHOSTNET results', details: err.message })
+  } finally {
+    const metadata = {
+      reason: caughtError ? 'inara-request-error' : 'inara-request',
+      method: 'GET',
+      status: responseStatus,
+      system,
+      error: caughtError ? caughtError.message : undefined
+    }
+    await spendTokensForInaraExchange({
+      endpoint: url,
+      requestBytes,
+      responseBytes: estimateByteSize(responseText),
+      metadata
+    }).catch(ledgerError => {
+      logGhostnetTrade(`TOKEN_LEDGER_ERROR: ${ledgerError}`)
+    })
   }
 }
