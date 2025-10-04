@@ -6,6 +6,7 @@ import TransferContextSummary from '../components/ghostnet/transfer-context-summ
 import StationSummary, { StationIcon, DemandIndicator } from '../components/ghostnet/station-summary'
 import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
+import CopyOnClick from '../components/copy-on-click'
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
@@ -49,6 +50,437 @@ LoadingSpinner.defaultProps = {
   label: '',
   inline: false
 }
+
+function TradeRouteFilterPanel ({
+  filters,
+  onFilterChange,
+  options,
+  cargoCapacityDisplay,
+  selectedSystemName,
+  systemSelection,
+  systemInput,
+  systemOptions,
+  onSystemChange,
+  onManualSystemChange,
+  filtersCollapsed,
+  onToggleFilters,
+  filtersSummary,
+  onSubmit,
+  isRefreshing,
+  queryUrl,
+  padSizeAutoDetected,
+  initialShipInfoLoaded
+}) {
+  const {
+    cargoCapacity,
+    routeDistance,
+    priceAge,
+    padSize,
+    stationDistance,
+    surfacePreference,
+    sourcePower,
+    targetPower,
+    minSupply,
+    minDemand,
+    orderBy,
+    displayPowerplay,
+    includeRoundTrips
+  } = filters
+
+  const {
+    routeDistanceOptions,
+    priceAgeOptions,
+    padSizeOptions,
+    stationDistanceOptions,
+    surfaceOptions,
+    powerOptions,
+    supplyOptions,
+    demandOptions,
+    orderByOptions
+  } = options
+
+  const handleCargoCapacityChange = event => {
+    const raw = event.target.value
+    if (raw === '') {
+      onFilterChange('cargoCapacity', '')
+      return
+    }
+    const parsed = Number(raw)
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return
+    }
+    onFilterChange('cargoCapacity', String(Math.floor(parsed)))
+  }
+
+  const renderSystemOptionLabel = option => {
+    if (!option || typeof option.name !== 'string') return ''
+    if (typeof option.distance === 'number' && Number.isFinite(option.distance)) {
+      const distanceText = option.distance <= 0 ? 'Current system' : `${option.distance.toFixed(1)} Ly`
+      return `${option.name} · ${distanceText}`
+    }
+    return option.name
+  }
+
+  return (
+    <form onSubmit={onSubmit} className={styles.tradeFiltersForm} aria-labelledby='trade-routes-filters-heading'>
+      <div className={styles.tradeFiltersHeader}>
+        <div className={styles.tradeFiltersSystemGroup}>
+          <label className={styles.tradeFiltersLabel} htmlFor='trade-route-system-select'>Near star system</label>
+          <div className={styles.tradeFiltersSystemControls}>
+            <select
+              id='trade-route-system-select'
+              value={systemSelection || (selectedSystemName ? selectedSystemName : '')}
+              onChange={onSystemChange}
+              className={styles.tradeFiltersSelect}
+            >
+              <option value=''>{selectedSystemName || 'Current system'}</option>
+              {systemOptions.map(option => (
+                <option key={option.name} value={option.name}>{renderSystemOptionLabel(option)}</option>
+              ))}
+              <option value='__manual'>Custom system…</option>
+            </select>
+            {systemSelection === '__manual' && (
+              <input
+                type='text'
+                value={systemInput}
+                onChange={onManualSystemChange}
+                placeholder='Type star system name'
+                className={styles.tradeFiltersTextInput}
+                aria-label='Custom star system'
+              />
+            )}
+          </div>
+        </div>
+        <div className={styles.tradeFiltersActions}>
+          <button
+            type='button'
+            onClick={onToggleFilters}
+            className={styles.tradeFiltersToggle}
+            aria-expanded={!filtersCollapsed}
+            aria-controls='trade-route-filter-grid'
+          >
+            {filtersCollapsed ? 'Show filters' : 'Hide filters'}
+          </button>
+          <button
+            type='submit'
+            className={styles.tradeFiltersSubmit}
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? 'Refreshing…' : 'Refresh results'}
+          </button>
+        </div>
+      </div>
+      {filtersCollapsed ? (
+        <div className={styles.tradeFiltersCollapsedSummary}>
+          <p className={styles.tradeFiltersSummaryText}>{filtersSummary}</p>
+          <div className={styles.tradeFiltersQueryRow}>
+            <span className={styles.tradeFiltersQueryLabel}>Query URL</span>
+            <CopyOnClick>
+              {queryUrl}
+            </CopyOnClick>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div id='trade-route-filter-grid' className={styles.tradeFiltersGrid}>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-capacity'>Cargo capacity (t)</label>
+              <input
+                id='trade-route-capacity'
+                type='number'
+                min='0'
+                step='1'
+                value={cargoCapacity}
+                onChange={handleCargoCapacityChange}
+                placeholder={initialShipInfoLoaded ? 'Enter capacity' : 'Detecting…'}
+                className={styles.tradeFiltersNumberInput}
+              />
+              <span className={styles.tradeFilterHint}>{cargoCapacityDisplay}{!initialShipInfoLoaded ? ' · detecting ship data' : ''}</span>
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-distance'>Max. route distance</label>
+              <select
+                id='trade-route-distance'
+                value={routeDistance}
+                onChange={event => onFilterChange('routeDistance', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {routeDistanceOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-price-age'>Max. price age</label>
+              <select
+                id='trade-route-price-age'
+                value={priceAge}
+                onChange={event => onFilterChange('priceAge', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {priceAgeOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-pad'>Min. landing pad</label>
+              <select
+                id='trade-route-pad'
+                value={padSize}
+                onChange={event => onFilterChange('padSize', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {padSizeOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              {padSizeAutoDetected && (
+                <span className={styles.tradeFilterHint}>Auto-detected from ship</span>
+              )}
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-station-distance'>Max. station distance</label>
+              <select
+                id='trade-route-station-distance'
+                value={stationDistance}
+                onChange={event => onFilterChange('stationDistance', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {stationDistanceOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-surface'>Use surface stations</label>
+              <select
+                id='trade-route-surface'
+                value={surfacePreference}
+                onChange={event => onFilterChange('surfacePreference', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {surfaceOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-source-power'>Source station Power</label>
+              <select
+                id='trade-route-source-power'
+                value={sourcePower}
+                onChange={event => onFilterChange('sourcePower', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {powerOptions.map(option => (
+                  <option key={`source-${option.value}`} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-target-power'>Target station Power</label>
+              <select
+                id='trade-route-target-power'
+                value={targetPower}
+                onChange={event => onFilterChange('targetPower', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {powerOptions.map(option => (
+                  <option key={`target-${option.value}`} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-min-supply'>Min. supply</label>
+              <select
+                id='trade-route-min-supply'
+                value={minSupply}
+                onChange={event => onFilterChange('minSupply', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {supplyOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-min-demand'>Min. demand</label>
+              <select
+                id='trade-route-min-demand'
+                value={minDemand}
+                onChange={event => onFilterChange('minDemand', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {demandOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.tradeFilterField}>
+              <label htmlFor='trade-route-order-by'>Order by</label>
+              <select
+                id='trade-route-order-by'
+                value={orderBy}
+                onChange={event => onFilterChange('orderBy', event.target.value)}
+                className={styles.tradeFiltersSelect}
+              >
+                {orderByOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={`${styles.tradeFilterField} ${styles.tradeFilterFieldToggle}`}>
+              <div className={styles.tradeFilterToggleRow}>
+                <input
+                  id='trade-route-powerplay'
+                  type='checkbox'
+                  checked={displayPowerplay}
+                  onChange={event => onFilterChange('displayPowerplay', event.target.checked)}
+                />
+                <label htmlFor='trade-route-powerplay'>Display Powerplay bonuses</label>
+              </div>
+            </div>
+            <div className={`${styles.tradeFilterField} ${styles.tradeFilterFieldToggle}`}>
+              <div className={styles.tradeFilterToggleRow}>
+                <input
+                  id='trade-route-round-trips'
+                  type='checkbox'
+                  checked={includeRoundTrips}
+                  onChange={event => onFilterChange('includeRoundTrips', event.target.checked)}
+                />
+                <label htmlFor='trade-route-round-trips'>Include round trips</label>
+              </div>
+            </div>
+          </div>
+          <div className={styles.tradeFiltersFooter}>
+            <div className={styles.tradeFiltersQueryRow}>
+              <span className={styles.tradeFiltersQueryLabel}>Query URL</span>
+              <CopyOnClick>
+                {queryUrl}
+              </CopyOnClick>
+            </div>
+          </div>
+        </>
+      )}
+    </form>
+  )
+}
+
+const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
+  route,
+  index,
+  onSelect,
+  onKeyDown,
+  renderQuantityIndicator,
+  factionStandings
+}) {
+  const originLocal = route?.origin?.local
+  const destinationLocal = route?.destination?.local
+
+  const originInfo = getRouteStationInfo(route, 'origin')
+  const destinationInfo = getRouteStationInfo(route, 'destination')
+
+  const originStation = originInfo.station || '--'
+  const originSystemName = originInfo.system || ''
+  const destinationStation = destinationInfo.station || '--'
+  const destinationSystemName = destinationInfo.system || ''
+
+  const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
+  const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
+  const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
+  const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
+
+  const originStationClassName = originStandingDisplay.className || undefined
+  const destinationStationClassName = destinationStandingDisplay.className || undefined
+  const originStationColor = originStandingDisplay.color
+  const destinationStationColor = destinationStandingDisplay.color
+  const originStationTitle = originStandingDisplay.title
+  const destinationStationTitle = destinationStandingDisplay.title
+  const outboundInfo = getRouteCommodityInfo(route, 'outbound')
+  const returnInfo = getRouteCommodityInfo(route, 'return')
+
+  const outboundCommodity = sanitizeInaraText(outboundInfo.commodity) || outboundInfo.commodity || '--'
+  const returnCommodity = sanitizeInaraText(returnInfo.commodity) || returnInfo.commodity || '--'
+  const outboundBuyPrice = sanitizeInaraText(outboundInfo.buy?.priceText) || outboundInfo.buy?.priceText || '--'
+  const returnSellPrice = sanitizeInaraText(returnInfo.sell?.priceText) || returnInfo.sell?.priceText || '--'
+
+  const outboundSupplyIndicator = renderQuantityIndicator(outboundInfo.buy, 'supply')
+  const outboundDemandIndicator = renderQuantityIndicator(outboundInfo.sell, 'demand')
+  const returnSupplyIndicator = renderQuantityIndicator(returnInfo.buy, 'supply')
+  const returnDemandIndicator = renderQuantityIndicator(returnInfo.sell, 'demand')
+  const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
+
+  const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
+  const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
+  const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
+  const routeDistanceDisplay = formatSystemDistance(route?.summary?.routeDistanceLy ?? route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.routeDistanceText || route?.summary?.distanceText || route?.distanceDisplay)
+  const systemDistanceDisplay = formatSystemDistance(route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.distanceText || route?.distanceDisplay)
+  const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
+
+  const originIconName = getStationIconName(originLocal, route?.origin)
+  const destinationIconName = getStationIconName(destinationLocal, route?.destination)
+  const caretSymbol = String.fromCharCode(0x203A)
+
+  const handleClick = () => onSelect(route, index)
+  const handleKeyDown = event => onKeyDown(event, route, index)
+
+  return (
+    <tr
+      className={styles.tableRowInteractive}
+      data-ghostnet-table-row='pending'
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role='button'
+      tabIndex={0}
+      aria-label={`View trade route details for ${originStation} to ${destinationStation}`}
+    >
+      <td className={styles.tableCellCaret} aria-hidden='true'>
+        {caretSymbol}
+      </td>
+      <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+        <div className={styles.tableCellInline}>
+          {originIconName && <StationIcon icon={originIconName} color={originStationColor} />}
+          <span
+            style={{ fontWeight: 600, color: originStationColor }}
+            className={originStationClassName}
+            title={originStationTitle}
+          >
+            {originStation}
+          </span>
+        </div>
+      </td>
+      <td className={`hidden-small ${styles.tableCellTop}`}>{originSystemName || '--'}</td>
+      <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+        <div className={styles.tableCellInline}>
+          {destinationIconName && <StationIcon icon={destinationIconName} color={destinationStationColor} />}
+          <span
+            style={{ fontWeight: 600, color: destinationStationColor }}
+            className={destinationStationClassName}
+            title={destinationStationTitle}
+          >
+            {destinationStation}
+          </span>
+        </div>
+      </td>
+      <td className={`hidden-small ${styles.tableCellTop}`}>{destinationSystemName || '--'}</td>
+      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}><strong>{outboundCommodity}</strong></td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundBuyPrice}</td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundSupplyIndicator || indicatorPlaceholder}</td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundDemandIndicator || indicatorPlaceholder}</td>
+      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}><strong>{returnCommodity}</strong></td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnSellPrice}</td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnSupplyIndicator || indicatorPlaceholder}</td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnDemandIndicator || indicatorPlaceholder}</td>
+      <td className={`text-right ${styles.tableCellTop}`}>{profitPerTon || '--'}</td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{profitPerTrip || '--'}</td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{profitPerHour || '--'}</td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{routeDistanceDisplay || '--'}</td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{systemDistanceDisplay || '--'}</td>
+      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{updatedDisplay || '--'}</td>
+    </tr>
+  )
+})
 
 function normaliseName (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
@@ -721,9 +1153,24 @@ const FILTER_SUMMARY_REFRESH_ICON_STYLE = {
 }
 
 const DEFAULT_SORT_DIRECTION = {
+  origin: 'asc',
+  originSystem: 'asc',
+  destination: 'asc',
+  destinationSystem: 'asc',
+  outboundCommodity: 'asc',
+  outboundBuyPrice: 'desc',
+  outboundSupply: 'desc',
+  outboundDemand: 'desc',
+  returnCommodity: 'asc',
+  returnSellPrice: 'desc',
+  returnSupply: 'desc',
+  returnDemand: 'desc',
   profitPerTon: 'desc',
+  profitPerTrip: 'desc',
+  profitPerHour: 'desc',
   routeDistance: 'asc',
-  distance: 'asc'
+  distance: 'asc',
+  updated: 'desc'
 }
 
 function parseNumberFromText (value) {
@@ -811,6 +1258,114 @@ function extractSystemDistance (route) {
     if (parsed !== null) return parsed
   }
   return null
+}
+
+function extractProfitPerTrip (route) {
+  if (!route) return null
+  const numericCandidates = [route?.summary?.profitPerTrip, route?.profitPerTrip]
+  for (const value of numericCandidates) {
+    if (typeof value === 'number' && !Number.isNaN(value)) return value
+  }
+  const textCandidates = [route?.summary?.profitPerTripText, route?.profitPerTripText]
+  for (const textValue of textCandidates) {
+    const parsed = parseNumberFromText(textValue)
+    if (parsed !== null) return parsed
+  }
+  return null
+}
+
+function extractProfitPerHour (route) {
+  if (!route) return null
+  const numericCandidates = [route?.summary?.profitPerHour, route?.profitPerHour]
+  for (const value of numericCandidates) {
+    if (typeof value === 'number' && !Number.isNaN(value)) return value
+  }
+  const textCandidates = [route?.summary?.profitPerHourText, route?.profitPerHourText]
+  for (const textValue of textCandidates) {
+    const parsed = parseNumberFromText(textValue)
+    if (parsed !== null) return parsed
+  }
+  return null
+}
+
+function extractUpdatedAt (route) {
+  if (!route) return null
+  const candidates = [
+    route?.summary?.updated,
+    route?.updatedAt,
+    route?.lastUpdated,
+    route?.timestamp
+  ]
+  for (const value of candidates) {
+    if (!value) continue
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value.getTime()
+    if (typeof value === 'number' && !Number.isNaN(value)) return value
+    if (typeof value === 'string') {
+      const parsed = Date.parse(value)
+      if (!Number.isNaN(parsed)) return parsed
+    }
+  }
+  return null
+}
+
+function extractPriceValue (entry) {
+  if (!entry) return null
+  if (typeof entry.price === 'number' && !Number.isNaN(entry.price)) return entry.price
+  if (typeof entry.priceText === 'string') {
+    const parsed = parseNumberFromText(entry.priceText)
+    if (parsed !== null) return parsed
+  }
+  return null
+}
+
+function extractQuantityValue (entry) {
+  if (!entry) return null
+  if (typeof entry.quantity === 'number' && !Number.isNaN(entry.quantity)) return entry.quantity
+  if (typeof entry.quantityText === 'string') {
+    const parsed = parseNumberFromText(entry.quantityText)
+    if (parsed !== null) return parsed
+  }
+  return null
+}
+
+function getRouteStationInfo (route, type) {
+  const target = type === 'origin' ? route?.origin : route?.destination
+  const local = target?.local || {}
+  const station = local?.station || target?.stationName || target?.station || target?.stationName || null
+  const system = local?.system || target?.systemName || target?.system || null
+  let resolvedStation = station || null
+  if (!resolvedStation) {
+    if (type === 'origin') {
+      resolvedStation = route?.originStation || route?.sourceStation || route?.startStation || route?.fromStation || route?.station || null
+    } else {
+      resolvedStation = route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || null
+    }
+  }
+  let resolvedSystem = system || null
+  if (!resolvedSystem) {
+    if (type === 'origin') {
+      resolvedSystem = route?.originSystem || route?.sourceSystem || route?.startSystem || route?.fromSystem || route?.system || null
+    } else {
+      resolvedSystem = route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || null
+    }
+  }
+  return {
+    station: typeof resolvedStation === 'string' ? resolvedStation : '',
+    system: typeof resolvedSystem === 'string' ? resolvedSystem : ''
+  }
+}
+
+function getRouteCommodityInfo (route, phase) {
+  if (phase === 'outbound') {
+    const buy = route?.origin?.buy || null
+    const sell = route?.destination?.sell || null
+    const commodity = buy?.commodity || sell?.commodity || route?.commodity || ''
+    return { commodity: commodity || '', buy, sell }
+  }
+  const buyReturn = route?.destination?.buyReturn || null
+  const sellReturn = route?.origin?.sellReturn || null
+  const commodity = buyReturn?.commodity || sellReturn?.commodity || ''
+  return { commodity: commodity || '', buy: buyReturn, sell: sellReturn }
 }
 
 function useSystemSelector ({ autoSelectCurrent = false } = {}) {
@@ -916,7 +1471,16 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
 }
 
 function MissionsPanel () {
-  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
+  const systemSelector = useSystemSelector({ autoSelectCurrent: true })
+  const {
+    currentSystem,
+    systemSelection,
+    systemInput,
+    systemOptions,
+    handleSystemChange,
+    handleManualSystemChange
+  } = systemSelector
+  const selectedSystemValue = systemSelector.system
   const [missions, setMissions] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
@@ -2538,17 +3102,48 @@ function CargoHoldPanel () {
 
 function TradeRoutesPanel () {
   const { connected, ready } = useSocket()
-  const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
-  const [cargoCapacity, setCargoCapacity] = useState('')
+  const systemSelector = useSystemSelector({ autoSelectCurrent: true })
+  const {
+    currentSystem,
+    systemSelection,
+    systemInput,
+    systemOptions,
+    handleSystemChange,
+    handleManualSystemChange
+  } = systemSelector
+  const selectedSystemValue = systemSelector.system
+  const [filters, setFilters] = useState({
+    cargoCapacity: '',
+    routeDistance: '30',
+    priceAge: '8',
+    padSize: '2',
+    minSupply: '500',
+    minDemand: '0',
+    stationDistance: '0',
+    surfacePreference: '0',
+    sourcePower: '0',
+    targetPower: '0',
+    orderBy: '0',
+    displayPowerplay: false,
+    includeRoundTrips: true
+  })
+  const {
+    cargoCapacity,
+    routeDistance,
+    priceAge,
+    padSize,
+    minSupply,
+    minDemand,
+    stationDistance,
+    surfacePreference,
+    sourcePower,
+    targetPower,
+    orderBy,
+    displayPowerplay,
+    includeRoundTrips
+  } = filters
   const [initialShipInfoLoaded, setInitialShipInfoLoaded] = useState(false)
-  const [routeDistance, setRouteDistance] = useState('30')
-  const [priceAge, setPriceAge] = useState('8')
-  const [padSize, setPadSize] = useState('2')
   const [padSizeAutoDetected, setPadSizeAutoDetected] = useState(false)
-  const [minSupply, setMinSupply] = useState('500')
-  const [minDemand, setMinDemand] = useState('0')
-  const [stationDistance, setStationDistance] = useState('0')
-  const [surfacePreference, setSurfacePreference] = useState('0')
   const [rawRoutes, setRawRoutes] = useState([])
   const [routes, setRoutes] = useState([])
   const [status, setStatus] = useState('idle')
@@ -2558,9 +3153,12 @@ function TradeRoutesPanel () {
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
   const [sortField, setSortField] = useState('distance')
   const [sortDirection, setSortDirection] = useState('asc')
-  const [filtersCollapsed, setFiltersCollapsed] = useState(true)
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false)
   const [selectedRouteContext, setSelectedRouteContext] = useState(null)
   const factionStandings = useFactionStandings()
+  const setFilterValue = useCallback((field, value) => {
+    setFilters(prev => ({ ...prev, [field]: value }))
+  }, [])
   const lastAutoRefreshSystem = useRef('')
   const isMountedRef = useRef(true)
 
@@ -2575,19 +3173,22 @@ function TradeRoutesPanel () {
     if (!isMountedRef.current) return
 
     const capacityNumber = Number(shipStatus?.cargo?.capacity)
+    const updates = {}
     if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
-      setCargoCapacity(String(Math.round(capacityNumber)))
+      updates.cargoCapacity = String(Math.round(capacityNumber))
     } else {
-      setCargoCapacity('')
+      updates.cargoCapacity = ''
     }
 
     const landingPadSize = getShipLandingPadSize(shipStatus)
     if (landingPadSize) {
-      setPadSize(landingPadSize)
+      updates.padSize = landingPadSize
       setPadSizeAutoDetected(true)
     } else {
       setPadSizeAutoDetected(false)
     }
+
+    setFilters(prev => ({ ...prev, ...updates }))
   }, [])
 
   const syncShipFiltersWithShipStatus = useCallback(async () => {
@@ -2597,7 +3198,7 @@ function TradeRoutesPanel () {
     } catch (err) {
       if (isMountedRef.current) {
         setPadSizeAutoDetected(false)
-        setCargoCapacity('')
+        setFilters(prev => ({ ...prev, cargoCapacity: '' }))
       }
     } finally {
       if (isMountedRef.current) setInitialShipInfoLoaded(true)
@@ -2624,10 +3225,12 @@ function TradeRoutesPanel () {
   }), [connected, syncShipFiltersWithShipStatus])
 
   const selectedSystemName = useMemo(() => {
+    const manual = typeof selectedSystemValue === 'string' ? selectedSystemValue.trim() : ''
+    if (manual) return manual
     if (typeof currentSystem?.name !== 'string') return ''
     const trimmed = currentSystem.name.trim()
     return trimmed || ''
-  }, [currentSystem?.name])
+  }, [selectedSystemValue, currentSystem?.name])
 
   const routeDistanceOptions = useMemo(() => ([
     { value: '10', label: '10 Ly' },
@@ -2693,10 +3296,47 @@ function TradeRoutesPanel () {
   ]), [])
 
   const surfaceOptions = useMemo(() => ([
-    { value: '0', label: 'Yes +Oddsey' },
-    { value: '2', label: 'Yes' },
-    { value: '1', label: 'No' }
+    { value: '0', label: 'Include Odyssey stations' },
+    { value: '2', label: 'Exclude Odyssey stations' },
+    { value: '1', label: 'No surface stations' }
   ]), [])
+
+  const powerOptions = useMemo(() => ([
+    { value: '0', label: 'Any' },
+    { value: '-1', label: 'None' },
+    { value: '2', label: 'Aisling Duval' },
+    { value: '10', label: 'Archon Delaine' },
+    { value: '4', label: 'Arissa Lavigny-Duval' },
+    { value: '1', label: 'Denton Patreus' },
+    { value: '3', label: 'Edmund Mahon' },
+    { value: '5', label: 'Felicia Winters' },
+    { value: '12', label: 'Jerome Archer' },
+    { value: '7', label: 'Li Yong-Rui' },
+    { value: '13', label: 'Nakato Kaine' },
+    { value: '9', label: 'Pranav Antal' },
+    { value: '11', label: 'Yuri Grom' },
+    { value: '8', label: 'Zemina Torval' }
+  ]), [])
+
+  const orderByOptions = useMemo(() => ([
+    { value: '0', label: 'Best profit' },
+    { value: '4', label: 'Profit per hour (estimate)' },
+    { value: '1', label: 'Last update' },
+    { value: '2', label: 'Route distance' },
+    { value: '3', label: 'Distance from system' }
+  ]), [])
+
+  const filterOptions = useMemo(() => ({
+    routeDistanceOptions,
+    priceAgeOptions,
+    padSizeOptions,
+    stationDistanceOptions,
+    surfaceOptions,
+    powerOptions,
+    supplyOptions,
+    demandOptions,
+    orderByOptions
+  }), [routeDistanceOptions, priceAgeOptions, padSizeOptions, stationDistanceOptions, surfaceOptions, powerOptions, supplyOptions, demandOptions, orderByOptions])
 
   const pickOptionLabel = useCallback((options, value, fallback) => {
     if (!Array.isArray(options)) return fallback
@@ -2730,17 +3370,50 @@ function TradeRoutesPanel () {
     if (initialShipInfoLoaded && padSizeAutoDetected && padLabelRaw !== 'Detecting…' && padLabelRaw !== 'Unknown') {
       padLabel = `${padLabel} (Ship)`
     }
+    const routeDistanceLabel = pickOptionLabel(routeDistanceOptions, routeDistance, 'Any')
+    const priceAgeLabel = pickOptionLabel(priceAgeOptions, priceAge, 'Any')
+    const stationDistanceLabel = pickOptionLabel(stationDistanceOptions, stationDistance, 'Any')
+    const surfaceLabel = pickOptionLabel(surfaceOptions, surfacePreference, 'Include Odyssey stations')
     const supplyLabel = simplifySupplyDemandLabel(pickOptionLabel(supplyOptions, minSupply, 'Any'))
     const demandLabel = simplifySupplyDemandLabel(pickOptionLabel(demandOptions, minDemand, 'Any'))
+    const orderLabel = pickOptionLabel(orderByOptions, orderBy, 'Best profit')
+    const roundTripLabel = includeRoundTrips ? 'Round trips enabled' : 'Single leg only'
 
     return [
       selectedSystem,
       `Capacity: ${cargoCapacityDisplay}`,
       `Landing Pad: ${padLabel}`,
+      `Route: ${routeDistanceLabel}`,
+      `Price Age: ${priceAgeLabel}`,
+      `Station Dist: ${stationDistanceLabel}`,
+      `Surface: ${surfaceLabel}`,
       `Min Supply: ${supplyLabel}`,
-      `Min Demand: ${demandLabel}`
+      `Min Demand: ${demandLabel}`,
+      `Order: ${orderLabel}`,
+      roundTripLabel
     ].join(' | ')
-  }, [selectedSystemName, cargoCapacityDisplay, padSize, minSupply, minDemand, padSizeOptions, supplyOptions, demandOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
+  }, [selectedSystemName, cargoCapacityDisplay, padSize, routeDistance, priceAge, stationDistance, surfacePreference, minSupply, minDemand, orderBy, includeRoundTrips, padSizeOptions, routeDistanceOptions, priceAgeOptions, stationDistanceOptions, surfaceOptions, supplyOptions, demandOptions, orderByOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
+
+  const queryUrl = useMemo(() => {
+    const params = new URLSearchParams()
+    params.set('formbrief', '1')
+    params.set('ps1', selectedSystemName || '')
+    if (cargoCapacity) params.set('pi10', cargoCapacity)
+    if (routeDistance) params.set('pi2', routeDistance)
+    if (priceAge) params.set('pi5', priceAge)
+    if (padSize) params.set('pi3', padSize)
+    if (stationDistance) params.set('pi9', stationDistance)
+    if (surfacePreference) params.set('pi4', surfacePreference)
+    if (sourcePower) params.set('pi14', sourcePower)
+    if (targetPower) params.set('pi15', targetPower)
+    if (minSupply) params.set('pi7', minSupply)
+    if (minDemand) params.set('pi12', minDemand)
+    if (orderBy) params.set('pi1', orderBy)
+    if (displayPowerplay) params.set('pi11', '1')
+    if (includeRoundTrips) params.set('pi8', '1')
+    const query = params.toString()
+    return `https://inara.cz/elite/market-traderoutes/?${query}`
+  }, [selectedSystemName, cargoCapacity, routeDistance, priceAge, padSize, stationDistance, surfacePreference, sourcePower, targetPower, minSupply, minDemand, orderBy, displayPowerplay, includeRoundTrips])
 
   const filterRoutes = useCallback((list = []) => {
     return Array.isArray(list) ? [...list] : []
@@ -2754,12 +3427,42 @@ function TradeRoutesPanel () {
 
     const getValue = route => {
       switch (sortField) {
+        case 'origin':
+          return getRouteStationInfo(route, 'origin').station
+        case 'originSystem':
+          return getRouteStationInfo(route, 'origin').system
+        case 'destination':
+          return getRouteStationInfo(route, 'destination').station
+        case 'destinationSystem':
+          return getRouteStationInfo(route, 'destination').system
+        case 'outboundCommodity':
+          return getRouteCommodityInfo(route, 'outbound').commodity
+        case 'outboundBuyPrice':
+          return extractPriceValue(getRouteCommodityInfo(route, 'outbound').buy)
+        case 'outboundSupply':
+          return extractQuantityValue(getRouteCommodityInfo(route, 'outbound').buy)
+        case 'outboundDemand':
+          return extractQuantityValue(getRouteCommodityInfo(route, 'outbound').sell)
+        case 'returnCommodity':
+          return getRouteCommodityInfo(route, 'return').commodity
+        case 'returnSellPrice':
+          return extractPriceValue(getRouteCommodityInfo(route, 'return').sell)
+        case 'returnSupply':
+          return extractQuantityValue(getRouteCommodityInfo(route, 'return').buy)
+        case 'returnDemand':
+          return extractQuantityValue(getRouteCommodityInfo(route, 'return').sell)
         case 'profitPerTon':
           return extractProfitPerTon(route)
+        case 'profitPerTrip':
+          return extractProfitPerTrip(route)
+        case 'profitPerHour':
+          return extractProfitPerHour(route)
         case 'routeDistance':
           return extractRouteDistance(route)
         case 'distance':
           return extractSystemDistance(route)
+        case 'updated':
+          return extractUpdatedAt(route)
         default:
           return null
       }
@@ -2768,16 +3471,20 @@ function TradeRoutesPanel () {
     return [...list].sort((a, b) => {
       const aValue = getValue(a)
       const bValue = getValue(b)
+      const aIsNumber = typeof aValue === 'number' && Number.isFinite(aValue)
+      const bIsNumber = typeof bValue === 'number' && Number.isFinite(bValue)
 
-      const aValid = Number.isFinite(aValue)
-      const bValid = Number.isFinite(bValue)
+      if (aIsNumber && bIsNumber) {
+        if (aValue === bValue) return 0
+        return (aValue < bValue ? -1 : 1) * directionFactor
+      }
 
-      if (!aValid && !bValid) return 0
-      if (!aValid) return 1
-      if (!bValid) return -1
-      if (aValue === bValue) return 0
-
-      return (aValue < bValue ? -1 : 1) * directionFactor
+      const aString = typeof aValue === 'string' ? aValue : (aValue ?? '')
+      const bString = typeof bValue === 'string' ? bValue : (bValue ?? '')
+      if (!aString && !bString) return 0
+      if (!aString) return 1
+      if (!bString) return -1
+      return aString.localeCompare(bString, undefined, { sensitivity: 'base' }) * directionFactor
     })
   }, [sortField, sortDirection])
 
@@ -2870,7 +3577,11 @@ function TradeRoutesPanel () {
       minDemand,
       maxStationDistance: stationDistance,
       surfacePreference,
-      includeRoundTrips: true
+      sourcePower,
+      targetPower,
+      orderBy,
+      includeRoundTrips,
+      displayPowerplay
     }
 
     const payload = {
@@ -2918,7 +3629,7 @@ function TradeRoutesPanel () {
       .finally(() => {
         setIsRefreshing(false)
       })
-  }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, status])
+  }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, sourcePower, targetPower, orderBy, includeRoundTrips, displayPowerplay, status])
 
   useEffect(() => {
     setSelectedRouteContext(null)
@@ -3006,27 +3717,139 @@ function TradeRoutesPanel () {
     <div className={styles.dataTableContainer}>
       <table className={`${styles.dataTable} ${styles.dataTableFixed} ${styles.dataTableDense}`}>
       <colgroup>
-        <col style={{ width: '4%' }} />
-        <col style={{ width: '20%' }} />
-        <col style={{ width: '20%' }} />
-        <col style={{ width: '14%' }} />
-        <col style={{ width: '14%' }} />
+        <col style={{ width: '3%' }} />
+        <col style={{ width: '16%' }} />
+        <col style={{ width: '12%' }} />
+        <col style={{ width: '16%' }} />
+        <col style={{ width: '12%' }} />
+        <col style={{ width: '12%' }} />
+        <col style={{ width: '7%' }} />
+        <col style={{ width: '6%' }} />
+        <col style={{ width: '6%' }} />
+        <col style={{ width: '12%' }} />
+        <col style={{ width: '7%' }} />
+        <col style={{ width: '6%' }} />
+        <col style={{ width: '6%' }} />
+        <col style={{ width: '7%' }} />
+        <col style={{ width: '7%' }} />
+        <col style={{ width: '7%' }} />
+        <col style={{ width: '7%' }} />
+        <col style={{ width: '7%' }} />
         <col style={{ width: '8%' }} />
-        <col style={{ width: '8%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '6%' }} />
-        <col style={{ width: '4%' }} />
       </colgroup>
       <thead>
         <tr>
           <th aria-hidden='true' className={styles.tableCellCaret} />
-          <th>Origin</th>
-          <th>Destination</th>
-          <th className='hidden-small'>Outbound Commodity</th>
-          <th className='hidden-small'>Return Commodity</th>
+          <th
+            className={`${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('origin')}
+            onKeyDown={event => handleSortKeyDown(event, 'origin')}
+            tabIndex={0}
+            aria-sort={sortField === 'origin' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Origin Station{renderSortArrow('origin')}
+          </th>
+          <th
+            className={`hidden-small ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('originSystem')}
+            onKeyDown={event => handleSortKeyDown(event, 'originSystem')}
+            tabIndex={0}
+            aria-sort={sortField === 'originSystem' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Origin System{renderSortArrow('originSystem')}
+          </th>
+          <th
+            className={`${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('destination')}
+            onKeyDown={event => handleSortKeyDown(event, 'destination')}
+            tabIndex={0}
+            aria-sort={sortField === 'destination' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Destination Station{renderSortArrow('destination')}
+          </th>
+          <th
+            className={`hidden-small ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('destinationSystem')}
+            onKeyDown={event => handleSortKeyDown(event, 'destinationSystem')}
+            tabIndex={0}
+            aria-sort={sortField === 'destinationSystem' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Destination System{renderSortArrow('destinationSystem')}
+          </th>
+          <th
+            className={`hidden-small ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('outboundCommodity')}
+            onKeyDown={event => handleSortKeyDown(event, 'outboundCommodity')}
+            tabIndex={0}
+            aria-sort={sortField === 'outboundCommodity' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Outbound Commodity{renderSortArrow('outboundCommodity')}
+          </th>
           <th
             className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('outboundBuyPrice')}
+            onKeyDown={event => handleSortKeyDown(event, 'outboundBuyPrice')}
+            tabIndex={0}
+            aria-sort={sortField === 'outboundBuyPrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Buy Price{renderSortArrow('outboundBuyPrice')}
+          </th>
+          <th
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('outboundSupply')}
+            onKeyDown={event => handleSortKeyDown(event, 'outboundSupply')}
+            tabIndex={0}
+            aria-sort={sortField === 'outboundSupply' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Supply{renderSortArrow('outboundSupply')}
+          </th>
+          <th
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('outboundDemand')}
+            onKeyDown={event => handleSortKeyDown(event, 'outboundDemand')}
+            tabIndex={0}
+            aria-sort={sortField === 'outboundDemand' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Demand{renderSortArrow('outboundDemand')}
+          </th>
+          <th
+            className={`hidden-small ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('returnCommodity')}
+            onKeyDown={event => handleSortKeyDown(event, 'returnCommodity')}
+            tabIndex={0}
+            aria-sort={sortField === 'returnCommodity' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Return Commodity{renderSortArrow('returnCommodity')}
+          </th>
+          <th
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('returnSellPrice')}
+            onKeyDown={event => handleSortKeyDown(event, 'returnSellPrice')}
+            tabIndex={0}
+            aria-sort={sortField === 'returnSellPrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Sell Price{renderSortArrow('returnSellPrice')}
+          </th>
+          <th
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('returnSupply')}
+            onKeyDown={event => handleSortKeyDown(event, 'returnSupply')}
+            tabIndex={0}
+            aria-sort={sortField === 'returnSupply' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Return Supply{renderSortArrow('returnSupply')}
+          </th>
+          <th
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('returnDemand')}
+            onKeyDown={event => handleSortKeyDown(event, 'returnDemand')}
+            tabIndex={0}
+            aria-sort={sortField === 'returnDemand' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Return Demand{renderSortArrow('returnDemand')}
+          </th>
+          <th
+            className={`text-right ${styles.tableHeaderInteractive}`}
             onClick={() => handleSortChange('profitPerTon')}
             onKeyDown={event => handleSortKeyDown(event, 'profitPerTon')}
             tabIndex={0}
@@ -3034,8 +3857,24 @@ function TradeRoutesPanel () {
           >
             Profit/Ton{renderSortArrow('profitPerTon')}
           </th>
-          <th className='hidden-small text-right'>Profit/Trip</th>
-          <th className='hidden-small text-right'>Profit/Hour</th>
+          <th
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('profitPerTrip')}
+            onKeyDown={event => handleSortKeyDown(event, 'profitPerTrip')}
+            tabIndex={0}
+            aria-sort={sortField === 'profitPerTrip' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Profit/Trip{renderSortArrow('profitPerTrip')}
+          </th>
+          <th
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('profitPerHour')}
+            onKeyDown={event => handleSortKeyDown(event, 'profitPerHour')}
+            tabIndex={0}
+            aria-sort={sortField === 'profitPerHour' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Profit/Hour{renderSortArrow('profitPerHour')}
+          </th>
           <th
             className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
             onClick={() => handleSortChange('routeDistance')}
@@ -3054,111 +3893,29 @@ function TradeRoutesPanel () {
           >
             Distance{renderSortArrow('distance')}
           </th>
-          <th className='hidden-small text-right'>Updated</th>
+          <th
+            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
+            onClick={() => handleSortChange('updated')}
+            onKeyDown={event => handleSortKeyDown(event, 'updated')}
+            tabIndex={0}
+            aria-sort={sortField === 'updated' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+          >
+            Updated{renderSortArrow('updated')}
+          </th>
         </tr>
       </thead>
       <tbody>
-        {routes.map((route, index) => {
-          const originLocal = route?.origin?.local
-          const destinationLocal = route?.destination?.local
-          const originStation = originLocal?.station || route?.origin?.stationName || route?.originStation || route?.sourceStation || route?.startStation || route?.fromStation || route?.station || '--'
-          const originSystemName = originLocal?.system || route?.origin?.systemName || route?.originSystem || route?.sourceSystem || route?.startSystem || route?.fromSystem || route?.system || ''
-          const destinationStation = destinationLocal?.station || route?.destination?.stationName || route?.destinationStation || route?.targetStation || route?.endStation || route?.toStation || '--'
-          const destinationSystemName = destinationLocal?.system || route?.destination?.systemName || route?.destinationSystem || route?.targetSystem || route?.endSystem || route?.toSystem || ''
-
-          const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
-          const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
-          const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
-          const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
-          const originStationClassName = originStandingDisplay.className || undefined
-          const destinationStationClassName = destinationStandingDisplay.className || undefined
-          const originStationColor = originStandingDisplay.color
-          const destinationStationColor = destinationStandingDisplay.color
-          const originStationTitle = originStandingDisplay.title
-          const destinationStationTitle = destinationStandingDisplay.title
-          const originStandingStatusText = originStandingDisplay.statusDescription || null
-          const destinationStandingStatusText = destinationStandingDisplay.statusDescription || null
-
-          const outboundBuy = route?.origin?.buy || null
-          const outboundSell = route?.destination?.sell || null
-          const returnBuy = route?.destination?.buyReturn || null
-          const returnSell = route?.origin?.sellReturn || null
-
-          const outboundCommodity = outboundBuy?.commodity || outboundSell?.commodity || route?.commodity || '--'
-          const returnCommodity = returnBuy?.commodity || returnSell?.commodity || '--'
-
-          const outboundSupplyIndicator = renderQuantityIndicator(outboundBuy, 'supply')
-          const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand')
-          const returnSupplyIndicator = renderQuantityIndicator(returnBuy, 'supply')
-          const returnDemandIndicator = renderQuantityIndicator(returnSell, 'demand')
-          const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
-
-          const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
-          const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
-          const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
-          const routeDistanceDisplay = formatSystemDistance(route?.summary?.routeDistanceLy ?? route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.routeDistanceText || route?.summary?.distanceText || route?.distanceDisplay)
-          const systemDistanceDisplay = formatSystemDistance(route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.distanceText || route?.distanceDisplay)
-          const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
-
-          const rowKey = `route-${index}`
-          const originIconName = getStationIconName(originLocal, route?.origin)
-          const destinationIconName = getStationIconName(destinationLocal, route?.destination)
-          const caretSymbol = String.fromCharCode(0x203A)
-
-          return (
-            <React.Fragment key={rowKey}>
-              <tr
-                className={styles.tableRowInteractive}
-                data-ghostnet-table-row='pending'
-                onClick={() => handleRouteSelect(route, index)}
-                onKeyDown={event => handleRouteKeyDown(event, route, index)}
-                role='button'
-                tabIndex={0}
-                aria-label={`View trade route details for ${originStation} to ${destinationStation}`}
-              >
-                <td className={styles.tableCellCaret} aria-hidden='true'>
-                  {caretSymbol}
-                </td>
-                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                  <div className={styles.tableCellInline}>
-                    {originIconName && <StationIcon icon={originIconName} color={originStationColor} />}
-                    <span
-                      style={{ fontWeight: 600, color: originStationColor }}
-                      className={originStationClassName}
-                      title={originStationTitle}
-                    >
-                      {originStation}
-                    </span>
-                  </div>
-                </td>
-                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                  <div className={styles.tableCellInline}>
-                    {destinationIconName && <StationIcon icon={destinationIconName} color={destinationStationColor} />}
-                    <span
-                      style={{ fontWeight: 600, color: destinationStationColor }}
-                      className={destinationStationClassName}
-                      title={destinationStationTitle}
-                    >
-                      {destinationStation}
-                    </span>
-                  </div>
-                </td>
-                <td className={`hidden-small text-left text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>
-                  <strong>{outboundCommodity || '--'}</strong>
-                </td>
-                <td className={`hidden-small text-left text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>
-                  <strong>{returnCommodity || '--'}</strong>
-                </td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{profitPerTon || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{profitPerTrip || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{profitPerHour || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{routeDistanceDisplay || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{systemDistanceDisplay || '--'}</td>
-                <td className={`hidden-small text-right text-no-transform ${styles.tableCellTop} ${styles.tableCellTight}`}>{updatedDisplay || '--'}</td>
-              </tr>
-            </React.Fragment>
-          )
-        })}
+        {routes.map((route, index) => (
+          <TradeRouteTableRow
+            key={`route-${index}`}
+            route={route}
+            index={index}
+            onSelect={handleRouteSelect}
+            onKeyDown={handleRouteKeyDown}
+            renderQuantityIndicator={renderQuantityIndicator}
+            factionStandings={factionStandings}
+          />
+        ))}
       </tbody>
       </table>
     </div>
@@ -3452,133 +4209,29 @@ function TradeRoutesPanel () {
   return (
     <section className={styles.tableSection}>
       <div className={styles.tableSectionHeader}>
-        <h2 className={styles.tableSectionTitle}>Find Trade Routes</h2>
+        <h2 id='trade-routes-filters-heading' className={styles.tableSectionTitle}>Find Trade Routes</h2>
         <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
         {!detailViewActive && (
-          <>
-            <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-              <div>
-                <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-                <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>
-                  {selectedSystemName || 'Unknown'}
-                </div>
-              </div>
-            </div>
-            <form onSubmit={handleSubmit} style={FILTER_FORM_STYLE}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', marginBottom: filtersCollapsed ? '.75rem' : '1.5rem' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.85rem', flexGrow: 1 }}>
-                  <button
-                    type='button'
-                    onClick={() => setFiltersCollapsed(prev => !prev)}
-                    style={FILTER_TOGGLE_BUTTON_STYLE}
-                    aria-expanded={!filtersCollapsed}
-                    aria-controls='trade-route-filters'
-                  >
-                    {filtersCollapsed ? 'Show Filters' : 'Hide Filters'}
-                  </button>
-                  {filtersCollapsed && (
-                    <div style={FILTER_SUMMARY_STYLE}>
-                      <span style={FILTER_SUMMARY_TEXT_STYLE}>{filtersSummary}</span>
-                      <button
-                        type='submit'
-                        style={FILTER_SUMMARY_REFRESH_BUTTON_STYLE}
-                        title='Refresh trade routes'
-                        aria-label='Refresh trade routes'
-                      >
-                        <svg
-                          viewBox='0 0 24 24'
-                          focusable='false'
-                          aria-hidden='true'
-                          style={FILTER_SUMMARY_REFRESH_ICON_STYLE}
-                        >
-                          <path
-                            fill='currentColor'
-                            d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2A6 6 0 1 1 12 6a5.96 5.96 0 0 1 4.24 1.76L13 11h7V4z'
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              {!filtersCollapsed && (
-                <div id='trade-route-filters' style={FILTERS_GRID_STYLE}>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Route Distance</label>
-                    <select
-                      value={routeDistance}
-                      onChange={event => setRouteDistance(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {routeDistanceOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Max Price Age</label>
-                    <select
-                      value={priceAge}
-                      onChange={event => setPriceAge(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {priceAgeOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Min Supply</label>
-                    <select
-                      value={minSupply}
-                      onChange={event => setMinSupply(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {supplyOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Min Demand</label>
-                    <select
-                      value={minDemand}
-                      onChange={event => setMinDemand(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {demandOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Surface Stations</label>
-                    <select
-                      value={surfacePreference}
-                      onChange={event => setSurfacePreference(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {surfaceOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ ...FILTER_FIELD_STYLE }}>
-                    <label style={FILTER_LABEL_STYLE}>Station Distance</label>
-                    <select
-                      value={stationDistance}
-                      onChange={event => setStationDistance(event.target.value)}
-                      style={{ ...FILTER_CONTROL_STYLE }}
-                    >
-                      {stationDistanceOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              )}
-            </form>
-          </>
+          <TradeRouteFilterPanel
+            filters={filters}
+            onFilterChange={setFilterValue}
+            options={filterOptions}
+            cargoCapacityDisplay={cargoCapacityDisplay}
+            selectedSystemName={selectedSystemName}
+            systemSelection={systemSelection}
+            systemInput={systemInput}
+            systemOptions={systemOptions}
+            onSystemChange={handleSystemChange}
+            onManualSystemChange={handleManualSystemChange}
+            filtersCollapsed={filtersCollapsed}
+            onToggleFilters={() => setFiltersCollapsed(prev => !prev)}
+            filtersSummary={filtersSummary}
+            onSubmit={handleSubmit}
+            isRefreshing={isRefreshing}
+            queryUrl={queryUrl}
+            padSizeAutoDetected={padSizeAutoDetected}
+            initialShipInfoLoaded={initialShipInfoLoaded}
+          />
         )}
       </div>
       {detailViewActive ? (
