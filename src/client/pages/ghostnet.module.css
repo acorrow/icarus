@@ -32,7 +32,7 @@
   --ghostnet-gradient-top: color-mix(in srgb, var(--ghostnet-color-surface) 92%, transparent);
   --ghostnet-gradient-mid: color-mix(in srgb, var(--ghostnet-color-primary-dark) 60%, transparent);
   --ghostnet-gradient-bottom: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
-  padding: 2.5rem 3rem calc(3.5rem + var(--ghostnet-terminal-height));
+  padding: clamp(3rem, 5vw, 4.25rem) clamp(1.75rem, 5vw, 3.75rem) calc(4.25rem + var(--ghostnet-terminal-height));
   background: linear-gradient(165deg, var(--ghostnet-gradient-top) 0%, var(--ghostnet-gradient-mid) 55%, var(--ghostnet-gradient-bottom) 100%),
     var(--ghostnet-bg);
   color: var(--ghostnet-ink);
@@ -125,7 +125,7 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 2.75rem;
+  gap: clamp(2.5rem, 4.5vw, 3.5rem);
 }
 
 .hero {
@@ -133,7 +133,10 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: clamp(1.5rem, 3.5vw, 2.5rem);
+  padding-bottom: clamp(1.75rem, 4vw, 2.75rem);
+  margin-bottom: clamp(2.25rem, 5vw, 3.5rem);
+  border-bottom: 1px solid var(--ghostnet-divider);
 }
 
 @media (min-width: 768px) {
@@ -148,7 +151,7 @@
   max-width: 40rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: clamp(0.85rem, 2vw, 1.2rem);
 }
 
 .heroTitle {
@@ -170,14 +173,16 @@
 .heroStatus {
   border: 1px solid var(--ghostnet-border-soft);
   border-radius: 1.1rem;
-  padding: 1.25rem 1.75rem;
+  padding: clamp(1.5rem, 3vw, 2rem) clamp(1.5rem, 3.2vw, 2.5rem);
   background: color-mix(in srgb, var(--ghostnet-color-surface) 80%, transparent);
   box-shadow: 0 0.75rem 2.4rem color-mix(in srgb, var(--ghostnet-shadow) 55%, transparent);
 }
 
 .heroStatusList {
   display: flex;
-  gap: 1.75rem;
+  flex-wrap: wrap;
+  gap: clamp(1.25rem, 3vw, 1.9rem);
+  row-gap: clamp(1.1rem, 3vw, 1.6rem);
   margin: 0;
   padding: 0;
 }
@@ -555,19 +560,19 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 .sectionGroup {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: clamp(1.75rem, 4vw, 2.75rem);
 }
 
 .tableSection {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: clamp(1.75rem, 3.5vw, 2.5rem);
 }
 
 .tableSectionHeader {
   display: grid;
-  gap: 1rem;
-  padding-bottom: 0.5rem;
+  gap: clamp(1.1rem, 3vw, 1.5rem);
+  padding-bottom: clamp(1rem, 3vw, 1.5rem);
   align-items: start;
 }
 
