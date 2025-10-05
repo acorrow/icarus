@@ -7,7 +7,6 @@ import StationSummary, { StationIcon, DemandIndicator } from '../components/ghos
 import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
 import PirateRadioPanel from '../components/ghostnet/pirate-radio'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
-import CopyOnClick from '../components/copy-on-click'
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
@@ -101,10 +100,8 @@ function TradeRouteFilterPanel ({
   onManualSystemChange,
   filtersCollapsed,
   onToggleFilters,
-  filtersSummary,
   onSubmit,
   isRefreshing,
-  queryUrl,
   padSizeAutoDetected,
   initialShipInfoLoaded
 }) {
@@ -207,17 +204,7 @@ function TradeRouteFilterPanel ({
           </button>
         </div>
       </div>
-      {filtersCollapsed ? (
-        <div className={styles.tradeFiltersCollapsedSummary}>
-          <p className={styles.tradeFiltersSummaryText}>{filtersSummary}</p>
-          <div className={styles.tradeFiltersQueryRow}>
-            <span className={styles.tradeFiltersQueryLabel}>Query URL</span>
-            <CopyOnClick>
-              {queryUrl}
-            </CopyOnClick>
-          </div>
-        </div>
-      ) : (
+      {!filtersCollapsed && (
         <>
           <div id='trade-route-filter-grid' className={styles.tradeFiltersGrid}>
             <div className={styles.tradeFilterField}>
@@ -388,14 +375,6 @@ function TradeRouteFilterPanel ({
                 />
                 <label htmlFor='trade-route-round-trips'>Include round trips</label>
               </div>
-            </div>
-          </div>
-          <div className={styles.tradeFiltersFooter}>
-            <div className={styles.tradeFiltersQueryRow}>
-              <span className={styles.tradeFiltersQueryLabel}>Query URL</span>
-              <CopyOnClick>
-                {queryUrl}
-              </CopyOnClick>
             </div>
           </div>
         </>
@@ -3448,7 +3427,7 @@ function TradeRoutesPanel () {
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
   const [sortField, setSortField] = useState('profit')
   const [sortDirection, setSortDirection] = useState('desc')
-  const [filtersCollapsed, setFiltersCollapsed] = useState(false)
+  const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [selectedRouteContext, setSelectedRouteContext] = useState(null)
   const factionStandings = useFactionStandings()
   const setFilterValue = useCallback((field, value) => {
@@ -3635,20 +3614,6 @@ function TradeRoutesPanel () {
     orderByOptions
   }), [routeDistanceOptions, priceAgeOptions, padSizeOptions, stationDistanceOptions, surfaceOptions, powerOptions, supplyOptions, demandOptions, orderByOptions])
 
-  const pickOptionLabel = useCallback((options, value, fallback) => {
-    if (!Array.isArray(options)) return fallback
-    const match = options.find(option => option.value === value)
-    return match ? match.label : fallback
-  }, [])
-
-  const simplifySupplyDemandLabel = useCallback(label => {
-    if (typeof label !== 'string' || !label.trim()) return 'Any'
-    return label
-      .replace(/\s*Units(?:\s*or\s*unlimited)?/i, '')
-      .replace(/\s*or\s*unlimited/i, '')
-      .trim() || 'Any'
-  }, [])
-
   const cargoCapacityDisplay = useMemo(() => {
     const capacityNumber = Number(cargoCapacity)
     if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
@@ -3656,61 +3621,6 @@ function TradeRoutesPanel () {
     }
     return initialShipInfoLoaded ? 'Unknown' : 'Detecting…'
   }, [cargoCapacity, initialShipInfoLoaded])
-
-  const filtersSummary = useMemo(() => {
-    const selectedSystem = selectedSystemName || 'Unknown System'
-
-    const padLabelRaw = initialShipInfoLoaded
-      ? pickOptionLabel(padSizeOptions, padSize, 'Unknown')
-      : 'Detecting…'
-    let padLabel = padLabelRaw === 'Medium' ? 'Med' : padLabelRaw
-    if (initialShipInfoLoaded && padSizeAutoDetected && padLabelRaw !== 'Detecting…' && padLabelRaw !== 'Unknown') {
-      padLabel = `${padLabel} (Ship)`
-    }
-    const routeDistanceLabel = pickOptionLabel(routeDistanceOptions, routeDistance, 'Any')
-    const priceAgeLabel = pickOptionLabel(priceAgeOptions, priceAge, 'Any')
-    const stationDistanceLabel = pickOptionLabel(stationDistanceOptions, stationDistance, 'Any')
-    const surfaceLabel = pickOptionLabel(surfaceOptions, surfacePreference, 'Include Odyssey stations')
-    const supplyLabel = simplifySupplyDemandLabel(pickOptionLabel(supplyOptions, minSupply, 'Any'))
-    const demandLabel = simplifySupplyDemandLabel(pickOptionLabel(demandOptions, minDemand, 'Any'))
-    const orderLabel = pickOptionLabel(orderByOptions, orderBy, 'Best profit')
-    const roundTripLabel = includeRoundTrips ? 'Round trips enabled' : 'Single leg only'
-
-    return [
-      selectedSystem,
-      `Capacity: ${cargoCapacityDisplay}`,
-      `Landing Pad: ${padLabel}`,
-      `Route: ${routeDistanceLabel}`,
-      `Price Age: ${priceAgeLabel}`,
-      `Station Dist: ${stationDistanceLabel}`,
-      `Surface: ${surfaceLabel}`,
-      `Min Supply: ${supplyLabel}`,
-      `Min Demand: ${demandLabel}`,
-      `Order: ${orderLabel}`,
-      roundTripLabel
-    ].join(' | ')
-  }, [selectedSystemName, cargoCapacityDisplay, padSize, routeDistance, priceAge, stationDistance, surfacePreference, minSupply, minDemand, orderBy, includeRoundTrips, padSizeOptions, routeDistanceOptions, priceAgeOptions, stationDistanceOptions, surfaceOptions, supplyOptions, demandOptions, orderByOptions, pickOptionLabel, simplifySupplyDemandLabel, initialShipInfoLoaded, padSizeAutoDetected])
-
-  const queryUrl = useMemo(() => {
-    const params = new URLSearchParams()
-    params.set('formbrief', '1')
-    params.set('ps1', selectedSystemName || '')
-    if (cargoCapacity) params.set('pi10', cargoCapacity)
-    if (routeDistance) params.set('pi2', routeDistance)
-    if (priceAge) params.set('pi5', priceAge)
-    if (padSize) params.set('pi3', padSize)
-    if (stationDistance) params.set('pi9', stationDistance)
-    if (surfacePreference) params.set('pi4', surfacePreference)
-    if (sourcePower) params.set('pi14', sourcePower)
-    if (targetPower) params.set('pi15', targetPower)
-    if (minSupply) params.set('pi7', minSupply)
-    if (minDemand) params.set('pi12', minDemand)
-    if (orderBy) params.set('pi1', orderBy)
-    if (displayPowerplay) params.set('pi11', '1')
-    if (includeRoundTrips) params.set('pi8', '1')
-    const query = params.toString()
-    return `https://inara.cz/elite/market-traderoutes/?${query}`
-  }, [selectedSystemName, cargoCapacity, routeDistance, priceAge, padSize, stationDistance, surfacePreference, sourcePower, targetPower, minSupply, minDemand, orderBy, displayPowerplay, includeRoundTrips])
 
   const filterRoutes = useCallback((list = []) => {
     return Array.isArray(list) ? [...list] : []
@@ -4374,10 +4284,8 @@ function TradeRoutesPanel () {
             onManualSystemChange={handleManualSystemChange}
             filtersCollapsed={filtersCollapsed}
             onToggleFilters={() => setFiltersCollapsed(prev => !prev)}
-            filtersSummary={filtersSummary}
             onSubmit={handleSubmit}
             isRefreshing={isRefreshing}
-            queryUrl={queryUrl}
             padSizeAutoDetected={padSizeAutoDetected}
             initialShipInfoLoaded={initialShipInfoLoaded}
           />
