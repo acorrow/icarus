@@ -1,5 +1,121 @@
 import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from './ghostnet-formatters'
 
+const MOCK_TOKEN_REMOTE_STATE_TEMPLATE = Object.freeze({
+  enabled: true,
+  mode: 'MIRROR',
+  synced: true,
+  userId: 'layout-sandbox',
+  pending: 0,
+  attempts: 1,
+  lastSyncedAt: '2024-02-18T09:30:00.000Z',
+  lastError: null
+})
+
+const MOCK_TOKEN_BALANCE_SNAPSHOT_TEMPLATE = Object.freeze({
+  balance: 128500,
+  mode: 'SIMULATION',
+  simulation: true,
+  remote: MOCK_TOKEN_REMOTE_STATE_TEMPLATE
+})
+
+const MOCK_TOKEN_LEDGER_TRANSACTION_TEMPLATES = Object.freeze([
+  Object.freeze({
+    id: 'sandbox-entry-0001',
+    type: 'earn',
+    amount: 750,
+    delta: 750,
+    balance: 126250,
+    timestamp: '2024-02-18T09:08:00.000Z',
+    metadata: Object.freeze({
+      reason: 'earn:layout-sandbox',
+      source: 'ghostnet-console',
+      simulation: true
+    }),
+    mode: 'SIMULATION',
+    remoteOverrides: Object.freeze({
+      lastSyncedAt: '2024-02-18T09:08:06.000Z'
+    })
+  }),
+  Object.freeze({
+    id: 'sandbox-entry-0002',
+    type: 'spend',
+    amount: 250,
+    delta: -250,
+    balance: 126000,
+    timestamp: '2024-02-18T09:18:00.000Z',
+    metadata: Object.freeze({
+      reason: 'spend:layout-sandbox',
+      source: 'ghostnet-console',
+      simulation: true
+    }),
+    mode: 'SIMULATION',
+    remoteOverrides: Object.freeze({
+      lastSyncedAt: '2024-02-18T09:18:07.000Z'
+    })
+  }),
+  Object.freeze({
+    id: 'sandbox-entry-0003',
+    type: 'earn',
+    amount: 2500,
+    delta: 2500,
+    balance: 128500,
+    timestamp: '2024-02-18T09:29:00.000Z',
+    metadata: Object.freeze({
+      reason: 'earn:layout-sandbox',
+      source: 'ghostnet-console',
+      simulation: true,
+      celebrationId: 'layout-sandbox-streak'
+    }),
+    mode: 'SIMULATION',
+    remoteOverrides: Object.freeze({
+      lastSyncedAt: '2024-02-18T09:29:05.000Z'
+    })
+  })
+])
+
+export function getMockTokenRemoteState (overrides = {}) {
+  return {
+    ...MOCK_TOKEN_REMOTE_STATE_TEMPLATE,
+    ...(overrides || {})
+  }
+}
+
+export function getMockTokenBalanceSnapshot (overrides = {}) {
+  const { remote: remoteOverrides, ...rest } = overrides || {}
+  return {
+    ...MOCK_TOKEN_BALANCE_SNAPSHOT_TEMPLATE,
+    ...rest,
+    remote: getMockTokenRemoteState(remoteOverrides)
+  }
+}
+
+export function getMockTokenLedgerTransactions () {
+  return MOCK_TOKEN_LEDGER_TRANSACTION_TEMPLATES.map(entry => ({
+    id: entry.id,
+    type: entry.type,
+    amount: entry.amount,
+    delta: entry.delta,
+    balance: entry.balance,
+    timestamp: entry.timestamp,
+    metadata: { ...(entry.metadata || {}) },
+    mode: entry.mode,
+    remote: getMockTokenRemoteState(entry.remoteOverrides)
+  }))
+}
+
+export function getMockTokenLedger ({ limit } = {}) {
+  const normalizedLimit = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : null
+  const transactions = getMockTokenLedgerTransactions()
+  const limitedTransactions = normalizedLimit === null
+    ? transactions
+    : transactions.slice(normalizedLimit === 0 ? 0 : -normalizedLimit)
+
+  return {
+    snapshot: getMockTokenBalanceSnapshot(),
+    transactions: limitedTransactions
+  }
+}
+
 export function normaliseCommodityKey (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }

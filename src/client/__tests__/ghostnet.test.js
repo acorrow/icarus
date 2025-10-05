@@ -1,5 +1,6 @@
 import React from 'react'
 import { render, screen, act } from '@testing-library/react'
+import { getMockTokenBalanceSnapshot } from '../lib/ghostnet-mock-data'
 import GhostnetPage, {
   createTransactionSequence,
   createJackpotFloodConfig,
@@ -34,7 +35,7 @@ describe('Ghost Net page', () => {
     mockEventListener.mockClear()
     mockSendEvent.mockImplementation((eventName) => {
       if (eventName === 'getTokenBalance') {
-        return Promise.resolve({ balance: 1337, mode: 'SIMULATION', simulation: true, remote: { enabled: false, mode: 'DISABLED' } })
+        return Promise.resolve(getMockTokenBalanceSnapshot())
       }
       return Promise.resolve(null)
     })
