@@ -1684,30 +1684,39 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteStationRow {
   display: grid;
-  grid-template-columns: minmax(2.4rem, auto) minmax(0, 1fr);
-  align-items: start;
+  grid-template-columns: minmax(2.75rem, max-content) minmax(0, 1fr);
+  align-items: stretch;
   gap: 0.75rem;
   min-width: 0;
 }
 
-.tradeRouteStationRowSecondary {
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-}
-
 .tradeRouteStationIcon {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
+  align-self: stretch;
+  padding: 0.15rem;
+  min-width: 2.6rem;
+  min-height: 2.6rem;
+  max-width: 3.2rem;
+  height: 100%;
+  max-height: 100%;
   color: var(--ghostnet-accent);
+}
+
+.tradeRouteStationIcon :global(svg) {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-height: 100%;
+  max-width: 100%;
 }
 
 .tradeRouteStationContent {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  align-items: flex-start;
+  gap: 0.3rem;
   min-width: 0;
 }
 
@@ -1717,6 +1726,7 @@ button.terminalStatusPreview:focus-visible {
   color: var(--ghostnet-ink);
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tradeRouteStationSystem {
@@ -1724,16 +1734,13 @@ button.terminalStatusPreview:focus-visible {
   color: var(--ghostnet-muted);
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tradeRouteStationChips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-}
-
-.tradeRouteStationRowSecondary .tradeRouteStationChips {
-  justify-content: flex-end;
 }
 
 .tradeRouteCommodityGrid {
