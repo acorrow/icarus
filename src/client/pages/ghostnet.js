@@ -4,9 +4,6 @@ import PanelNavigation from '../components/panel-navigation'
 import Icons from '../lib/icons'
 import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
 import StationSummary, { StationIcon, DemandIndicator } from '../components/ghostnet/station-summary'
-import StationCell from '../components/ghostnet/station-cell'
-import ItemCell from '../components/ghostnet/item-cell'
-import ShipCell from '../components/ghostnet/ship-cell'
 import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
 import PirateRadioPanel from '../components/ghostnet/pirate-radio'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
@@ -407,19 +404,12 @@ function TradeRouteFilterPanel ({
   )
 }
 
-const PAD_SIZE_LABELS = {
-  '1': 'Small Pad',
-  '2': 'Medium Pad',
-  '3': 'Large Pad'
-}
-
 const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   route,
   index,
   onSelect,
   onKeyDown,
-  factionStandings,
-  shipStatus
+  factionStandings
 }) {
   const originLocal = route?.origin?.local
   const destinationLocal = route?.destination?.local
@@ -432,6 +422,11 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const destinationStation = sanitizeInaraText(destinationInfo.station) || '--'
   const destinationSystemName = sanitizeInaraText(destinationInfo.system)
 
+  const originStationDisplay = originStation === '--' ? '' : originStation
+  const destinationStationDisplay = destinationStation === '--' ? '' : destinationStation
+  const originStationAria = originStationDisplay || 'origin station'
+  const destinationStationAria = destinationStationDisplay || 'destination station'
+
   const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
   const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
   const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
@@ -440,90 +435,36 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const originIconName = getStationIconName(originLocal, route?.origin)
   const destinationIconName = getStationIconName(destinationLocal, route?.destination)
 
-  const originStationType = sanitizeInaraText(originLocal?.stationType || route?.origin?.stationType)
-  const destinationStationType = sanitizeInaraText(destinationLocal?.stationType || route?.destination?.stationType)
-  const originStationDistance = sanitizeInaraText(route?.origin?.stationDistanceText)
-  const destinationStationDistance = sanitizeInaraText(route?.destination?.stationDistanceText)
-  const originFaction = sanitizeInaraText(route?.origin?.factionName || originLocal?.faction || originLocal?.controllingFaction?.name)
-  const destinationFaction = sanitizeInaraText(route?.destination?.factionName || destinationLocal?.faction || destinationLocal?.controllingFaction?.name)
+  const originStationDistanceDisplay = resolveStationDistanceDisplay(route?.origin)
+  const destinationStationDistanceDisplay = resolveStationDistanceDisplay(route?.destination)
+  const originSystemDistance = resolveStationSystemDistance(route, 'origin')
+  const destinationSystemDistance = resolveStationSystemDistance(route, 'destination')
+  const originSystemDistanceDisplay = originSystemDistance.display || ''
+  const destinationSystemDistanceDisplay = destinationSystemDistance.display || ''
 
-  const originLeg = {
-    icon: originIconName ? <StationIcon icon={originIconName} color={originStandingDisplay.color} /> : null,
-    name: originStation,
-    system: originSystemName,
-    type: originStationType,
-    distance: originStationDistance,
-    status: originStandingDisplay.statusLabel,
-    statusTitle: originStandingDisplay.title,
-    statusColor: originStandingDisplay.color,
-    color: originStandingDisplay.color,
-    meta: originFaction ? [`Faction ${originFaction}`] : []
-  }
-
-  const destinationLeg = {
-    icon: destinationIconName ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.color} /> : null,
-    name: destinationStation,
-    system: destinationSystemName,
-    type: destinationStationType,
-    distance: destinationStationDistance,
-    status: destinationStandingDisplay.statusLabel,
-    statusTitle: destinationStandingDisplay.title,
-    statusColor: destinationStandingDisplay.color,
-    color: destinationStandingDisplay.color,
-    meta: destinationFaction ? [`Faction ${destinationFaction}`] : []
-  }
+  const originReputationLabel = sanitizeInaraText(originStandingDisplay.statusLabel) || '--'
+  const destinationReputationLabel = sanitizeInaraText(destinationStandingDisplay.statusLabel) || '--'
+  const originReputationDisplay = originReputationLabel === '--' ? '' : originReputationLabel
+  const destinationReputationDisplay = destinationReputationLabel === '--' ? '' : destinationReputationLabel
 
   const outboundInfo = getRouteCommodityInfo(route, 'outbound')
   const returnInfo = getRouteCommodityInfo(route, 'return')
 
   const outboundCommodity = sanitizeInaraText(outboundInfo.commodity) || '--'
   const returnCommodity = sanitizeInaraText(returnInfo.commodity) || '--'
-  const outboundBuyPrice = sanitizeInaraText(outboundInfo.buy?.priceText)
-  const returnSellPrice = sanitizeInaraText(returnInfo.sell?.priceText)
+  const outboundCommodityDisplay = outboundCommodity === '--' ? '' : outboundCommodity
+  const returnCommodityDisplay = returnCommodity === '--' ? '' : returnCommodity
+  const outboundPriceDisplay = resolvePriceDisplay(outboundInfo.buy, 'Buy')
+  const returnPriceDisplay = resolvePriceDisplay(returnInfo.buy, 'Buy')
+  const outboundDemandDisplay = buildDemandDisplay(outboundInfo.sell, 'up')
+  const returnDemandDisplay = buildDemandDisplay(returnInfo.sell, 'up')
 
   const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
   const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
   const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
   const averageProfitText = sanitizeInaraText(route?.summary?.averageProfitText)
-  const routeDistanceDisplay = formatSystemDistance(route?.summary?.routeDistanceLy ?? route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.routeDistanceText || route?.summary?.distanceText || route?.distanceDisplay)
-  const systemDistanceDisplay = formatSystemDistance(route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.distanceText || route?.distanceDisplay)
-  const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
 
-  const outboundData = {
-    commodity: outboundCommodity,
-    price: outboundBuyPrice ? `Buy ${outboundBuyPrice}` : '',
-    supply: outboundInfo.buy,
-    demand: outboundInfo.sell
-  }
-
-  const returnData = {
-    commodity: returnCommodity,
-    price: returnSellPrice ? `Sell ${returnSellPrice}` : '',
-    supply: returnInfo.buy,
-    demand: returnInfo.sell
-  }
-
-  const profitSummary = averageProfitText ? { average: averageProfitText } : null
-
-  const padSizeCode = getShipLandingPadSize(shipStatus)
-  const padLabel = padSizeCode ? PAD_SIZE_LABELS[padSizeCode] || '' : ''
-  const capacityNumber = Number(shipStatus?.cargo?.capacity)
-  const cargoLabel = Number.isFinite(capacityNumber) && capacityNumber > 0
-    ? `Cargo ${Math.round(capacityNumber).toLocaleString()} t`
-    : ''
-  const shipName = sanitizeInaraText(shipStatus?.name)
-  const shipIdent = sanitizeInaraText(shipStatus?.ident)
-  const shipType = sanitizeInaraText(shipStatus?.type)
-
-  const shipDetails = shipStatus
-    ? {
-        name: shipName || shipType || '',
-        ident: shipIdent && shipName ? `ID ${shipIdent}` : shipIdent,
-        type: shipType && shipType !== shipName ? shipType : '',
-        cargo: cargoLabel,
-        pad: padLabel
-      }
-    : null
+  const renderValue = value => (value ? value : <span className={styles.tradeRoutePlaceholder}>--</span>)
 
   const handleClick = () => onSelect(route, index)
   const handleKeyDown = event => onKeyDown(event, route, index)
@@ -538,33 +479,126 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
       onKeyDown={handleKeyDown}
       role='button'
       tabIndex={0}
-      aria-label={`View trade route details for ${originStation} to ${destinationStation}`}
+      aria-label={`View trade route details for ${originStationAria} to ${destinationStationAria}`}
     >
       <td className={styles.tableCellCaret} aria-hidden='true'>
         {caretSymbol}
       </td>
       <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
-        <StationCell
-          origin={originLeg}
-          destination={destinationLeg}
-          collapsePriority='secondary'
-        />
+        <div className={styles.tradeRouteStationGrid}>
+          <div className={styles.tradeRouteStationRow}>
+            <span className={styles.tradeRouteStationIcon}>
+              {originIconName
+                ? <StationIcon icon={originIconName} color={originStandingDisplay.color} size={28} />
+                : null}
+            </span>
+            <span className={styles.tradeRouteStationName} title={originStationDisplay || undefined}>{renderValue(originStationDisplay)}</span>
+            <span className={`${styles.tradeRouteStationMetric} ${styles.tradeRouteHideCompact}`} title='Distance to station'>
+              {renderValue(originStationDistanceDisplay)}
+            </span>
+          </div>
+          <div className={`${styles.tradeRouteStationRow} ${styles.tradeRouteStationRowSecondary}`}>
+            <span className={styles.tradeRouteStationSystem} title={originSystemName || undefined}>{renderValue(originSystemName)}</span>
+            <span
+              className={`${styles.tradeRouteStationReputation} ${styles.tradeRouteHideMedium}`}
+              style={originStandingDisplay.color ? { color: originStandingDisplay.color } : undefined}
+              title={originStandingDisplay.title || undefined}
+            >
+              {renderValue(originReputationDisplay)}
+            </span>
+            <span className={`${styles.tradeRouteStationMetric} ${styles.tradeRouteHideNarrow}`} title='Distance to system'>
+              {renderValue(originSystemDistanceDisplay)}
+            </span>
+          </div>
+        </div>
       </td>
       <td className={`${styles.tableCellTop} ${styles.tradeRoutesItemCell}`}>
-        <ItemCell
-          outbound={outboundData}
-          returnLeg={returnData}
-          profitSummary={profitSummary}
-          collapsePriority='secondary'
-        />
+        <div className={styles.tradeRouteCommodityGrid}>
+          <div className={styles.tradeRouteCommodityRow}>
+            <span className={styles.tradeRouteCommodityIcon}>
+              <CommodityIcon category={outboundInfo.buy?.category || outboundInfo.sell?.category || ''} size={24} />
+            </span>
+            <span className={styles.tradeRouteCommodityName}>{renderValue(outboundCommodityDisplay)}</span>
+            <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteHideMedium}`}>
+              {renderValue(outboundPriceDisplay)}
+            </span>
+            <span className={`${styles.tradeRouteCommodityDemand} ${styles.tradeRouteHideCompact}`}>
+              {renderValue(outboundDemandDisplay)}
+            </span>
+            <span className={styles.tradeRouteCommodityArrow} aria-hidden='true'>
+              {String.fromCharCode(0x2192)}
+            </span>
+            <span className={styles.visuallyHidden}>Outbound to {destinationStationAria}</span>
+          </div>
+          <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowReturn}`}>
+            <span className={styles.tradeRouteCommodityArrow} aria-hidden='true'>
+              {String.fromCharCode(0x2190)}
+            </span>
+            <span className={styles.visuallyHidden}>Return to {originStationAria}</span>
+            <span className={styles.tradeRouteCommodityIcon}>
+              <CommodityIcon category={returnInfo.buy?.category || returnInfo.sell?.category || ''} size={24} />
+            </span>
+            <span className={styles.tradeRouteCommodityName}>{renderValue(returnCommodityDisplay)}</span>
+            <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteHideMedium}`}>
+              {renderValue(returnPriceDisplay)}
+            </span>
+            <span className={`${styles.tradeRouteCommodityDemand} ${styles.tradeRouteHideCompact}`}>
+              {renderValue(returnDemandDisplay)}
+            </span>
+          </div>
+        </div>
+      </td>
+      <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
+        <div className={styles.tradeRouteStationGrid}>
+          <div className={styles.tradeRouteStationRow}>
+            <span className={styles.tradeRouteStationIcon}>
+              {destinationIconName
+                ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.color} size={28} />
+                : null}
+            </span>
+            <span className={styles.tradeRouteStationName} title={destinationStationDisplay || undefined}>{renderValue(destinationStationDisplay)}</span>
+            <span className={`${styles.tradeRouteStationMetric} ${styles.tradeRouteHideCompact}`} title='Distance to station'>
+              {renderValue(destinationStationDistanceDisplay)}
+            </span>
+          </div>
+          <div className={`${styles.tradeRouteStationRow} ${styles.tradeRouteStationRowSecondary}`}>
+            <span className={styles.tradeRouteStationSystem} title={destinationSystemName || undefined}>{renderValue(destinationSystemName)}</span>
+            <span
+              className={`${styles.tradeRouteStationReputation} ${styles.tradeRouteHideMedium}`}
+              style={destinationStandingDisplay.color ? { color: destinationStandingDisplay.color } : undefined}
+              title={destinationStandingDisplay.title || undefined}
+            >
+              {renderValue(destinationReputationDisplay)}
+            </span>
+            <span className={`${styles.tradeRouteStationMetric} ${styles.tradeRouteHideNarrow}`} title='Distance to system'>
+              {renderValue(destinationSystemDistanceDisplay)}
+            </span>
+          </div>
+        </div>
       </td>
       <td className={`${styles.tableCellTop} ${styles.tradeRoutesShipCell}`}>
-        <ShipCell
-          profit={{ perTon: profitPerTon, perTrip: profitPerTrip, perHour: profitPerHour, average: averageProfitText }}
-          routeMeta={{ routeDistance: routeDistanceDisplay, systemDistance: systemDistanceDisplay, updated: updatedDisplay }}
-          ship={shipDetails}
-          collapsePriority='secondary'
-        />
+        <div className={styles.tradeRouteProfitGrid}>
+          <div className={styles.tradeRouteProfitRow}>
+            <div className={styles.tradeRouteProfitMetric}>
+              <span className={styles.tradeRouteProfitLabel}>Per t</span>
+              <span className={styles.tradeRouteProfitValue}>{renderValue(profitPerTon && profitPerTon !== '--' ? profitPerTon : '')}</span>
+            </div>
+            <div className={`${styles.tradeRouteProfitMetric} ${styles.tradeRouteHideCompact}`}>
+              <span className={styles.tradeRouteProfitLabel}>Average</span>
+              <span className={styles.tradeRouteProfitValue}>{renderValue(averageProfitText && averageProfitText !== '--' ? averageProfitText : '')}</span>
+            </div>
+          </div>
+          <div className={styles.tradeRouteProfitRow}>
+            <div className={styles.tradeRouteProfitMetric}>
+              <span className={styles.tradeRouteProfitLabel}>Per trip</span>
+              <span className={styles.tradeRouteProfitValue}>{renderValue(profitPerTrip && profitPerTrip !== '--' ? profitPerTrip : '')}</span>
+            </div>
+            <div className={`${styles.tradeRouteProfitMetric} ${styles.tradeRouteHideCompact}`}>
+              <span className={styles.tradeRouteProfitLabel}>Per hour</span>
+              <span className={styles.tradeRouteProfitValue}>{renderValue(profitPerHour && profitPerHour !== '--' ? profitPerHour : '')}</span>
+            </div>
+          </div>
+        </div>
       </td>
     </tr>
   )
@@ -1202,9 +1236,9 @@ const FILTER_SUMMARY_REFRESH_ICON_STYLE = {
 }
 
 const DEFAULT_SORT_DIRECTION = {
-  station: 'asc',
-  item: 'desc',
-  ship: 'desc'
+  stationA: 'asc',
+  stationB: 'asc',
+  profit: 'desc'
 }
 
 function parseNumberFromText (value) {
@@ -1292,6 +1326,127 @@ function extractSystemDistance (route) {
     if (parsed !== null) return parsed
   }
   return null
+}
+
+function resolveStationDistanceDisplay (station = {}) {
+  const numericCandidates = [
+    station?.stationDistance?.value,
+    station?.stationDistance,
+    station?.distanceLs
+  ]
+  let numericValue = null
+  for (const value of numericCandidates) {
+    if (typeof value === 'number' && !Number.isNaN(value)) {
+      numericValue = value
+      break
+    }
+  }
+
+  const textCandidates = [
+    station?.stationDistance?.text,
+    station?.stationDistanceText,
+    station?.distanceLsText
+  ]
+  let textValue = ''
+  for (const text of textCandidates) {
+    if (typeof text === 'string' && text.trim()) {
+      textValue = sanitizeInaraText(text)
+      break
+    }
+  }
+
+  const display = formatStationDistance(numericValue, textValue)
+  if (display && display !== '--') return display
+  return textValue && textValue !== '--' ? textValue : ''
+}
+
+function resolveStationSystemDistance (route, type) {
+  const target = type === 'destination' ? route?.destination : route?.origin
+  const summary = route?.summary || {}
+
+  const numericCandidates = [
+    target?.distanceLyFromCommander,
+    target?.distanceLyFromCurrentSystem,
+    target?.distanceLyFromPlayer,
+    target?.distanceLy,
+    type === 'destination' ? summary?.destinationDistanceLy : summary?.originDistanceLy,
+    summary?.distanceLy,
+    route?.distanceLy,
+    route?.distance
+  ]
+
+  let numericValue = null
+  for (const value of numericCandidates) {
+    if (typeof value === 'number' && !Number.isNaN(value)) {
+      numericValue = value
+      break
+    }
+  }
+
+  const textCandidates = [
+    target?.distanceLyText,
+    target?.distanceFromCommanderText,
+    target?.systemDistanceText,
+    type === 'destination' ? summary?.destinationDistanceLyText : summary?.originDistanceLyText,
+    summary?.distanceText,
+    route?.distanceDisplay
+  ]
+
+  let textValue = ''
+  for (const text of textCandidates) {
+    if (typeof text === 'string' && text.trim()) {
+      textValue = sanitizeInaraText(text)
+      break
+    }
+  }
+
+  const display = formatSystemDistance(numericValue, textValue)
+  const parsedFallback = numericValue !== null ? numericValue : parseNumberFromText(textValue)
+  const normalizedDisplay = display && display !== '--' ? display : (textValue && textValue !== '--' ? textValue : '')
+
+  return {
+    display: normalizedDisplay,
+    value: parsedFallback
+  }
+}
+
+function resolveQuantityText (entry) {
+  if (!entry) return ''
+  const text = typeof entry.quantityText === 'string' ? sanitizeInaraText(entry.quantityText) : ''
+  if (text) return text
+  if (typeof entry.quantity === 'number' && !Number.isNaN(entry.quantity)) {
+    return `${Math.round(entry.quantity).toLocaleString()} t`
+  }
+  return ''
+}
+
+function resolvePriceDisplay (entry, actionLabel) {
+  if (!entry) return ''
+  const priceText = typeof entry.priceText === 'string' ? sanitizeInaraText(entry.priceText) : ''
+  const formatted = formatCredits(entry.price, priceText || '--')
+  if (!formatted || formatted === '--') return ''
+  return actionLabel ? `${actionLabel} ${formatted}` : formatted
+}
+
+function buildDemandDisplay (entry, direction = 'up') {
+  if (!entry) return null
+  const quantityText = resolveQuantityText(entry)
+  const priceDiffText = typeof entry.priceDiffText === 'string' ? sanitizeInaraText(entry.priceDiffText) : ''
+  const infoParts = [quantityText, priceDiffText].filter(Boolean)
+  if (infoParts.length === 0) return null
+
+  const arrowSymbol = direction === 'down' ? String.fromCharCode(0x25BC) : String.fromCharCode(0x25B2)
+  const arrowCount = Math.min(Math.max(Number(entry.level) || 1, 1), 4)
+  const labelText = `${arrowSymbol.repeat(arrowCount)} ${infoParts.join(' • ')}`.trim()
+
+  return (
+    <DemandIndicator
+      label={labelText}
+      fallbackLabel={infoParts.join(' • ')}
+      isLow={direction === 'down'}
+      subtle
+    />
+  )
 }
 
 function extractProfitPerTrip (route) {
@@ -3172,7 +3327,7 @@ function TradeRoutesPanel () {
   const [message, setMessage] = useState('')
   const [shipStatus, setShipStatus] = useState(null)
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
-  const [sortField, setSortField] = useState('ship')
+  const [sortField, setSortField] = useState('profit')
   const [sortDirection, setSortDirection] = useState('desc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(false)
   const [selectedRouteContext, setSelectedRouteContext] = useState(null)
@@ -3449,13 +3604,26 @@ function TradeRoutesPanel () {
     const directionFactor = sortDirection === 'asc' ? 1 : -1
 
     const getValue = route => {
+      if (!route) return null
       switch (sortField) {
-        case 'station':
-          return getRouteStationInfo(route, 'origin').station
-        case 'item':
+        case 'stationA': {
+          const distance = resolveStationSystemDistance(route, 'origin')
+          if (typeof distance.value === 'number' && !Number.isNaN(distance.value)) {
+            return distance.value
+          }
+          const info = getRouteStationInfo(route, 'origin')
+          return sanitizeInaraText(distance.display) || sanitizeInaraText(info.system) || sanitizeInaraText(info.station)
+        }
+        case 'stationB': {
+          const distance = resolveStationSystemDistance(route, 'destination')
+          if (typeof distance.value === 'number' && !Number.isNaN(distance.value)) {
+            return distance.value
+          }
+          const info = getRouteStationInfo(route, 'destination')
+          return sanitizeInaraText(distance.display) || sanitizeInaraText(info.system) || sanitizeInaraText(info.station)
+        }
+        case 'profit':
           return extractProfitPerTon(route)
-        case 'ship':
-          return extractProfitPerHour(route)
         default:
           return null
       }
@@ -3714,47 +3882,55 @@ function TradeRoutesPanel () {
             <th aria-hidden='true' className={styles.tableCellCaret} />
             <th
               className={styles.tableHeaderInteractive}
-              onClick={() => handleSortChange('station')}
-              onKeyDown={event => handleSortKeyDown(event, 'station')}
+              onClick={() => handleSortChange('stationA')}
+              onKeyDown={event => handleSortKeyDown(event, 'stationA')}
               tabIndex={0}
-              aria-sort={sortField === 'station' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+              aria-sort={sortField === 'stationA' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
             >
               <div className={styles.tradeRoutesHeader}>
                 <div className={styles.tradeRoutesHeaderTitle}>
-                  <span>Station</span>
-                  {renderSortArrow('station')}
+                  <span>Station A</span>
+                  {renderSortArrow('stationA')}
                 </div>
-                <span className={styles.tradeRoutesHeaderSubtitle}>Origin &amp; Destination</span>
+                <span className={styles.tradeRoutesHeaderSubtitle}>Origin Station</span>
+              </div>
+            </th>
+            <th aria-sort='none'>
+              <div className={styles.tradeRoutesHeader}>
+                <div className={styles.tradeRoutesHeaderTitle}>
+                  <span>Commodities</span>
+                </div>
+                <span className={styles.tradeRoutesHeaderSubtitle}>Outbound &amp; Return</span>
               </div>
             </th>
             <th
               className={styles.tableHeaderInteractive}
-              onClick={() => handleSortChange('item')}
-              onKeyDown={event => handleSortKeyDown(event, 'item')}
+              onClick={() => handleSortChange('stationB')}
+              onKeyDown={event => handleSortKeyDown(event, 'stationB')}
               tabIndex={0}
-              aria-sort={sortField === 'item' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+              aria-sort={sortField === 'stationB' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
             >
               <div className={styles.tradeRoutesHeader}>
                 <div className={styles.tradeRoutesHeaderTitle}>
-                  <span>Item</span>
-                  {renderSortArrow('item')}
+                  <span>Station B</span>
+                  {renderSortArrow('stationB')}
                 </div>
-                <span className={styles.tradeRoutesHeaderSubtitle}>Commodity Pair</span>
+                <span className={styles.tradeRoutesHeaderSubtitle}>Destination Station</span>
               </div>
             </th>
             <th
               className={styles.tableHeaderInteractive}
-              onClick={() => handleSortChange('ship')}
-              onKeyDown={event => handleSortKeyDown(event, 'ship')}
+              onClick={() => handleSortChange('profit')}
+              onKeyDown={event => handleSortKeyDown(event, 'profit')}
               tabIndex={0}
-              aria-sort={sortField === 'ship' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+              aria-sort={sortField === 'profit' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
             >
               <div className={styles.tradeRoutesHeader}>
                 <div className={styles.tradeRoutesHeaderTitle}>
-                  <span>Ship</span>
-                  {renderSortArrow('ship')}
+                  <span>Profit</span>
+                  {renderSortArrow('profit')}
                 </div>
-                <span className={styles.tradeRoutesHeaderSubtitle}>Profit &amp; Guidance</span>
+                <span className={styles.tradeRoutesHeaderSubtitle}>Per t, Trip, Hour</span>
               </div>
             </th>
           </tr>
@@ -3768,7 +3944,6 @@ function TradeRoutesPanel () {
               onSelect={handleRouteSelect}
               onKeyDown={handleRouteKeyDown}
               factionStandings={factionStandings}
-              shipStatus={shipStatus}
             />
           ))}
         </tbody>
