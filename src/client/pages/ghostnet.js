@@ -4500,6 +4500,7 @@ const GREEK_SYMBOLS = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'et
 const TERMINAL_BUFFER = 36
 const TERMINAL_WINDOW = 7
 const TERMINAL_WINDOW_EXPANDED = 14
+const TERMINAL_LINE_MAX_LENGTH = 56
 
 const TERMINAL_HEIGHT_NORMAL = 'clamp(180px, 18vh, 220px)'
 const TERMINAL_HEIGHT_COMPRESSED = '3rem'
@@ -4954,11 +4955,94 @@ function createTerminalLineWithId (seed = '', baseLine) {
   return { ...line, id: unique }
 }
 
+function splitTerminalLineSegments (line, maxLength = TERMINAL_LINE_MAX_LENGTH) {
+  if (!line || typeof line !== 'object') return []
+
+  const { seed: _ignoredSeed, text, ...rest } = line
+  const rawText = text == null ? '' : String(text)
+  const normalizedText = rawText.replace(/\s+/g, ' ').trim()
+
+  if (!normalizedText) {
+    return [{ ...rest, text: '' }]
+  }
+
+  if (normalizedText.length <= maxLength) {
+    return [{ ...rest, text: normalizedText }]
+  }
+
+  const words = normalizedText.split(/\s+/).filter(Boolean)
+  if (words.length === 0) {
+    return [{ ...rest, text: normalizedText.slice(0, maxLength) }]
+  }
+
+  const segments = []
+  let current = ''
+
+  words.forEach(word => {
+    if (word.length > maxLength) {
+      if (current) {
+        segments.push(current)
+        current = ''
+      }
+      for (let index = 0; index < word.length; index += maxLength) {
+        const chunk = word.slice(index, index + maxLength)
+        if (chunk.length === maxLength) {
+          segments.push(chunk)
+        } else if (chunk.length > 0) {
+          current = chunk
+        }
+      }
+    } else {
+      const next = current ? `${current} ${word}` : word
+      if (next.length > maxLength && current) {
+        segments.push(current)
+        current = word
+      } else {
+        current = next
+      }
+    }
+  })
+
+  if (current) {
+    segments.push(current)
+  }
+
+  return segments.map((segmentText, index) => ({
+    ...rest,
+    text: segmentText,
+    label: index === 0 ? rest.label : (rest.label ? '···' : rest.label)
+  }))
+}
+
+function createTerminalLineEntries (seed = '', baseLine) {
+  const line = baseLine && typeof baseLine === 'object' ? baseLine : generateTerminalLine()
+  const segments = splitTerminalLineSegments(line)
+  const baseSeed = typeof seed === 'string' && seed.length > 0
+    ? seed
+    : typeof line.seed === 'string' && line.seed.length > 0
+      ? line.seed
+      : ''
+
+  if (!segments.length) {
+    return [createTerminalLineWithId(baseSeed, line)]
+  }
+
+  return segments.map((segment, index) => {
+    const segmentSeed = index === 0
+      ? baseSeed
+      : baseSeed
+        ? `${baseSeed}-${index}`
+        : `segment-${index}`
+    return createTerminalLineWithId(segmentSeed, segment)
+  })
+}
+
 function GhostnetTerminalOverlay () {
   const [viewState, setViewState] = useState(TERMINAL_VIEW.NORMAL)
-  const [terminalLines, setTerminalLines] = useState(() =>
-    Array.from({ length: TERMINAL_BUFFER }).map((_, index) => createTerminalLineWithId(index))
-  )
+  const [terminalLines, setTerminalLines] = useState(() => {
+    const seeded = Array.from({ length: TERMINAL_BUFFER }).flatMap((_, index) => createTerminalLineEntries(index))
+    return seeded.slice(-TERMINAL_BUFFER)
+  })
   const cadenceRef = useRef()
   const timeoutRef = useRef(null)
   const terminalRef = useRef(null)
@@ -5046,9 +5130,12 @@ function GhostnetTerminalOverlay () {
   }, [])
 
   const pushTerminalLine = useCallback((line = {}) => {
-    const { seed, ...payload } = line
+    const { seed, ...payload } = line || {}
+    const entries = createTerminalLineEntries(seed, payload)
+    if (!entries.length) return
+
     setTerminalLines(previous => {
-      let next = [...previous, createTerminalLineWithId(seed, payload)]
+      let next = [...previous, ...entries]
       if (next.length > TERMINAL_BUFFER) {
         next = next.slice(next.length - TERMINAL_BUFFER)
       }
@@ -5109,12 +5196,12 @@ function GhostnetTerminalOverlay () {
     const messageTimeout = window.setTimeout(() => {
       celebrationRef.current.messageDisplayed = true
       setTerminalLines(previous => {
-        const messageLine = createTerminalLineWithId('credit-message', {
+        const messageLines = createTerminalLineEntries('credit-message', {
           type: messageType,
           label: messageLabel,
           text: message || CREDIT_CELEBRATION_MESSAGE
         })
-        let next = [...previous, messageLine]
+        let next = [...previous, ...messageLines]
         if (next.length > TERMINAL_BUFFER) {
           next = next.slice(next.length - TERMINAL_BUFFER)
         }
@@ -5404,7 +5491,7 @@ function GhostnetTerminalOverlay () {
       if (!state.menaceCooldown || state.menaceCooldown <= 0) {
         const menaceLines = generateMenaceLines(tokenState.balance)
         menaceLines.forEach(base => {
-          lines.push(createTerminalLineWithId('menace', base))
+          lines.push(...createTerminalLineEntries('menace', base))
         })
         state.menaceCooldown = randomInteger(12, 24)
       } else {
@@ -5415,7 +5502,8 @@ function GhostnetTerminalOverlay () {
     }
 
     const pushLine = base => {
-      lines.push(createTerminalLineWithId('', base))
+      if (!base) return
+      lines.push(...createTerminalLineEntries('', base))
     }
 
     const buildFloodLine = () => ({
@@ -5626,10 +5714,6 @@ function GhostnetTerminalOverlay () {
   const statusPreviewLabel = latestLine?.label ?? 'ghostnet'
   const statusPreviewText = latestLine?.text ?? 'Link stable'
 
-  const handleStatusPreviewActivate = useCallback(() => {
-    setViewState(TERMINAL_VIEW.NORMAL)
-  }, [])
-
   return (
     <div className={terminalClassName} ref={terminalRef}>
       <div className={shellClassName} role='region' aria-label='Ghost Net ship uplink activity log'>
@@ -5657,47 +5741,45 @@ function GhostnetTerminalOverlay () {
         </div>
         <div className={headerClassName}>
           <div className={styles.terminalHeaderLeft}>
+            <div className={styles.terminalTokenRow}>
+              <span className={styles.terminalTokenLabel}>Tokens</span>
+              <span
+                className={[
+                  styles.terminalTokenValue,
+                  isNegativeBalance ? styles.terminalTokenValueNegative : '',
+                  balanceFlash?.type === 'earn' ? styles.terminalTokenValueFlashCredit : '',
+                  balanceFlash?.type === 'spend' ? styles.terminalTokenValueFlashDebit : ''
+                ].filter(Boolean).join(' ')}
+              >
+                {tokenBalanceDisplay}
+              </span>
+              <button
+                type='button'
+                className={styles.terminalTokenButton}
+                onClick={handleAddTokens}
+                disabled={tokenButtonDisabled}
+                aria-label='Trigger a simulated jackpot payout'
+              >
+                {tokenActionPending ? '···' : '+'}
+              </button>
+            </div>
             {!isCompressed ? (
-              <Fragment>
-                <div className={styles.terminalTokenRow}>
-                  <span className={styles.terminalTokenLabel}>Tokens</span>
-                  <span
-                    className={[
-                      styles.terminalTokenValue,
-                      isNegativeBalance ? styles.terminalTokenValueNegative : '',
-                      balanceFlash?.type === 'earn' ? styles.terminalTokenValueFlashCredit : '',
-                      balanceFlash?.type === 'spend' ? styles.terminalTokenValueFlashDebit : ''
-                    ].filter(Boolean).join(' ')}
-                  >
-                    {tokenBalanceDisplay}
-                  </span>
-                  <button
-                    type='button'
-                    className={styles.terminalTokenButton}
-                    onClick={handleAddTokens}
-                    disabled={tokenButtonDisabled}
-                    aria-label='Trigger a simulated jackpot payout'
-                  >
-                    {tokenActionPending ? '···' : '+'}
-                  </button>
-                </div>
-                <div className={styles.terminalTokenMeta} aria-live='polite'>
-                  {tokenStatusText}
-                </div>
-              </Fragment>
+              <div className={styles.terminalTokenMeta} aria-live='polite'>
+                {tokenStatusText}
+              </div>
             ) : null}
           </div>
           <div className={styles.terminalHeaderCenter}>
             {isCompressed ? (
-              <button
-                type='button'
+              <div
                 className={styles.terminalStatusPreview}
-                onClick={handleStatusPreviewActivate}
-                aria-label='Restore console'
+                role='status'
+                aria-live='polite'
+                title={statusPreviewText || ''}
               >
                 <span className={styles.terminalStatusPreviewLabel} aria-hidden='true'>{statusPreviewLabel}</span>
                 <span className={styles.terminalStatusPreviewText}>{statusPreviewText}</span>
-              </button>
+              </div>
             ) : (
               <div className={styles.terminalHeaderContent}>
                 <span className={styles.terminalTitle}>Ship Uplink Console</span>
