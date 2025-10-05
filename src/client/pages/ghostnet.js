@@ -8,6 +8,7 @@ import StationCell from '../components/ghostnet/station-cell'
 import ItemCell from '../components/ghostnet/item-cell'
 import ShipCell from '../components/ghostnet/ship-cell'
 import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
+import PirateRadioPanel from '../components/ghostnet/pirate-radio'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
 import CopyOnClick from '../components/copy-on-click'
 import animateTableEffect from '../lib/animate-table-effect'
@@ -5801,6 +5802,7 @@ export default function GhostnetPage() {
     { name: 'Cargo Hold', icon: 'cargo', active: activeTab === 'cargoHold', onClick: () => setActiveTab('cargoHold') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
     { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
+    { name: 'Pirate Radio', icon: 'signal', active: activeTab === 'pirateRadio', onClick: () => setActiveTab('pirateRadio') },
     { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
 
   ]), [activeTab])
@@ -5828,6 +5830,9 @@ export default function GhostnetPage() {
                   </div>
                   <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
                     <PristineMiningPanel />
+                  </div>
+                  <div style={{ display: activeTab === 'pirateRadio' ? 'block' : 'none' }}>
+                    <PirateRadioPanel />
                   </div>
                 </div>
               </div>
