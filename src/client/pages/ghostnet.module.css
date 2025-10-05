@@ -1457,12 +1457,36 @@ button.terminalTokenButton:disabled {
 
 .tradeRoutesTable {
   min-width: 980px;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
+.tradeRoutesTable th,
 .tradeRoutesTable td {
   white-space: nowrap;
-  padding: 1.35rem 1.15rem;
+  padding: 0.95rem 1rem;
   overflow: hidden;
+}
+
+.tradeRoutesTable thead th {
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 24%, transparent);
+  border-bottom: 1px solid var(--ghostnet-border-regular);
+  text-align: left;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ghostnet-muted);
+  z-index: 1;
+}
+
+.tradeRoutesTable thead th:first-child {
+  border-top-left-radius: 0.75rem;
+}
+
+.tradeRoutesTable thead th:last-child {
+  border-top-right-radius: 0.75rem;
 }
 
 .tradeRoutesStationCell,
@@ -1473,20 +1497,21 @@ button.terminalTokenButton:disabled {
 
 .tradeRouteStationGrid {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.4rem;
   min-width: 0;
 }
 
 .tradeRouteStationRow {
   display: grid;
-  grid-template-columns: minmax(2.2rem, auto) minmax(0, 1fr) minmax(0, 1.1fr);
-  align-items: center;
-  gap: 0.6rem;
+  grid-template-columns: minmax(2.4rem, auto) minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
   min-width: 0;
 }
 
 .tradeRouteStationRowSecondary {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
 }
 
 .tradeRouteStationIcon {
@@ -1498,8 +1523,15 @@ button.terminalTokenButton:disabled {
   color: var(--ghostnet-accent);
 }
 
+.tradeRouteStationContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
 .tradeRouteStationName {
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 600;
   color: var(--ghostnet-ink);
   white-space: nowrap;
@@ -1513,18 +1545,14 @@ button.terminalTokenButton:disabled {
   overflow: hidden;
 }
 
-.tradeRouteStationMetric {
-  font-size: 0.82rem;
-  color: var(--ghostnet-text-soft);
-  white-space: nowrap;
-  justify-self: end;
+.tradeRouteStationChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
-.tradeRouteStationReputation {
-  font-size: 0.85rem;
-  font-weight: 600;
-  justify-self: center;
-  white-space: nowrap;
+.tradeRouteStationRowSecondary .tradeRouteStationChips {
+  justify-content: flex-end;
 }
 
 .tradeRouteCommodityGrid {
@@ -1535,9 +1563,9 @@ button.terminalTokenButton:disabled {
 
 .tradeRouteCommodityRow {
   display: grid;
-  grid-template-columns: minmax(1.6rem, auto) minmax(2.2rem, auto) minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1.15fr) minmax(1.6rem, auto);
+  grid-template-columns: minmax(1.6rem, auto) minmax(2.1rem, auto) minmax(0, 1.3fr) minmax(0, 0.95fr) minmax(0, 1.05fr) minmax(1.6rem, auto);
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.45rem;
   min-width: 0;
   position: relative;
 }
@@ -1616,9 +1644,11 @@ button.terminalTokenButton:disabled {
   opacity: 0.65;
 }
 
+
 .tradeRouteProfitGrid {
   display: grid;
-  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
   min-width: 0;
 }
 
@@ -1647,6 +1677,13 @@ button.terminalTokenButton:disabled {
   font-weight: 600;
   color: var(--ghostnet-ink);
   white-space: nowrap;
+}
+
+.tradeRouteProfitMeta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
 @media (max-width: 1440px) {
@@ -1682,20 +1719,30 @@ button.terminalTokenButton:disabled {
 .tradeRoutesHeader {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .tradeRoutesHeaderTitle {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  text-transform: none;
 }
 
 .tradeRoutesHeaderSubtitle {
-  font-size: 0.64rem;
-  letter-spacing: 0.18em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ghostnet-text-soft);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent);
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
 }
 
 .tradeRoutesQuantityBadge {
@@ -1731,6 +1778,46 @@ button.terminalTokenButton:disabled {
   color: var(--ghostnet-text-soft);
   background: color-mix(in srgb, var(--ghostnet-color-primary) 10%, transparent);
   box-shadow: none;
+}
+
+.metricChip {
+  --chip-color: var(--ghostnet-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--chip-color);
+  background: color-mix(in srgb, var(--chip-color) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chip-color) 35%, transparent);
+  box-shadow: 0 0 0.65rem color-mix(in srgb, var(--chip-color) 25%, transparent);
+  white-space: nowrap;
+}
+
+.metricChipPlaceholder {
+  color: var(--ghostnet-text-soft);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 10%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
+  box-shadow: none;
+}
+
+.metricChipNeutral {
+  --chip-color: var(--ghostnet-accent);
+}
+
+.metricChipSuccess {
+  --chip-color: var(--ghostnet-color-success);
+}
+
+.metricChipCaution {
+  --chip-color: color-mix(in srgb, var(--ghostnet-color-warning) 55%, var(--ghostnet-color-primary-light) 45%);
+}
+
+.metricChipWarning {
+  --chip-color: var(--ghostnet-color-warning);
 }
 
 .tableCellTop {

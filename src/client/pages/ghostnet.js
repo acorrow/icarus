@@ -435,8 +435,10 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const originIconName = getStationIconName(originLocal, route?.origin)
   const destinationIconName = getStationIconName(destinationLocal, route?.destination)
 
-  const originStationDistanceDisplay = resolveStationDistanceDisplay(route?.origin)
-  const destinationStationDistanceDisplay = resolveStationDistanceDisplay(route?.destination)
+  const originStationDistance = resolveStationDistance(route?.origin)
+  const destinationStationDistance = resolveStationDistance(route?.destination)
+  const originStationDistanceDisplay = originStationDistance.display
+  const destinationStationDistanceDisplay = destinationStationDistance.display
   const originSystemDistance = resolveStationSystemDistance(route, 'origin')
   const destinationSystemDistance = resolveStationSystemDistance(route, 'destination')
   const originSystemDistanceDisplay = originSystemDistance.display || ''
@@ -464,7 +466,44 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
   const averageProfitText = sanitizeInaraText(route?.summary?.averageProfitText)
 
+  const routeDistance = resolveRouteDistance(route)
+  const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
+
   const renderValue = value => (value ? value : <span className={styles.tradeRoutePlaceholder}>--</span>)
+
+  const metricVariantClasses = {
+    neutral: styles.metricChipNeutral,
+    success: styles.metricChipSuccess,
+    caution: styles.metricChipCaution,
+    warning: styles.metricChipWarning
+  }
+
+  const renderMetricChip = ({ value, variant = 'neutral', title, color }) => {
+    const classes = [styles.metricChip]
+    if (value) {
+      if (metricVariantClasses[variant]) {
+        classes.push(metricVariantClasses[variant])
+      }
+    } else {
+      classes.push(styles.metricChipPlaceholder)
+    }
+
+    return (
+      <span
+        className={classes.join(' ')}
+        title={title}
+        style={value && color ? { '--chip-color': color } : undefined}
+      >
+        {value || '--'}
+      </span>
+    )
+  }
+
+  const originStationDistanceVariant = getStationDistanceVariant(originStationDistance.value)
+  const destinationStationDistanceVariant = getStationDistanceVariant(destinationStationDistance.value)
+  const originSystemDistanceVariant = getSystemDistanceVariant(originSystemDistance.value)
+  const destinationSystemDistanceVariant = getSystemDistanceVariant(destinationSystemDistance.value)
+  const routeDistanceVariant = getSystemDistanceVariant(routeDistance.value)
 
   const handleClick = () => onSelect(route, index)
   const handleKeyDown = event => onKeyDown(event, route, index)
@@ -492,23 +531,31 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                 ? <StationIcon icon={originIconName} color={originStandingDisplay.color} size={28} />
                 : null}
             </span>
-            <span className={styles.tradeRouteStationName} title={originStationDisplay || undefined}>{renderValue(originStationDisplay)}</span>
-            <span className={`${styles.tradeRouteStationMetric} ${styles.tradeRouteHideCompact}`} title='Distance to station'>
-              {renderValue(originStationDistanceDisplay)}
-            </span>
+            <div className={styles.tradeRouteStationContent}>
+              <span className={styles.tradeRouteStationName} title={originStationDisplay || undefined}>{renderValue(originStationDisplay)}</span>
+              <div className={styles.tradeRouteStationChips}>
+                {renderMetricChip({
+                  value: originStationDistanceDisplay,
+                  variant: originStationDistanceVariant,
+                  title: 'Distance to station'
+                })}
+                {renderMetricChip({
+                  value: originSystemDistanceDisplay,
+                  variant: originSystemDistanceVariant,
+                  title: 'Distance to system'
+                })}
+              </div>
+            </div>
           </div>
           <div className={`${styles.tradeRouteStationRow} ${styles.tradeRouteStationRowSecondary}`}>
             <span className={styles.tradeRouteStationSystem} title={originSystemName || undefined}>{renderValue(originSystemName)}</span>
-            <span
-              className={`${styles.tradeRouteStationReputation} ${styles.tradeRouteHideMedium}`}
-              style={originStandingDisplay.color ? { color: originStandingDisplay.color } : undefined}
-              title={originStandingDisplay.title || undefined}
-            >
-              {renderValue(originReputationDisplay)}
-            </span>
-            <span className={`${styles.tradeRouteStationMetric} ${styles.tradeRouteHideNarrow}`} title='Distance to system'>
-              {renderValue(originSystemDistanceDisplay)}
-            </span>
+            <div className={styles.tradeRouteStationChips}>
+              {renderMetricChip({
+                value: originReputationDisplay,
+                title: originStandingDisplay.title || 'Faction standing',
+                color: originStandingDisplay.color
+              })}
+            </div>
           </div>
         </div>
       </td>
@@ -556,23 +603,31 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                 ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.color} size={28} />
                 : null}
             </span>
-            <span className={styles.tradeRouteStationName} title={destinationStationDisplay || undefined}>{renderValue(destinationStationDisplay)}</span>
-            <span className={`${styles.tradeRouteStationMetric} ${styles.tradeRouteHideCompact}`} title='Distance to station'>
-              {renderValue(destinationStationDistanceDisplay)}
-            </span>
+            <div className={styles.tradeRouteStationContent}>
+              <span className={styles.tradeRouteStationName} title={destinationStationDisplay || undefined}>{renderValue(destinationStationDisplay)}</span>
+              <div className={styles.tradeRouteStationChips}>
+                {renderMetricChip({
+                  value: destinationStationDistanceDisplay,
+                  variant: destinationStationDistanceVariant,
+                  title: 'Distance to station'
+                })}
+                {renderMetricChip({
+                  value: destinationSystemDistanceDisplay,
+                  variant: destinationSystemDistanceVariant,
+                  title: 'Distance to system'
+                })}
+              </div>
+            </div>
           </div>
           <div className={`${styles.tradeRouteStationRow} ${styles.tradeRouteStationRowSecondary}`}>
             <span className={styles.tradeRouteStationSystem} title={destinationSystemName || undefined}>{renderValue(destinationSystemName)}</span>
-            <span
-              className={`${styles.tradeRouteStationReputation} ${styles.tradeRouteHideMedium}`}
-              style={destinationStandingDisplay.color ? { color: destinationStandingDisplay.color } : undefined}
-              title={destinationStandingDisplay.title || undefined}
-            >
-              {renderValue(destinationReputationDisplay)}
-            </span>
-            <span className={`${styles.tradeRouteStationMetric} ${styles.tradeRouteHideNarrow}`} title='Distance to system'>
-              {renderValue(destinationSystemDistanceDisplay)}
-            </span>
+            <div className={styles.tradeRouteStationChips}>
+              {renderMetricChip({
+                value: destinationReputationDisplay,
+                title: destinationStandingDisplay.title || 'Faction standing',
+                color: destinationStandingDisplay.color
+              })}
+            </div>
           </div>
         </div>
       </td>
@@ -597,6 +652,18 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
               <span className={styles.tradeRouteProfitLabel}>Per hour</span>
               <span className={styles.tradeRouteProfitValue}>{renderValue(profitPerHour && profitPerHour !== '--' ? profitPerHour : '')}</span>
             </div>
+          </div>
+          <div className={styles.tradeRouteProfitMeta}>
+            {renderMetricChip({
+              value: routeDistance.display,
+              variant: routeDistanceVariant,
+              title: 'Total route distance'
+            })}
+            {renderMetricChip({
+              value: updatedDisplay,
+              variant: 'neutral',
+              title: 'Last updated'
+            })}
           </div>
         </div>
       </td>
@@ -1328,7 +1395,7 @@ function extractSystemDistance (route) {
   return null
 }
 
-function resolveStationDistanceDisplay (station = {}) {
+function resolveStationDistance (station = {}) {
   const numericCandidates = [
     station?.stationDistance?.value,
     station?.stationDistance,
@@ -1356,8 +1423,66 @@ function resolveStationDistanceDisplay (station = {}) {
   }
 
   const display = formatStationDistance(numericValue, textValue)
-  if (display && display !== '--') return display
-  return textValue && textValue !== '--' ? textValue : ''
+  const normalizedDisplay = display && display !== '--' ? display : (textValue && textValue !== '--' ? textValue : '')
+
+  return {
+    display: normalizedDisplay,
+    value: numericValue !== null ? numericValue : parseNumberFromText(textValue)
+  }
+}
+
+function resolveRouteDistance (route = {}) {
+  const summary = route?.summary || {}
+  const numericCandidates = [
+    summary?.routeDistanceLy,
+    summary?.distanceLy,
+    route?.distanceLy,
+    route?.distance
+  ]
+
+  let numericValue = null
+  for (const value of numericCandidates) {
+    if (typeof value === 'number' && !Number.isNaN(value)) {
+      numericValue = value
+      break
+    }
+  }
+
+  const textCandidates = [
+    summary?.routeDistanceText,
+    summary?.distanceText,
+    route?.distanceDisplay
+  ]
+
+  let textValue = ''
+  for (const text of textCandidates) {
+    if (typeof text === 'string' && text.trim()) {
+      textValue = sanitizeInaraText(text)
+      break
+    }
+  }
+
+  const display = formatSystemDistance(numericValue, textValue)
+  const normalizedDisplay = display && display !== '--' ? display : (textValue && textValue !== '--' ? textValue : '')
+
+  return {
+    display: normalizedDisplay,
+    value: numericValue !== null ? numericValue : parseNumberFromText(textValue)
+  }
+}
+
+function getStationDistanceVariant (value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return 'neutral'
+  if (value <= 500) return 'success'
+  if (value <= 1500) return 'caution'
+  return 'warning'
+}
+
+function getSystemDistanceVariant (value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return 'neutral'
+  if (value <= 15) return 'success'
+  if (value <= 35) return 'caution'
+  return 'warning'
 }
 
 function resolveStationSystemDistance (route, type) {
