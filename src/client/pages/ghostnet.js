@@ -4691,12 +4691,9 @@ const TRANSACTION_REASON_SUFFIXES = ['protocol', 'whisper', 'script', 'manifest'
 const SIMULATION_BADGES = ['SIMULATION MODE', 'TRAINING SCENARIO', 'SANDBOX RELAY']
 const SIMULATION_TRAILS = ['ghostfire rehearsal', 'tribute drill active', 'mesh rehearsal running', 'no live traffic detected']
 const JACKPOT_ASCII_BANNER = [
-  '      ██████╗  █████╗  ██████╗██╗  ██╗██████╗  ██████╗ ████████╗',
-  '      ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔══██╗██╔═══██╗╚══██╔══╝',
-  '      ██████╔╝███████║██║     █████╔╝ ██████╔╝██║   ██║   ██║   ',
-  '      ██╔═══╝ ██╔══██║██║     ██╔═██╗ ██╔══██╗██║   ██║   ██║   ',
-  '      ██║     ██║  ██║╚██████╗██║  ██╗██║  ██║╚██████╔╝   ██║   ',
-  '      ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝    ╚═╝   '
+  '══════════════════════════════════════════════════════════════════',
+  '   JACKPOT VECTOR LOCKED · CREDIT CASCADE INBOUND · TRIBUTE SURGE  ',
+  '══════════════════════════════════════════════════════════════════'
 ]
 const JACKPOT_SUMMARY_INTROS = [
   'Encrypted cache recovered from',
@@ -5560,7 +5557,7 @@ function GhostnetTerminalOverlay () {
                   style={{
                     animationDuration: `${glyph.duration}ms`,
                     animationDelay: `${glyph.delay}ms`,
-                    transform: `translateZ(0) skewY(${glyph.drift}deg)`
+                    '--terminal-celebration-skew': `${glyph.drift}deg`
                   }}
                 >
                   {glyph.symbol}
