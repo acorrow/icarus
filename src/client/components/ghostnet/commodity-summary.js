@@ -13,6 +13,7 @@ import {
   formatSystemDistance
 } from '../../lib/ghostnet-formatters'
 import { stationIconFromType } from '../../lib/station-icons'
+import getDistanceSeverityColor from '../../lib/distance-colors'
 
 export function CommodityIcon ({ category, size = 26 }) {
   const config = getCommodityIconConfig(category)
@@ -55,7 +56,7 @@ function buildMetrics (entries) {
     .filter(Boolean)
 }
 
-export default function CommoditySummary ({ summary, shipSourceSegment, className, valueIcon }) {
+export default function CommoditySummary ({ summary, shipSourceSegment, className, valueIcon, shipJumpRange }) {
   const memoized = useMemo(() => {
     if (!summary) return null
 
@@ -72,6 +73,7 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
       : '--'
 
     const summarySystemDistance = formatSystemDistance(summary.distanceLy, summary.distanceLyText)
+    const summaryDistanceColor = getDistanceSeverityColor(summary.distanceLy, shipJumpRange)
     const summaryStationDistance = formatStationDistance(summary.distanceLs, summary.distanceLsText)
     const summaryUpdated = summary.updatedAt
       ? formatRelativeTime(summary.updatedAt)
@@ -148,7 +150,8 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
     const distanceSegment = {
       label: 'Distance',
       value: summarySystemDistance || '',
-      secondary: summaryStationDistance || ''
+      secondary: summaryStationDistance || '',
+      valueColor: summaryDistanceColor || undefined
     }
 
     const sourceSegment = shipSourceSegment
@@ -196,7 +199,7 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
         secondary: valueSecondary
       }
     }
-  }, [summary, shipSourceSegment, valueIcon])
+  }, [summary, shipSourceSegment, valueIcon, shipJumpRange])
 
   if (!memoized) return null
 
@@ -216,7 +219,8 @@ CommoditySummary.defaultProps = {
   summary: null,
   shipSourceSegment: null,
   className: '',
-  valueIcon: null
+  valueIcon: null,
+  shipJumpRange: null
 }
 
 CommoditySummary.propTypes = {
@@ -235,5 +239,6 @@ CommoditySummary.propTypes = {
     ariaLabel: PropTypes.string
   }),
   className: PropTypes.string,
-  valueIcon: PropTypes.node
+  valueIcon: PropTypes.node,
+  shipJumpRange: PropTypes.number
 }
