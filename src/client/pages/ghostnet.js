@@ -2013,32 +2013,36 @@ function MissionsPanel () {
 
   return (
     <section className={styles.tableSection}>
-      <div className={styles.tableSectionHeader}>
-        <h2 className={styles.tableSectionTitle}>Mining Missions</h2>
-        <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
-        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-          <div>
-            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
+      <Panel
+        layout='full-width'
+        className={`${styles.tablePanel} layout__panel--secondary-navigation`}
+      >
+        <div className={styles.tableSectionHeader}>
+          <h2 className={styles.tableSectionTitle}>Mining Missions</h2>
+          <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
+          <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
+            <div>
+              <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+              <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
+            </div>
+            {sourceUrl && (
+              <div className='ghostnet__data-source ghostnet-muted'>
+                Ghost Net intercept feed compiled from GHOSTNET community relays.
+              </div>
+            )}
           </div>
-          {sourceUrl && (
-            <div className='ghostnet__data-source ghostnet-muted'>
-              Ghost Net intercept feed compiled from GHOSTNET community relays.
-            </div>
-          )}
+          <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+            Availability signals originate from GHOSTNET contributors and may trail live mission boards.
+          </p>
+          {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
-        <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-          Availability signals originate from GHOSTNET contributors and may trail live mission boards.
-        </p>
-        {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      </div>
-      <div className='ghostnet-panel-table'>
-        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-          {displayMessage && status !== 'idle' && status !== 'loading' && (
-            <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
-              {displayMessage}
-            </div>
-          )}
+        <div className='ghostnet-panel-table'>
+          <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
+            {displayMessage && status !== 'idle' && status !== 'loading' && (
+              <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
+                {displayMessage}
+              </div>
+            )}
           {status === 'idle' && (
             <div className={styles.tableIdleState}>
               Waiting for current system information...
@@ -2120,7 +2124,8 @@ function MissionsPanel () {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      </Panel>
     </section>
   )
 }
@@ -2790,7 +2795,11 @@ function CargoHoldPanel () {
 
   return (
     <section className={styles.tableSection}>
-      <div className={styles.tableSectionHeader}>
+      <Panel
+        layout='full-width'
+        className={`${styles.tablePanel} layout__panel--secondary-navigation`}
+      >
+        <div className={styles.tableSectionHeader}>
         <h2 className={styles.tableSectionTitle}>Cargo Hold</h2>
         <p className={styles.sectionHint}>Monitor mining hauls, track capacity in real time, and surface the most lucrative buyers across nearby systems.</p>
         <div className={styles.cargoProgress}>
@@ -3411,6 +3420,7 @@ function CargoHoldPanel () {
             </div>
           </>
         )}
+      </Panel>
     </section>
   )
 }
@@ -4104,7 +4114,7 @@ function TradeRoutesPanel () {
     <section className={styles.tableSection}>
       <Panel
         layout='full-width'
-        className={`${styles.tradeRoutesControlsPanel} layout__panel--secondary-navigation`}
+        className={`${styles.tablePanel} layout__panel--secondary-navigation`}
       >
         <div className={styles.tradeRoutesControls}>
           <div className={styles.tableSectionHeader}>
@@ -4449,32 +4459,36 @@ function PristineMiningPanel () {
 
   return (
     <section className={styles.tableSection}>
-      <div className={styles.tableSectionHeader}>
-        <h2 className={styles.tableSectionTitle}>Pristine Mining Locations</h2>
-        <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
-        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-          <div>
-            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
-          </div>
-          {sourceUrl && (
-            <div className='ghostnet__data-source ghostnet-muted'>
-              Ghost Net prospecting relays aligned with GHOSTNET survey intel.
-            </div>
-          )}
-        </div>
-        <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-          Geological echoes are sourced from volunteer GHOSTNET submissions and may lag in-system discoveries.
-        </p>
-        {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
-      </div>
-      <div
-        className={`ghostnet-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
+      <Panel
+        layout='full-width'
+        className={`${styles.tablePanel} layout__panel--secondary-navigation`}
       >
+        <div className={styles.tableSectionHeader}>
+          <h2 className={styles.tableSectionTitle}>Pristine Mining Locations</h2>
+          <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
+          <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
+            <div>
+              <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+              <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
+            </div>
+            {sourceUrl && (
+              <div className='ghostnet__data-source ghostnet-muted'>
+                Ghost Net prospecting relays aligned with GHOSTNET survey intel.
+              </div>
+            )}
+          </div>
+          <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+            Geological echoes are sourced from volunteer GHOSTNET submissions and may lag in-system discoveries.
+          </p>
+          {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
+        </div>
         <div
-          className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
-          style={TABLE_SCROLL_AREA_STYLE}
+          className={`ghostnet-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
         >
+          <div
+            className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
+            style={TABLE_SCROLL_AREA_STYLE}
+          >
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
@@ -4611,7 +4625,8 @@ function PristineMiningPanel () {
             />
           )}
         </div>
-      </div>
+        </div>
+      </Panel>
     </section>
   )
 }
