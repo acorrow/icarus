@@ -127,7 +127,7 @@ function ListEngineers ({ engineers, currentSystem }) {
               </td>
               <td className='text-right'>
                 <span className='text-right'>
-                  <CopyOnClick>{engineer.system.name}</CopyOnClick>
+                  <CopyOnClick copyMessageKey='system'>{engineer.system.name}</CopyOnClick>
                 </span>
                 {currentSystem?.position &&
                   <span className='text-muted text-no-transform'>

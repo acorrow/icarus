@@ -6,6 +6,7 @@ import Icons from '../lib/icons'
 import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
 import StationSummary, { StationIcon, DemandIndicator } from '../components/ghostnet/station-summary'
 import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
+import CopyOnClick from '../components/copy-on-click'
 import PirateRadioPanel from '../components/ghostnet/pirate-radio'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
 import animateTableEffect from '../lib/animate-table-effect'
@@ -2111,7 +2112,9 @@ function MissionsPanel () {
                             : (
                               <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
                               )}
-                          {mission.system || '--'}
+                          {mission.system
+                            ? <CopyOnClick copyMessageKey='system'>{mission.system}</CopyOnClick>
+                            : '--'}
                         </div>
                       </td>
                       <td className={`${styles.tableCellTop} hidden-small text-right`}>{distanceDisplay || '--'}</td>
@@ -2176,7 +2179,7 @@ function CargoHoldPanel () {
     const subtexts = [
       shipIdent ? `ID ${shipIdent}` : null,
       shipType && shipType !== shipName ? shipType : null,
-      systemName
+      systemName ? <CopyOnClick copyMessageKey='system'>{systemName}</CopyOnClick> : null
     ].filter(Boolean)
     return {
       icon: <StationIcon icon='ship' size={24} />,
@@ -2728,9 +2731,21 @@ function CargoHoldPanel () {
       : 'History'
     const stationName = sanitizeInaraText(entryData.stationName) || entryData.stationName || ''
     const systemName = sanitizeInaraText(entryData.systemName) || entryData.systemName || ''
-    const stationLine = stationName
-      ? `${stationName}${systemName ? ` · ${systemName}` : ''}`
-      : ''
+    const stationLineContent = stationName
+      ? (
+          <>
+            <CopyOnClick copyMessageKey='station'>{stationName}</CopyOnClick>
+            {systemName
+              ? (
+                <>
+                  {' · '}
+                  <CopyOnClick copyMessageKey='system'>{systemName}</CopyOnClick>
+                </>
+                )
+              : null}
+          </>
+        )
+      : null
     const distanceDisplay = typeof entryData.distanceLs === 'number' && !Number.isNaN(entryData.distanceLs)
       ? formatStationDistance(entryData.distanceLs)
       : ''
@@ -2747,7 +2762,7 @@ function CargoHoldPanel () {
           <span className={styles.tableEntrySource}>{resolvedSource}</span>
         </div>
         {label ? <div className={styles.tableEntryLabel}>{label}</div> : null}
-        {stationLine ? <div className={styles.tableEntryMeta}>{stationLine}</div> : null}
+        {stationLineContent ? <div className={styles.tableEntryMeta}>{stationLineContent}</div> : null}
         {distanceDisplay ? <div className={styles.tableEntryFootnote}>Distance: {distanceDisplay}</div> : null}
         {timestampDisplay ? <div className={styles.tableEntryFootnote}>As of {timestampDisplay}</div> : null}
       </div>
@@ -3339,8 +3354,13 @@ function CargoHoldPanel () {
                                 <div className={styles.tableContextIndicator}>
                                   <span className={styles.tableContextLabel}>Station Context</span>
                                   <span className={styles.tableContextValue}>
-                                    {contextSummary.stationName}
-                                    {contextSummary.systemName ? ` · ${contextSummary.systemName}` : ''}
+                                    <CopyOnClick copyMessageKey='station'>{contextSummary.stationName}</CopyOnClick>
+                                    {contextSummary.systemName ? (
+                                      <>
+                                        {' · '}
+                                        <CopyOnClick copyMessageKey='system'>{contextSummary.systemName}</CopyOnClick>
+                                      </>
+                                    ) : null}
                                   </span>
                                   {(contextSystemDistance || contextDistance) && (
                                     <span className={styles.tableContextFootnote}>
@@ -3369,8 +3389,13 @@ function CargoHoldPanel () {
                           <div>{ghostnetPriceDisplay}</div>
                           {ghostnetStation && (
                             <div className={styles.tableSubtext}>
-                              {ghostnetStation}
-                              {ghostnetSystem ? ` · ${ghostnetSystem}` : ''}
+                              <CopyOnClick copyMessageKey='station'>{ghostnetStation}</CopyOnClick>
+                              {ghostnetSystem ? (
+                                <>
+                                  {' · '}
+                                  <CopyOnClick copyMessageKey='system'>{ghostnetSystem}</CopyOnClick>
+                                </>
+                              ) : null}
                             </div>
                           )}
                           {ghostnetDemand && (
@@ -4155,8 +4180,16 @@ function TradeRoutesPanel () {
                         </span>
                       )}
                       <div className={styles.tradeRouteContextValueText}>
-                        <span className={styles.tradeRouteContextPrimary}>{routeContext.origin.station || '--'}</span>
-                        <span className={styles.tradeRouteContextMeta}>{routeContext.origin.system || '--'}</span>
+                        <span className={styles.tradeRouteContextPrimary}>
+                          {routeContext.origin.station
+                            ? <CopyOnClick copyMessageKey='station'>{routeContext.origin.station}</CopyOnClick>
+                            : '--'}
+                        </span>
+                        <span className={styles.tradeRouteContextMeta}>
+                          {routeContext.origin.system
+                            ? <CopyOnClick copyMessageKey='system'>{routeContext.origin.system}</CopyOnClick>
+                            : '--'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -4180,8 +4213,16 @@ function TradeRoutesPanel () {
                         </span>
                       )}
                       <div className={styles.tradeRouteContextValueText}>
-                        <span className={styles.tradeRouteContextPrimary}>{routeContext.destination.station || '--'}</span>
-                        <span className={styles.tradeRouteContextMeta}>{routeContext.destination.system || '--'}</span>
+                        <span className={styles.tradeRouteContextPrimary}>
+                          {routeContext.destination.station
+                            ? <CopyOnClick copyMessageKey='station'>{routeContext.destination.station}</CopyOnClick>
+                            : '--'}
+                        </span>
+                        <span className={styles.tradeRouteContextMeta}>
+                          {routeContext.destination.system
+                            ? <CopyOnClick copyMessageKey='system'>{routeContext.destination.system}</CopyOnClick>
+                            : '--'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -4561,7 +4602,11 @@ function PristineMiningPanel () {
                               : (
                                 <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
                                 )}
-                            <span className='ghostnet-accent'>{location.system || '--'}</span>
+                            <span className='ghostnet-accent'>
+                              {location.system
+                                ? <CopyOnClick copyMessageKey='system'>{location.system}</CopyOnClick>
+                                : '--'}
+                            </span>
                           </div>
                         </td>
                         <td className={`hidden-small text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{bodyDistanceDisplay || '--'}</td>

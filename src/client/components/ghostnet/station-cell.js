@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { sanitizeInaraText } from '../../lib/sanitize-inara-text'
+import CopyOnClick from '../copy-on-click'
 import StackedCell from './stacked-cell'
 import styles from './trade-route-cells.module.css'
 
@@ -30,11 +31,15 @@ function StationLeg ({ label, leg }) {
           className={styles.stationName}
           style={leg.color ? { color: leg.color } : undefined}
         >
-          {name}
+          <CopyOnClick copyMessageKey='station'>{name}</CopyOnClick>
         </span>
       </div>
       <div className={styles.stationMetaRow}>
-        {system ? <span className={styles.stationSystem}>{system}</span> : null}
+        {system ? (
+          <span className={styles.stationSystem}>
+            <CopyOnClick copyMessageKey='system'>{system}</CopyOnClick>
+          </span>
+        ) : null}
         {type ? <span className={styles.stationType}>{type}</span> : null}
         {distance ? <span className={styles.stationDistance}>{distance}</span> : null}
         {status
