@@ -286,12 +286,18 @@
   font-size: 1.05rem;
   color: color-mix(in srgb, var(--ghostnet-color-success) 95%, transparent);
   text-shadow: 0 0 1.65rem color-mix(in srgb, var(--ghostnet-color-success) 60%, transparent);
+  --terminal-celebration-skew: 0deg;
+  display: inline-block;
   opacity: 0;
-  animation-name: terminalCreditGlyphFall;
+  transform: translate3d(-125%, 0, 0) skewY(var(--terminal-celebration-skew));
+  animation-name: terminalCreditGlyphStream;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+  animation-fill-mode: both;
   letter-spacing: 0.12em;
+  white-space: nowrap;
   transform-origin: center;
+  will-change: transform, opacity;
 }
 
 .terminalCelebrationGlyph:nth-child(odd) {
@@ -590,6 +596,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
     0 0 18px var(--ghostnet-terminal-jackpot-flood-shadow),
     0 0 28px var(--ghostnet-terminal-jackpot-flood-accent);
   animation: terminalJackpotFloodPulse 1.6s ease-in-out infinite;
+  white-space: nowrap;
 }
 
 .terminalPromptJackpotSummary {
@@ -675,6 +682,11 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
     0 0 18px var(--ghostnet-terminal-jackpot-flood-shadow),
     0 0 36px var(--ghostnet-terminal-jackpot-flood-accent);
   letter-spacing: 0.22em;
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
   animation: terminalJackpotFloodGlyphDrift 2s linear infinite;
 }
 
@@ -705,19 +717,23 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   }
 }
 
-@keyframes terminalCreditGlyphFall {
+@keyframes terminalCreditGlyphStream {
   0% {
-    transform: translate3d(0, -110%, 0);
+    transform: translate3d(-135%, 0, 0) skewY(var(--terminal-celebration-skew, 0deg));
     opacity: 0;
   }
-  12% {
+  15% {
     opacity: 1;
   }
-  55% {
+  50% {
+    transform: translate3d(0, 0, 0) skewY(var(--terminal-celebration-skew, 0deg));
+    opacity: 1;
+  }
+  85% {
     opacity: 1;
   }
   100% {
-    transform: translate3d(0, 120%, 0);
+    transform: translate3d(135%, 0, 0) skewY(var(--terminal-celebration-skew, 0deg));
     opacity: 0;
   }
 }
