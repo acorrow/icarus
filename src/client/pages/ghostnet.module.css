@@ -116,7 +116,7 @@
   --ghostnet-gradient-top: color-mix(in srgb, var(--ghostnet-color-surface) 92%, transparent);
   --ghostnet-gradient-mid: color-mix(in srgb, var(--ghostnet-color-primary-dark) 60%, transparent);
   --ghostnet-gradient-bottom: color-mix(in srgb, var(--ghostnet-color-background) 88%, transparent);
-  padding: clamp(3rem, 5vw, 4.25rem) 0 calc(4.25rem + var(--ghostnet-terminal-height));
+  padding: 0 0 calc(4.25rem + var(--ghostnet-terminal-height));
   background: linear-gradient(165deg, var(--ghostnet-gradient-top) 0%, var(--ghostnet-gradient-mid) 55%, var(--ghostnet-gradient-bottom) 100%),
     var(--ghostnet-bg);
   color: var(--ghostnet-ink);
