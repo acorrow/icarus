@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, Fragment } from 'react'
 import Layout from '../components/layout'
+import Panel from '../components/panel'
 import PanelNavigation from '../components/panel-navigation'
 import Icons from '../lib/icons'
 import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
@@ -4101,113 +4102,120 @@ function TradeRoutesPanel () {
 
   return (
     <section className={styles.tableSection}>
-      <div className={styles.tableSectionHeader}>
-        <h2 id='trade-routes-filters-heading' className={styles.tableSectionTitle}>Find Trade Routes</h2>
-        <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
-      </div>
-      <TradeRouteFilterPanel
-        filters={filters}
-        onFilterChange={setFilterValue}
-        options={filterOptions}
-        cargoCapacityDisplay={cargoCapacityDisplay}
-        selectedSystemName={selectedSystemName}
-        systemSelection={systemSelection}
-        systemInput={systemInput}
-        systemOptions={systemOptions}
-        onSystemChange={handleSystemChange}
-        onManualSystemChange={handleManualSystemChange}
-        filtersCollapsed={filtersCollapsed}
-        onToggleFilters={() => setFiltersCollapsed(prev => !prev)}
-        onSubmit={handleSubmit}
-        isRefreshing={isRefreshing}
-        padSizeAutoDetected={padSizeAutoDetected}
-        initialShipInfoLoaded={initialShipInfoLoaded}
-      />
-      <div className={styles.tradeRouteContext} role='group' aria-label='Selected route context'>
-        <div className={styles.tradeRouteContextTitleRow}>
-          <span className={styles.tradeRouteContextTitle}>Route Context</span>
-        </div>
-        {routeContext ? (
-          <>
-            <div className={styles.tradeRouteContextGrid}>
-              <div className={styles.tradeRouteContextItem}>
-                <span className={styles.tradeRouteContextLabel}>Station A</span>
-                <div className={styles.tradeRouteContextValue}>
-                  {routeContext.origin.iconName && (
-                    <span className={styles.tradeRouteContextIcon}>
-                      <StationIcon icon={routeContext.origin.iconName} size={28} />
-                    </span>
-                  )}
-                  <div className={styles.tradeRouteContextValueText}>
-                    <span className={styles.tradeRouteContextPrimary}>{routeContext.origin.station || '--'}</span>
-                    <span className={styles.tradeRouteContextMeta}>{routeContext.origin.system || '--'}</span>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.tradeRouteContextItem}>
-                <span className={styles.tradeRouteContextLabel}>Commodity A</span>
-                <div className={styles.tradeRouteContextValue}>
-                  <span className={styles.tradeRouteContextIcon}>
-                    <CommodityIcon category={routeContext.outbound.category || ''} size={24} />
-                  </span>
-                  <div className={styles.tradeRouteContextValueText}>
-                    <span className={styles.tradeRouteContextPrimary}>{routeContext.outbound.commodity || '--'}</span>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.tradeRouteContextItem}>
-                <span className={styles.tradeRouteContextLabel}>Station B</span>
-                <div className={styles.tradeRouteContextValue}>
-                  {routeContext.destination.iconName && (
-                    <span className={styles.tradeRouteContextIcon}>
-                      <StationIcon icon={routeContext.destination.iconName} size={28} />
-                    </span>
-                  )}
-                  <div className={styles.tradeRouteContextValueText}>
-                    <span className={styles.tradeRouteContextPrimary}>{routeContext.destination.station || '--'}</span>
-                    <span className={styles.tradeRouteContextMeta}>{routeContext.destination.system || '--'}</span>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.tradeRouteContextItem}>
-                <span className={styles.tradeRouteContextLabel}>Commodity B</span>
-                <div className={styles.tradeRouteContextValue}>
-                  <span className={styles.tradeRouteContextIcon}>
-                    <CommodityIcon category={routeContext.inbound.category || ''} size={24} />
-                  </span>
-                  <div className={styles.tradeRouteContextValueText}>
-                    <span className={styles.tradeRouteContextPrimary}>{routeContext.inbound.commodity || '--'}</span>
-                  </div>
-                </div>
-              </div>
+      <Panel
+        layout='full-width'
+        className={`${styles.tradeRoutesControlsPanel} layout__panel--secondary-navigation`}
+      >
+        <div className={styles.tradeRoutesControls}>
+          <div className={styles.tableSectionHeader}>
+            <h2 id='trade-routes-filters-heading' className={styles.tableSectionTitle}>Find Trade Routes</h2>
+            <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
+          </div>
+          <TradeRouteFilterPanel
+            filters={filters}
+            onFilterChange={setFilterValue}
+            options={filterOptions}
+            cargoCapacityDisplay={cargoCapacityDisplay}
+            selectedSystemName={selectedSystemName}
+            systemSelection={systemSelection}
+            systemInput={systemInput}
+            systemOptions={systemOptions}
+            onSystemChange={handleSystemChange}
+            onManualSystemChange={handleManualSystemChange}
+            filtersCollapsed={filtersCollapsed}
+            onToggleFilters={() => setFiltersCollapsed(prev => !prev)}
+            onSubmit={handleSubmit}
+            isRefreshing={isRefreshing}
+            padSizeAutoDetected={padSizeAutoDetected}
+            initialShipInfoLoaded={initialShipInfoLoaded}
+          />
+          <div className={styles.tradeRouteContext} role='group' aria-label='Selected route context'>
+            <div className={styles.tradeRouteContextTitleRow}>
+              <span className={styles.tradeRouteContextTitle}>Route Context</span>
             </div>
-            {navRouteSegment && navRouteSegment.length > 0 && (
-              <div className={styles.tradeRouteContextRoute}>
-                <span className={styles.tradeRouteContextLabel}>Plotted System Route</span>
-                <div className={styles.tradeRoutePath} role='list'>
-                  {navRouteSegment.map((hop, index) => {
-                    const hopSystem = typeof hop?.system === 'string' ? (sanitizeInaraText(hop.system) || hop.system) : ''
-                    const nodeClasses = [styles.tradeRoutePathNode]
-                    if (hop?.isCurrentSystem) nodeClasses.push(styles.tradeRoutePathNodeCurrent)
-                    return (
-                      <Fragment key={`${hop?.system || 'hop'}-${index}`}>
-                        <span className={nodeClasses.join(' ')} role='listitem'>
-                          {hopSystem || 'Unknown system'}
+            {routeContext ? (
+              <>
+                <div className={styles.tradeRouteContextGrid}>
+                  <div className={styles.tradeRouteContextItem}>
+                    <span className={styles.tradeRouteContextLabel}>Station A</span>
+                    <div className={styles.tradeRouteContextValue}>
+                      {routeContext.origin.iconName && (
+                        <span className={styles.tradeRouteContextIcon}>
+                          <StationIcon icon={routeContext.origin.iconName} size={28} />
                         </span>
-                        {index < navRouteSegment.length - 1 && (
-                          <span className={styles.tradeRoutePathSeparator} aria-hidden='true'>→</span>
-                        )}
-                      </Fragment>
-                    )
-                  })}
+                      )}
+                      <div className={styles.tradeRouteContextValueText}>
+                        <span className={styles.tradeRouteContextPrimary}>{routeContext.origin.station || '--'}</span>
+                        <span className={styles.tradeRouteContextMeta}>{routeContext.origin.system || '--'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.tradeRouteContextItem}>
+                    <span className={styles.tradeRouteContextLabel}>Commodity A</span>
+                    <div className={styles.tradeRouteContextValue}>
+                      <span className={styles.tradeRouteContextIcon}>
+                        <CommodityIcon category={routeContext.outbound.category || ''} size={24} />
+                      </span>
+                      <div className={styles.tradeRouteContextValueText}>
+                        <span className={styles.tradeRouteContextPrimary}>{routeContext.outbound.commodity || '--'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.tradeRouteContextItem}>
+                    <span className={styles.tradeRouteContextLabel}>Station B</span>
+                    <div className={styles.tradeRouteContextValue}>
+                      {routeContext.destination.iconName && (
+                        <span className={styles.tradeRouteContextIcon}>
+                          <StationIcon icon={routeContext.destination.iconName} size={28} />
+                        </span>
+                      )}
+                      <div className={styles.tradeRouteContextValueText}>
+                        <span className={styles.tradeRouteContextPrimary}>{routeContext.destination.station || '--'}</span>
+                        <span className={styles.tradeRouteContextMeta}>{routeContext.destination.system || '--'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.tradeRouteContextItem}>
+                    <span className={styles.tradeRouteContextLabel}>Commodity B</span>
+                    <div className={styles.tradeRouteContextValue}>
+                      <span className={styles.tradeRouteContextIcon}>
+                        <CommodityIcon category={routeContext.inbound.category || ''} size={24} />
+                      </span>
+                      <div className={styles.tradeRouteContextValueText}>
+                        <span className={styles.tradeRouteContextPrimary}>{routeContext.inbound.commodity || '--'}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+                {navRouteSegment && navRouteSegment.length > 0 && (
+                  <div className={styles.tradeRouteContextRoute}>
+                    <span className={styles.tradeRouteContextLabel}>Plotted System Route</span>
+                    <div className={styles.tradeRoutePath} role='list'>
+                      {navRouteSegment.map((hop, index) => {
+                        const hopSystem = typeof hop?.system === 'string' ? (sanitizeInaraText(hop.system) || hop.system) : ''
+                        const nodeClasses = [styles.tradeRoutePathNode]
+                        if (hop?.isCurrentSystem) nodeClasses.push(styles.tradeRoutePathNodeCurrent)
+                        return (
+                          <Fragment key={`${hop?.system || 'hop'}-${index}`}>
+                            <span className={nodeClasses.join(' ')} role='listitem'>
+                              {hopSystem || 'Unknown system'}
+                            </span>
+                            {index < navRouteSegment.length - 1 && (
+                              <span className={styles.tradeRoutePathSeparator} aria-hidden='true'>→</span>
+                            )}
+                          </Fragment>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className={styles.tradeRouteContextEmpty}>Select a trade route to populate the context.</div>
             )}
-          </>
-        ) : (
-          <div className={styles.tradeRouteContextEmpty}>Select a trade route to populate the context.</div>
-        )}
-      </div>
+          </div>
+        </div>
+      </Panel>
       <div className='ghostnet-panel-table'>
         <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
           {message && status !== 'idle' && status !== 'loading' && (
