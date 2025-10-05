@@ -13,6 +13,7 @@ const WebSocket = require('ws')
 const yargs = require('yargs')
 const packageJson = require('../../package.json')
 const TokenLedger = require('./lib/token-ledger')
+const { createPirateRadioRequestHandler } = require('./lib/event-handlers/pirate-radio')
 
 const commandLineArgs = yargs
   .help()
@@ -113,6 +114,7 @@ global.CACHE = {
 
 // Don't load events till globals are set
 const { eventHandlers, init } = require('./lib/events')
+const pirateRadioHandler = createPirateRadioRequestHandler(global.PIRATE_RADIO)
 
 let httpServer
 if (DEVELOPMENT) {
@@ -120,12 +122,24 @@ if (DEVELOPMENT) {
   // requests will be forwarded to a web server which is started on localhost
   // to allow UI changes to be tested without rebuilding the app.
   exec('npx next src/client')
-  httpServer = http.createServer((req, res) => proxy.web(req, res, { target: 'http://localhost:3000' }))
+  httpServer = http.createServer((req, res) => {
+    const handled = pirateRadioHandler(req, res)
+    if (!handled && !res.writableEnded) {
+      proxy.web(req, res, { target: 'http://localhost:3000' })
+    }
+  })
 } else {
   // The default behaviour (i.e. production) is to serve static assets. When the
   // application is compiled to a native executable these assets will be bundled
   // with the executable in a virtual file system.
-  const webServer = connect().use(serveStatic(WEB_DIR, { extensions: ['html'] }))
+  const webServer = connect()
+    .use((req, res, next) => {
+      const handled = pirateRadioHandler(req, res, next)
+      if (!handled && typeof next === 'function') {
+        next()
+      }
+    })
+    .use(serveStatic(WEB_DIR, { extensions: ['html'] }))
   httpServer = http.createServer(webServer)
 }
 

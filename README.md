@@ -63,6 +63,10 @@ ICARUS Terminal ships with a dedicated GHOSTNET page that pulls together trade, 
 
 All GHOSTNET-sourced insights are clearly labelled inside the UI so that commanders can distinguish between local ICARUS data and community-reported values. For a deep dive into how the integration works under the hood—including details on the HTTP requests, parsers and logging used to access GHOSTNET without an API key—see [GHOSTNET-README.md](GHOSTNET-README.md).
 
+### Pirate Radio configuration
+
+GhostNet's Pirate Radio deck can be pointed at local audio collections for broadcasts and interstitial commercials. Configure the directories from the in-app preferences (`pirateRadioLibraryDir` and `pirateRadioCommercialsDir`) or by updating `Preferences.json`; both paths default to `null` until you provide readable locations. Only `.mp3`, `.m4a`, `.aac`, `.flac`, and `.wav` files are indexed, hidden files are ignored, and the service will reject directories that do not exist or cannot be read. Once configured, the backend exposes streamable tracks at `/ghostnet/pirate-radio/audio/:id`, guarded so only files inside the configured roots are available.
+
 ### Developer Quickstart
 
 Looking to run ICARUS Terminal from source? The maintained setup, build, and screenshot workflow now lives in [AGENTS.md](AGENTS.md) so contributors have a single source of truth. Follow that guide for the current development checklist and environment notes.

@@ -11,6 +11,7 @@ const { TOKEN_REWARD_VALUES } = require('../../shared/token-config')
 const { isGhostnetTokenCurrencyEnabled } = require('../../shared/feature-flags')
 
 const InaraClient = require('./inara-client')
+const { PirateRadioLibrary } = require('./event-handlers/pirate-radio')
 const tokenLedger = global.TOKEN_LEDGER
 const TOKEN_BROADCAST_EVENT = 'ghostnetTokensUpdated'
 const JACKPOT_BASE_MIN = 2500
@@ -92,6 +93,31 @@ class EventHandlers {
     this.navRoute = new NavRoute({ eliteLog, eliteJson, system: this.system })
     this.textToSpeech = new TextToSpeech({ eliteLog, eliteJson, cmdrStatus: this.cmdrStatus, shipStatus: this.shipStatus })
 
+    this.pirateRadio = new PirateRadioLibrary()
+    global.PIRATE_RADIO = this.pirateRadio
+
+    this.preferences = this._readPreferences()
+    const {
+      pirateRadioLibraryDir = null,
+      pirateRadioCommercialsDir = null
+    } = this.preferences
+
+    this.preferences = this._withPirateRadioDefaults({
+      ...this.preferences,
+      pirateRadioLibraryDir,
+      pirateRadioCommercialsDir
+    })
+
+    this.pirateRadio.updateDirectories({
+      libraryDir: this.preferences.pirateRadioLibraryDir,
+      commercialsDir: this.preferences.pirateRadioCommercialsDir
+    }).then(({ status }) => {
+      this.preferences.pirateRadioLibraryDir = status.directories.libraryDir
+      this.preferences.pirateRadioCommercialsDir = status.directories.commercialsDir
+    }).catch(error => {
+      console.error('Failed to initialize pirate radio directories', error)
+    })
+
     this.tokenLedger = tokenLedger
     // Caches keep track of the most recent rewards so a replayed log does not double-award tokens
     this.tokenRewardCache = new Set()
@@ -103,6 +129,52 @@ class EventHandlers {
     this.inaraClient = new InaraClient()
 
     return this
+  }
+
+  _withPirateRadioDefaults (preferences = {}) {
+    const normalized = { ...preferences }
+    if (!Object.prototype.hasOwnProperty.call(normalized, 'pirateRadioLibraryDir') || normalized.pirateRadioLibraryDir === undefined) {
+      normalized.pirateRadioLibraryDir = null
+    }
+    if (!Object.prototype.hasOwnProperty.call(normalized, 'pirateRadioCommercialsDir') || normalized.pirateRadioCommercialsDir === undefined) {
+      normalized.pirateRadioCommercialsDir = null
+    }
+    return normalized
+  }
+
+  _readPreferences () {
+    if (!fs.existsSync(PREFERENCES_FILE)) {
+      return this._withPirateRadioDefaults({})
+    }
+
+    try {
+      const raw = fs.readFileSync(PREFERENCES_FILE, 'utf8')
+      if (!raw) return this._withPirateRadioDefaults({})
+      const parsed = JSON.parse(raw)
+      return this._withPirateRadioDefaults(parsed)
+    } catch (error) {
+      console.error('Failed to read preferences file', error)
+      return this._withPirateRadioDefaults({})
+    }
+  }
+
+  _writePreferences (preferences) {
+    const normalized = this._withPirateRadioDefaults(preferences)
+    if (!fs.existsSync(PREFERENCES_DIR)) fs.mkdirSync(PREFERENCES_DIR, { recursive: true })
+    fs.writeFileSync(PREFERENCES_FILE, JSON.stringify(normalized))
+    return normalized
+  }
+
+  async _getPirateRadioStatus () {
+    if (!this.pirateRadio.lastScannedAt) {
+      await this.pirateRadio.rescan()
+    }
+    return this.pirateRadio.getStatus()
+  }
+
+  _broadcastPirateRadioStatus (status) {
+    broadcastEvent('pirateRadioDirectoriesUpdated', status)
+    broadcastEvent('pirateRadioUpdate', status)
   }
 
   // logEventHandler is fired on every in-game log event
@@ -143,13 +215,26 @@ class EventHandlers {
         getBlueprints: (args) => this.blueprints.getBlueprints(args),
         getNavRoute: (args) => this.navRoute.getNavRoute(args),
         getPreferences: () => {
-          return fs.existsSync(PREFERENCES_FILE) ? JSON.parse(fs.readFileSync(PREFERENCES_FILE)) : {}
+          this.preferences = this._readPreferences()
+          return this.preferences
         },
-        setPreferences: (preferences) => {
-          if (!fs.existsSync(PREFERENCES_DIR)) fs.mkdirSync(PREFERENCES_DIR, { recursive: true })
-          fs.writeFileSync(PREFERENCES_FILE, JSON.stringify(preferences))
+        setPreferences: async (preferences = {}) => {
+          const merged = this._withPirateRadioDefaults({ ...this.preferences, ...preferences })
+          const updateResult = await this.pirateRadio.updateDirectories({
+            libraryDir: merged.pirateRadioLibraryDir,
+            commercialsDir: merged.pirateRadioCommercialsDir
+          })
+
+          merged.pirateRadioLibraryDir = updateResult.status.directories.libraryDir
+          merged.pirateRadioCommercialsDir = updateResult.status.directories.commercialsDir
+
+          const saved = this._writePreferences(merged)
+          this.preferences = saved
           broadcastEvent('syncMessage', { name: 'preferences' })
-          return preferences
+          if (updateResult.changed) {
+            this._broadcastPirateRadioStatus(updateResult.status)
+          }
+          return saved
         },
         getVoices: () => this.textToSpeech.getVoices(),
         getTokenBalance: async () => {
@@ -167,6 +252,32 @@ class EventHandlers {
             this.tokenLedger.listTransactions({ limit })
           ])
           return { snapshot, transactions }
+        },
+        getPirateRadioStatus: async () => {
+          return await this._getPirateRadioStatus()
+        },
+        getPirateRadioPlaylist: async () => {
+          return await this._getPirateRadioStatus()
+        },
+        setPirateRadioDirectories: async ({ libraryDir, commercialsDir } = {}) => {
+          const updateResult = await this.pirateRadio.updateDirectories({ libraryDir, commercialsDir })
+          const status = updateResult.status
+          const saved = this._writePreferences(this._withPirateRadioDefaults({
+            ...this.preferences,
+            pirateRadioLibraryDir: status.directories.libraryDir,
+            pirateRadioCommercialsDir: status.directories.commercialsDir
+          }))
+          this.preferences = saved
+          broadcastEvent('syncMessage', { name: 'preferences' })
+          if (updateResult.changed) {
+            this._broadcastPirateRadioStatus(status)
+          }
+          return status
+        },
+        rescanPirateRadio: async () => {
+          const status = await this.pirateRadio.rescan()
+          this._broadcastPirateRadioStatus(status)
+          return status
         },
         awardTokens: async ({ amount = 0, metadata = {} } = {}) => {
           if (!this.tokenLedger) {

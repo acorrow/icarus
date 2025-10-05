@@ -7,11 +7,11 @@ The Pirate Radio panel inside GhostNet streams audio playlists assembled from tw
 
 The frontend requests playlist data from the service through the following socket events:
 
-- `getPirateRadioPlaylist` – returns the current queue plus directory metadata.
-- `rescanPirateRadio` – instructs the backend to rescan the configured directories and rebuild the playlist.
-- `setPirateRadioDirectories` – prompts the service to open a file picker for either the library or commercial directory. The event payload includes the directory type and the current path so the picker can start from the existing location.
+- `getPirateRadioStatus` – returns the cached scan results and directory metadata.
+- `rescanPirateRadio` – instructs the backend to rescan the configured directories and rebuild the playlist cache.
+- `setPirateRadioDirectories` – persists a new library or commercial directory and triggers a rescan when the path changes.
 
-When either directory changes, or when a rescan completes, the service should broadcast the updated state to the client via `pirateRadioUpdate` (and `pirateRadioDirectoriesUpdated` if directory-specific metadata changes). The panel listens for both events and updates the queue automatically.
+When either directory changes, or when a rescan completes, the service broadcasts the updated state via `pirateRadioDirectoriesUpdated`. The panel listens for this event and updates the queue automatically.
 
 ### Usage
 
