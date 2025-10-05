@@ -4802,6 +4802,8 @@ const TERMINAL_BUFFER = 36
 const TERMINAL_WINDOW = 7
 const TERMINAL_WINDOW_EXPANDED = 14
 const TERMINAL_LINE_MAX_LENGTH = 56
+const TERMINAL_LINE_MIN_LENGTH = 24
+const TERMINAL_LINE_MAX_LENGTH_CAP = 160
 
 const TERMINAL_HEIGHT_NORMAL = 'clamp(180px, 18vh, 220px)'
 const TERMINAL_HEIGHT_COMPRESSED = '3rem'
@@ -4835,6 +4837,8 @@ function randomEndpoint () {
   const host = `${randomChoice(['ghostnet', 'syndicate', 'perseus', 'umbra', 'aurora', 'dusk'])}.${randomChoice(['alpha', 'beta', 'gamma', 'delta', 'kappa', 'lambda'])}`
   return `${protocol}://${host}.${randomChoice(['io', 'net', 'grid', 'node'])}`
 }
+
+let terminalLineGroupCounter = 0
 
 function randomGreekPhrase () {
   return `${randomChoice(GREEK_SYMBOLS)}-${randomChoice(['lattice', 'corridor', 'bloom', 'echo', 'vector', 'aperture'])}`
@@ -5250,30 +5254,58 @@ function generateTerminalLine () {
   return generators[type]()
 }
 
-function createTerminalLineWithId (seed = '', baseLine) {
+function createTerminalLineWithId (seed = '', baseLine, metadata = {}) {
   const line = baseLine || generateTerminalLine()
   const unique = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}${seed ? `-${seed}` : ''}`
-  return { ...line, id: unique }
+  const {
+    seed: _ignoredSeed,
+    __groupOrder: _ignoredGroupOrder,
+    __groupKey: _ignoredGroupKey,
+    __groupSeed: _ignoredGroupSeed,
+    ...rest
+  } = line
+  return { ...rest, ...metadata, id: unique }
 }
 
-function splitTerminalLineSegments (line, maxLength = TERMINAL_LINE_MAX_LENGTH) {
+function splitTerminalLineSegments (line, maxLength = TERMINAL_LINE_MAX_LENGTH, { groupKey, groupSeed, groupOrder } = {}) {
   if (!line || typeof line !== 'object') return []
 
-  const { seed: _ignoredSeed, text, ...rest } = line
+  const {
+    seed: _ignoredSeed,
+    __groupKey: _ignoredGroupKey,
+    __groupSeed: _ignoredGroupSeed,
+    __groupOrder: _ignoredGroupOrder,
+    __groupLabel: preferredGroupLabel,
+    __groupType: preferredGroupType,
+    text,
+    ...rest
+  } = line
   const rawText = text == null ? '' : String(text)
   const normalizedText = rawText.replace(/\s+/g, ' ').trim()
 
+  const baseLabel = preferredGroupLabel != null ? preferredGroupLabel : rest.label
+  const baseType = preferredGroupType != null ? preferredGroupType : rest.type
+
+  const metadata = {
+    __groupKey: groupKey,
+    __groupSeed: groupSeed,
+    __groupOrder: groupOrder,
+    __groupLabel: baseLabel,
+    __groupType: baseType,
+    __groupText: normalizedText
+  }
+
   if (!normalizedText) {
-    return [{ ...rest, text: '' }]
+    return [{ ...rest, label: baseLabel, type: baseType, text: '', ...metadata, __segmentIndex: 0 }]
   }
 
   if (normalizedText.length <= maxLength) {
-    return [{ ...rest, text: normalizedText }]
+    return [{ ...rest, label: baseLabel, type: baseType, text: normalizedText, ...metadata, __segmentIndex: 0 }]
   }
 
   const words = normalizedText.split(/\s+/).filter(Boolean)
   if (words.length === 0) {
-    return [{ ...rest, text: normalizedText.slice(0, maxLength) }]
+    return [{ ...rest, label: baseLabel, type: baseType, text: normalizedText.slice(0, maxLength), ...metadata, __segmentIndex: 0 }]
   }
 
   const segments = []
@@ -5310,38 +5342,78 @@ function splitTerminalLineSegments (line, maxLength = TERMINAL_LINE_MAX_LENGTH) 
 
   return segments.map((segmentText, index) => ({
     ...rest,
+    label: index === 0 ? baseLabel : (baseLabel ? '···' : baseLabel),
+    type: baseType,
     text: segmentText,
-    label: index === 0 ? rest.label : (rest.label ? '···' : rest.label)
+    ...metadata,
+    __segmentIndex: index
   }))
 }
 
-function createTerminalLineEntries (seed = '', baseLine) {
+function createTerminalLineEntries (seed = '', baseLine, maxLength = TERMINAL_LINE_MAX_LENGTH, options = {}) {
   const line = baseLine && typeof baseLine === 'object' ? baseLine : generateTerminalLine()
-  const segments = splitTerminalLineSegments(line)
+  const { seed: lineSeed, __groupOrder: providedGroupOrder, ...rest } = line
   const baseSeed = typeof seed === 'string' && seed.length > 0
     ? seed
-    : typeof line.seed === 'string' && line.seed.length > 0
-      ? line.seed
+    : typeof lineSeed === 'string' && lineSeed.length > 0
+      ? lineSeed
       : ''
+  const groupSeed = typeof options.groupSeed === 'string' && options.groupSeed.length > 0
+    ? options.groupSeed
+    : baseSeed || `terminal-line-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+  const groupKey = typeof options.groupKey === 'string' && options.groupKey.length > 0
+    ? options.groupKey
+    : groupSeed
+  const groupOrderRaw = Number.isFinite(options.groupOrder)
+    ? options.groupOrder
+    : Number.isFinite(providedGroupOrder)
+      ? providedGroupOrder
+      : null
+  const groupOrder = groupOrderRaw != null ? groupOrderRaw : (++terminalLineGroupCounter)
+  terminalLineGroupCounter = Math.max(terminalLineGroupCounter, groupOrder)
+
+  const segments = splitTerminalLineSegments({ ...rest, __groupOrder: groupOrder }, maxLength, {
+    groupKey,
+    groupSeed,
+    groupOrder
+  })
 
   if (!segments.length) {
-    return [createTerminalLineWithId(baseSeed, line)]
+    return [createTerminalLineWithId(groupSeed, { ...rest, text: '' }, {
+      __groupKey: groupKey,
+      __groupSeed: groupSeed,
+      __groupOrder: groupOrder,
+      __groupLabel: rest.label,
+      __groupType: rest.type,
+      __groupText: '',
+      __segmentIndex: 0
+    })]
   }
 
   return segments.map((segment, index) => {
     const segmentSeed = index === 0
-      ? baseSeed
-      : baseSeed
-        ? `${baseSeed}-${index}`
-        : `segment-${index}`
-    return createTerminalLineWithId(segmentSeed, segment)
+      ? groupSeed
+      : `${groupSeed}-${index}`
+    return createTerminalLineWithId(segmentSeed, segment, {
+      __groupKey: groupKey,
+      __groupSeed: groupSeed,
+      __groupOrder: groupOrder,
+      __groupLabel: segment.__groupLabel,
+      __groupType: segment.__groupType,
+      __groupText: segment.__groupText,
+      __segmentIndex: segment.__segmentIndex
+    })
   })
 }
 
 function GhostnetTerminalOverlay () {
   const [viewState, setViewState] = useState(TERMINAL_VIEW.NORMAL)
+  const terminalLineMaxLengthRef = useRef(TERMINAL_LINE_MAX_LENGTH)
+  const [terminalLineMaxLength, setTerminalLineMaxLength] = useState(TERMINAL_LINE_MAX_LENGTH)
   const [terminalLines, setTerminalLines] = useState(() => {
-    const seeded = Array.from({ length: TERMINAL_BUFFER }).flatMap((_, index) => createTerminalLineEntries(index))
+    const seeded = Array.from({ length: TERMINAL_BUFFER }).flatMap((_, index) =>
+      createTerminalLineEntries(`seed-${index}`, undefined, TERMINAL_LINE_MAX_LENGTH)
+    )
     return seeded.slice(-TERMINAL_BUFFER)
   })
   const cadenceRef = useRef()
@@ -5364,6 +5436,135 @@ function GhostnetTerminalOverlay () {
   const animatedBalanceRef = useRef(null)
   const recentLogRef = useRef([])
   const prefersReducedMotion = usePrefersReducedMotion()
+
+  const rewrapTerminalLines = useCallback((lines, maxLength) => {
+    if (!Array.isArray(lines) || lines.length === 0) return lines
+    const groups = []
+    const seenKeys = new Set()
+    const fallbackStart = terminalLineGroupCounter
+
+    lines.forEach(line => {
+      if (!line) return
+      const groupKey = line.__groupKey || line.__groupSeed || line.id
+      if (!groupKey || seenKeys.has(groupKey)) return
+      seenKeys.add(groupKey)
+
+      const groupSeed = typeof line.__groupSeed === 'string' && line.__groupSeed.length > 0 ? line.__groupSeed : groupKey
+      const groupOrder = Number.isFinite(line.__groupOrder)
+        ? line.__groupOrder
+        : fallbackStart + groups.length + 1
+      const base = {
+        type: line.__groupType ?? line.type ?? null,
+        label: line.__groupLabel ?? line.label ?? '',
+        text: line.__groupText ?? line.text ?? '',
+        __groupOrder: groupOrder
+      }
+
+      groups.push({
+        key: groupKey,
+        seed: groupSeed,
+        base,
+        options: { groupKey, groupSeed, groupOrder }
+      })
+    })
+
+    if (!groups.length) return lines
+
+    const sorted = groups.sort((a, b) => {
+      const orderA = Number.isFinite(a.base.__groupOrder) ? a.base.__groupOrder : 0
+      const orderB = Number.isFinite(b.base.__groupOrder) ? b.base.__groupOrder : 0
+      return orderA - orderB
+    })
+
+    const segments = sorted.flatMap(group =>
+      createTerminalLineEntries(group.seed, group.base, maxLength, group.options)
+    )
+
+    return segments.slice(-TERMINAL_BUFFER)
+  }, [])
+
+  useEffect(() => {
+    terminalLineMaxLengthRef.current = terminalLineMaxLength
+  }, [terminalLineMaxLength])
+
+  useEffect(() => {
+    setTerminalLines(previous => {
+      if (!Array.isArray(previous) || previous.length === 0) return previous
+      return rewrapTerminalLines(previous, terminalLineMaxLength)
+    })
+  }, [terminalLineMaxLength, rewrapTerminalLines])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof ResizeObserver === 'undefined') return undefined
+
+    const measure = () => {
+      const terminal = terminalRef.current
+      if (!terminal) return
+      const feed = terminal.querySelector('ul')
+      if (!feed) return
+
+      const feedWidth = feed.clientWidth
+      if (!feedWidth) return
+
+      const firstLine = feed.querySelector('li')
+      let promptWidth = 0
+      if (firstLine?.firstElementChild) {
+        const promptRect = firstLine.firstElementChild.getBoundingClientRect()
+        if (promptRect && Number.isFinite(promptRect.width)) {
+          promptWidth = promptRect.width
+        }
+      }
+
+      const lineStyles = window.getComputedStyle(firstLine || feed)
+      const gapValue = lineStyles.columnGap || lineStyles.gap || lineStyles.gridColumnGap || '0'
+      const gap = Number.parseFloat(gapValue) || 0
+      const availableWidth = Math.max(feedWidth - promptWidth - gap, 0)
+
+      const textElement = firstLine?.lastElementChild || feed
+      const textStyles = window.getComputedStyle(textElement)
+      const measurementSpan = document.createElement('span')
+      measurementSpan.textContent = 'MMMMMMMMMM'
+      measurementSpan.style.visibility = 'hidden'
+      measurementSpan.style.position = 'absolute'
+      measurementSpan.style.whiteSpace = 'nowrap'
+      measurementSpan.style.fontFamily = textStyles.fontFamily
+      measurementSpan.style.fontSize = textStyles.fontSize
+      measurementSpan.style.fontWeight = textStyles.fontWeight
+      measurementSpan.style.letterSpacing = textStyles.letterSpacing
+      feed.appendChild(measurementSpan)
+      const measurementRect = measurementSpan.getBoundingClientRect()
+      feed.removeChild(measurementSpan)
+
+      const fontSizeValue = Number.parseFloat(textStyles.fontSize) || 14
+      const letterSpacingValue = Number.parseFloat(textStyles.letterSpacing) || 0
+      const baseCharWidth = measurementRect.width > 0 ? measurementRect.width / 10 : fontSizeValue * 0.62
+      const characterWidth = Math.max(baseCharWidth + letterSpacingValue, 1)
+
+      const computedMax = Math.floor(availableWidth / characterWidth)
+      if (!Number.isFinite(computedMax) || computedMax <= 0) return
+
+      const clamped = Math.max(
+        TERMINAL_LINE_MIN_LENGTH,
+        Math.min(TERMINAL_LINE_MAX_LENGTH_CAP, computedMax)
+      )
+
+      if (clamped !== terminalLineMaxLengthRef.current) {
+        setTerminalLineMaxLength(clamped)
+      }
+    }
+
+    measure()
+
+    const observer = new ResizeObserver(() => measure())
+    const feed = terminalRef.current?.querySelector('ul')
+    if (feed) observer.observe(feed)
+    window.addEventListener('resize', measure)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [viewState])
 
   if (!cadenceRef.current) {
     cadenceRef.current = {
@@ -5432,7 +5633,7 @@ function GhostnetTerminalOverlay () {
 
   const pushTerminalLine = useCallback((line = {}) => {
     const { seed, ...payload } = line || {}
-    const entries = createTerminalLineEntries(seed, payload)
+    const entries = createTerminalLineEntries(seed, payload, terminalLineMaxLengthRef.current)
     if (!entries.length) return
 
     setTerminalLines(previous => {
@@ -5501,7 +5702,7 @@ function GhostnetTerminalOverlay () {
           type: messageType,
           label: messageLabel,
           text: message || CREDIT_CELEBRATION_MESSAGE
-        })
+        }, terminalLineMaxLengthRef.current)
         let next = [...previous, ...messageLines]
         if (next.length > TERMINAL_BUFFER) {
           next = next.slice(next.length - TERMINAL_BUFFER)
@@ -5792,7 +5993,7 @@ function GhostnetTerminalOverlay () {
       if (!state.menaceCooldown || state.menaceCooldown <= 0) {
         const menaceLines = generateMenaceLines(tokenState.balance)
         menaceLines.forEach(base => {
-          lines.push(...createTerminalLineEntries('menace', base))
+          lines.push(...createTerminalLineEntries('menace', base, terminalLineMaxLengthRef.current))
         })
         state.menaceCooldown = randomInteger(12, 24)
       } else {
@@ -5804,7 +6005,7 @@ function GhostnetTerminalOverlay () {
 
     const pushLine = base => {
       if (!base) return
-      lines.push(...createTerminalLineEntries('', base))
+      lines.push(...createTerminalLineEntries('', base, terminalLineMaxLengthRef.current))
     }
 
     const buildFloodLine = () => ({
