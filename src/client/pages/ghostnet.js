@@ -3161,208 +3161,220 @@ function CargoHoldPanel () {
                 ) : null}
 
                 {status === 'ready' && hasCargo && hasDisplayableRows && (
-                  <div className={styles.dataTableContainer} ref={tableContainerRef}>
-                    <table className={`${styles.dataTable} ${styles.dataTableDense}`}>
-                      <thead>
-                        <tr>
-                          <th>Commodity</th>
-                          <th className='text-right'>Qty</th>
-                          <th>Local Data</th>
-                          <th>GHOSTNET Max</th>
-                          <th className='text-right'>Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                  <div className={styles.commodityGridWrapper} ref={tableContainerRef}>
+                    <div className={styles.commodityGrid}>
                         {commodityRows.map((row, index) => {
-                    const {
-                      item,
-                      entry,
-                      quantity,
-                      ghostnetPrice,
-                      localBestEntry,
-                      localBestSource,
-                      historyEntries,
-                      marketEntry,
-                      bestValue,
-                      bestSource,
-                      ghostnetValue,
-                      localValue,
-                      ghostnetEntry
-                    } = row
+                          const {
+                            item,
+                            entry,
+                            quantity,
+                            ghostnetPrice,
+                            localBestEntry,
+                            localBestSource,
+                            historyEntries,
+                            marketEntry,
+                            bestValue,
+                            bestSource,
+                            ghostnetValue,
+                            localValue,
+                            ghostnetEntry
+                          } = row
 
-                    const ghostnetContextEntry = ghostnetEntry || entry?.ghostnet || null
-                    const ghostnetStation = sanitizeInaraText(ghostnetContextEntry?.stationName) || ghostnetContextEntry?.stationName || ''
-                    const ghostnetSystem = sanitizeInaraText(ghostnetContextEntry?.systemName) || ghostnetContextEntry?.systemName || ''
-                    const ghostnetDemand = sanitizeInaraText(ghostnetContextEntry?.demandText) || (typeof ghostnetContextEntry?.demand === 'number' ? ghostnetContextEntry.demand.toLocaleString() : '')
-                    const ghostnetDemandIndicator = (ghostnetContextEntry?.demandText || ghostnetDemand)
-                      ? (
-                        <DemandIndicator
-                          label={ghostnetContextEntry?.demandText || ghostnetDemand}
-                          fallbackLabel={ghostnetDemand}
-                          isLow={Boolean(ghostnetContextEntry?.demandIsLow)}
-                          subtle
-                        />
-                        )
-                      : null
-                    const ghostnetUpdatedText = sanitizeInaraText(ghostnetContextEntry?.updatedText) || ghostnetContextEntry?.updatedText || ''
-                    const ghostnetUpdated = ghostnetContextEntry?.updatedAt
-                      ? formatRelativeTime(ghostnetContextEntry.updatedAt)
-                      : ghostnetUpdatedText
-                    const ghostnetPriceDisplay = typeof ghostnetPrice === 'number' ? formatCredits(ghostnetPrice, '--') : '--'
-                    const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
+                          const ghostnetContextEntry = ghostnetEntry || entry?.ghostnet || null
+                          const ghostnetStation = sanitizeInaraText(ghostnetContextEntry?.stationName) || ghostnetContextEntry?.stationName || ''
+                          const ghostnetSystem = sanitizeInaraText(ghostnetContextEntry?.systemName) || ghostnetContextEntry?.systemName || ''
+                          const ghostnetDemand = sanitizeInaraText(ghostnetContextEntry?.demandText) || (typeof ghostnetContextEntry?.demand === 'number' ? ghostnetContextEntry.demand.toLocaleString() : '')
+                          const ghostnetDemandIndicator = (ghostnetContextEntry?.demandText || ghostnetDemand)
+                            ? (
+                              <DemandIndicator
+                                label={ghostnetContextEntry?.demandText || ghostnetDemand}
+                                fallbackLabel={ghostnetDemand}
+                                isLow={Boolean(ghostnetContextEntry?.demandIsLow)}
+                                subtle
+                              />
+                              )
+                            : null
+                          const ghostnetUpdatedText = sanitizeInaraText(ghostnetContextEntry?.updatedText) || ghostnetContextEntry?.updatedText || ''
+                          const ghostnetUpdated = ghostnetContextEntry?.updatedAt
+                            ? formatRelativeTime(ghostnetContextEntry.updatedAt)
+                            : ghostnetUpdatedText
+                          const ghostnetPriceDisplay = typeof ghostnetPrice === 'number' ? formatCredits(ghostnetPrice, '--') : '--'
+                          const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
 
-                    const localEntriesForDisplay = []
-                    if (localBestEntry) {
-                      localEntriesForDisplay.push({
-                        label: localBestSource === 'local-history' ? 'Best local' : 'Current station',
-                        entry: localBestEntry,
-                        highlight: true,
-                        source: localBestSource === 'local-history' ? 'history' : 'station'
-                      })
-                    }
+                          const localEntriesForDisplay = []
+                          if (localBestEntry) {
+                            localEntriesForDisplay.push({
+                              label: localBestSource === 'local-history' ? 'Best local' : 'Current station',
+                              entry: localBestEntry,
+                              highlight: true,
+                              source: localBestSource === 'local-history' ? 'history' : 'station'
+                            })
+                          }
 
-                    if (marketEntry && (!localBestEntry || !isSameMarketEntry(marketEntry, localBestEntry))) {
-                      localEntriesForDisplay.push({
-                        label: 'Current station',
-                        entry: marketEntry,
-                        source: 'station'
-                      })
-                    }
+                          if (marketEntry && (!localBestEntry || !isSameMarketEntry(marketEntry, localBestEntry))) {
+                            localEntriesForDisplay.push({
+                              label: 'Current station',
+                              entry: marketEntry,
+                              source: 'station'
+                            })
+                          }
 
-                    const remainingHistoryEntries = historyEntries.filter(historyEntry => {
-                      if (!historyEntry) return false
-                      if (localBestEntry && isSameMarketEntry(historyEntry, localBestEntry)) return false
-                      if (marketEntry && isSameMarketEntry(historyEntry, marketEntry)) return false
-                      return true
-                    })
+                          const remainingHistoryEntries = historyEntries.filter(historyEntry => {
+                            if (!historyEntry) return false
+                            if (localBestEntry && isSameMarketEntry(historyEntry, localBestEntry)) return false
+                            if (marketEntry && isSameMarketEntry(historyEntry, marketEntry)) return false
+                            return true
+                          })
 
-                    const displayedHistoryEntries = remainingHistoryEntries.slice(0, 2)
-                    displayedHistoryEntries.forEach(entryData => {
-                      localEntriesForDisplay.push({
-                        label: 'Nearby data',
-                        entry: entryData,
-                        source: 'history'
-                      })
-                    })
+                          const displayedHistoryEntries = remainingHistoryEntries.slice(0, 2)
+                          displayedHistoryEntries.forEach(entryData => {
+                            localEntriesForDisplay.push({
+                              label: 'Nearby data',
+                              entry: entryData,
+                              source: 'history'
+                            })
+                          })
 
-                    const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
+                          const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
 
-                    const isContextRow = commodityContext?.commodityKey === row.key
-                    const contextSummary = isContextRow ? commodityContext : null
-                    const contextDistance = contextSummary ? formatStationDistance(contextSummary.distanceLs, contextSummary.distanceLsText) : ''
-                    const contextSystemDistance = contextSummary ? formatSystemDistance(contextSummary.distanceLy, contextSummary.distanceLyText) : ''
-                    const rowClassNames = [styles.tableRowInteractive]
-                    if (isContextRow) rowClassNames.push(styles.tableRowContext)
+                          const isContextRow = commodityContext?.commodityKey === row.key
+                          const contextSummary = isContextRow ? commodityContext : null
+                          const contextDistance = contextSummary ? formatStationDistance(contextSummary.distanceLs, contextSummary.distanceLsText) : ''
+                          const contextSystemDistance = contextSummary ? formatSystemDistance(contextSummary.distanceLy, contextSummary.distanceLyText) : ''
+                          const cardClassNames = [styles.commodityCard]
+                          if (isContextRow) cardClassNames.push(styles.commodityCardActive)
 
-                    const handleRowKeyDown = event => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
-                        handleOpenCommodityDetail(row)
-                      }
-                    }
+                          const handleRowKeyDown = event => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault()
+                              handleOpenCommodityDetail(row)
+                            }
+                          }
 
-                    return (
-                      <tr
-                        key={`${row.key}-${index}`}
-                        className={rowClassNames.join(' ')}
-                        data-ghostnet-table-row='pending'
-                        onClick={() => handleOpenCommodityDetail(row)}
-                        onKeyDown={handleRowKeyDown}
-                        tabIndex={0}
-                        role='button'
-                        aria-label={`Open ${(item?.name || item?.symbol || 'commodity')} detail`}
-                      >
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div className={styles.commodityCell}>
-                            <div className={styles.commodityCellIcon}>
-                              <CommodityIcon category={item?.category} size={22} />
-                            </div>
-                            <div className={styles.commodityCellText}>
-                              <div className={styles.commodityCellTitle}>{item?.name || item?.symbol || 'Unknown'}</div>
-                              {item?.symbol && item?.symbol !== item?.name && (
-                                <div className={styles.tableSubtext}>{item.symbol}</div>
-                              )}
-                              {entry?.errors?.ghostnet && !entry?.ghostnet && (
-                                <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
-                              )}
-                              {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
-                                <div className={styles.tableWarning}>{entry.errors.market}</div>
-                              )}
-                              {isContextRow && contextSummary?.stationName && (
-                                <div className={styles.tableContextIndicator}>
-                                  <span className={styles.tableContextLabel}>Station Context</span>
-                                  <span className={styles.tableContextValue}>
-                                    {contextSummary.stationName}
-                                    {contextSummary.systemName ? ` · ${contextSummary.systemName}` : ''}
-                                  </span>
-                                  {(contextSystemDistance || contextDistance) && (
-                                    <span className={styles.tableContextFootnote}>
-                                      {[contextSystemDistance, contextDistance].filter(Boolean).join(' / ')}
-                                    </span>
+                          return (
+                            <div
+                              key={`${row.key}-${index}`}
+                              className={cardClassNames.join(' ')}
+                              data-ghostnet-table-row='pending'
+                              style={{ '--ghostnet-row-delay': `${index * 0.03}s` }}
+                              onClick={() => handleOpenCommodityDetail(row)}
+                              onKeyDown={handleRowKeyDown}
+                              tabIndex={0}
+                              role='button'
+                              aria-label={`Open ${(item?.name || item?.symbol || 'commodity')} detail`}
+                            >
+                              <div className={styles.commodityCardHeader}>
+                                <div className={styles.commodityCardIdentity}>
+                                  <div className={styles.commodityCell}>
+                                    <div className={styles.commodityCellIcon}>
+                                      <CommodityIcon category={item?.category} size={22} />
+                                    </div>
+                                    <div className={styles.commodityCellText}>
+                                      <div className={styles.commodityCellTitle}>{item?.name || item?.symbol || 'Unknown'}</div>
+                                      {item?.symbol && item?.symbol !== item?.name && (
+                                        <div className={styles.tableSubtext}>{item.symbol}</div>
+                                      )}
+                                      {entry?.errors?.ghostnet && !entry?.ghostnet && (
+                                        <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
+                                      )}
+                                      {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
+                                        <div className={styles.tableWarning}>{entry.errors.market}</div>
+                                      )}
+                                      {isContextRow && contextSummary?.stationName && (
+                                        <div className={styles.tableContextIndicator}>
+                                          <span className={styles.tableContextLabel}>Station Context</span>
+                                          <span className={styles.tableContextValue}>
+                                            {contextSummary.stationName}
+                                            {contextSummary.systemName ? ` · ${contextSummary.systemName}` : ''}
+                                          </span>
+                                          {(contextSystemDistance || contextDistance) && (
+                                            <span className={styles.tableContextFootnote}>
+                                              {[contextSystemDistance, contextDistance].filter(Boolean).join(' / ')}
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className={styles.commodityCardStat}>
+                                  <span className={styles.commodityMetricLabel}>Quantity</span>
+                                  <span className={styles.commodityMetricValue}>{quantity.toLocaleString()} t</span>
+                                </div>
+                              </div>
+                              <div className={styles.commodityCardGrid}>
+                                <div className={`${styles.commodityMetric} ${styles.commodityMetricStack}`}>
+                                  <span className={styles.commodityMetricLabel}>Local Market Intel</span>
+                                  <div className={styles.commodityMetricBody}>
+                                    {localEntriesForDisplay.length > 0
+                                      ? localEntriesForDisplay.map((entryInfo, entryIndex) => renderLocalEntry(entryInfo.label, entryInfo.entry, {
+                                          highlight: entryInfo.highlight,
+                                          source: entryInfo.source,
+                                          index: entryIndex
+                                        }))
+                                      : <div className={styles.tableMetaMuted}>--</div>}
+                                    {remainingCount > 0 && (
+                                      <div className={styles.tableMutedNote}>+ {remainingCount} more recorded markets</div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className={`${styles.commodityMetric} ${styles.commodityMetricStack}`}>
+                                  <span className={styles.commodityMetricLabel}>GHOSTNET Insight</span>
+                                  <div className={styles.commodityMetricBody}>
+                                    <div className={styles.commodityMetricValue}>{ghostnetPriceDisplay}</div>
+                                    {ghostnetStation && (
+                                      <div className={styles.tableSubtext}>
+                                        {ghostnetStation}
+                                        {ghostnetSystem ? ` · ${ghostnetSystem}` : ''}
+                                      </div>
+                                    )}
+                                    {ghostnetDemand && (
+                                      <div className={styles.tableMetaMuted}>
+                                        Demand: {ghostnetDemandIndicator || ghostnetDemand}
+                                      </div>
+                                    )}
+                                    {ghostnetUpdated && (
+                                      <div className={styles.tableMetaMuted}>Updated {ghostnetUpdated}</div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className={styles.commodityMetric}>
+                                  <span className={styles.commodityMetricLabel}>Hold Value</span>
+                                  <div className={styles.commodityMetricValue}>
+                                    {bestValueDisplay}
+                                    {renderSourceBadge(bestSource)}
+                                  </div>
+                                  {typeof localValue === 'number' && typeof ghostnetValue === 'number' && Math.abs(localValue - ghostnetValue) > 0.01 && (
+                                    <div className={styles.tableMetaMuted}>
+                                      GHOSTNET {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
+                                    </div>
                                   )}
                                 </div>
-                              )}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{quantity.toLocaleString()}</td>
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          {localEntriesForDisplay.length > 0
-                            ? localEntriesForDisplay.map((entryInfo, entryIndex) => renderLocalEntry(entryInfo.label, entryInfo.entry, {
-                                highlight: entryInfo.highlight,
-                                source: entryInfo.source,
-                                index: entryIndex
-                              }))
-                            : <div>--</div>}
-                          {remainingCount > 0 && (
-                            <div className={styles.tableMutedNote}>+ {remainingCount} more recorded markets</div>
-                          )}
-                        </td>
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div>{ghostnetPriceDisplay}</div>
-                          {ghostnetStation && (
-                            <div className={styles.tableSubtext}>
-                              {ghostnetStation}
-                              {ghostnetSystem ? ` · ${ghostnetSystem}` : ''}
-                            </div>
-                          )}
-                          {ghostnetDemand && (
-                            <div className={styles.tableMetaMuted}>
-                              Demand: {ghostnetDemandIndicator || ghostnetDemand}
-                            </div>
-                          )}
-                          {ghostnetUpdated && (
-                            <div className={styles.tableMetaMuted}>Updated {ghostnetUpdated}</div>
-                          )}
-                        </td>
-                        <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
-                          {typeof localValue === 'number' && typeof ghostnetValue === 'number' && Math.abs(localValue - ghostnetValue) > 0.01 && (
-                            <div className={styles.tableMetaMuted}>
-                              GHOSTNET {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                        {nonCommodityRows.map((row, index) => {
-                          const animationDelay = (commodityRows.length + index) * 0.03
-                          const quantityDisplay = Number(row.quantity) || 0
-                          return (
-                            <tr key={`${row.key}-non-${index}`} className={styles.nonCommodityRow} style={{ animationDelay: `${animationDelay}s` }}>
-                              <td colSpan={5}>
-                                <div className={styles.nonCommodityRowContent}>
-                                  <span className={styles.nonCommodityLabel}>{row.item?.name || row.item?.symbol || 'Unknown'}</span>
-                                  <span className={styles.nonCommodityTag}>Not a Commodity</span>
-                                  <span className={styles.nonCommodityQuantity}>{quantityDisplay.toLocaleString()} in cargo</span>
-                                </div>
-                              </td>
-                            </tr>
                           )
                         })}
-                      </tbody>
-                    </table>
+                    </div>
+                    {nonCommodityRows.length > 0 && (
+                      <div className={styles.nonCommodityList}>
+                        {nonCommodityRows.map((row, index) => {
+                          const quantityDisplay = Number(row.quantity) || 0
+                          const rowDelay = (commodityRows.length + index) * 0.03
+                          return (
+                            <div
+                              key={`${row.key}-non-${index}`}
+                              className={styles.nonCommodityCard}
+                              data-ghostnet-table-row='pending'
+                              style={{ '--ghostnet-row-delay': `${rowDelay}s` }}
+                            >
+                              <span className={styles.nonCommodityLabel}>{row.item?.name || row.item?.symbol || 'Unknown'}</span>
+                              <span className={styles.nonCommodityTag}>Not a Commodity</span>
+                              <span className={styles.nonCommodityQuantity}>{quantityDisplay.toLocaleString()} in cargo</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
