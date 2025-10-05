@@ -321,7 +321,7 @@
 
 .terminalHeader {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   gap: 1.5rem;
   padding: 1rem 1.5rem 0.75rem 1.5rem;
@@ -349,6 +349,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
+  justify-content: center;
 }
 
 .terminalHeaderCenter {
@@ -358,6 +359,7 @@
 
 .terminalHeaderRight {
   justify-content: flex-end;
+  align-items: stretch;
 }
 
 .terminalHeaderCompressed {
@@ -373,6 +375,7 @@
   align-items: center;
   gap: 0.75rem;
   min-width: 0;
+  justify-content: center;
 }
 
 .terminalHeaderCompressed .terminalHeaderCenter {
@@ -393,28 +396,31 @@
 
 .terminalWindowControls {
   display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.15rem 0;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 0.35rem;
+  padding: 0;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid color-mix(in srgb, var(--ghostnet-color-text-strong) 16%, transparent);
   border-radius: 6px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  min-height: clamp(2.4rem, 2rem + 0.8vw, 3rem);
 }
 
 .terminalHeaderCompressed .terminalWindowControls {
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .terminalWindowControl {
-  width: 1.8rem;
-  height: 1.4rem;
-  border-radius: 4px;
+  height: 100%;
+  aspect-ratio: 36 / 28;
+  min-height: clamp(2.2rem, 1.8rem + 0.8vw, 2.85rem);
+  border-radius: 6px;
   border: 1px solid color-mix(in srgb, var(--ghostnet-color-text-strong) 18%, transparent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: clamp(0.85rem, 0.75rem + 0.25vw, 1.25rem);
   line-height: 1;
   color: var(--ghostnet-color-text-strong);
   background: linear-gradient(180deg, rgba(24, 24, 32, 0.92) 0%, rgba(8, 8, 12, 0.98) 100%);
@@ -427,7 +433,7 @@
   pointer-events: none;
 }
 
-button.terminalWindowControl:hover,
+button.terminalWindowControl:not(:disabled):hover,
 button.terminalWindowControl:focus-visible {
   transform: translateY(-1px);
   background: linear-gradient(180deg, rgba(36, 36, 48, 0.96) 0%, rgba(12, 12, 18, 0.98) 100%);
@@ -439,9 +445,16 @@ button.terminalWindowControl:focus-visible {
   outline-offset: 2px;
 }
 
-button.terminalWindowControl:active {
+button.terminalWindowControl:not(:disabled):active {
   transform: translateY(1px);
   background: linear-gradient(180deg, rgba(14, 14, 22, 0.96) 0%, rgba(4, 4, 10, 0.98) 100%);
+}
+
+button.terminalWindowControl:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
 }
 
 .terminalWindowControlMinimize {
@@ -450,7 +463,7 @@ button.terminalWindowControl:active {
   color: color-mix(in srgb, var(--ghostnet-color-warning) 86%, transparent);
 }
 
-button.terminalWindowControlMinimize:hover,
+button.terminalWindowControlMinimize:not(:disabled):hover,
 button.terminalWindowControlMinimize:focus-visible {
   background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-warning) 32%, transparent) 0%, rgba(24, 24, 32, 0.98) 100%);
 }
@@ -461,7 +474,7 @@ button.terminalWindowControlMinimize:focus-visible {
   color: color-mix(in srgb, var(--ghostnet-color-success) 82%, transparent);
 }
 
-button.terminalWindowControlMaximize:hover,
+button.terminalWindowControlMaximize:not(:disabled):hover,
 button.terminalWindowControlMaximize:focus-visible {
   background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-success) 38%, transparent) 0%, rgba(26, 30, 34, 0.98) 100%);
 }
@@ -472,9 +485,24 @@ button.terminalWindowControlMaximize:focus-visible {
   color: color-mix(in srgb, var(--ghostnet-color-primary) 88%, transparent);
 }
 
-button.terminalWindowControlClose:hover,
+button.terminalWindowControlClose:not(:disabled):hover,
 button.terminalWindowControlClose:focus-visible {
   background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent) 0%, rgba(30, 20, 44, 0.98) 100%);
+}
+
+.terminalWindowControlToken {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-primary) 60%, transparent) 0%, rgba(26, 18, 44, 0.98) 100%);
+  border-color: color-mix(in srgb, var(--ghostnet-color-primary) 44%, transparent);
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 94%, transparent);
+}
+
+button.terminalWindowControlToken:not(:disabled):hover,
+button.terminalWindowControlToken:focus-visible {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-primary) 72%, transparent) 0%, rgba(32, 22, 52, 0.98) 100%);
+}
+
+button.terminalWindowControlToken:not(:disabled):active {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-primary-dark) 68%, transparent) 0%, rgba(18, 12, 32, 0.98) 100%);
 }
 
 .terminalStatusPreview {
@@ -546,6 +574,7 @@ button.terminalStatusPreview:focus-visible {
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
   flex-wrap: nowrap;
   min-width: 0;
+  min-height: clamp(2.2rem, 1.8rem + 0.8vw, 2.85rem);
 }
 
 .terminalTokenLabel {
@@ -581,41 +610,12 @@ button.terminalStatusPreview:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 0;
-  border: 1px solid var(--ghostnet-border-strong);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 68%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 46%, transparent));
-  color: var(--ghostnet-color-text-strong);
-  font-size: 1.1rem;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
-  box-shadow: 0 0 0 transparent;
-}
-
-button.terminalTokenButton:hover:not([disabled]),
-button.terminalTokenButton:focus-visible:not([disabled]) {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 84%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 58%, transparent));
-  transform: translateY(-1px);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
-}
-
-button.terminalTokenButton:focus-visible:not([disabled]) {
-  outline: 2px solid color-mix(in srgb, var(--ghostnet-color-primary-light) 90%, transparent);
-  outline-offset: 3px;
-}
-
-button.terminalTokenButton:active:not([disabled]) {
-  transform: translateY(1px);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary-dark) 72%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent));
-  box-shadow: 0 0 10px color-mix(in srgb, var(--ghostnet-color-primary-dark) 40%, transparent);
-}
-
-button.terminalTokenButton:disabled {
-  opacity: 0.62;
-  cursor: not-allowed;
-  box-shadow: none;
+  font-size: clamp(0.95rem, 0.82rem + 0.3vw, 1.3rem);
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  text-transform: uppercase;
+  height: 100%;
+  align-self: stretch;
 }
 
 .terminalTokenMeta {

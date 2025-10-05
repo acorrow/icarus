@@ -6251,7 +6251,7 @@ function GhostnetTerminalOverlay () {
               </span>
               <button
                 type='button'
-                className={styles.terminalTokenButton}
+                className={[styles.terminalTokenButton, styles.terminalWindowControl, styles.terminalWindowControlToken].join(' ')}
                 onClick={handleAddTokens}
                 disabled={tokenButtonDisabled}
                 aria-label='Trigger a simulated jackpot payout'
