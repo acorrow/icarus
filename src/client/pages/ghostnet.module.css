@@ -1456,18 +1456,227 @@ button.terminalTokenButton:disabled {
 }
 
 .tradeRoutesTable {
-  min-width: 760px;
+  min-width: 980px;
 }
 
 .tradeRoutesTable td {
-  white-space: normal;
-  padding: 1.1rem 1.15rem;
+  white-space: nowrap;
+  padding: 1.35rem 1.15rem;
+  overflow: hidden;
 }
 
 .tradeRoutesStationCell,
 .tradeRoutesItemCell,
 .tradeRoutesShipCell {
   min-width: 0;
+}
+
+.tradeRouteStationGrid {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.tradeRouteStationRow {
+  display: grid;
+  grid-template-columns: minmax(2.2rem, auto) minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.tradeRouteStationRowSecondary {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.tradeRouteStationIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--ghostnet-accent);
+}
+
+.tradeRouteStationName {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.tradeRouteStationSystem {
+  font-size: 0.92rem;
+  color: var(--ghostnet-muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.tradeRouteStationMetric {
+  font-size: 0.82rem;
+  color: var(--ghostnet-text-soft);
+  white-space: nowrap;
+  justify-self: end;
+}
+
+.tradeRouteStationReputation {
+  font-size: 0.85rem;
+  font-weight: 600;
+  justify-self: center;
+  white-space: nowrap;
+}
+
+.tradeRouteCommodityGrid {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.tradeRouteCommodityRow {
+  display: grid;
+  grid-template-columns: minmax(1.6rem, auto) minmax(2.2rem, auto) minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1.15fr) minmax(1.6rem, auto);
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  position: relative;
+}
+
+.tradeRouteCommodityRowReturn .tradeRouteCommodityArrow {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.tradeRouteCommodityRowReturn .tradeRouteCommodityIcon {
+  grid-column: 2;
+}
+
+.tradeRouteCommodityRowReturn .tradeRouteCommodityName {
+  grid-column: 3;
+}
+
+.tradeRouteCommodityRowReturn .tradeRouteCommodityPrice {
+  grid-column: 4;
+}
+
+.tradeRouteCommodityRowReturn .tradeRouteCommodityDemand {
+  grid-column: 5;
+}
+
+.tradeRouteCommodityIcon {
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ghostnet-accent);
+  justify-self: center;
+}
+
+.tradeRouteCommodityName {
+  grid-column: 3;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.tradeRouteCommodityPrice {
+  grid-column: 4;
+  color: var(--ghostnet-text-soft);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  justify-self: end;
+}
+
+.tradeRouteCommodityDemand {
+  grid-column: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--ghostnet-text-soft);
+  gap: 0.35rem;
+  white-space: nowrap;
+  justify-self: end;
+}
+
+.tradeRouteCommodityArrow {
+  grid-column: 6;
+  font-size: 1.2rem;
+  color: var(--ghostnet-text-soft);
+  justify-self: end;
+}
+
+.tradeRouteCommodityRowReturn .tradeRouteCommodityArrow {
+  justify-self: start;
+}
+
+.tradeRoutePlaceholder {
+  color: var(--ghostnet-text-soft);
+  opacity: 0.65;
+}
+
+.tradeRouteProfitGrid {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.tradeRouteProfitRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.tradeRouteProfitMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.tradeRouteProfitLabel {
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ghostnet-text-soft);
+}
+
+.tradeRouteProfitValue {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  white-space: nowrap;
+}
+
+@media (max-width: 1440px) {
+  .tradeRouteHideMedium {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .tradeRouteHideCompact {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1120px) {
+  .tradeRouteHideNarrow {
+    display: none !important;
+  }
+}
+
+.visuallyHidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .tradeRoutesHeader {
