@@ -1442,9 +1442,15 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRoutesTable {
+  --trade-route-caret-column-width: 2.75rem;
+  --trade-route-station-column-width: 18.5rem;
+  --trade-route-profit-column-width: 15rem;
+  --trade-route-commodity-min-width: 18rem;
   min-width: 980px;
+  width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: fixed;
 }
 
 .tradeRoutesTable th,
@@ -1452,6 +1458,63 @@ button.terminalStatusPreview:focus-visible {
   white-space: nowrap;
   padding: 0.95rem 1rem;
   overflow: hidden;
+}
+
+.tradeRoutesTable th:first-child,
+.tradeRoutesTable td:first-child {
+  width: var(--trade-route-caret-column-width);
+  min-width: var(--trade-route-caret-column-width);
+}
+
+.tradeRoutesTable th:nth-child(2),
+.tradeRoutesTable td:nth-child(2),
+.tradeRoutesTable th:nth-child(4),
+.tradeRoutesTable td:nth-child(4) {
+  width: var(--trade-route-station-column-width);
+  min-width: var(--trade-route-station-column-width);
+}
+
+.tradeRoutesTable th:nth-child(3),
+.tradeRoutesTable td:nth-child(3),
+.tradeRoutesItemCell {
+  width: auto;
+  min-width: var(--trade-route-commodity-min-width);
+}
+
+.tradeRoutesTable th:nth-child(5),
+.tradeRoutesTable td:nth-child(5) {
+  width: var(--trade-route-profit-column-width);
+  min-width: var(--trade-route-profit-column-width);
+}
+
+@media (max-width: 1680px) {
+  .tradeRoutesTable {
+    --trade-route-station-column-width: 17.25rem;
+    --trade-route-profit-column-width: 14.25rem;
+  }
+}
+
+@media (max-width: 1480px) {
+  .tradeRoutesTable {
+    --trade-route-station-column-width: 16rem;
+    --trade-route-profit-column-width: 13.5rem;
+  }
+}
+
+@media (max-width: 1320px) {
+  .tradeRoutesTable {
+    --trade-route-station-column-width: 15rem;
+    --trade-route-profit-column-width: 12.75rem;
+    --trade-route-commodity-min-width: 16.5rem;
+  }
+}
+
+@media (max-width: 1180px) {
+  .tradeRoutesTable {
+    --trade-route-station-column-width: 14rem;
+    --trade-route-profit-column-width: 12rem;
+    --trade-route-commodity-min-width: 15.5rem;
+  }
 }
 
 .tradeRoutesTable thead th {
@@ -1671,12 +1734,6 @@ button.terminalStatusPreview:focus-visible {
   justify-content: flex-end;
 }
 
-.tradeRoutesTable th:nth-child(3),
-.tradeRoutesTable td:nth-child(3),
-.tradeRoutesItemCell {
-  width: clamp(15rem, 24vw, 19rem);
-}
-
 .tradeRouteCommodityGrid {
   display: grid;
   gap: 0.45rem;
@@ -1685,7 +1742,7 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteCommodityRow {
   display: grid;
-  grid-template-columns: minmax(2.1rem, auto) minmax(0, max-content) max-content max-content;
+  grid-template-columns: minmax(2.1rem, auto) minmax(0, 1fr) max-content max-content;
   align-items: center;
   gap: 0.35rem;
   min-width: 0;
@@ -1760,7 +1817,9 @@ button.terminalStatusPreview:focus-visible {
   color: var(--ghostnet-ink);
   white-space: nowrap;
   overflow: hidden;
-  max-width: 12.5rem;
+  min-width: 0;
+  max-width: none;
+  text-overflow: ellipsis;
 }
 
 .tradeRouteCommodityPrice {
