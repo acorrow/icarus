@@ -11,7 +11,6 @@ const { TOKEN_REWARD_VALUES } = require('../../shared/token-config')
 const { isGhostnetTokenCurrencyEnabled } = require('../../shared/feature-flags')
 
 const InaraClient = require('./inara-client')
-const PirateRadioManager = require('./pirate-radio')
 const tokenLedger = global.TOKEN_LEDGER
 const TOKEN_BROADCAST_EVENT = 'ghostnetTokensUpdated'
 const JACKPOT_BASE_MIN = 2500
@@ -103,9 +102,6 @@ class EventHandlers {
     this.inaraSimulationQueue = []
     this.inaraClient = new InaraClient()
 
-    this.pirateRadio = new PirateRadioManager({ broadcast: broadcastEvent })
-    global.PIRATE_RADIO_MANAGER = this.pirateRadio
-
     return this
   }
 
@@ -154,25 +150,6 @@ class EventHandlers {
           fs.writeFileSync(PREFERENCES_FILE, JSON.stringify(preferences))
           broadcastEvent('syncMessage', { name: 'preferences' })
           return preferences
-        },
-        getPirateRadioPlaylist: async () => this.pirateRadio.getState(),
-        rescanPirateRadio: async () => {
-          await this.pirateRadio.rescan()
-          return this.pirateRadio.getState()
-        },
-        setPirateRadioDirectories: async ({ library, commercial } = {}) => {
-          const updates = []
-          if (library !== undefined) {
-            updates.push(this.pirateRadio.updateDirectory('library', library))
-          }
-          if (commercial !== undefined) {
-            updates.push(this.pirateRadio.updateDirectory('commercial', commercial))
-          }
-          if (updates.length === 0) {
-            return this.pirateRadio.getState()
-          }
-          await Promise.all(updates)
-          return this.pirateRadio.getState()
         },
         getVoices: () => this.textToSpeech.getVoices(),
         getTokenBalance: async () => {
