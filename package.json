@@ -94,5 +94,8 @@
     "moduleNameMapper": {
       "\\.(css|less|scss|sass)$": "identity-obj-proxy"
     }
+  },
+  "optionalDependencies": {
+    "@next/swc-linux-x64-gnu": "^12.3.4"
   }
 }
