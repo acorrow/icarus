@@ -861,7 +861,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 }
 
 .sectionFrame {
-  border-radius: 1.25rem;
+  border-radius: 0;
   background: var(--ghostnet-panel);
   border: 1px solid var(--ghostnet-panel-border);
   box-shadow: 0 1.75rem 3.5rem var(--ghostnet-shadow);
@@ -895,7 +895,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 }
 
 .sectionFrameElevated {
-  border-radius: 1.5rem;
+  border-radius: 0;
   background: var(--ghostnet-panel);
   border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
   box-shadow: 0 1.75rem 4rem color-mix(in srgb, var(--ghostnet-color-background) 85%, transparent);
@@ -1025,7 +1025,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
 .tradeFiltersForm {
   margin-top: 1.5rem;
   padding: 1.5rem 1.75rem;
-  border-radius: 1.25rem;
+  border-radius: 0;
   border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 35%, transparent);
   background: linear-gradient(180deg, color-mix(in srgb, var(--ghostnet-color-background) 96%, transparent) 0%, color-mix(in srgb, var(--ghostnet-color-primary-dark) 16%, transparent) 100%);
   display: flex;
@@ -1523,7 +1523,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   gap: 0.35rem;
   min-width: 160px;
   padding: 0.9rem 1.25rem;
-  border-radius: 1rem;
+  border-radius: 0;
   background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 60%, transparent);
   border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 35%, transparent);
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 78%, transparent);
@@ -1551,7 +1551,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   flex-direction: column;
   gap: 0.4rem;
   padding: 1.15rem 1.35rem;
-  border-radius: 1.1rem;
+  border-radius: 0;
   background: color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent);
   border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
   box-shadow: 0 1.2rem 2.4rem color-mix(in srgb, var(--ghostnet-color-background) 55%, transparent);
@@ -1583,7 +1583,7 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   padding: 1.75rem 1.9rem;
   background: color-mix(in srgb, var(--ghostnet-color-background) 92%, transparent);
   border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
-  border-radius: 1.25rem;
+  border-radius: 0;
   box-shadow: 0 1.45rem 2.8rem color-mix(in srgb, var(--ghostnet-color-background) 55%, transparent);
 }
 
