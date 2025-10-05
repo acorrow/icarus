@@ -1025,6 +1025,21 @@ button.terminalStatusPreview:focus-visible {
   gap: clamp(1.75rem, 3.5vw, 2.5rem);
 }
 
+.tradeRoutesControlsPanel {
+  border-radius: 1.25rem;
+  background: var(--ghostnet-panel);
+  border: 1px solid var(--ghostnet-panel-border);
+  box-shadow: 0 1.75rem 3.5rem var(--ghostnet-shadow);
+  backdrop-filter: blur(12px);
+  padding: clamp(1.75rem, 3vw, 2.25rem) clamp(1.75rem, 3vw, 2.5rem);
+}
+
+.tradeRoutesControls {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+
 .tableSectionHeader {
   display: grid;
   gap: clamp(1.1rem, 3vw, 1.5rem);
@@ -1461,7 +1476,7 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteContext {
-  margin-bottom: 1.75rem;
+  margin: 0;
   padding: 1.25rem clamp(1rem, 4vw, 1.5rem);
   border-radius: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
