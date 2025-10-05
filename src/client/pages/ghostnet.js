@@ -423,11 +423,6 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const originSystemDistanceDisplay = originSystemDistance.display || ''
   const destinationSystemDistanceDisplay = destinationSystemDistance.display || ''
 
-  const originReputationLabel = sanitizeInaraText(originStandingDisplay.statusLabel) || '--'
-  const destinationReputationLabel = sanitizeInaraText(destinationStandingDisplay.statusLabel) || '--'
-  const originReputationDisplay = originReputationLabel === '--' ? '' : originReputationLabel
-  const destinationReputationDisplay = destinationReputationLabel === '--' ? '' : destinationReputationLabel
-
   const outboundInfo = getRouteCommodityInfo(route, 'outbound')
   const returnInfo = getRouteCommodityInfo(route, 'return')
 
@@ -509,9 +504,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
       <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
         <div className={styles.tradeRouteStationGrid}>
           <div className={styles.tradeRouteStationRow}>
-            <span className={styles.tradeRouteStationIcon}>
+            <span
+              className={styles.tradeRouteStationIcon}
+              title={originStandingDisplay.title || undefined}
+            >
               {originIconName
-                ? <StationIcon icon={originIconName} color={originStandingDisplay.color} size={28} />
+                ? <StationIcon icon={originIconName} color={originStandingDisplay.iconColor} size={28} />
                 : null}
             </span>
             <div className={styles.tradeRouteStationContent}>
@@ -532,13 +530,6 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
           </div>
           <div className={`${styles.tradeRouteStationRow} ${styles.tradeRouteStationRowSecondary}`}>
             <span className={styles.tradeRouteStationSystem} title={originSystemName || undefined}>{renderValue(originSystemName)}</span>
-            <div className={styles.tradeRouteStationChips}>
-              {renderMetricChip({
-                value: originReputationDisplay,
-                title: originStandingDisplay.title || 'Faction standing',
-                color: originStandingDisplay.color
-              })}
-            </div>
           </div>
         </div>
       </td>
@@ -575,9 +566,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
       <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
         <div className={styles.tradeRouteStationGrid}>
           <div className={styles.tradeRouteStationRow}>
-            <span className={styles.tradeRouteStationIcon}>
+            <span
+              className={styles.tradeRouteStationIcon}
+              title={destinationStandingDisplay.title || undefined}
+            >
               {destinationIconName
-                ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.color} size={28} />
+                ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.iconColor} size={28} />
                 : null}
             </span>
             <div className={styles.tradeRouteStationContent}>
@@ -598,13 +592,6 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
           </div>
           <div className={`${styles.tradeRouteStationRow} ${styles.tradeRouteStationRowSecondary}`}>
             <span className={styles.tradeRouteStationSystem} title={destinationSystemName || undefined}>{renderValue(destinationSystemName)}</span>
-            <div className={styles.tradeRouteStationChips}>
-              {renderMetricChip({
-                value: destinationReputationDisplay,
-                title: destinationStandingDisplay.title || 'Faction standing',
-                color: destinationStandingDisplay.color
-              })}
-            </div>
           </div>
         </div>
       </td>
@@ -878,7 +865,8 @@ function getFactionStandingDisplay(factionName, standings) {
     statusLabel: null,
     statusDescription: undefined,
     hasData: false,
-    color: '#7f8697'
+    color: '#7f8697',
+    iconColor: '#7f8697'
   }
 
   if (!key || !standings) {
@@ -920,16 +908,16 @@ function getFactionStandingDisplay(factionName, standings) {
 
   const normalizedStanding = typeof info.standing === 'string' ? info.standing.trim().toLowerCase() : ''
   let className = null
-  let color = 'var(--ghostnet-subdued)'
+  let baseColor = 'var(--ghostnet-subdued)'
   if (normalizedStanding === 'ally') {
     className = styles.tableTextSuccess
-    color = '#29f3c3'
+    baseColor = '#29f3c3'
   } else if (normalizedStanding === 'hostile') {
     className = styles.tableTextDanger
-    color = '#ff5fc1'
+    baseColor = '#ff5fc1'
   } else if (normalizedStanding) {
     className = styles.tableTextNeutral
-    color = 'var(--ghostnet-accent)'
+    baseColor = 'var(--ghostnet-accent)'
   }
 
   const reputationLabel = typeof info.reputation === 'number'
@@ -939,6 +927,13 @@ function getFactionStandingDisplay(factionName, standings) {
     .filter(Boolean)
     .join(' · ') || undefined
 
+  const reputationValue = clampReputationValue(info.reputation)
+  if (reputationValue !== null) {
+    baseColor = reputationValue >= 0 ? '#29f3c3' : '#ff5fc1'
+  }
+
+  const iconColor = applyStandingColorIntensity(baseColor, reputationValue)
+
   return {
     info,
     className,
@@ -946,7 +941,49 @@ function getFactionStandingDisplay(factionName, standings) {
     statusLabel,
     statusDescription,
     hasData: true,
-    color
+    color: iconColor,
+    iconColor
+  }
+}
+
+function clampReputationValue(value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return null
+  if (value > 100) return 100
+  if (value < -100) return -100
+  return value
+}
+
+function applyStandingColorIntensity(baseColor, reputationValue) {
+  if (!baseColor) return baseColor
+  if (typeof reputationValue !== 'number') {
+    return baseColor
+  }
+
+  if (!isHexColor(baseColor)) return baseColor
+
+  const { r, g, b } = hexToRgb(baseColor)
+  const intensity = Math.abs(reputationValue) / 100
+  const minAlpha = 0.35
+  const alpha = minAlpha + (1 - minAlpha) * intensity
+  const roundedAlpha = Math.round(alpha * 100) / 100
+
+  return `rgba(${r}, ${g}, ${b}, ${roundedAlpha})`
+}
+
+function isHexColor(value) {
+  return typeof value === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())
+}
+
+function hexToRgb(hex) {
+  const value = hex.trim().replace('#', '')
+  const normalized = value.length === 3
+    ? value.split('').map(char => `${char}${char}`).join('')
+    : value
+  const int = parseInt(normalized, 16)
+  return {
+    r: (int >> 16) & 255,
+    g: (int >> 8) & 255,
+    b: int & 255
   }
 }
 
