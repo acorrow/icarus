@@ -69,6 +69,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         </div>
         {activeSettingsPanel === 'Theme' && <ThemeSettings visible={visible} />}
         {activeSettingsPanel === 'Sounds' && <SoundSettings visible={visible} />}
+        {activeSettingsPanel === 'Feature Flags' && <FeatureFlagSettings />}
         {activeSettingsPanel === 'GHOSTNET' && <GhostnetSettings />}
         <div className='modal-dialog__footer'>
           <hr style={{ margin: '1rem 0 .5rem 0' }} />
@@ -147,6 +148,95 @@ function GhostnetSettings () {
         <button type='submit' style={{ fontSize: '1.1rem' }}>Save</button>
         {saved && <span className='text-success' style={{ marginLeft: '1rem' }}>Saved!</span>}
       </form>
+    </div>
+  )
+}
+
+function FeatureFlagSettings () {
+  const [flags, setFlags] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadFeatureFlags () {
+      setLoading(true)
+      setError(null)
+      try {
+        const response = await fetch('/api/feature-flags')
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`)
+        }
+        const payload = await response.json()
+        if (!cancelled) {
+          setFlags(Array.isArray(payload?.flags) ? payload.flags : [])
+          setLoading(false)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err)
+          setLoading(false)
+        }
+      }
+    }
+
+    loadFeatureFlags()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return (
+    <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
+      <h3 className='text-primary'>Feature Flags</h3>
+      <p className='text-muted'>
+        These values reflect the feature flags resolved by this ICARUS Terminal instance.
+      </p>
+      {loading && <p className='text-muted'>Loading feature flags…</p>}
+      {error && (
+        <p className='text-danger'>
+          Unable to load feature flags. {error.message}
+        </p>
+      )}
+      {!loading && !error && flags.length === 0 && (
+        <p className='text-muted'>No feature flags are currently defined.</p>
+      )}
+      {!loading && !error && flags.length > 0 && (
+        <ul style={{ listStyle: 'none', padding: 0, margin: '1rem 0 0 0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {flags.map(flag => {
+            const statusLabel = flag.value ? 'Enabled' : 'Disabled'
+            const statusClass = flag.value ? 'text-success' : 'text-danger'
+            return (
+              <li
+                key={flag.key}
+                style={{
+                  border: '1px solid rgba(245, 241, 255, 0.16)',
+                  borderRadius: '0.5rem',
+                  padding: '1rem',
+                  background: 'rgba(28, 22, 51, 0.6)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '1rem', flexWrap: 'wrap' }}>
+                  <h4 className='text-primary' style={{ margin: 0 }}>{flag.label}</h4>
+                  <span className={statusClass} style={{ fontWeight: 600 }}>{statusLabel}</span>
+                </div>
+                {flag.description && (
+                  <p className='text-muted' style={{ marginTop: '.5rem', marginBottom: '.75rem' }}>{flag.description}</p>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '.35rem' }}>
+                  <span className='text-muted'>Environment key: <code>{flag.key}</code></span>
+                  <span className='text-muted'>Source: {flag.source}</span>
+                  {typeof flag.defaultValue === 'boolean' && (
+                    <span className='text-muted'>Default: {flag.defaultValue ? 'Enabled' : 'Disabled'}</span>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </div>
   )
 }
