@@ -4068,6 +4068,24 @@ function TradeRoutesPanel () {
         <h2 id='trade-routes-filters-heading' className={styles.tableSectionTitle}>Find Trade Routes</h2>
         <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
       </div>
+      <TradeRouteFilterPanel
+        filters={filters}
+        onFilterChange={setFilterValue}
+        options={filterOptions}
+        cargoCapacityDisplay={cargoCapacityDisplay}
+        selectedSystemName={selectedSystemName}
+        systemSelection={systemSelection}
+        systemInput={systemInput}
+        systemOptions={systemOptions}
+        onSystemChange={handleSystemChange}
+        onManualSystemChange={handleManualSystemChange}
+        filtersCollapsed={filtersCollapsed}
+        onToggleFilters={() => setFiltersCollapsed(prev => !prev)}
+        onSubmit={handleSubmit}
+        isRefreshing={isRefreshing}
+        padSizeAutoDetected={padSizeAutoDetected}
+        initialShipInfoLoaded={initialShipInfoLoaded}
+      />
       <div className={styles.tradeRouteContext} role='group' aria-label='Selected route context'>
         <div className={styles.tradeRouteContextTitleRow}>
           <span className={styles.tradeRouteContextTitle}>Route Context</span>
@@ -4153,24 +4171,6 @@ function TradeRoutesPanel () {
           <div className={styles.tradeRouteContextEmpty}>Select a trade route to populate the context.</div>
         )}
       </div>
-      <TradeRouteFilterPanel
-        filters={filters}
-        onFilterChange={setFilterValue}
-        options={filterOptions}
-        cargoCapacityDisplay={cargoCapacityDisplay}
-        selectedSystemName={selectedSystemName}
-        systemSelection={systemSelection}
-        systemInput={systemInput}
-        systemOptions={systemOptions}
-        onSystemChange={handleSystemChange}
-        onManualSystemChange={handleManualSystemChange}
-        filtersCollapsed={filtersCollapsed}
-        onToggleFilters={() => setFiltersCollapsed(prev => !prev)}
-        onSubmit={handleSubmit}
-        isRefreshing={isRefreshing}
-        padSizeAutoDetected={padSizeAutoDetected}
-        initialShipInfoLoaded={initialShipInfoLoaded}
-      />
       <div className='ghostnet-panel-table'>
         <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
           {message && status !== 'idle' && status !== 'loading' && (
