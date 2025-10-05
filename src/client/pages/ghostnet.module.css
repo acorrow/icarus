@@ -1460,6 +1460,136 @@ button.terminalStatusPreview:focus-visible {
   border-top-right-radius: 0.75rem;
 }
 
+.tradeRouteContext {
+  margin-bottom: 1.75rem;
+  padding: 1.25rem clamp(1rem, 4vw, 1.5rem);
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 32%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-primary-dark) 26%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ghostnet-color-primary) 14%, transparent);
+}
+
+.tradeRouteContextTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tradeRouteContextTitle {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ghostnet-muted);
+}
+
+.tradeRouteContextGrid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.tradeRouteContextItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.tradeRouteContextLabel {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ghostnet-subdued);
+}
+
+.tradeRouteContextValue {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tradeRouteContextIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ghostnet-color-primary) 45%, transparent);
+}
+
+.tradeRouteContextValueText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.tradeRouteContextPrimary {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ghostnet-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tradeRouteContextMeta {
+  font-size: 0.85rem;
+  color: var(--ghostnet-subdued);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tradeRouteContextEmpty {
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+  color: var(--ghostnet-subdued);
+  font-style: italic;
+}
+
+.tradeRouteContextRoute {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 25%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tradeRoutePath {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tradeRoutePathNode {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent);
+  color: var(--ghostnet-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tradeRoutePathNodeCurrent {
+  background: color-mix(in srgb, var(--ghostnet-color-success) 42%, transparent);
+  color: var(--ghostnet-color-background);
+}
+
+.tradeRoutePathSeparator {
+  color: var(--ghostnet-subdued);
+  font-size: 0.9rem;
+}
+
 .tradeRoutesStationCell,
 .tradeRoutesItemCell,
 .tradeRoutesShipCell {
@@ -1879,6 +2009,16 @@ button.terminalStatusPreview:focus-visible {
 
 .tableRowInteractive:hover {
   background: color-mix(in srgb, var(--ghostnet-color-primary) 20%, transparent);
+}
+
+.tableRowSelected {
+  outline: 2px solid color-mix(in srgb, var(--ghostnet-color-primary) 55%, transparent);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent) !important;
+}
+
+.tableRowSelected:hover {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent) !important;
 }
 
 .tableRowExpanded {
