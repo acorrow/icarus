@@ -152,8 +152,10 @@ CommoditySegment.propTypes = {
   ariaLabel: PropTypes.string
 }
 
-function DistanceSegment ({ label, value, secondary }) {
+function DistanceSegment ({ label, value, secondary, valueColor }) {
   if (!label && !value && !secondary) return null
+
+  const valueStyle = valueColor ? { color: valueColor } : undefined
 
   return (
     <div className={`${styles.segment} ${styles.distanceSegment}`}>
@@ -161,8 +163,14 @@ function DistanceSegment ({ label, value, secondary }) {
         {String.fromCharCode(0x279E)}
       </span>
       {label ? <span className={`${styles.metricLabel} ${styles.optionalMedium}`}>{sanitizeText(label)}</span> : null}
-      {value ? <span className={styles.distanceValue}>{sanitizeText(value)}</span> : null}
-      {secondary ? <span className={`${styles.distanceSecondary} ${styles.optionalWide}`}>{sanitizeText(secondary)}</span> : null}
+      {value ? <span className={styles.distanceValue} style={valueStyle}>{sanitizeText(value)}</span> : null}
+      {secondary
+        ? (
+            <span className={`${styles.distanceSecondary} ${styles.optionalWide}`} style={valueStyle}>
+              {sanitizeText(secondary)}
+            </span>
+          )
+        : null}
     </div>
   )
 }
@@ -170,13 +178,15 @@ function DistanceSegment ({ label, value, secondary }) {
 DistanceSegment.defaultProps = {
   label: '',
   value: '',
-  secondary: ''
+  secondary: '',
+  valueColor: ''
 }
 
 DistanceSegment.propTypes = {
   label: PropTypes.string,
   value: PropTypes.string,
-  secondary: PropTypes.string
+  secondary: PropTypes.string,
+  valueColor: PropTypes.string
 }
 
 function ValueSegment ({ icon, label, value, secondary }) {

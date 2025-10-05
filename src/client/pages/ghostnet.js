@@ -13,6 +13,7 @@ import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
 import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/ghostnet-formatters'
+import getDistanceSeverityColor from '../lib/distance-colors'
 import { sanitizeInaraText } from '../lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from '../lib/station-icons'
 import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/ghostnet-mock-data'
@@ -390,7 +391,8 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   onSelect,
   onKeyDown,
   factionStandings,
-  isSelected = false
+  isSelected = false,
+  shipJumpRange = null
 }) {
   const originLocal = route?.origin?.local
   const destinationLocal = route?.destination?.local
@@ -477,9 +479,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
 
   const originStationDistanceVariant = getStationDistanceVariant(originStationDistance.value)
   const destinationStationDistanceVariant = getStationDistanceVariant(destinationStationDistance.value)
-  const originSystemDistanceVariant = getSystemDistanceVariant(originSystemDistance.value)
-  const destinationSystemDistanceVariant = getSystemDistanceVariant(destinationSystemDistance.value)
-  const routeDistanceVariant = getSystemDistanceVariant(routeDistance.value)
+  const originSystemDistanceVariant = getSystemDistanceVariant(originSystemDistance.value, shipJumpRange)
+  const destinationSystemDistanceVariant = getSystemDistanceVariant(destinationSystemDistance.value, shipJumpRange)
+  const routeDistanceVariant = getSystemDistanceVariant(routeDistance.value, shipJumpRange)
+  const originSystemDistanceColor = getDistanceSeverityColor(originSystemDistance.value, shipJumpRange)
+  const destinationSystemDistanceColor = getDistanceSeverityColor(destinationSystemDistance.value, shipJumpRange)
+  const routeDistanceColor = getDistanceSeverityColor(routeDistance.value, shipJumpRange)
 
   const handleClick = () => onSelect(route)
   const handleKeyDown = event => onKeyDown(event, route)
@@ -525,7 +530,8 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                 {renderMetricChip({
                   value: originSystemDistanceDisplay,
                   variant: originSystemDistanceVariant,
-                  title: 'Distance to system'
+                  title: 'Distance to system',
+                  color: originSystemDistanceColor || undefined
                 })}
               </div>
             </div>
@@ -587,7 +593,8 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                 {renderMetricChip({
                   value: destinationSystemDistanceDisplay,
                   variant: destinationSystemDistanceVariant,
-                  title: 'Distance to system'
+                  title: 'Distance to system',
+                  color: destinationSystemDistanceColor || undefined
                 })}
               </div>
             </div>
@@ -623,7 +630,8 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
             {renderMetricChip({
               value: routeDistance.display,
               variant: routeDistanceVariant,
-              title: 'Total route distance'
+              title: 'Total route distance',
+              color: routeDistanceColor || undefined
             })}
             {renderMetricChip({
               value: updatedDisplay,
@@ -1499,10 +1507,17 @@ function getStationDistanceVariant (value) {
   return 'warning'
 }
 
-function getSystemDistanceVariant (value) {
+function getSystemDistanceVariant (value, jumpRange) {
   if (typeof value !== 'number' || Number.isNaN(value)) return 'neutral'
-  if (value <= 15) return 'success'
-  if (value <= 35) return 'caution'
+  if (typeof jumpRange !== 'number' || Number.isNaN(jumpRange) || jumpRange <= 0) {
+    if (value <= 15) return 'success'
+    if (value <= 35) return 'caution'
+    return 'warning'
+  }
+
+  const ratio = value / jumpRange
+  if (ratio <= 1) return 'success'
+  if (ratio <= 2) return 'caution'
   return 'warning'
 }
 
@@ -3012,10 +3027,12 @@ function CargoHoldPanel () {
             detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName ? detail.commoditySymbol : null,
             profitPerUnitDisplay && profitPerUnitDisplay !== '--' ? `Profit/t ${profitPerUnitDisplay}` : null
           ].filter(Boolean)
+          const distanceColor = getDistanceSeverityColor(resolvedListing?.distanceLy ?? null, ship?.maxJumpRange ?? null)
           const distanceSegment = {
             label: 'Distance',
             value: selectedSystemDistance || '',
-            secondary: selectedStationDistance || ''
+            secondary: selectedStationDistance || '',
+            valueColor: distanceColor || undefined
           }
           const valueSecondaryParts = []
           if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') valueSecondaryParts.push(`Per t ${profitPerUnitDisplay}`)
@@ -3149,6 +3166,7 @@ function CargoHoldPanel () {
                             const isSelected = listing.__id === defaultSelectedId
                             const stationIcon = stationIconFromType(listing.stationType || '')
                             const systemDistanceDisplay = formatSystemDistance(listing.distanceLy, listing.distanceLyText)
+                            const systemDistanceColor = getDistanceSeverityColor(listing.distanceLy ?? null, ship?.maxJumpRange ?? null)
                             const stationDistanceDisplay = formatStationDistance(listing.distanceLs, listing.distanceLsText)
                             const demandDisplay = sanitizeInaraText(listing.demandText) || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
                             const updatedDisplay = listing.updatedAt
@@ -3185,7 +3203,15 @@ function CargoHoldPanel () {
                                     isSelected={isSelected}
                                   />
                                 </td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{systemDistanceDisplay || '--'}</td>
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                                  {systemDistanceDisplay
+                                    ? (
+                                      <span style={systemDistanceColor ? { color: systemDistanceColor } : undefined}>
+                                        {systemDistanceDisplay}
+                                      </span>
+                                      )
+                                    : '--'}
+                                </td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{stationDistanceDisplay || '--'}</td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
                                   {((listing.demandText || demandDisplay) && (listing.demandText || demandDisplay).toString().trim())
@@ -3226,6 +3252,7 @@ function CargoHoldPanel () {
                     shipSourceSegment={shipSourceSegment}
                     className={styles.transferSummaryBar}
                     valueIcon={<CreditsIcon size={22} />}
+                    shipJumpRange={ship?.maxJumpRange ?? null}
                   />
                 ) : null}
 
@@ -3327,6 +3354,9 @@ function CargoHoldPanel () {
                     const contextSummary = isContextRow ? commodityContext : null
                     const contextDistance = contextSummary ? formatStationDistance(contextSummary.distanceLs, contextSummary.distanceLsText) : ''
                     const contextSystemDistance = contextSummary ? formatSystemDistance(contextSummary.distanceLy, contextSummary.distanceLyText) : ''
+                    const contextSystemDistanceColor = contextSummary
+                      ? getDistanceSeverityColor(contextSummary.distanceLy ?? null, ship?.maxJumpRange ?? null)
+                      : null
                     const rowClassNames = [styles.tableRowInteractive]
                     if (isContextRow) rowClassNames.push(styles.tableRowContext)
 
@@ -3378,7 +3408,15 @@ function CargoHoldPanel () {
                                   </span>
                                   {(contextSystemDistance || contextDistance) && (
                                     <span className={styles.tableContextFootnote}>
-                                      {[contextSystemDistance, contextDistance].filter(Boolean).join(' / ')}
+                                      {contextSystemDistance
+                                        ? (
+                                          <span style={contextSystemDistanceColor ? { color: contextSystemDistanceColor } : undefined}>
+                                            {contextSystemDistance}
+                                          </span>
+                                          )
+                                        : null}
+                                      {contextSystemDistance && contextDistance ? ' / ' : null}
+                                      {contextDistance || null}
                                     </span>
                                   )}
                                 </div>
@@ -4142,6 +4180,7 @@ function TradeRoutesPanel () {
               onKeyDown={handleRouteKeyDown}
               factionStandings={factionStandings}
               isSelected={selectedRoute === route}
+              shipJumpRange={shipStatus?.maxJumpRange ?? null}
             />
           ))}
         </tbody>
