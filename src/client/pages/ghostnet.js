@@ -1411,7 +1411,10 @@ function extractSystemDistance (route) {
 }
 
 function resolveStationDistance (station = {}) {
+  const local = station?.local || {}
+
   const numericCandidates = [
+    local?.stationDistanceLs,
     station?.stationDistance?.value,
     station?.stationDistance,
     station?.distanceLs
@@ -1425,6 +1428,8 @@ function resolveStationDistance (station = {}) {
   }
 
   const textCandidates = [
+    typeof local?.stationDistance === 'string' ? sanitizeInaraText(local.stationDistance) : null,
+    typeof local?.stationDistanceText === 'string' ? sanitizeInaraText(local.stationDistanceText) : null,
     station?.stationDistance?.text,
     station?.stationDistanceText,
     station?.distanceLsText
@@ -1502,9 +1507,15 @@ function getSystemDistanceVariant (value) {
 
 function resolveStationSystemDistance (route, type) {
   const target = type === 'destination' ? route?.destination : route?.origin
+  const local = target?.local || {}
   const summary = route?.summary || {}
 
   const numericCandidates = [
+    local?.systemDistanceLy,
+    local?.distanceLyFromCommander,
+    local?.distanceLyFromCurrentSystem,
+    local?.distanceLyFromPlayer,
+    local?.distanceLy,
     target?.distanceLyFromCommander,
     target?.distanceLyFromCurrentSystem,
     target?.distanceLyFromPlayer,
@@ -1524,6 +1535,9 @@ function resolveStationSystemDistance (route, type) {
   }
 
   const textCandidates = [
+    typeof local?.systemDistance === 'string' ? sanitizeInaraText(local.systemDistance) : null,
+    typeof local?.systemDistanceText === 'string' ? sanitizeInaraText(local.systemDistanceText) : null,
+    typeof local?.distanceFromCommanderText === 'string' ? sanitizeInaraText(local.distanceFromCommanderText) : null,
     target?.distanceLyText,
     target?.distanceFromCommanderText,
     target?.systemDistanceText,
