@@ -103,7 +103,8 @@ export function getMockTokenLedgerTransactions () {
   }))
 }
 
-export function getMockTokenLedger ({ limit } = {}) {
+export function getMockTokenLedger (options) {
+  const { limit } = options || {}
   const normalizedLimit = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : null
   const transactions = getMockTokenLedgerTransactions()
   const limitedTransactions = normalizedLimit === null
