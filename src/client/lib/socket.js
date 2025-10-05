@@ -1,7 +1,7 @@
 /* global WebSocket, CustomEvent */
 import { createContext, useState, useContext, useEffect } from 'react'
 import notification from 'lib/notification'
-import { getMockShipStatus, getMockSystemData } from './ghostnet-mock-data'
+import { getMockShipStatus, getMockSystemData, getMockTokenBalanceSnapshot, getMockTokenLedger } from './ghostnet-mock-data'
 
 let socket = null // Store socket connection (defaults to null)
 let callbackHandlers = {} // Store callbacks waiting to be executed (pending response from server)
@@ -170,6 +170,10 @@ function handleSandboxEvent (name, message) {
       return getMockSystemData(message?.name)
     case 'getLoadingStatus':
       return { loadingComplete: true }
+    case 'getTokenBalance':
+      return getMockTokenBalanceSnapshot()
+    case 'getTokenLedger':
+      return getMockTokenLedger(message)
     default:
       return null
   }
