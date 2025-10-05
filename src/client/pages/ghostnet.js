@@ -521,15 +521,15 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
               <span className={styles.tradeRouteStationSystem} title={originSystemName || undefined}>{renderValue(originSystemName)}</span>
               <div className={styles.tradeRouteStationChips}>
                 {renderMetricChip({
-                  value: originStationDistanceDisplay,
-                  variant: originStationDistanceVariant,
-                  title: 'Distance to station'
-                })}
-                {renderMetricChip({
                   value: originSystemDistanceDisplay,
                   variant: originSystemDistanceVariant,
                   title: 'Distance to system',
                   color: originSystemDistanceColor || undefined
+                })}
+                {renderMetricChip({
+                  value: originStationDistanceDisplay,
+                  variant: originStationDistanceVariant,
+                  title: 'Distance to station'
                 })}
               </div>
             </div>
@@ -582,15 +582,15 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
               <span className={styles.tradeRouteStationSystem} title={destinationSystemName || undefined}>{renderValue(destinationSystemName)}</span>
               <div className={styles.tradeRouteStationChips}>
                 {renderMetricChip({
-                  value: destinationStationDistanceDisplay,
-                  variant: destinationStationDistanceVariant,
-                  title: 'Distance to station'
-                })}
-                {renderMetricChip({
                   value: destinationSystemDistanceDisplay,
                   variant: destinationSystemDistanceVariant,
                   title: 'Distance to system',
                   color: destinationSystemDistanceColor || undefined
+                })}
+                {renderMetricChip({
+                  value: destinationStationDistanceDisplay,
+                  variant: destinationStationDistanceVariant,
+                  title: 'Distance to station'
                 })}
               </div>
             </div>
