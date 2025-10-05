@@ -1265,34 +1265,6 @@ button.terminalTokenButton:disabled {
   cursor: wait;
 }
 
-.tradeFiltersCollapsedSummary {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  color: var(--ghostnet-muted);
-}
-
-.tradeFiltersSummaryText {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 80%, transparent);
-}
-
-.tradeFiltersQueryRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--ghostnet-muted);
-}
-
-.tradeFiltersQueryLabel {
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .tradeFiltersGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1338,11 +1310,6 @@ button.terminalTokenButton:disabled {
   width: 1.05rem;
   height: 1.05rem;
   accent-color: var(--ghostnet-accent);
-}
-
-.tradeFiltersFooter {
-  border-top: 1px solid color-mix(in srgb, var(--ghostnet-color-primary) 28%, transparent);
-  padding-top: 1rem;
 }
 
 .dataTable {
