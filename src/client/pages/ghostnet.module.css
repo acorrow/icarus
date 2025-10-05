@@ -1611,7 +1611,7 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteStationRowSecondary {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
 }
 
@@ -1656,23 +1656,30 @@ button.terminalStatusPreview:focus-visible {
   justify-content: flex-end;
 }
 
+.tradeRoutesTable th:nth-child(3),
+.tradeRoutesTable td:nth-child(3),
+.tradeRoutesItemCell {
+  width: clamp(15rem, 24vw, 19rem);
+}
+
 .tradeRouteCommodityGrid {
   display: grid;
-  gap: 0.55rem;
+  gap: 0.45rem;
   min-width: 0;
 }
 
 .tradeRouteCommodityRow {
   display: grid;
-  grid-template-columns: minmax(2.2rem, auto) minmax(0, 1.35fr) minmax(0, 0.95fr) minmax(0, 1.05fr);
+  grid-template-columns: minmax(2.1rem, auto) minmax(0, max-content) max-content max-content;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.35rem;
   min-width: 0;
   position: relative;
-  padding: 0.45rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   border-radius: 0.75rem;
   overflow: hidden;
   z-index: 0;
+  justify-content: flex-start;
 }
 
 .tradeRouteCommodityRow > * {
@@ -1738,6 +1745,7 @@ button.terminalStatusPreview:focus-visible {
   color: var(--ghostnet-ink);
   white-space: nowrap;
   overflow: hidden;
+  max-width: 12.5rem;
 }
 
 .tradeRouteCommodityPrice {
@@ -1766,16 +1774,19 @@ button.terminalStatusPreview:focus-visible {
 
 
 .tradeRouteProfitGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 0.55rem;
   min-width: 0;
 }
 
 .tradeRouteProfitRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 1rem;
+  width: 100%;
 }
 
 .tradeRouteProfitMetric {
@@ -1783,6 +1794,8 @@ button.terminalStatusPreview:focus-visible {
   flex-direction: column;
   gap: 0.28rem;
   min-width: 0;
+  align-items: flex-end;
+  text-align: right;
 }
 
 .tradeRouteProfitLabel {
@@ -1790,6 +1803,7 @@ button.terminalStatusPreview:focus-visible {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--ghostnet-text-soft);
+  text-align: right;
 }
 
 .tradeRouteProfitValue {
@@ -1797,6 +1811,7 @@ button.terminalStatusPreview:focus-visible {
   font-weight: 600;
   color: var(--ghostnet-ink);
   white-space: nowrap;
+  text-align: right;
 }
 
 .tradeRouteProfitMeta {
@@ -1804,6 +1819,7 @@ button.terminalStatusPreview:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+  justify-content: flex-end;
 }
 
 @media (max-width: 1440px) {
