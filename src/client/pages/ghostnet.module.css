@@ -1752,7 +1752,7 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteCommodityRow {
   display: grid;
-  grid-template-columns: minmax(2.1rem, auto) minmax(0, 1fr) max-content max-content;
+  grid-template-columns: minmax(2.1rem, auto) minmax(0, 1fr) max-content;
   align-items: center;
   gap: 0.35rem;
   min-width: 0;
@@ -1762,6 +1762,7 @@ button.terminalStatusPreview:focus-visible {
   overflow: hidden;
   z-index: 0;
   justify-content: flex-start;
+  --trade-route-flow-fill: rgba(93, 46, 255, 0.24);
 }
 
 .tradeRouteCommodityRow > * {
@@ -1774,41 +1775,45 @@ button.terminalStatusPreview:focus-visible {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: transparent;
+  background: var(--trade-route-flow-fill);
   opacity: 1;
-  transition: transform 160ms ease, opacity 160ms ease;
   pointer-events: none;
 }
 
 .tradeRouteCommodityRowOutbound::before {
-  background-image:
-    linear-gradient(90deg, rgba(93, 46, 255, 0.24), rgba(93, 46, 255, 0.08) 70%, rgba(41, 243, 195, 0.32)),
-    repeating-linear-gradient(90deg, rgba(140, 92, 255, 0.22) 0 4px, rgba(140, 92, 255, 0) 4px 12px);
   clip-path: polygon(0 0, calc(100% - 1.65rem) 0, 100% 50%, calc(100% - 1.65rem) 100%, 0 100%);
 }
 
 .tradeRouteCommodityRowReturn::before {
-  background-image:
-    linear-gradient(270deg, rgba(93, 46, 255, 0.24), rgba(93, 46, 255, 0.08) 70%, rgba(255, 95, 193, 0.28)),
-    repeating-linear-gradient(270deg, rgba(140, 92, 255, 0.22) 0 4px, rgba(140, 92, 255, 0) 4px 12px);
   clip-path: polygon(1.65rem 0, 100% 0, 100% 100%, 1.65rem 100%, 0 50%);
 }
 
-.tradeRouteCommodityRow:hover::before,
-.tradeRouteCommodityRow:focus-within::before {
-  opacity: 1;
-  transform: scale(1.015);
+.tradeRouteFlowNeutral {
+  --trade-route-flow-fill: rgba(93, 46, 255, 0.24);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tradeRouteCommodityRow::before {
-    transition: opacity 160ms ease;
-  }
+.tradeRouteFlowPositive1 {
+  --trade-route-flow-fill: rgba(41, 243, 195, 0.22);
+}
 
-  .tradeRouteCommodityRow:hover::before,
-  .tradeRouteCommodityRow:focus-within::before {
-    transform: none;
-  }
+.tradeRouteFlowPositive2 {
+  --trade-route-flow-fill: rgba(41, 243, 195, 0.34);
+}
+
+.tradeRouteFlowPositive3 {
+  --trade-route-flow-fill: rgba(41, 243, 195, 0.48);
+}
+
+.tradeRouteFlowNegative1 {
+  --trade-route-flow-fill: rgba(255, 95, 193, 0.24);
+}
+
+.tradeRouteFlowNegative2 {
+  --trade-route-flow-fill: rgba(255, 95, 193, 0.38);
+}
+
+.tradeRouteFlowNegative3 {
+  --trade-route-flow-fill: rgba(255, 95, 193, 0.52);
 }
 
 .tradeRouteCommodityIcon {
@@ -1836,17 +1841,6 @@ button.terminalStatusPreview:focus-visible {
   grid-column: 3;
   color: var(--ghostnet-text-soft);
   font-size: 0.9rem;
-  white-space: nowrap;
-  justify-self: end;
-}
-
-.tradeRouteCommodityDemand {
-  grid-column: 4;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  color: var(--ghostnet-text-soft);
-  gap: 0.35rem;
   white-space: nowrap;
   justify-self: end;
 }

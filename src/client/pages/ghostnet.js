@@ -433,8 +433,10 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const returnCommodityDisplay = returnCommodity === '--' ? '' : returnCommodity
   const outboundPriceDisplay = resolvePriceDisplay(outboundInfo.buy, 'Buy')
   const returnPriceDisplay = resolvePriceDisplay(returnInfo.buy, 'Buy')
-  const outboundDemandDisplay = buildDemandDisplay(outboundInfo.sell, 'up')
-  const returnDemandDisplay = buildDemandDisplay(returnInfo.sell, 'up')
+  const outboundDemandState = resolveDemandFlowState(outboundInfo.sell)
+  const returnDemandState = resolveDemandFlowState(returnInfo.sell)
+  const outboundFlowClass = getDemandFlowClass(outboundDemandState)
+  const returnFlowClass = getDemandFlowClass(returnDemandState)
 
   const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
   const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
@@ -535,8 +537,14 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
       </td>
       <td className={`${styles.tableCellTop} ${styles.tradeRoutesItemCell}`}>
         <div className={styles.tradeRouteCommodityGrid}>
-          <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowOutbound}`}>
+          <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowOutbound} ${outboundFlowClass}`}>
             <span className={styles.visuallyHidden}>Outbound to {destinationStationAria}</span>
+            {outboundDemandState ? (
+              <span className={styles.visuallyHidden}>
+                {outboundDemandState.label}
+                {outboundDemandState.text ? ` — ${outboundDemandState.text}` : ''}
+              </span>
+            ) : null}
             <span className={styles.tradeRouteCommodityIcon}>
               <CommodityIcon category={outboundInfo.buy?.category || outboundInfo.sell?.category || ''} size={24} />
             </span>
@@ -544,21 +552,21 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
             <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteHideMedium}`}>
               {renderValue(outboundPriceDisplay)}
             </span>
-            <span className={`${styles.tradeRouteCommodityDemand} ${styles.tradeRouteHideCompact}`}>
-              {renderValue(outboundDemandDisplay)}
-            </span>
           </div>
-          <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowReturn}`}>
+          <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowReturn} ${returnFlowClass}`}>
             <span className={styles.visuallyHidden}>Return to {originStationAria}</span>
+            {returnDemandState ? (
+              <span className={styles.visuallyHidden}>
+                {returnDemandState.label}
+                {returnDemandState.text ? ` — ${returnDemandState.text}` : ''}
+              </span>
+            ) : null}
             <span className={styles.tradeRouteCommodityIcon}>
               <CommodityIcon category={returnInfo.buy?.category || returnInfo.sell?.category || ''} size={24} />
             </span>
             <span className={styles.tradeRouteCommodityName}>{renderValue(returnCommodityDisplay)}</span>
             <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteHideMedium}`}>
               {renderValue(returnPriceDisplay)}
-            </span>
-            <span className={`${styles.tradeRouteCommodityDemand} ${styles.tradeRouteHideCompact}`}>
-              {renderValue(returnDemandDisplay)}
             </span>
           </div>
         </div>
@@ -1544,25 +1552,98 @@ function resolvePriceDisplay (entry, actionLabel) {
   return actionLabel ? `${actionLabel} ${formatted}` : formatted
 }
 
-function buildDemandDisplay (entry, direction = 'up') {
-  if (!entry) return null
-  const quantityText = resolveQuantityText(entry)
-  const priceDiffText = typeof entry.priceDiffText === 'string' ? sanitizeInaraText(entry.priceDiffText) : ''
-  const infoParts = [quantityText, priceDiffText].filter(Boolean)
-  if (infoParts.length === 0) return null
+function resolveDemandFlowState (entry) {
+  if (!entry || typeof entry !== 'object') return null
 
-  const arrowSymbol = direction === 'down' ? String.fromCharCode(0x25BC) : String.fromCharCode(0x25B2)
-  const arrowCount = Math.min(Math.max(Number(entry.level) || 1, 1), 4)
-  const labelText = `${arrowSymbol.repeat(arrowCount)} ${infoParts.join(' • ')}`.trim()
+  const quantityTextRaw = typeof entry.quantityText === 'string' ? sanitizeInaraText(entry.quantityText) : ''
+  const quantityText = quantityTextRaw.trim()
+  const normalizedText = quantityText.toLowerCase()
+  const levelValue = Number.isFinite(entry.level) ? Math.max(Math.min(Math.round(entry.level), 4), 1) : null
+  const priceDiff = Number.isFinite(entry.priceDiff) ? entry.priceDiff : null
+  const priceDiffPercent = Number.isFinite(entry.priceDiffPercent) ? entry.priceDiffPercent : null
 
-  return (
-    <DemandIndicator
-      label={labelText}
-      fallbackLabel={infoParts.join(' • ')}
-      isLow={direction === 'down'}
-      subtle
-    />
-  )
+  let descriptor = null
+  if (normalizedText.includes('very high')) {
+    descriptor = 'very high'
+  } else if (normalizedText.includes('high')) {
+    descriptor = 'high'
+  } else if (normalizedText.includes('medium') || normalizedText.includes('med')) {
+    descriptor = 'medium'
+  } else if (normalizedText.includes('very low')) {
+    descriptor = 'very low'
+  } else if (normalizedText.includes('low')) {
+    descriptor = 'low'
+  } else if (normalizedText.includes('none') || normalizedText.includes('zero')) {
+    descriptor = 'none'
+  }
+
+  let tone = null
+  if (priceDiffPercent !== null && priceDiffPercent !== 0) {
+    tone = priceDiffPercent > 0 ? 'positive' : 'negative'
+  } else if (priceDiff !== null && priceDiff !== 0) {
+    tone = priceDiff > 0 ? 'positive' : 'negative'
+  }
+
+  if (!tone && descriptor) {
+    tone = ['low', 'very low', 'none'].includes(descriptor) ? 'negative' : 'positive'
+  }
+
+  if (!tone) tone = 'neutral'
+
+  let intensity = null
+  if (levelValue !== null) {
+    if (tone === 'positive') {
+      if (levelValue >= 4) intensity = 3
+      else if (levelValue === 3) intensity = 2
+      else intensity = 1
+    } else if (tone === 'negative') {
+      if (levelValue <= 1) intensity = 3
+      else if (levelValue === 2) intensity = 2
+      else intensity = 1
+    } else {
+      intensity = levelValue >= 3 ? 2 : 1
+    }
+  }
+
+  if (intensity === null && descriptor) {
+    if (tone === 'positive') {
+      if (descriptor === 'very high') intensity = 3
+      else if (descriptor === 'high') intensity = 3
+      else if (descriptor === 'medium') intensity = 2
+      else intensity = 1
+    } else if (tone === 'negative') {
+      if (descriptor === 'none' || descriptor === 'very low') intensity = 3
+      else if (descriptor === 'low') intensity = 2
+      else intensity = 1
+    }
+  }
+
+  if (intensity === null) {
+    intensity = tone === 'neutral' ? 2 : 1
+  }
+
+  intensity = Math.max(1, Math.min(intensity, 3))
+
+  let label = 'Demand unavailable'
+  if (tone === 'positive') {
+    label = intensity === 3 ? 'High demand' : intensity === 2 ? 'Moderate demand' : 'Low demand'
+  } else if (tone === 'negative') {
+    label = intensity === 3 ? 'Demand minimal' : intensity === 2 ? 'Demand limited' : 'Demand below average'
+  }
+
+  return { tone, intensity, label, text: quantityText }
+}
+
+function getDemandFlowClass (state) {
+  if (!state) return styles.tradeRouteFlowNeutral
+  const intensity = Math.max(1, Math.min(state.intensity || 1, 3))
+  if (state.tone === 'positive') {
+    return styles[`tradeRouteFlowPositive${intensity}`] || styles.tradeRouteFlowNeutral
+  }
+  if (state.tone === 'negative') {
+    return styles[`tradeRouteFlowNegative${intensity}`] || styles.tradeRouteFlowNeutral
+  }
+  return styles.tradeRouteFlowNeutral
 }
 
 function extractProfitPerTrip (route) {
