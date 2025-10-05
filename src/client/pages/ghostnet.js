@@ -561,7 +561,8 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
       </td>
       <td className={`${styles.tableCellTop} ${styles.tradeRoutesItemCell}`}>
         <div className={styles.tradeRouteCommodityGrid}>
-          <div className={styles.tradeRouteCommodityRow}>
+          <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowOutbound}`}>
+            <span className={styles.visuallyHidden}>Outbound to {destinationStationAria}</span>
             <span className={styles.tradeRouteCommodityIcon}>
               <CommodityIcon category={outboundInfo.buy?.category || outboundInfo.sell?.category || ''} size={24} />
             </span>
@@ -572,15 +573,8 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
             <span className={`${styles.tradeRouteCommodityDemand} ${styles.tradeRouteHideCompact}`}>
               {renderValue(outboundDemandDisplay)}
             </span>
-            <span className={styles.tradeRouteCommodityArrow} aria-hidden='true'>
-              {String.fromCharCode(0x2192)}
-            </span>
-            <span className={styles.visuallyHidden}>Outbound to {destinationStationAria}</span>
           </div>
           <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowReturn}`}>
-            <span className={styles.tradeRouteCommodityArrow} aria-hidden='true'>
-              {String.fromCharCode(0x2190)}
-            </span>
             <span className={styles.visuallyHidden}>Return to {originStationAria}</span>
             <span className={styles.tradeRouteCommodityIcon}>
               <CommodityIcon category={returnInfo.buy?.category || returnInfo.sell?.category || ''} size={24} />

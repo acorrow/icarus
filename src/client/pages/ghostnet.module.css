@@ -1563,36 +1563,66 @@ button.terminalTokenButton:disabled {
 
 .tradeRouteCommodityRow {
   display: grid;
-  grid-template-columns: minmax(1.6rem, auto) minmax(2.1rem, auto) minmax(0, 1.3fr) minmax(0, 0.95fr) minmax(0, 1.05fr) minmax(1.6rem, auto);
+  grid-template-columns: minmax(2.2rem, auto) minmax(0, 1.35fr) minmax(0, 0.95fr) minmax(0, 1.05fr);
   align-items: center;
   gap: 0.45rem;
   min-width: 0;
   position: relative;
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  z-index: 0;
 }
 
-.tradeRouteCommodityRowReturn .tradeRouteCommodityArrow {
-  grid-column: 1;
-  justify-self: start;
+.tradeRouteCommodityRow > * {
+  position: relative;
+  z-index: 1;
 }
 
-.tradeRouteCommodityRowReturn .tradeRouteCommodityIcon {
-  grid-column: 2;
+.tradeRouteCommodityRow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: transparent;
+  opacity: 1;
+  transition: transform 160ms ease, opacity 160ms ease;
+  pointer-events: none;
 }
 
-.tradeRouteCommodityRowReturn .tradeRouteCommodityName {
-  grid-column: 3;
+.tradeRouteCommodityRowOutbound::before {
+  background-image:
+    linear-gradient(90deg, rgba(93, 46, 255, 0.24), rgba(93, 46, 255, 0.08) 70%, rgba(41, 243, 195, 0.32)),
+    repeating-linear-gradient(90deg, rgba(140, 92, 255, 0.22) 0 4px, rgba(140, 92, 255, 0) 4px 12px);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 1.65rem) 50%, 100% 100%, 0 100%);
 }
 
-.tradeRouteCommodityRowReturn .tradeRouteCommodityPrice {
-  grid-column: 4;
+.tradeRouteCommodityRowReturn::before {
+  background-image:
+    linear-gradient(270deg, rgba(93, 46, 255, 0.24), rgba(93, 46, 255, 0.08) 70%, rgba(255, 95, 193, 0.28)),
+    repeating-linear-gradient(270deg, rgba(140, 92, 255, 0.22) 0 4px, rgba(140, 92, 255, 0) 4px 12px);
+  clip-path: polygon(1.65rem 0, 100% 0, 100% 100%, 1.65rem 100%, 0 50%);
 }
 
-.tradeRouteCommodityRowReturn .tradeRouteCommodityDemand {
-  grid-column: 5;
+.tradeRouteCommodityRow:hover::before,
+.tradeRouteCommodityRow:focus-within::before {
+  opacity: 1;
+  transform: scale(1.015);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tradeRouteCommodityRow::before {
+    transition: opacity 160ms ease;
+  }
+
+  .tradeRouteCommodityRow:hover::before,
+  .tradeRouteCommodityRow:focus-within::before {
+    transform: none;
+  }
 }
 
 .tradeRouteCommodityIcon {
-  grid-column: 2;
+  grid-column: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1601,7 +1631,7 @@ button.terminalTokenButton:disabled {
 }
 
 .tradeRouteCommodityName {
-  grid-column: 3;
+  grid-column: 2;
   font-size: 1rem;
   font-weight: 600;
   color: var(--ghostnet-ink);
@@ -1610,7 +1640,7 @@ button.terminalTokenButton:disabled {
 }
 
 .tradeRouteCommodityPrice {
-  grid-column: 4;
+  grid-column: 3;
   color: var(--ghostnet-text-soft);
   font-size: 0.9rem;
   white-space: nowrap;
@@ -1618,7 +1648,7 @@ button.terminalTokenButton:disabled {
 }
 
 .tradeRouteCommodityDemand {
-  grid-column: 5;
+  grid-column: 4;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
@@ -1626,17 +1656,6 @@ button.terminalTokenButton:disabled {
   gap: 0.35rem;
   white-space: nowrap;
   justify-self: end;
-}
-
-.tradeRouteCommodityArrow {
-  grid-column: 6;
-  font-size: 1.2rem;
-  color: var(--ghostnet-text-soft);
-  justify-self: end;
-}
-
-.tradeRouteCommodityRowReturn .tradeRouteCommodityArrow {
-  justify-self: start;
 }
 
 .tradeRoutePlaceholder {
