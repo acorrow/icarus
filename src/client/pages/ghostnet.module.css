@@ -227,11 +227,14 @@
   height: var(--ghostnet-terminal-height);
   pointer-events: none;
   z-index: 20;
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.terminalCollapsed {
-  transform: translateY(calc(var(--ghostnet-terminal-height) - 3.25rem));
+.terminalCompressed {
+  align-items: stretch;
+}
+
+.terminalExpanded {
+  align-items: flex-end;
 }
 
 .terminalShell {
@@ -249,6 +252,14 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.terminalShellCompressed {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  box-shadow: 0 -0.75rem 1.5rem color-mix(in srgb, var(--ghostnet-color-background) 62%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-surface) 82%, transparent);
 }
 
 .terminalCelebration {
@@ -312,6 +323,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1.5rem;
   padding: 1rem 1.5rem 0.75rem 1.5rem;
   background: color-mix(in srgb, var(--ghostnet-color-primary) 12%, transparent);
   border-bottom: 1px solid var(--ghostnet-border-soft);
@@ -323,10 +335,179 @@
   z-index: 1;
 }
 
+.terminalHeaderLeft,
+.terminalHeaderCenter,
+.terminalHeaderRight {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.terminalHeaderLeft {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.terminalHeaderCenter {
+  flex: 1.25;
+  justify-content: center;
+}
+
+.terminalHeaderRight {
+  justify-content: flex-end;
+}
+
+.terminalHeaderCompressed {
+  padding: 0.45rem 0.85rem;
+  background: color-mix(in srgb, var(--ghostnet-color-surface) 68%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ghostnet-border-soft) 60%, transparent);
+  gap: 0.85rem;
+}
+
+.terminalHeaderCompressed .terminalHeaderLeft {
+  display: none;
+}
+
+.terminalHeaderCompressed .terminalHeaderCenter {
+  flex: 1;
+}
+
 .terminalHeaderContent {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  align-items: center;
+  text-align: center;
+}
+
+.terminalWindowControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.15rem 0;
+}
+
+.terminalHeaderCompressed .terminalWindowControls {
+  gap: 0.35rem;
+}
+
+.terminalWindowControl {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--ghostnet-border-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--ghostnet-color-background);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 52%, transparent);
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent);
+}
+
+.terminalWindowControl span {
+  pointer-events: none;
+}
+
+button.terminalWindowControl:hover,
+button.terminalWindowControl:focus-visible {
+  transform: translateY(-1px);
+}
+
+button.terminalWindowControl:focus-visible {
+  outline: 2px solid var(--ghostnet-border-focus);
+  outline-offset: 2px;
+}
+
+button.terminalWindowControl:active {
+  transform: translateY(1px);
+}
+
+.terminalWindowControlMinimize {
+  background: color-mix(in srgb, var(--ghostnet-color-warning) 60%, transparent);
+  border-color: color-mix(in srgb, var(--ghostnet-color-warning) 52%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-warning) 28%, transparent);
+}
+
+button.terminalWindowControlMinimize:hover,
+button.terminalWindowControlMinimize:focus-visible {
+  background: color-mix(in srgb, var(--ghostnet-color-warning) 72%, transparent);
+}
+
+.terminalWindowControlMaximize {
+  background: color-mix(in srgb, var(--ghostnet-color-success) 68%, transparent);
+  border-color: color-mix(in srgb, var(--ghostnet-color-success) 58%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-success) 30%, transparent);
+}
+
+button.terminalWindowControlMaximize:hover,
+button.terminalWindowControlMaximize:focus-visible {
+  background: color-mix(in srgb, var(--ghostnet-color-success) 80%, transparent);
+}
+
+.terminalWindowControlClose {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 82%, transparent);
+  border-color: color-mix(in srgb, var(--ghostnet-color-primary) 68%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-primary) 36%, transparent);
+}
+
+button.terminalWindowControlClose:hover,
+button.terminalWindowControlClose:focus-visible {
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 92%, transparent);
+}
+
+.terminalStatusPreview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ghostnet-color-text-strong);
+  font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+}
+
+button.terminalStatusPreview:hover {
+  border-color: color-mix(in srgb, var(--ghostnet-border-soft) 68%, transparent);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 16%, transparent);
+}
+
+button.terminalStatusPreview:focus-visible {
+  outline: 2px solid var(--ghostnet-border-focus);
+  outline-offset: 2px;
+}
+
+.terminalStatusPreviewLabel {
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ghostnet-color-text-strong) 68%, transparent);
+  white-space: nowrap;
+}
+
+.terminalStatusPreviewText {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  color: var(--ghostnet-color-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 
 .terminalTitle {
@@ -343,7 +524,6 @@
 }
 
 .terminalTokenRow {
-  margin-top: 0.35rem;
   display: flex;
   align-items: center;
   gap: 0.65rem;
@@ -420,76 +600,10 @@ button.terminalTokenButton:disabled {
 }
 
 .terminalTokenMeta {
-  margin-top: 0.35rem;
   font-size: 0.65rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 54%, transparent);
-}
-
-.terminalToggle {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 1.1rem;
-  border-radius: 0;
-  border: 1px solid var(--ghostnet-border-strong);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 72%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent));
-  color: var(--ghostnet-color-text-strong);
-  text-transform: uppercase;
-  letter-spacing: 0.24em;
-  font-size: 0.72rem;
-  cursor: pointer;
-  text-shadow: 0 0 12px color-mix(in srgb, var(--ghostnet-color-primary) 55%, transparent);
-  box-shadow: 0 0 0 transparent;
-  transition: background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
-}
-
-button.terminalToggle:hover:not([disabled]):not(.button--active),
-button.terminalToggle:focus-visible:not([disabled]):not(.button--active) {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary) 88%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 62%, transparent));
-  transform: translateY(-1px);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--ghostnet-color-primary) 38%, transparent);
-}
-
-button.terminalToggle:focus-visible:not([disabled]):not(.button--active) {
-  outline: 2px solid color-mix(in srgb, var(--ghostnet-color-primary-light) 92%, transparent);
-  outline-offset: 3px;
-}
-
-button.terminalToggle:active:not([disabled]):not(.button--active) {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--ghostnet-color-primary-dark) 78%, transparent), color-mix(in srgb, var(--ghostnet-color-primary) 52%, transparent));
-  transform: translateY(1px);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--ghostnet-color-primary-dark) 48%, transparent);
-}
-
-.terminalToggleIcon {
-  font-size: 0.95rem;
-  line-height: 1;
-  color: var(--ghostnet-color-text-strong);
-  text-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-text-strong) 60%, transparent);
-  transition: transform 200ms ease, color 200ms ease;
-}
-
-.terminalToggleLabel {
-  font-size: 0.68rem;
-  letter-spacing: 0.3em;
-  display: inline-flex;
-  align-items: center;
-}
-
-.terminalToggleCollapsed {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--ghostnet-color-primary-dark) 82%, transparent),
-    color-mix(in srgb, var(--ghostnet-color-primary) 48%, transparent)
-  );
-  box-shadow: 0 0 14px color-mix(in srgb, var(--ghostnet-color-primary-dark) 36%, transparent);
-}
-
-.terminalToggleCollapsed .terminalToggleIcon {
-  color: var(--ghostnet-color-success);
 }
 
 .terminalBody {

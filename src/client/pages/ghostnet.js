@@ -4499,6 +4499,17 @@ function PristineMiningPanel () {
 const GREEK_SYMBOLS = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega']
 const TERMINAL_BUFFER = 36
 const TERMINAL_WINDOW = 7
+const TERMINAL_WINDOW_EXPANDED = 14
+
+const TERMINAL_HEIGHT_NORMAL = 'clamp(180px, 18vh, 220px)'
+const TERMINAL_HEIGHT_COMPRESSED = '3rem'
+const TERMINAL_HEIGHT_EXPANDED = 'clamp(320px, 32vh, 420px)'
+
+const TERMINAL_VIEW = {
+  NORMAL: 'normal',
+  COMPRESSED: 'compressed',
+  EXPANDED: 'expanded'
+}
 
 function randomChoice (items) {
   return items[Math.floor(Math.random() * items.length)]
@@ -4944,12 +4955,13 @@ function createTerminalLineWithId (seed = '', baseLine) {
 }
 
 function GhostnetTerminalOverlay () {
-  const [collapsed, setCollapsed] = useState(false)
+  const [viewState, setViewState] = useState(TERMINAL_VIEW.NORMAL)
   const [terminalLines, setTerminalLines] = useState(() =>
     Array.from({ length: TERMINAL_BUFFER }).map((_, index) => createTerminalLineWithId(index))
   )
   const cadenceRef = useRef()
   const timeoutRef = useRef(null)
+  const terminalRef = useRef(null)
   const [creditCelebration, setCreditCelebration] = useState(null)
   const [tokenBalance, setTokenBalance] = useState(null)
   const [tokenBalanceAnimated, setTokenBalanceAnimated] = useState(null)
@@ -4977,6 +4989,27 @@ function GhostnetTerminalOverlay () {
       menaceCooldown: 0
     }
   }
+
+  useEffect(() => {
+    const host = terminalRef.current?.parentElement
+    if (!host) return
+    const nextHeight =
+      viewState === TERMINAL_VIEW.COMPRESSED
+        ? TERMINAL_HEIGHT_COMPRESSED
+        : viewState === TERMINAL_VIEW.EXPANDED
+          ? TERMINAL_HEIGHT_EXPANDED
+          : TERMINAL_HEIGHT_NORMAL
+    host.style.setProperty('--ghostnet-terminal-height', nextHeight)
+  }, [viewState])
+
+  useEffect(() => {
+    const host = terminalRef.current?.parentElement
+    return () => {
+      if (host) {
+        host.style.removeProperty('--ghostnet-terminal-height')
+      }
+    }
+  }, [])
 
   useEffect(() => {
     animatedBalanceRef.current = tokenBalanceAnimated
@@ -5533,17 +5566,73 @@ function GhostnetTerminalOverlay () {
     return `${ledgerLabel} · ${remoteLabel}`
   }, [tokenSimulation, tokenMode, tokenRemoteState.enabled, tokenRemoteState.mode])
 
+  const isCompressed = viewState === TERMINAL_VIEW.COMPRESSED
+  const isExpanded = viewState === TERMINAL_VIEW.EXPANDED
+
+  const terminalWindowSize = useMemo(() => {
+    if (isCompressed) return 1
+    if (isExpanded) return TERMINAL_WINDOW_EXPANDED
+    return TERMINAL_WINDOW
+  }, [isCompressed, isExpanded])
+
   const visibleLines = useMemo(() => {
-    return terminalLines.slice(-TERMINAL_WINDOW)
+    return terminalLines.slice(-terminalWindowSize)
+  }, [terminalLines, terminalWindowSize])
+
+  const latestLine = useMemo(() => {
+    return terminalLines[terminalLines.length - 1]
   }, [terminalLines])
 
-  const toggleCollapsed = useCallback(() => {
-    setCollapsed(previous => !previous)
+  const handleMinimize = useCallback(() => {
+    setViewState(TERMINAL_VIEW.COMPRESSED)
+  }, [])
+
+  const handleToggleExpand = useCallback(() => {
+    setViewState(previous => {
+      if (previous === TERMINAL_VIEW.COMPRESSED) return TERMINAL_VIEW.NORMAL
+      if (previous === TERMINAL_VIEW.EXPANDED) return TERMINAL_VIEW.NORMAL
+      return TERMINAL_VIEW.EXPANDED
+    })
+  }, [])
+
+  const handleClose = useCallback(() => {
+    setViewState(TERMINAL_VIEW.COMPRESSED)
+  }, [])
+
+  const terminalClassName = [
+    styles.terminal,
+    isCompressed ? styles.terminalCompressed : '',
+    isExpanded ? styles.terminalExpanded : ''
+  ].filter(Boolean).join(' ')
+
+  const shellClassName = [
+    styles.terminalShell,
+    isCompressed ? styles.terminalShellCompressed : ''
+  ].filter(Boolean).join(' ')
+
+  const headerClassName = [
+    styles.terminalHeader,
+    isCompressed ? styles.terminalHeaderCompressed : ''
+  ].filter(Boolean).join(' ')
+
+  const maximizeAriaLabel = isCompressed
+    ? 'Restore console'
+    : isExpanded
+      ? 'Restore console size'
+      : 'Expand console'
+
+  const maximizeIcon = isExpanded ? '▭' : '▢'
+
+  const statusPreviewLabel = latestLine?.label ?? 'ghostnet'
+  const statusPreviewText = latestLine?.text ?? 'Link stable'
+
+  const handleStatusPreviewActivate = useCallback(() => {
+    setViewState(TERMINAL_VIEW.NORMAL)
   }, [])
 
   return (
-    <div className={`${styles.terminal} ${collapsed ? styles.terminalCollapsed : ''}`}>
-      <div className={styles.terminalShell} role='region' aria-label='Ghost Net ship uplink activity log'>
+    <div className={terminalClassName} ref={terminalRef}>
+      <div className={shellClassName} role='region' aria-label='Ghost Net ship uplink activity log'>
         <div
           className={[styles.terminalCelebration, creditCelebration ? styles.terminalCelebrationActive : ''].filter(Boolean).join(' ')}
           aria-hidden='true'
@@ -5566,67 +5655,107 @@ function GhostnetTerminalOverlay () {
             </div>
           ) : null}
         </div>
-        <div className={styles.terminalHeader}>
-          <div className={styles.terminalHeaderContent}>
-            <span className={styles.terminalTitle}>Ship Uplink Console</span>
-            <span className={styles.terminalStatus}>Channel mesh://ghostnet</span>
-            <div className={styles.terminalTokenRow}>
-              <span className={styles.terminalTokenLabel}>Tokens</span>
-              <span
-                className={[
-                  styles.terminalTokenValue,
-                  isNegativeBalance ? styles.terminalTokenValueNegative : '',
-                  balanceFlash?.type === 'earn' ? styles.terminalTokenValueFlashCredit : '',
-                  balanceFlash?.type === 'spend' ? styles.terminalTokenValueFlashDebit : ''
-                ].filter(Boolean).join(' ')}
-              >
-                {tokenBalanceDisplay}
-              </span>
+        <div className={headerClassName}>
+          <div className={styles.terminalHeaderLeft}>
+            {!isCompressed ? (
+              <Fragment>
+                <div className={styles.terminalTokenRow}>
+                  <span className={styles.terminalTokenLabel}>Tokens</span>
+                  <span
+                    className={[
+                      styles.terminalTokenValue,
+                      isNegativeBalance ? styles.terminalTokenValueNegative : '',
+                      balanceFlash?.type === 'earn' ? styles.terminalTokenValueFlashCredit : '',
+                      balanceFlash?.type === 'spend' ? styles.terminalTokenValueFlashDebit : ''
+                    ].filter(Boolean).join(' ')}
+                  >
+                    {tokenBalanceDisplay}
+                  </span>
+                  <button
+                    type='button'
+                    className={styles.terminalTokenButton}
+                    onClick={handleAddTokens}
+                    disabled={tokenButtonDisabled}
+                    aria-label='Trigger a simulated jackpot payout'
+                  >
+                    {tokenActionPending ? '···' : '+'}
+                  </button>
+                </div>
+                <div className={styles.terminalTokenMeta} aria-live='polite'>
+                  {tokenStatusText}
+                </div>
+              </Fragment>
+            ) : null}
+          </div>
+          <div className={styles.terminalHeaderCenter}>
+            {isCompressed ? (
               <button
                 type='button'
-                className={styles.terminalTokenButton}
-                onClick={handleAddTokens}
-                disabled={tokenButtonDisabled}
-                aria-label='Trigger a simulated jackpot payout'
+                className={styles.terminalStatusPreview}
+                onClick={handleStatusPreviewActivate}
+                aria-label='Restore console'
               >
-                {tokenActionPending ? '···' : '+'}
+                <span className={styles.terminalStatusPreviewLabel} aria-hidden='true'>{statusPreviewLabel}</span>
+                <span className={styles.terminalStatusPreviewText}>{statusPreviewText}</span>
+              </button>
+            ) : (
+              <div className={styles.terminalHeaderContent}>
+                <span className={styles.terminalTitle}>Ship Uplink Console</span>
+                <span className={styles.terminalStatus}>Channel mesh://ghostnet</span>
+              </div>
+            )}
+          </div>
+          <div className={styles.terminalHeaderRight}>
+            <div className={styles.terminalWindowControls} role='group' aria-label='Console window controls'>
+              <button
+                type='button'
+                className={`${styles.terminalWindowControl} ${styles.terminalWindowControlMinimize}`}
+                onClick={handleMinimize}
+                aria-label='Minimize console'
+              >
+                <span aria-hidden='true'>─</span>
+              </button>
+              <button
+                type='button'
+                className={`${styles.terminalWindowControl} ${styles.terminalWindowControlMaximize}`}
+                onClick={handleToggleExpand}
+                aria-label={maximizeAriaLabel}
+              >
+                <span aria-hidden='true'>{maximizeIcon}</span>
+              </button>
+              <button
+                type='button'
+                className={`${styles.terminalWindowControl} ${styles.terminalWindowControlClose}`}
+                onClick={handleClose}
+                aria-label='Close console'
+              >
+                <span aria-hidden='true'>✕</span>
               </button>
             </div>
-            <div className={styles.terminalTokenMeta} aria-live='polite'>
-              {tokenStatusText}
-            </div>
           </div>
-          <button
-            type='button'
-            className={[styles.terminalToggle, collapsed ? styles.terminalToggleCollapsed : ''].filter(Boolean).join(' ')}
-            onClick={toggleCollapsed}
-            aria-expanded={!collapsed}
-            aria-label={collapsed ? 'Expand uplink console' : 'Collapse uplink console'}
-          >
-            <span aria-hidden='true' className={styles.terminalToggleIcon}>{collapsed ? '▵' : '▿'}</span>
-            <span className={styles.terminalToggleLabel}>{collapsed ? 'Expand' : 'Collapse'}</span>
-          </button>
         </div>
-        <div className={styles.terminalBody}>
-          <ul className={styles.terminalFeed}>
-            {visibleLines.map(line => {
-              const promptClassNames = [styles.terminalPrompt]
-              const promptTypeClass = line.type ? TERMINAL_PROMPT_TYPE_CLASS_MAP[line.type] : null
-              if (promptTypeClass) promptClassNames.push(promptTypeClass)
+        {!isCompressed ? (
+          <div className={styles.terminalBody}>
+            <ul className={styles.terminalFeed}>
+              {visibleLines.map(line => {
+                const promptClassNames = [styles.terminalPrompt]
+                const promptTypeClass = line.type ? TERMINAL_PROMPT_TYPE_CLASS_MAP[line.type] : null
+                if (promptTypeClass) promptClassNames.push(promptTypeClass)
 
-              const textClassNames = [styles.terminalText]
-              const textTypeClass = line.type ? TERMINAL_TEXT_TYPE_CLASS_MAP[line.type] : null
-              if (textTypeClass) textClassNames.push(textTypeClass)
+                const textClassNames = [styles.terminalText]
+                const textTypeClass = line.type ? TERMINAL_TEXT_TYPE_CLASS_MAP[line.type] : null
+                if (textTypeClass) textClassNames.push(textTypeClass)
 
-              return (
-                <li key={line.id} className={styles.terminalLine}>
-                  <span className={promptClassNames.join(' ')}>{line.label}</span>
-                  <span className={textClassNames.join(' ')}>{line.text}</span>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
+                return (
+                  <li key={line.id} className={styles.terminalLine}>
+                    <span className={promptClassNames.join(' ')}>{line.label}</span>
+                    <span className={textClassNames.join(' ')}>{line.text}</span>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        ) : null}
       </div>
     </div>
   )
