@@ -294,7 +294,7 @@ export default function EngineeringMaterialsPage () {
                   </td>
                   <td className='text-right'>
                     <span className='text-right'>
-                      <CopyOnClick>{selectedBlueprint?.engineers[engineer]?.system}</CopyOnClick>
+                      <CopyOnClick copyMessageKey='system'>{selectedBlueprint?.engineers[engineer]?.system}</CopyOnClick>
                     </span>
                     {(currentSystem?.position && selectedBlueprint?.engineers[engineer]?.location) &&
                       <span className='text-muted text-no-transform'>

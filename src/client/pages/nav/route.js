@@ -82,7 +82,7 @@ export default function NavListPage () {
                       Location
                     </h3>
                     <h2 className='navigation-panel__route-heading text-info'>
-                      <CopyOnClick>{navRoute.currentSystem?.name}</CopyOnClick>
+                      <CopyOnClick copyMessageKey='system'>{navRoute.currentSystem?.name}</CopyOnClick>
                     </h2>
                   </>}
               </td>
@@ -95,7 +95,7 @@ export default function NavListPage () {
                     </h3>
                     <h2 className='navigation-panel__route-heading text-info text-right'>
                       {navRoute?.destination?.distance > 0
-                        ? <CopyOnClick>{navRoute?.destination?.system}</CopyOnClick>
+                        ? <CopyOnClick copyMessageKey='system'>{navRoute?.destination?.system}</CopyOnClick>
                         : <span className='text-muted'>—</span>}
                     </h2>
                   </>}

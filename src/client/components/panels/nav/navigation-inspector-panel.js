@@ -81,7 +81,7 @@ export default function NavigationInspectorPanel ({ systemObject, setSystemObjec
       <div className='inspector__contents scrollable'>
         <div className='navigation-panel__inspector-heading'>
           <i className={iconClass} />
-          <h2 className='text-info'><CopyOnClick>{systemObject.name}</CopyOnClick></h2>
+          <h2 className='text-info'><CopyOnClick copyMessageKey='system'>{systemObject.name}</CopyOnClick></h2>
           <h3 className='text-primary'>{systemObjectSubType}</h3>
         </div>
         <hr />

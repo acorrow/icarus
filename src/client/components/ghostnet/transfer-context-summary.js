@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import CopyOnClick from '../copy-on-click'
 import styles from './transfer-context-summary.module.css'
 
 const BAD_TEXT_PATTERN = /[\u25A0-\u25A3\u25A9\uFFFD]/g
@@ -14,6 +15,7 @@ function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel }) {
     return null
   }
 
+  const normalizedName = sanitizeText(name)
   const normalizedSubtexts = Array.isArray(subtexts)
     ? subtexts.map(entry => sanitizeText(entry)).filter(Boolean)
     : []
@@ -36,9 +38,11 @@ function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel }) {
   return (
     <div className={`${styles.segment} ${styles.stationSegment}`} aria-label={ariaLabel || undefined}>
       {icon ? <span className={styles.icon}>{icon}</span> : null}
-      {name ? (
+      {normalizedName ? (
         <span className={styles.primary} style={color ? { color } : undefined}>
-          {name}
+          {React.isValidElement(normalizedName)
+            ? normalizedName
+            : <CopyOnClick copyMessageKey='station'>{normalizedName}</CopyOnClick>}
         </span>
       ) : null}
 

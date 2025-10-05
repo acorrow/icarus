@@ -5,6 +5,7 @@ import { StationIcon, DemandIndicator } from './station-summary'
 import Icons from '../../lib/icons'
 import { getCommodityIconConfig } from '../../lib/commodity-icons'
 import { sanitizeInaraText } from '../../lib/sanitize-inara-text'
+import CopyOnClick from '../copy-on-click'
 import {
   formatCredits,
   formatRelativeTime,
@@ -107,8 +108,14 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
     const destinationIconName = stationName ? stationIconFromType(stationType || '') : null
     const originIconName = summary.originStationName ? stationIconFromType(originType || '') : null
 
-    const originSubtexts = [originSystem, originType].filter(Boolean)
-    const destinationSubtexts = [systemName, stationType].filter(Boolean)
+    const originSubtexts = [
+      originSystem ? <CopyOnClick copyMessageKey='system'>{originSystem}</CopyOnClick> : null,
+      originType
+    ].filter(Boolean)
+    const destinationSubtexts = [
+      systemName ? <CopyOnClick copyMessageKey='system'>{systemName}</CopyOnClick> : null,
+      stationType
+    ].filter(Boolean)
     const commoditySubtexts = [
       commoditySymbol && commoditySymbol !== commodityName ? commoditySymbol : null,
       summaryPriceDisplay && summaryPriceDisplay !== '--' ? `@ ${summaryPriceDisplay}` : null
@@ -150,13 +157,13 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
           subtexts: [
             ...(Array.isArray(shipSourceSegment.subtexts) ? shipSourceSegment.subtexts : []),
             originName && originName !== shipSourceSegment.name ? `Docked: ${originName}` : null,
-            originSystem
+            originSystem ? <CopyOnClick copyMessageKey='system'>{originSystem}</CopyOnClick> : null
           ].filter(Boolean),
           metrics: buildMetrics(sourceMetrics)
         }
       : {
           icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
-          name: originName,
+          name: originName ? <CopyOnClick copyMessageKey='station'>{originName}</CopyOnClick> : originName,
           subtexts: originSubtexts,
           metrics: buildMetrics(sourceMetrics),
           ariaLabel: originName ? `Origin station ${originName}` : 'Local market origin'
@@ -164,7 +171,7 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
 
     const destinationSegment = {
       icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
-      name: stationName,
+      name: stationName ? <CopyOnClick copyMessageKey='station'>{stationName}</CopyOnClick> : stationName,
       subtexts: destinationSubtexts,
       metrics: buildMetrics(destinationMetrics),
       ariaLabel: `Destination station ${stationName}`

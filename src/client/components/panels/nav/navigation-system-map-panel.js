@@ -60,7 +60,7 @@ export default function NavigationSystemMapPanel ({ system, systemObject, setSys
             <div className='system-map__info fx-fade-in text-uppercase'>
               <span className='text-info'>
                 <i className='icarus-terminal-system-orbits' style={{ fontSize: '1.5rem', float: 'left', position: 'relative', left: '-.15rem' }} />
-                <CopyOnClick append=' system'>{system?.name}</CopyOnClick>
+                <CopyOnClick append=' system' copyMessageKey='system'>{system?.name}</CopyOnClick>
               </span>
               <div className='system-map__info--system-facilities'>
                 <span className='text-primary text-muted'>Unknown System</span>
@@ -183,7 +183,7 @@ export default function NavigationSystemMapPanel ({ system, systemObject, setSys
           <div className='system-map__info fx-fade-in text-uppercase'>
             <span className='text-info'>
               <i className='icarus-terminal-system-orbits' style={{ fontSize: '1.5rem', float: 'left', position: 'relative', left: '-.15rem' }} />
-              <CopyOnClick append=' system'>{system.name}</CopyOnClick>
+              <CopyOnClick append=' system' copyMessageKey='system'>{system.name}</CopyOnClick>
             </span>
             <span className='text-center-vertical' style={{pointerEvents: 'none'}}>
              {system.detail && system.detail.bodies && system.detail.bodies.length > 0 &&

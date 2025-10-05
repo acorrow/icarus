@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Icons from '../../lib/icons'
 import { sanitizeInaraText } from '../../lib/sanitize-inara-text'
+import CopyOnClick from '../copy-on-click'
 import styles from './station-summary.module.css'
 
 const DEMAND_ARROW_PATTERN = /[▲△▴▵▼▽▾▿↑↓]/g
@@ -111,8 +112,14 @@ export default function StationSummary ({
     <div className={styles.stationCell}>
       {resolvedIcon}
       <div className={styles.stationCellText}>
-        <div className={styles.stationName}>{normalizedName}</div>
-        {normalizedSystem ? <div className={styles.stationSystem}>{normalizedSystem}</div> : null}
+        <div className={styles.stationName}>
+          <CopyOnClick copyMessageKey='station'>{normalizedName}</CopyOnClick>
+        </div>
+        {normalizedSystem ? (
+          <div className={styles.stationSystem}>
+            <CopyOnClick copyMessageKey='system'>{normalizedSystem}</CopyOnClick>
+          </div>
+        ) : null}
         {hasMetaRow ? (
           <div className={styles.stationMetaRow}>
             {normalizedType ? <div className={styles.stationMeta}>{normalizedType}</div> : null}
