@@ -71,6 +71,8 @@ const SHIP_STATUS_UPDATE_EVENTS = new Set([
   'ShipyardTransfer'
 ])
 
+const LARGE_PAD_SIZE_VALUE = '3'
+
 function LoadingSpinner ({ label, inline = false }) {
   return (
     <div
@@ -93,7 +95,6 @@ function TradeRouteFilterPanel ({
   filters,
   onFilterChange,
   options,
-  cargoCapacityDisplay,
   selectedSystemName,
   systemSelection,
   systemInput,
@@ -135,18 +136,7 @@ function TradeRouteFilterPanel ({
     orderByOptions
   } = options
 
-  const handleCargoCapacityChange = event => {
-    const raw = event.target.value
-    if (raw === '') {
-      onFilterChange('cargoCapacity', '')
-      return
-    }
-    const parsed = Number(raw)
-    if (!Number.isFinite(parsed) || parsed < 0) {
-      return
-    }
-    onFilterChange('cargoCapacity', String(Math.floor(parsed)))
-  }
+  const padSizeDefaultedToLarge = !padSizeAutoDetected && padSize === LARGE_PAD_SIZE_VALUE
 
   const renderSystemOptionLabel = option => {
     if (!option || typeof option.name !== 'string') return ''
@@ -217,11 +207,12 @@ function TradeRouteFilterPanel ({
                 min='0'
                 step='1'
                 value={cargoCapacity}
-                onChange={handleCargoCapacityChange}
-                placeholder={initialShipInfoLoaded ? 'Enter capacity' : 'Detecting…'}
+                readOnly
+                aria-readonly='true'
+                placeholder={initialShipInfoLoaded ? 'Auto-detected from ship' : 'Detecting ship data…'}
+                title={initialShipInfoLoaded ? 'Cargo capacity auto-detected from current ship' : 'Detecting ship data from current ship'}
                 className={styles.tradeFiltersNumberInput}
               />
-              <span className={styles.tradeFilterHint}>{cargoCapacityDisplay}{!initialShipInfoLoaded ? ' · detecting ship data' : ''}</span>
             </div>
             <div className={styles.tradeFilterField}>
               <label htmlFor='trade-route-distance'>Max. route distance</label>
@@ -254,16 +245,22 @@ function TradeRouteFilterPanel ({
               <select
                 id='trade-route-pad'
                 value={padSize}
-                onChange={event => onFilterChange('padSize', event.target.value)}
+                disabled
+                aria-readonly='true'
                 className={styles.tradeFiltersSelect}
               >
+                <option value=''>{initialShipInfoLoaded ? 'Unavailable' : 'Detecting…'}</option>
                 {padSizeOptions.map(option => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
-              {padSizeAutoDetected && (
-                <span className={styles.tradeFilterHint}>Auto-detected from ship</span>
-              )}
+              <span className={styles.tradeFilterHint}>
+                {padSizeAutoDetected
+                  ? 'Auto-detected from current ship'
+                  : padSizeDefaultedToLarge
+                    ? 'Ship pad size unavailable — defaulting to Large'
+                    : initialShipInfoLoaded ? 'Ship pad size unavailable' : 'Detecting ship data…'}
+              </span>
             </div>
             <div className={styles.tradeFilterField}>
               <label htmlFor='trade-route-station-distance'>Max. station distance</label>
@@ -3480,7 +3477,7 @@ function TradeRoutesPanel () {
     cargoCapacity: '',
     routeDistance: '30',
     priceAge: '8',
-    padSize: '2',
+    padSize: '',
     minSupply: '500',
     minDemand: '0',
     stationDistance: '0',
@@ -3572,6 +3569,7 @@ function TradeRoutesPanel () {
       setPadSizeAutoDetected(true)
     } else {
       setPadSizeAutoDetected(false)
+      updates.padSize = LARGE_PAD_SIZE_VALUE
     }
 
     setShipStatus(shipStatus || null)
@@ -3585,7 +3583,7 @@ function TradeRoutesPanel () {
     } catch (err) {
       if (isMountedRef.current) {
         setPadSizeAutoDetected(false)
-        setFilters(prev => ({ ...prev, cargoCapacity: '' }))
+        setFilters(prev => ({ ...prev, cargoCapacity: '', padSize: LARGE_PAD_SIZE_VALUE }))
         setShipStatus(null)
       }
     } finally {
@@ -3729,14 +3727,6 @@ function TradeRoutesPanel () {
     demandOptions,
     orderByOptions
   }), [routeDistanceOptions, priceAgeOptions, padSizeOptions, stationDistanceOptions, surfaceOptions, powerOptions, supplyOptions, demandOptions, orderByOptions])
-
-  const cargoCapacityDisplay = useMemo(() => {
-    const capacityNumber = Number(cargoCapacity)
-    if (Number.isFinite(capacityNumber) && capacityNumber >= 0) {
-      return `${Math.round(capacityNumber).toLocaleString()} t`
-    }
-    return initialShipInfoLoaded ? 'Unknown' : 'Detecting…'
-  }, [cargoCapacity, initialShipInfoLoaded])
 
   const filterRoutes = useCallback((list = []) => {
     return Array.isArray(list) ? [...list] : []
@@ -4164,7 +4154,6 @@ function TradeRoutesPanel () {
             filters={filters}
             onFilterChange={setFilterValue}
             options={filterOptions}
-            cargoCapacityDisplay={cargoCapacityDisplay}
             selectedSystemName={selectedSystemName}
             systemSelection={systemSelection}
             systemInput={systemInput}

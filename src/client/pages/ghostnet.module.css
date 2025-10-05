@@ -1230,6 +1230,8 @@ button.terminalStatusPreview:focus-visible {
   padding: 0.65rem 0.9rem;
   font-size: 0.95rem;
   min-width: 0;
+  box-sizing: border-box;
+  height: 2.75rem;
 }
 
 .tradeFiltersSelect:focus,
