@@ -136,32 +136,10 @@ html {
   pointer-events: all;
 }
 
-.selectable-wrapper::after {
-  display: block;
-  position: absolute;
-  opacity: 0;
-  transition: all .1s ease-in;
-  content: "\ea01";
-  color: var(--color-secondary);
-  text-shadow: .1rem .1rem 0 var(--color-secondary-dark);
-  bottom: .2rem;
-  right: -1.75rem;
-  font-size: 1.25rem;
-  line-height: 1.25rem;
-  font-family: 'icarus-terminal' !important;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  pointer-events: none;
-}
-
-.text-right > .selectable-wrapper::after {
-  right: initial;
-  left: -1.75rem;
-}
-
-.selectable:hover::after {
-  opacity: 1;
+.selectable-wrapper:hover,
+.selectable-wrapper:hover .selectable {
+  color: var(--color-success);
+  text-shadow: var(--text-shadow);
 }
 
 .selectable--text {
