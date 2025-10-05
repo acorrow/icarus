@@ -4,6 +4,28 @@ This file contains the canonical list of features, shortnames, and their mapping
 
 ## GhostNet Feature Mapping
 
+
+## Trade Route Table Modular Display & Responsive Grid
+
+
+GhostNet now uses a grid-based, multi-row modular display for trade route tables, engineered for maximum data density and minimal whitespace. Each table row is split into multiple display rows for stations, commodities, and profit, using a tight, stable grid layout:
+
+- **Stations:** Displayed in two stacked rows per cell, with icon, station name, distance to station, system, reputation, and distance to system. All text and metrics are tightly aligned left-to-right, with minimal padding and whitespace. Columns scale and overflow content is hidden (never truncated or wrapped), so only the most important info remains visible as space runs out.
+- **Commodities:** Displayed in two stacked rows per cell, with icon, commodity name, price, demand, and directional arrows. Layout is compact, with all fields lined up precisely and excess info hidden responsively.
+- **Profit:** Displayed in two stacked rows per cell, with profit per ton, average, profit per trip, and profit per hour. Metrics are tightly grouped for quick scanning.
+- **Trade Route Row Layout:** Each row displays as StationA | Commodities | StationB | Profit, with modular grid layouts for each column. Rows are intentionally taller to allow for stacked, dense layouts and stable alignment.
+- **Sorting:**
+  - StationA: Sort by system distance to player
+  - Commodities: Not sortable
+  - StationB: Sort by system distance to player
+  - Profit: Sort by profit per ton
+- **Responsive Behavior:**
+  - Columns scale to fit available space; lower-priority info is hidden, not truncated or wrapped.
+  - Table rows are taller to accommodate grid layouts and maximize data per row.
+  - Media queries hide less important info at narrower breakpoints, always preserving tight alignment and minimal whitespace.
+
+This layout is designed to surface as much actionable data as possible, with tight, compact rows and precise text alignment. All legacy granular columns and truncation logic have been removed in favor of dense, modular displays.
+
 Use these shortnames when coordinating GhostNet work:
 
 - **ROUTESCOUT – Trade Route Intelligence.** `TradeRoutesPanel` combines auto-detected ship stats (cargo capacity + landing pad size pulled via `getShipStatus`) with manual filters before calling `/api/ghostnet-trade-routes`. The panel normalizes GhostNet HTML into structured legs, exposes inline sort/filter controls, and surfaces contextual overlays summarizing faction relations and station metadata. Respect the `SHIP_STATUS_UPDATE_EVENTS` set when refreshing ship-derived filters and debounce outbound fetches when mutating filter state (`ghostnet.js`).
