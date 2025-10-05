@@ -510,11 +510,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
               title={originStandingDisplay.title || undefined}
             >
               {originIconName
-                ? <StationIcon icon={originIconName} color={originStandingDisplay.iconColor} size={28} />
+                ? <StationIcon icon={originIconName} color={originStandingDisplay.iconColor} size='100%' />
                 : null}
             </span>
             <div className={styles.tradeRouteStationContent}>
               <span className={styles.tradeRouteStationName} title={originStationDisplay || undefined}>{renderValue(originStationDisplay)}</span>
+              <span className={styles.tradeRouteStationSystem} title={originSystemName || undefined}>{renderValue(originSystemName)}</span>
               <div className={styles.tradeRouteStationChips}>
                 {renderMetricChip({
                   value: originStationDistanceDisplay,
@@ -528,9 +529,6 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                 })}
               </div>
             </div>
-          </div>
-          <div className={`${styles.tradeRouteStationRow} ${styles.tradeRouteStationRowSecondary}`}>
-            <span className={styles.tradeRouteStationSystem} title={originSystemName || undefined}>{renderValue(originSystemName)}</span>
           </div>
         </div>
       </td>
@@ -572,11 +570,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
               title={destinationStandingDisplay.title || undefined}
             >
               {destinationIconName
-                ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.iconColor} size={28} />
+                ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.iconColor} size='100%' />
                 : null}
             </span>
             <div className={styles.tradeRouteStationContent}>
               <span className={styles.tradeRouteStationName} title={destinationStationDisplay || undefined}>{renderValue(destinationStationDisplay)}</span>
+              <span className={styles.tradeRouteStationSystem} title={destinationSystemName || undefined}>{renderValue(destinationSystemName)}</span>
               <div className={styles.tradeRouteStationChips}>
                 {renderMetricChip({
                   value: destinationStationDistanceDisplay,
@@ -590,9 +589,6 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                 })}
               </div>
             </div>
-          </div>
-          <div className={`${styles.tradeRouteStationRow} ${styles.tradeRouteStationRowSecondary}`}>
-            <span className={styles.tradeRouteStationSystem} title={destinationSystemName || undefined}>{renderValue(destinationSystemName)}</span>
           </div>
         </div>
       </td>
