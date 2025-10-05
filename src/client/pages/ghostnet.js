@@ -441,7 +441,6 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
   const averageProfitText = sanitizeInaraText(route?.summary?.averageProfitText)
 
-  const routeDistance = resolveRouteDistance(route)
   const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
 
   const renderValue = value => (value ? value : <span className={styles.tradeRoutePlaceholder}>--</span>)
@@ -478,10 +477,8 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const destinationStationDistanceVariant = getStationDistanceVariant(destinationStationDistance.value)
   const originSystemDistanceVariant = getSystemDistanceVariant(originSystemDistance.value, shipJumpRange)
   const destinationSystemDistanceVariant = getSystemDistanceVariant(destinationSystemDistance.value, shipJumpRange)
-  const routeDistanceVariant = getSystemDistanceVariant(routeDistance.value, shipJumpRange)
   const originSystemDistanceColor = getDistanceSeverityColor(originSystemDistance.value, shipJumpRange)
   const destinationSystemDistanceColor = getDistanceSeverityColor(destinationSystemDistance.value, shipJumpRange)
-  const routeDistanceColor = getDistanceSeverityColor(routeDistance.value, shipJumpRange)
 
   const handleClick = () => onSelect(route)
   const handleKeyDown = event => onKeyDown(event, route)
@@ -619,19 +616,15 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
               <span className={styles.tradeRouteProfitValue}>{renderValue(profitPerHour && profitPerHour !== '--' ? profitPerHour : '')}</span>
             </div>
           </div>
-          <div className={styles.tradeRouteProfitMeta}>
-            {renderMetricChip({
-              value: routeDistance.display,
-              variant: routeDistanceVariant,
-              title: 'Total route distance',
-              color: routeDistanceColor || undefined
-            })}
-            {renderMetricChip({
-              value: updatedDisplay,
-              variant: 'neutral',
-              title: 'Last updated'
-            })}
-          </div>
+          {updatedDisplay && (
+            <div className={styles.tradeRouteProfitMeta}>
+              {renderMetricChip({
+                value: updatedDisplay,
+                variant: 'neutral',
+                title: 'Last updated'
+              })}
+            </div>
+          )}
         </div>
       </td>
     </tr>
@@ -1445,46 +1438,6 @@ function resolveStationDistance (station = {}) {
   }
 
   const display = formatStationDistance(numericValue, textValue)
-  const normalizedDisplay = display && display !== '--' ? display : (textValue && textValue !== '--' ? textValue : '')
-
-  return {
-    display: normalizedDisplay,
-    value: numericValue !== null ? numericValue : parseNumberFromText(textValue)
-  }
-}
-
-function resolveRouteDistance (route = {}) {
-  const summary = route?.summary || {}
-  const numericCandidates = [
-    summary?.routeDistanceLy,
-    summary?.distanceLy,
-    route?.distanceLy,
-    route?.distance
-  ]
-
-  let numericValue = null
-  for (const value of numericCandidates) {
-    if (typeof value === 'number' && !Number.isNaN(value)) {
-      numericValue = value
-      break
-    }
-  }
-
-  const textCandidates = [
-    summary?.routeDistanceText,
-    summary?.distanceText,
-    route?.distanceDisplay
-  ]
-
-  let textValue = ''
-  for (const text of textCandidates) {
-    if (typeof text === 'string' && text.trim()) {
-      textValue = sanitizeInaraText(text)
-      break
-    }
-  }
-
-  const display = formatSystemDistance(numericValue, textValue)
   const normalizedDisplay = display && display !== '--' ? display : (textValue && textValue !== '--' ? textValue : '')
 
   return {
