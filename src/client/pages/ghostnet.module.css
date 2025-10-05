@@ -1314,6 +1314,75 @@ button.terminalToggle:active:not([disabled]):not(.button--active) {
   transform: translateY(0);
 }
 
+.tradeRoutesTable {
+  min-width: 760px;
+}
+
+.tradeRoutesTable td {
+  white-space: normal;
+  padding: 1.1rem 1.15rem;
+}
+
+.tradeRoutesStationCell,
+.tradeRoutesItemCell,
+.tradeRoutesShipCell {
+  min-width: 0;
+}
+
+.tradeRoutesHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tradeRoutesHeaderTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.tradeRoutesHeaderSubtitle {
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ghostnet-text-soft);
+}
+
+.tradeRoutesQuantityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ghostnet-accent);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 18%, transparent);
+  box-shadow: 0 0 0.75rem color-mix(in srgb, var(--ghostnet-color-primary) 22%, transparent);
+}
+
+.tradeRoutesQuantitySupply {
+  color: #29f3c3;
+  background: color-mix(in srgb, var(--ghostnet-color-success) 15%, transparent);
+}
+
+.tradeRoutesQuantityDemand {
+  color: #ff5fc1;
+  background: color-mix(in srgb, var(--ghostnet-color-warning) 15%, transparent);
+}
+
+.tradeRoutesQuantityBadge span:last-child {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+}
+
+.tradeRoutesQuantityPlaceholder {
+  color: var(--ghostnet-text-soft);
+  background: color-mix(in srgb, var(--ghostnet-color-primary) 10%, transparent);
+  box-shadow: none;
+}
+
 .tableCellTop {
   vertical-align: top;
 }

@@ -4,6 +4,9 @@ import PanelNavigation from '../components/panel-navigation'
 import Icons from '../lib/icons'
 import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
 import StationSummary, { StationIcon, DemandIndicator } from '../components/ghostnet/station-summary'
+import StationCell from '../components/ghostnet/station-cell'
+import ItemCell from '../components/ghostnet/item-cell'
+import ShipCell from '../components/ghostnet/ship-cell'
 import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
 import CopyOnClick from '../components/copy-on-click'
@@ -403,13 +406,19 @@ function TradeRouteFilterPanel ({
   )
 }
 
+const PAD_SIZE_LABELS = {
+  '1': 'Small Pad',
+  '2': 'Medium Pad',
+  '3': 'Large Pad'
+}
+
 const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   route,
   index,
   onSelect,
   onKeyDown,
-  renderQuantityIndicator,
-  factionStandings
+  factionStandings,
+  shipStatus
 }) {
   const originLocal = route?.origin?.local
   const destinationLocal = route?.destination?.local
@@ -417,49 +426,108 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const originInfo = getRouteStationInfo(route, 'origin')
   const destinationInfo = getRouteStationInfo(route, 'destination')
 
-  const originStation = originInfo.station || '--'
-  const originSystemName = originInfo.system || ''
-  const destinationStation = destinationInfo.station || '--'
-  const destinationSystemName = destinationInfo.system || ''
+  const originStation = sanitizeInaraText(originInfo.station) || '--'
+  const originSystemName = sanitizeInaraText(originInfo.system)
+  const destinationStation = sanitizeInaraText(destinationInfo.station) || '--'
+  const destinationSystemName = sanitizeInaraText(destinationInfo.system)
 
   const originFactionName = resolveRouteFactionName(originLocal, route?.origin)
   const destinationFactionName = resolveRouteFactionName(destinationLocal, route?.destination)
   const originStandingDisplay = getFactionStandingDisplay(originFactionName, factionStandings)
   const destinationStandingDisplay = getFactionStandingDisplay(destinationFactionName, factionStandings)
 
-  const originStationClassName = originStandingDisplay.className || undefined
-  const destinationStationClassName = destinationStandingDisplay.className || undefined
-  const originStationColor = originStandingDisplay.color
-  const destinationStationColor = destinationStandingDisplay.color
-  const originStationTitle = originStandingDisplay.title
-  const destinationStationTitle = destinationStandingDisplay.title
+  const originIconName = getStationIconName(originLocal, route?.origin)
+  const destinationIconName = getStationIconName(destinationLocal, route?.destination)
+
+  const originStationType = sanitizeInaraText(originLocal?.stationType || route?.origin?.stationType)
+  const destinationStationType = sanitizeInaraText(destinationLocal?.stationType || route?.destination?.stationType)
+  const originStationDistance = sanitizeInaraText(route?.origin?.stationDistanceText)
+  const destinationStationDistance = sanitizeInaraText(route?.destination?.stationDistanceText)
+  const originFaction = sanitizeInaraText(route?.origin?.factionName || originLocal?.faction || originLocal?.controllingFaction?.name)
+  const destinationFaction = sanitizeInaraText(route?.destination?.factionName || destinationLocal?.faction || destinationLocal?.controllingFaction?.name)
+
+  const originLeg = {
+    icon: originIconName ? <StationIcon icon={originIconName} color={originStandingDisplay.color} /> : null,
+    name: originStation,
+    system: originSystemName,
+    type: originStationType,
+    distance: originStationDistance,
+    status: originStandingDisplay.statusLabel,
+    statusTitle: originStandingDisplay.title,
+    statusColor: originStandingDisplay.color,
+    color: originStandingDisplay.color,
+    meta: originFaction ? [`Faction ${originFaction}`] : []
+  }
+
+  const destinationLeg = {
+    icon: destinationIconName ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.color} /> : null,
+    name: destinationStation,
+    system: destinationSystemName,
+    type: destinationStationType,
+    distance: destinationStationDistance,
+    status: destinationStandingDisplay.statusLabel,
+    statusTitle: destinationStandingDisplay.title,
+    statusColor: destinationStandingDisplay.color,
+    color: destinationStandingDisplay.color,
+    meta: destinationFaction ? [`Faction ${destinationFaction}`] : []
+  }
+
   const outboundInfo = getRouteCommodityInfo(route, 'outbound')
   const returnInfo = getRouteCommodityInfo(route, 'return')
 
-  const outboundCommodity = sanitizeInaraText(outboundInfo.commodity) || outboundInfo.commodity || '--'
-  const returnCommodity = sanitizeInaraText(returnInfo.commodity) || returnInfo.commodity || '--'
-  const outboundBuyPrice = sanitizeInaraText(outboundInfo.buy?.priceText) || outboundInfo.buy?.priceText || '--'
-  const returnSellPrice = sanitizeInaraText(returnInfo.sell?.priceText) || returnInfo.sell?.priceText || '--'
-
-  const outboundSupplyIndicator = renderQuantityIndicator(outboundInfo.buy, 'supply')
-  const outboundDemandIndicator = renderQuantityIndicator(outboundInfo.sell, 'demand')
-  const returnSupplyIndicator = renderQuantityIndicator(returnInfo.buy, 'supply')
-  const returnDemandIndicator = renderQuantityIndicator(returnInfo.sell, 'demand')
-  const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
+  const outboundCommodity = sanitizeInaraText(outboundInfo.commodity) || '--'
+  const returnCommodity = sanitizeInaraText(returnInfo.commodity) || '--'
+  const outboundBuyPrice = sanitizeInaraText(outboundInfo.buy?.priceText)
+  const returnSellPrice = sanitizeInaraText(returnInfo.sell?.priceText)
 
   const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
   const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
   const profitPerHour = formatCredits(route?.summary?.profitPerHour, route?.summary?.profitPerHourText)
+  const averageProfitText = sanitizeInaraText(route?.summary?.averageProfitText)
   const routeDistanceDisplay = formatSystemDistance(route?.summary?.routeDistanceLy ?? route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.routeDistanceText || route?.summary?.distanceText || route?.distanceDisplay)
   const systemDistanceDisplay = formatSystemDistance(route?.summary?.distanceLy ?? route?.distanceLy ?? route?.distance, route?.summary?.distanceText || route?.distanceDisplay)
   const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
 
-  const originIconName = getStationIconName(originLocal, route?.origin)
-  const destinationIconName = getStationIconName(destinationLocal, route?.destination)
-  const caretSymbol = String.fromCharCode(0x203A)
+  const outboundData = {
+    commodity: outboundCommodity,
+    price: outboundBuyPrice ? `Buy ${outboundBuyPrice}` : '',
+    supply: outboundInfo.buy,
+    demand: outboundInfo.sell
+  }
+
+  const returnData = {
+    commodity: returnCommodity,
+    price: returnSellPrice ? `Sell ${returnSellPrice}` : '',
+    supply: returnInfo.buy,
+    demand: returnInfo.sell
+  }
+
+  const profitSummary = averageProfitText ? { average: averageProfitText } : null
+
+  const padSizeCode = getShipLandingPadSize(shipStatus)
+  const padLabel = padSizeCode ? PAD_SIZE_LABELS[padSizeCode] || '' : ''
+  const capacityNumber = Number(shipStatus?.cargo?.capacity)
+  const cargoLabel = Number.isFinite(capacityNumber) && capacityNumber > 0
+    ? `Cargo ${Math.round(capacityNumber).toLocaleString()} t`
+    : ''
+  const shipName = sanitizeInaraText(shipStatus?.name)
+  const shipIdent = sanitizeInaraText(shipStatus?.ident)
+  const shipType = sanitizeInaraText(shipStatus?.type)
+
+  const shipDetails = shipStatus
+    ? {
+        name: shipName || shipType || '',
+        ident: shipIdent && shipName ? `ID ${shipIdent}` : shipIdent,
+        type: shipType && shipType !== shipName ? shipType : '',
+        cargo: cargoLabel,
+        pad: padLabel
+      }
+    : null
 
   const handleClick = () => onSelect(route, index)
   const handleKeyDown = event => onKeyDown(event, route, index)
+
+  const caretSymbol = String.fromCharCode(0x203A)
 
   return (
     <tr
@@ -474,46 +542,29 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
       <td className={styles.tableCellCaret} aria-hidden='true'>
         {caretSymbol}
       </td>
-      <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-        <div className={styles.tableCellInline}>
-          {originIconName && <StationIcon icon={originIconName} color={originStationColor} />}
-          <span
-            style={{ fontWeight: 600, color: originStationColor }}
-            className={originStationClassName}
-            title={originStationTitle}
-          >
-            {originStation}
-          </span>
-        </div>
+      <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
+        <StationCell
+          origin={originLeg}
+          destination={destinationLeg}
+          collapsePriority='secondary'
+        />
       </td>
-      <td className={`hidden-small ${styles.tableCellTop}`}>{originSystemName || '--'}</td>
-      <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-        <div className={styles.tableCellInline}>
-          {destinationIconName && <StationIcon icon={destinationIconName} color={destinationStationColor} />}
-          <span
-            style={{ fontWeight: 600, color: destinationStationColor }}
-            className={destinationStationClassName}
-            title={destinationStationTitle}
-          >
-            {destinationStation}
-          </span>
-        </div>
+      <td className={`${styles.tableCellTop} ${styles.tradeRoutesItemCell}`}>
+        <ItemCell
+          outbound={outboundData}
+          returnLeg={returnData}
+          profitSummary={profitSummary}
+          collapsePriority='secondary'
+        />
       </td>
-      <td className={`hidden-small ${styles.tableCellTop}`}>{destinationSystemName || '--'}</td>
-      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}><strong>{outboundCommodity}</strong></td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundBuyPrice}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundSupplyIndicator || indicatorPlaceholder}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{outboundDemandIndicator || indicatorPlaceholder}</td>
-      <td className={`hidden-small ${styles.tableCellTop} ${styles.tableCellWrap}`}><strong>{returnCommodity}</strong></td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnSellPrice}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnSupplyIndicator || indicatorPlaceholder}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{returnDemandIndicator || indicatorPlaceholder}</td>
-      <td className={`text-right ${styles.tableCellTop}`}>{profitPerTon || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{profitPerTrip || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{profitPerHour || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{routeDistanceDisplay || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{systemDistanceDisplay || '--'}</td>
-      <td className={`hidden-small text-right ${styles.tableCellTop}`}>{updatedDisplay || '--'}</td>
+      <td className={`${styles.tableCellTop} ${styles.tradeRoutesShipCell}`}>
+        <ShipCell
+          profit={{ perTon: profitPerTon, perTrip: profitPerTrip, perHour: profitPerHour, average: averageProfitText }}
+          routeMeta={{ routeDistance: routeDistanceDisplay, systemDistance: systemDistanceDisplay, updated: updatedDisplay }}
+          ship={shipDetails}
+          collapsePriority='secondary'
+        />
+      </td>
     </tr>
   )
 })
@@ -1150,24 +1201,9 @@ const FILTER_SUMMARY_REFRESH_ICON_STYLE = {
 }
 
 const DEFAULT_SORT_DIRECTION = {
-  origin: 'asc',
-  originSystem: 'asc',
-  destination: 'asc',
-  destinationSystem: 'asc',
-  outboundCommodity: 'asc',
-  outboundBuyPrice: 'desc',
-  outboundSupply: 'desc',
-  outboundDemand: 'desc',
-  returnCommodity: 'asc',
-  returnSellPrice: 'desc',
-  returnSupply: 'desc',
-  returnDemand: 'desc',
-  profitPerTon: 'desc',
-  profitPerTrip: 'desc',
-  profitPerHour: 'desc',
-  routeDistance: 'asc',
-  distance: 'asc',
-  updated: 'desc'
+  station: 'asc',
+  item: 'desc',
+  ship: 'desc'
 }
 
 function parseNumberFromText (value) {
@@ -3133,9 +3169,10 @@ function TradeRoutesPanel () {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [shipStatus, setShipStatus] = useState(null)
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
-  const [sortField, setSortField] = useState('distance')
-  const [sortDirection, setSortDirection] = useState('asc')
+  const [sortField, setSortField] = useState('ship')
+  const [sortDirection, setSortDirection] = useState('desc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(false)
   const [selectedRouteContext, setSelectedRouteContext] = useState(null)
   const factionStandings = useFactionStandings()
@@ -3171,6 +3208,7 @@ function TradeRoutesPanel () {
       setPadSizeAutoDetected(false)
     }
 
+    setShipStatus(shipStatus || null)
     setFilters(prev => ({ ...prev, ...updates }))
   }, [])
 
@@ -3182,6 +3220,7 @@ function TradeRoutesPanel () {
       if (isMountedRef.current) {
         setPadSizeAutoDetected(false)
         setFilters(prev => ({ ...prev, cargoCapacity: '' }))
+        setShipStatus(null)
       }
     } finally {
       if (isMountedRef.current) setInitialShipInfoLoaded(true)
@@ -3410,42 +3449,12 @@ function TradeRoutesPanel () {
 
     const getValue = route => {
       switch (sortField) {
-        case 'origin':
+        case 'station':
           return getRouteStationInfo(route, 'origin').station
-        case 'originSystem':
-          return getRouteStationInfo(route, 'origin').system
-        case 'destination':
-          return getRouteStationInfo(route, 'destination').station
-        case 'destinationSystem':
-          return getRouteStationInfo(route, 'destination').system
-        case 'outboundCommodity':
-          return getRouteCommodityInfo(route, 'outbound').commodity
-        case 'outboundBuyPrice':
-          return extractPriceValue(getRouteCommodityInfo(route, 'outbound').buy)
-        case 'outboundSupply':
-          return extractQuantityValue(getRouteCommodityInfo(route, 'outbound').buy)
-        case 'outboundDemand':
-          return extractQuantityValue(getRouteCommodityInfo(route, 'outbound').sell)
-        case 'returnCommodity':
-          return getRouteCommodityInfo(route, 'return').commodity
-        case 'returnSellPrice':
-          return extractPriceValue(getRouteCommodityInfo(route, 'return').sell)
-        case 'returnSupply':
-          return extractQuantityValue(getRouteCommodityInfo(route, 'return').buy)
-        case 'returnDemand':
-          return extractQuantityValue(getRouteCommodityInfo(route, 'return').sell)
-        case 'profitPerTon':
+        case 'item':
           return extractProfitPerTon(route)
-        case 'profitPerTrip':
-          return extractProfitPerTrip(route)
-        case 'profitPerHour':
+        case 'ship':
           return extractProfitPerHour(route)
-        case 'routeDistance':
-          return extractRouteDistance(route)
-        case 'distance':
-          return extractSystemDistance(route)
-        case 'updated':
-          return extractUpdatedAt(route)
         default:
           return null
       }
@@ -3494,7 +3503,7 @@ function TradeRoutesPanel () {
     if (sortField !== field) return null
     const arrow = sortDirection === 'asc' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
     return (
-      <span style={{ color: 'var(--ghostnet-accent)', marginLeft: '0.35rem', fontSize: '0.8rem' }}>{arrow}</span>
+      <span className={styles.tableSortIndicator} aria-hidden='true'>{arrow}</span>
     )
   }
 
@@ -3633,27 +3642,27 @@ function TradeRoutesPanel () {
     setSelectedRouteContext(null)
   }, [])
 
-  const renderQuantityIndicator = (entry, type) => {
-    if (!entry) return null
-    const quantityText = entry?.quantityText || (typeof entry?.quantity === 'number' && !Number.isNaN(entry.quantity)
-      ? entry.quantity.toLocaleString()
-      : null)
-    const level = typeof entry?.level === 'number' && entry.level > 0 ? Math.min(entry.level, 4) : null
-    const symbol = type === 'supply' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
-    const icon = level ? symbol.repeat(Math.min(level, 3)) : symbol
-    const color = type === 'supply' ? '#5bd1a5' : '#ff6b6b'
-    return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85em' }}>
-        <span style={{ color }}>{icon}</span>
-        <span style={{ color: '#bbb' }}>{quantityText || '--'}</span>
-      </span>
-    )
-  }
-
   const handleSubmit = event => {
     event.preventDefault()
     const targetSystem = selectedSystemName || currentSystem?.name
     refreshRoutes(targetSystem)
+  }
+
+  const renderQuantityIndicator = (entry, type) => {
+    if (!entry) return null
+    const quantityText = entry?.quantityText || (typeof entry?.quantity === 'number' && !Number.isNaN(entry.quantity)
+      ? `${Math.round(entry.quantity).toLocaleString()} t`
+      : null)
+    const level = typeof entry?.level === 'number' && entry.level > 0 ? Math.min(Math.round(entry.level), 4) : null
+    const symbol = type === 'supply' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
+    const badgeClasses = [styles.tradeRoutesQuantityBadge]
+    badgeClasses.push(type === 'supply' ? styles.tradeRoutesQuantitySupply : styles.tradeRoutesQuantityDemand)
+    return (
+      <span className={badgeClasses.join(' ')}>
+        <span aria-hidden='true'>{symbol.repeat(level || 1)}</span>
+        <span>{quantityText || '--'}</span>
+      </span>
+    )
   }
 
   useEffect(() => {
@@ -3698,187 +3707,70 @@ function TradeRoutesPanel () {
 
   const renderRoutesTable = () => (
     <div className={styles.dataTableContainer}>
-      <table className={`${styles.dataTable} ${styles.dataTableDense}`}>
-      <thead>
-        <tr>
-          <th aria-hidden='true' className={styles.tableCellCaret} />
-          <th
-            className={`${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('origin')}
-            onKeyDown={event => handleSortKeyDown(event, 'origin')}
-            tabIndex={0}
-            aria-sort={sortField === 'origin' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Origin Station{renderSortArrow('origin')}
-          </th>
-          <th
-            className={`hidden-small ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('originSystem')}
-            onKeyDown={event => handleSortKeyDown(event, 'originSystem')}
-            tabIndex={0}
-            aria-sort={sortField === 'originSystem' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Origin System{renderSortArrow('originSystem')}
-          </th>
-          <th
-            className={`${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('destination')}
-            onKeyDown={event => handleSortKeyDown(event, 'destination')}
-            tabIndex={0}
-            aria-sort={sortField === 'destination' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Destination Station{renderSortArrow('destination')}
-          </th>
-          <th
-            className={`hidden-small ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('destinationSystem')}
-            onKeyDown={event => handleSortKeyDown(event, 'destinationSystem')}
-            tabIndex={0}
-            aria-sort={sortField === 'destinationSystem' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Destination System{renderSortArrow('destinationSystem')}
-          </th>
-          <th
-            className={`hidden-small ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('outboundCommodity')}
-            onKeyDown={event => handleSortKeyDown(event, 'outboundCommodity')}
-            tabIndex={0}
-            aria-sort={sortField === 'outboundCommodity' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Outbound Commodity{renderSortArrow('outboundCommodity')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('outboundBuyPrice')}
-            onKeyDown={event => handleSortKeyDown(event, 'outboundBuyPrice')}
-            tabIndex={0}
-            aria-sort={sortField === 'outboundBuyPrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Buy Price{renderSortArrow('outboundBuyPrice')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('outboundSupply')}
-            onKeyDown={event => handleSortKeyDown(event, 'outboundSupply')}
-            tabIndex={0}
-            aria-sort={sortField === 'outboundSupply' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Supply{renderSortArrow('outboundSupply')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('outboundDemand')}
-            onKeyDown={event => handleSortKeyDown(event, 'outboundDemand')}
-            tabIndex={0}
-            aria-sort={sortField === 'outboundDemand' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Demand{renderSortArrow('outboundDemand')}
-          </th>
-          <th
-            className={`hidden-small ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('returnCommodity')}
-            onKeyDown={event => handleSortKeyDown(event, 'returnCommodity')}
-            tabIndex={0}
-            aria-sort={sortField === 'returnCommodity' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Return Commodity{renderSortArrow('returnCommodity')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('returnSellPrice')}
-            onKeyDown={event => handleSortKeyDown(event, 'returnSellPrice')}
-            tabIndex={0}
-            aria-sort={sortField === 'returnSellPrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Sell Price{renderSortArrow('returnSellPrice')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('returnSupply')}
-            onKeyDown={event => handleSortKeyDown(event, 'returnSupply')}
-            tabIndex={0}
-            aria-sort={sortField === 'returnSupply' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Return Supply{renderSortArrow('returnSupply')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('returnDemand')}
-            onKeyDown={event => handleSortKeyDown(event, 'returnDemand')}
-            tabIndex={0}
-            aria-sort={sortField === 'returnDemand' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Return Demand{renderSortArrow('returnDemand')}
-          </th>
-          <th
-            className={`text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('profitPerTon')}
-            onKeyDown={event => handleSortKeyDown(event, 'profitPerTon')}
-            tabIndex={0}
-            aria-sort={sortField === 'profitPerTon' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Profit/Ton{renderSortArrow('profitPerTon')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('profitPerTrip')}
-            onKeyDown={event => handleSortKeyDown(event, 'profitPerTrip')}
-            tabIndex={0}
-            aria-sort={sortField === 'profitPerTrip' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Profit/Trip{renderSortArrow('profitPerTrip')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('profitPerHour')}
-            onKeyDown={event => handleSortKeyDown(event, 'profitPerHour')}
-            tabIndex={0}
-            aria-sort={sortField === 'profitPerHour' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Profit/Hour{renderSortArrow('profitPerHour')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('routeDistance')}
-            onKeyDown={event => handleSortKeyDown(event, 'routeDistance')}
-            tabIndex={0}
-            aria-sort={sortField === 'routeDistance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Route Distance{renderSortArrow('routeDistance')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('distance')}
-            onKeyDown={event => handleSortKeyDown(event, 'distance')}
-            tabIndex={0}
-            aria-sort={sortField === 'distance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Distance{renderSortArrow('distance')}
-          </th>
-          <th
-            className={`hidden-small text-right ${styles.tableHeaderInteractive}`}
-            onClick={() => handleSortChange('updated')}
-            onKeyDown={event => handleSortKeyDown(event, 'updated')}
-            tabIndex={0}
-            aria-sort={sortField === 'updated' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-          >
-            Updated{renderSortArrow('updated')}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {routes.map((route, index) => (
-          <TradeRouteTableRow
-            key={`route-${index}`}
-            route={route}
-            index={index}
-            onSelect={handleRouteSelect}
-            onKeyDown={handleRouteKeyDown}
-            renderQuantityIndicator={renderQuantityIndicator}
-            factionStandings={factionStandings}
-          />
-        ))}
-      </tbody>
+      <table className={`${styles.dataTable} ${styles.dataTableDense} ${styles.tradeRoutesTable}`}>
+        <thead>
+          <tr>
+            <th aria-hidden='true' className={styles.tableCellCaret} />
+            <th
+              className={styles.tableHeaderInteractive}
+              onClick={() => handleSortChange('station')}
+              onKeyDown={event => handleSortKeyDown(event, 'station')}
+              tabIndex={0}
+              aria-sort={sortField === 'station' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+            >
+              <div className={styles.tradeRoutesHeader}>
+                <div className={styles.tradeRoutesHeaderTitle}>
+                  <span>Station</span>
+                  {renderSortArrow('station')}
+                </div>
+                <span className={styles.tradeRoutesHeaderSubtitle}>Origin &amp; Destination</span>
+              </div>
+            </th>
+            <th
+              className={styles.tableHeaderInteractive}
+              onClick={() => handleSortChange('item')}
+              onKeyDown={event => handleSortKeyDown(event, 'item')}
+              tabIndex={0}
+              aria-sort={sortField === 'item' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+            >
+              <div className={styles.tradeRoutesHeader}>
+                <div className={styles.tradeRoutesHeaderTitle}>
+                  <span>Item</span>
+                  {renderSortArrow('item')}
+                </div>
+                <span className={styles.tradeRoutesHeaderSubtitle}>Commodity Pair</span>
+              </div>
+            </th>
+            <th
+              className={styles.tableHeaderInteractive}
+              onClick={() => handleSortChange('ship')}
+              onKeyDown={event => handleSortKeyDown(event, 'ship')}
+              tabIndex={0}
+              aria-sort={sortField === 'ship' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+            >
+              <div className={styles.tradeRoutesHeader}>
+                <div className={styles.tradeRoutesHeaderTitle}>
+                  <span>Ship</span>
+                  {renderSortArrow('ship')}
+                </div>
+                <span className={styles.tradeRoutesHeaderSubtitle}>Profit &amp; Guidance</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {routes.map((route, index) => (
+            <TradeRouteTableRow
+              key={`route-${index}`}
+              route={route}
+              index={index}
+              onSelect={handleRouteSelect}
+              onKeyDown={handleRouteKeyDown}
+              factionStandings={factionStandings}
+              shipStatus={shipStatus}
+            />
+          ))}
+        </tbody>
       </table>
     </div>
   )
@@ -3919,7 +3811,7 @@ function TradeRoutesPanel () {
     const outboundDemandIndicator = renderQuantityIndicator(outboundSell, 'demand')
     const returnSupplyIndicator = renderQuantityIndicator(returnBuy, 'supply')
     const returnDemandIndicator = renderQuantityIndicator(returnSell, 'demand')
-    const indicatorPlaceholder = <span className={styles.tableIndicatorPlaceholder}>--</span>
+    const indicatorPlaceholder = <span className={`${styles.tradeRoutesQuantityBadge} ${styles.tradeRoutesQuantityPlaceholder}`}>--</span>
 
     const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
     const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
