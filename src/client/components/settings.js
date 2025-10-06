@@ -10,6 +10,7 @@ import {
   isGhostnetThemeEnabled,
   saveGhostnetThemeEnabled,
   addGhostnetThemeChangeListener,
+  isGhostnetThemeToggleAvailable,
   THEME_STORAGE_KEY,
   isGhostnetNavVisible,
   saveGhostnetNavVisible,
@@ -355,6 +356,7 @@ function ThemeSettings () {
   const [secondaryColor, setSecondaryColor] = useState(getSecondaryColorAsHex())
   const [secondaryColorModifier, setSecondaryColorModifier] = useState(getSecondaryColorModifier())
   const [ghostnetThemeEnabled, setGhostnetThemeEnabled] = useState(() => isGhostnetThemeEnabled())
+  const [themeToggleAvailable, setThemeToggleAvailable] = useState(() => isGhostnetThemeToggleAvailable())
 
   // Update this component if another window updates the theme settings
   const storageEventHandler = (event) => {
@@ -370,6 +372,10 @@ function ThemeSettings () {
     if (typeof window === 'undefined') return undefined
     window.addEventListener('storage', storageEventHandler)
     return () => window.removeEventListener('storage', storageEventHandler)
+  }, [])
+
+  useEffect(() => {
+    setThemeToggleAvailable(isGhostnetThemeToggleAvailable())
   }, [])
 
   useEffect(() => eventListener('syncMessage', async (event) => {
@@ -543,6 +549,7 @@ function ThemeSettings () {
         <input
           type='checkbox'
           checked={ghostnetThemeEnabled}
+          disabled={!themeToggleAvailable}
           onChange={(event) => {
             const sanitized = saveGhostnetThemeEnabled(event.target.checked)
             setGhostnetThemeEnabled(sanitized)
@@ -555,6 +562,11 @@ function ThemeSettings () {
       <p className='text-muted' style={{ marginTop: 0, fontSize: '.95rem' }}>
         Disable this setting to keep INARA&apos;s layouts while returning to the classic ICARUS palette and transitions.
       </p>
+      {!themeToggleAvailable && (
+        <p className='text-muted' style={{ marginTop: '-0.35rem', fontSize: '.95rem' }}>
+          The GhostNet theme toggle is disabled for this deployment, so the classic ICARUS theme remains active by default.
+        </p>
+      )}
     </div>
   )
 }
