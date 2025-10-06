@@ -1,5 +1,5 @@
 import TokenLedger from '../../../service/lib/token-ledger.js'
-import { isGhostnetTokenCurrencyEnabled } from '../../../shared/feature-flags.js'
+import { isGlitchTokenCurrencyEnabled } from '../../../shared/feature-flags.js'
 
 const ledgerInstances = new Map()
 
@@ -12,7 +12,7 @@ function normalizeUserId (value) {
 function getLedgerEntry (userId) {
   const normalized = normalizeUserId(userId)
   if (!ledgerInstances.has(normalized)) {
-    const ledger = new TokenLedger({ userId: normalized, featureEnabled: isGhostnetTokenCurrencyEnabled() })
+    const ledger = new TokenLedger({ userId: normalized, featureEnabled: isGlitchTokenCurrencyEnabled() })
     const ready = ledger.bootstrap()
       .then(() => ledger)
       .catch(error => {

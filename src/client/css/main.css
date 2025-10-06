@@ -24,7 +24,7 @@
 @import "panels/navigation-panel.css";
 @import "panels/ship-panel.css";
 @import "panels/engineering-panel.css";
-@import "pages/ghostnet.css";
+@import "pages/glitch.css";
 
 @import "overrides/safari.css";
 @import "overrides/firefox.css";
@@ -443,15 +443,15 @@ hr.bold {
   opacity: 1;
 }
 
-body.ghostnet-theme #secondaryNavigation {
-  --ghostnet-nav-primary: rgb(216, 180, 254);
-  --ghostnet-nav-primary-dark: rgb(44, 18, 68);
+body.glitch-theme #secondaryNavigation {
+  --glitch-nav-primary: rgb(216, 180, 254);
+  --glitch-nav-primary-dark: rgb(44, 18, 68);
   background: linear-gradient(180deg, rgba(28, 11, 43, 0.96), rgba(81, 27, 128, 0.85));
   border-right: 1px solid rgba(216, 180, 254, 0.25);
   box-shadow: 1.5rem 0 3rem rgba(10, 5, 20, 0.65);
 }
 
-body.ghostnet-theme #secondaryNavigation .button--icon {
+body.glitch-theme #secondaryNavigation .button--icon {
   border-radius: 0.45rem;
   border: 1px solid rgba(216, 180, 254, 0.32);
   background: rgba(27, 11, 43, 0.6);
@@ -460,7 +460,7 @@ body.ghostnet-theme #secondaryNavigation .button--icon {
   text-shadow: 0 0 0.85rem rgba(216, 180, 254, 0.45);
 }
 
-body.ghostnet-theme #secondaryNavigation .button--icon.button--active {
+body.glitch-theme #secondaryNavigation .button--icon.button--active {
   background: rgba(216, 180, 254, 0.25);
   color: rgb(44, 18, 68);
   text-shadow: 0 0 1rem rgba(44, 18, 68, 0.65);
@@ -468,15 +468,15 @@ body.ghostnet-theme #secondaryNavigation .button--icon.button--active {
   border-right: 0;
 }
 
-body.ghostnet-theme #secondaryNavigation .button--icon:hover:not([disabled]):not(.button--active),
-body.ghostnet-theme #secondaryNavigation .button--icon:focus:not([disabled]):not(.button--active) {
+body.glitch-theme #secondaryNavigation .button--icon:hover:not([disabled]):not(.button--active),
+body.glitch-theme #secondaryNavigation .button--icon:focus:not([disabled]):not(.button--active) {
   background: rgba(216, 180, 254, 0.12);
   box-shadow: 0 0 1.25rem rgba(216, 180, 254, 0.4), inset 0 0 0.35rem rgba(216, 180, 254, 0.6);
   color: rgb(216, 180, 254);
 }
 
-body.ghostnet-theme #secondaryNavigation .button--icon.button--selected,
-body.ghostnet-theme #secondaryNavigation .button--icon.button--secondary {
+body.glitch-theme #secondaryNavigation .button--icon.button--selected,
+body.glitch-theme #secondaryNavigation .button--icon.button--secondary {
   background: rgba(216, 180, 254, 0.2);
   color: rgb(44, 18, 68);
   border-color: rgba(216, 180, 254, 0.55);
@@ -488,52 +488,52 @@ body.ghostnet-theme #secondaryNavigation .button--icon.button--secondary {
   flex: 1;
 }
 
-#primaryNavigation .ghostnet-nav-button {
+#primaryNavigation .glitch-nav-button {
   width: 100%;
 }
 
-body.ghostnet-theme #primaryNavigation .ghostnet-nav-button {
-  --ghostnet-nav-accent: rgb(216, 180, 254);
-  --ghostnet-nav-depth: rgba(73, 27, 115, 0.35);
+body.glitch-theme #primaryNavigation .glitch-nav-button {
+  --glitch-nav-accent: rgb(216, 180, 254);
+  --glitch-nav-depth: rgba(73, 27, 115, 0.35);
   background: linear-gradient(180deg, rgba(44, 18, 68, 0.95), rgba(81, 27, 128, 0.85));
   border: 1px solid rgba(216, 180, 254, 0.3);
-  box-shadow: inset 0 0 1.5rem var(--ghostnet-nav-depth);
-  color: var(--ghostnet-nav-accent);
+  box-shadow: inset 0 0 1.5rem var(--glitch-nav-depth);
+  color: var(--glitch-nav-accent);
   text-shadow: 0 0 1.2rem rgba(216, 180, 254, 0.6);
   filter: none;
   transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.2s ease;
   border-right: 0;
 }
 
-body.ghostnet-theme #primaryNavigation .ghostnet-nav-button .visible-small,
-body.ghostnet-theme #primaryNavigation .ghostnet-nav-button .hidden-small {
+body.glitch-theme #primaryNavigation .glitch-nav-button .visible-small,
+body.glitch-theme #primaryNavigation .glitch-nav-button .hidden-small {
   text-shadow: 0 0 1.2rem rgba(216, 180, 254, 0.6);
 }
 
-body.ghostnet-theme #primaryNavigation .ghostnet-nav-button.button--active {
+body.glitch-theme #primaryNavigation .glitch-nav-button.button--active {
   background: linear-gradient(180deg, rgba(57, 22, 88, 0.95), rgba(95, 35, 150, 0.85));
   border-color: rgba(216, 180, 254, 0.45);
   box-shadow: 0 0 1.45rem rgba(216, 180, 254, 0.7), inset 0 0 0.55rem rgba(216, 180, 254, 0.9);
-  color: var(--ghostnet-nav-accent);
+  color: var(--glitch-nav-accent);
   text-shadow: 0 0 1.3rem rgba(216, 180, 254, 0.75);
   filter: none;
 }
 
-body.ghostnet-theme #primaryNavigation .ghostnet-nav-button:hover:not([disabled]):not(.button--active),
-body.ghostnet-theme #primaryNavigation .ghostnet-nav-button:focus:not([disabled]):not(.button--active) {
+body.glitch-theme #primaryNavigation .glitch-nav-button:hover:not([disabled]):not(.button--active),
+body.glitch-theme #primaryNavigation .glitch-nav-button:focus:not([disabled]):not(.button--active) {
   background: linear-gradient(180deg, rgba(54, 21, 84, 0.95), rgba(88, 31, 139, 0.9));
   box-shadow: 0 0 1.35rem rgba(216, 180, 254, 0.45), inset 0 0 0.45rem rgba(216, 180, 254, 0.65);
-  color: var(--ghostnet-nav-accent);
+  color: var(--glitch-nav-accent);
   transform: translateY(-1px);
 }
 
-body.ghostnet-assimilation-mode {
+body.glitch-assimilation-mode {
   background: #0d0b1a;
   overflow: hidden;
   transition: background 0.35s ease;
 }
 
-body.ghostnet-assimilation-mode::after {
+body.glitch-assimilation-mode::after {
   content: '';
   position: fixed;
   inset: -2px;
@@ -547,22 +547,22 @@ body.ghostnet-assimilation-mode::after {
   );
   mix-blend-mode: screen;
   opacity: 0.3;
-  animation: ghostnet-assimilation-static 120ms steps(2, end) infinite;
+  animation: glitch-assimilation-static 120ms steps(2, end) infinite;
   z-index: 9999;
 }
 
-body.ghostnet-assimilation-forced {
+body.glitch-assimilation-forced {
   background: #0d0b1a;
   transition: background 0.35s ease;
 }
 
-body.ghostnet-assimilation-forced::after {
+body.glitch-assimilation-forced::after {
   opacity: 0;
   animation: none;
   transition: opacity 0.45s ease;
 }
 
-@keyframes ghostnet-assimilation-static {
+@keyframes glitch-assimilation-static {
   0% {
     transform: translate3d(0, 0, 0);
     opacity: 0.12;
@@ -581,60 +581,60 @@ body.ghostnet-assimilation-forced::after {
   }
 }
 
-.ghostnet-assimilation-target {
+.glitch-assimilation-target {
   position: relative;
   color: rgba(245, 241, 255, 0.84) !important;
   border-color: rgba(140, 92, 255, 0.35) !important;
   background: rgba(28, 22, 51, 0.72) !important;
-  --ghostnet-assimilation-intensity: 1;
-  box-shadow: 0 0 var(--ghostnet-assimilation-glow-radius, 1.5rem)
-    rgba(93, 46, 255, var(--ghostnet-assimilation-glow-opacity, 0.45));
-  filter: saturate(var(--ghostnet-assimilation-saturation, 1.25)) hue-rotate(-6deg);
+  --glitch-assimilation-intensity: 1;
+  box-shadow: 0 0 var(--glitch-assimilation-glow-radius, 1.5rem)
+    rgba(93, 46, 255, var(--glitch-assimilation-glow-opacity, 0.45));
+  filter: saturate(var(--glitch-assimilation-saturation, 1.25)) hue-rotate(-6deg);
   transition: color 0.3s ease, background 0.4s ease, border-color 0.4s ease, opacity 0.45s ease, transform 0.4s ease,
     filter 0.45s ease;
-  animation: ghostnet-assimilation-jitter var(--ghostnet-assimilation-loop, 280ms) steps(2, end) infinite;
+  animation: glitch-assimilation-jitter var(--glitch-assimilation-loop, 280ms) steps(2, end) infinite;
 }
 
-body.ghostnet-assimilation-forced .ghostnet-assimilation-target,
-.ghostnet-assimilation-force-fade {
+body.glitch-assimilation-forced .glitch-assimilation-target,
+.glitch-assimilation-force-fade {
   opacity: 0;
   transform: scale(0.96) translate3d(0, -4px, 0);
   filter: blur(2px) saturate(0.6) hue-rotate(-4deg);
 }
 
-.ghostnet-assimilation-target::before {
+.glitch-assimilation-target::before {
   content: '';
   position: absolute;
   inset: -3px;
   border: 1px solid rgba(93, 46, 255, 0.2);
   pointer-events: none;
   mix-blend-mode: screen;
-  opacity: var(--ghostnet-assimilation-ghost-opacity, 0.4);
-  animation: ghostnet-assimilation-ghost var(--ghostnet-assimilation-ghost-loop, 360ms) steps(2, end) infinite;
+  opacity: var(--glitch-assimilation-ghost-opacity, 0.4);
+  animation: glitch-assimilation-ghost var(--glitch-assimilation-ghost-loop, 360ms) steps(2, end) infinite;
 }
 
-body.ghostnet-assimilation-forced .ghostnet-assimilation-target::before,
-.ghostnet-assimilation-force-fade::before {
+body.glitch-assimilation-forced .glitch-assimilation-target::before,
+.glitch-assimilation-force-fade::before {
   opacity: 0;
   transition: opacity 0.35s ease;
 }
 
-@keyframes ghostnet-assimilation-jitter {
+@keyframes glitch-assimilation-jitter {
   0% {
     transform: translate3d(0, 0, 0) rotate(0deg);
   }
   48% {
-    transform: translate3d(var(--ghostnet-assimilation-shift-x, 0), var(--ghostnet-assimilation-shift-y, 0), 0)
-      rotate(var(--ghostnet-assimilation-tilt, 0));
+    transform: translate3d(var(--glitch-assimilation-shift-x, 0), var(--glitch-assimilation-shift-y, 0), 0)
+      rotate(var(--glitch-assimilation-tilt, 0));
   }
   100% {
-    transform: translate3d(calc(var(--ghostnet-assimilation-shift-x, 0) * -0.5),
-        calc(var(--ghostnet-assimilation-shift-y, 0) * -0.5), 0)
-      rotate(calc(var(--ghostnet-assimilation-tilt, 0) * -0.5));
+    transform: translate3d(calc(var(--glitch-assimilation-shift-x, 0) * -0.5),
+        calc(var(--glitch-assimilation-shift-y, 0) * -0.5), 0)
+      rotate(calc(var(--glitch-assimilation-tilt, 0) * -0.5));
   }
 }
 
-@keyframes ghostnet-assimilation-ghost {
+@keyframes glitch-assimilation-ghost {
   0% {
     opacity: 0.12;
   }
@@ -646,29 +646,29 @@ body.ghostnet-assimilation-forced .ghostnet-assimilation-target::before,
   }
 }
 
-.ghostnet-assimilation-target.ghostnet-assimilation-remove {
+.glitch-assimilation-target.glitch-assimilation-remove {
   opacity: 0;
   transform: scale(0.945) translate3d(0, -3px, 0);
   filter: blur(3px) contrast(0.65) saturate(0.85);
 }
 
-.ghostnet-assimilation-text {
+.glitch-assimilation-text {
   display: inline-block;
 }
 
-.ghostnet-assimilation-char {
+.glitch-assimilation-char {
   display: inline-block;
   white-space: pre;
-  animation: ghostnet-assimilation-char 1.4s ease forwards;
+  animation: glitch-assimilation-char 1.4s ease forwards;
   color: rgba(245, 241, 255, 0.84);
   text-shadow: 0 0 1.1rem rgba(93, 46, 255, 0.55);
 }
 
-.ghostnet-assimilation-char--space {
+.glitch-assimilation-char--space {
   min-width: 0.35em;
 }
 
-@keyframes ghostnet-assimilation-char {
+@keyframes glitch-assimilation-char {
   0% {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
@@ -676,7 +676,7 @@ body.ghostnet-assimilation-forced .ghostnet-assimilation-target::before,
   }
   35% {
     opacity: 0.8;
-    transform: translate3d(var(--ghostnet-assimilation-shift-x, 2px), calc(var(--ghostnet-assimilation-shift-y, -1px)), 0)
+    transform: translate3d(var(--glitch-assimilation-shift-x, 2px), calc(var(--glitch-assimilation-shift-y, -1px)), 0)
       scale(1.05);
     filter: hue-rotate(-12deg) saturate(1.5);
   }
@@ -689,12 +689,12 @@ body.ghostnet-assimilation-forced .ghostnet-assimilation-target::before,
 
 /* INARA exit transition */
 
-body.ghostnet-exit-transition-active {
+body.glitch-exit-transition-active {
   cursor: wait;
 }
 
-.ghostnet-exit-overlay,
-.ghostnet-assimilation-overlay {
+.glitch-exit-overlay,
+.glitch-assimilation-overlay {
   position: fixed;
   inset: 0;
   z-index: 12000;
@@ -705,8 +705,8 @@ body.ghostnet-exit-transition-active {
   pointer-events: auto;
 }
 
-.ghostnet-exit-dialog,
-.ghostnet-assimilation-dialog {
+.glitch-exit-dialog,
+.glitch-assimilation-dialog {
   width: min(620px, 92vw);
   border: 1px solid rgba(140, 92, 255, 0.4);
   background: linear-gradient(145deg, rgba(16, 12, 34, 0.96), rgba(24, 18, 46, 0.92));
@@ -720,8 +720,8 @@ body.ghostnet-exit-transition-active {
   overflow: hidden;
 }
 
-.ghostnet-exit-dialog::before,
-.ghostnet-assimilation-dialog::before {
+.glitch-exit-dialog::before,
+.glitch-assimilation-dialog::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -731,14 +731,14 @@ body.ghostnet-exit-transition-active {
   pointer-events: none;
 }
 
-.ghostnet-exit-dialog__header {
+.glitch-exit-dialog__header {
   display: flex;
   gap: 1rem;
   align-items: center;
 }
 
-.ghostnet-exit-dialog__badge,
-.ghostnet-assimilation-dialog__badge {
+.glitch-exit-dialog__badge,
+.glitch-assimilation-dialog__badge {
   width: 3.4rem;
   height: 3.4rem;
   border-radius: 1.2rem;
@@ -749,7 +749,7 @@ body.ghostnet-exit-transition-active {
   box-shadow: 0 0 18px rgba(255, 95, 193, 0.35);
 }
 
-.ghostnet-exit-dialog__badge-shape {
+.glitch-exit-dialog__badge-shape {
   position: relative;
   width: 0;
   height: 0;
@@ -759,7 +759,7 @@ body.ghostnet-exit-transition-active {
   filter: drop-shadow(0 0 10px rgba(255, 95, 193, 0.65));
 }
 
-.ghostnet-exit-dialog__badge-bar {
+.glitch-exit-dialog__badge-bar {
   position: absolute;
   top: 0.45rem;
   left: 50%;
@@ -770,7 +770,7 @@ body.ghostnet-exit-transition-active {
   background: #0d0b1a;
 }
 
-.ghostnet-exit-dialog__badge-dot {
+.glitch-exit-dialog__badge-dot {
   position: absolute;
   bottom: -1.6rem;
   left: 50%;
@@ -781,11 +781,11 @@ body.ghostnet-exit-transition-active {
   background: #0d0b1a;
 }
 
-.ghostnet-exit-dialog__text {
+.glitch-exit-dialog__text {
   flex: 1;
 }
 
-.ghostnet-exit-dialog__title {
+.glitch-exit-dialog__title {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
@@ -794,15 +794,15 @@ body.ghostnet-exit-transition-active {
   color: #f5f1ff;
 }
 
-.ghostnet-exit-dialog__subtitle {
+.glitch-exit-dialog__subtitle {
   margin: 0.3rem 0 0;
   font-size: 0.95rem;
   line-height: 1.35;
   color: rgba(245, 241, 255, 0.76);
 }
 
-.ghostnet-exit-dialog__log,
-.ghostnet-assimilation-dialog__log {
+.glitch-exit-dialog__log,
+.glitch-assimilation-dialog__log {
   display: flex;
   flex-direction: column;
   gap: clamp(0.7rem, 1.5vw, 1rem);
@@ -814,8 +814,8 @@ body.ghostnet-exit-transition-active {
   font-family: 'IBM Plex Mono', 'Menlo', 'Consolas', monospace;
 }
 
-.ghostnet-exit-line,
-.ghostnet-assimilation-line {
+.glitch-exit-line,
+.glitch-assimilation-line {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -825,33 +825,33 @@ body.ghostnet-exit-transition-active {
   letter-spacing: 0.03em;
 }
 
-.ghostnet-assimilation-dialog {
+.glitch-assimilation-dialog {
   background: linear-gradient(155deg, rgba(20, 14, 38, 0.96), rgba(34, 20, 70, 0.9));
   box-shadow: 0 0 42px rgba(93, 46, 255, 0.32), 0 0 16px rgba(13, 11, 26, 0.7);
 }
 
-.ghostnet-assimilation-dialog::before {
+.glitch-assimilation-dialog::before {
   border-color: rgba(255, 95, 193, 0.28);
   opacity: 0.82;
 }
 
-.ghostnet-assimilation-dialog__badge {
+.glitch-assimilation-dialog__badge {
   background: radial-gradient(circle at 50% 35%, rgba(255, 95, 193, 0.65), rgba(255, 95, 193, 0.18) 58%, transparent 100%);
   box-shadow: 0 0 22px rgba(255, 95, 193, 0.45);
 }
 
-.ghostnet-assimilation-dialog__log {
+.glitch-assimilation-dialog__log {
   background: rgba(16, 12, 34, 0.85);
   border-color: rgba(93, 46, 255, 0.48);
   box-shadow: inset 0 0 16px rgba(93, 46, 255, 0.32);
 }
 
-.ghostnet-assimilation-line {
+.glitch-assimilation-line {
   position: relative;
   min-height: 1.6rem;
 }
 
-.ghostnet-assimilation-line::after {
+.glitch-assimilation-line::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -861,30 +861,30 @@ body.ghostnet-exit-transition-active {
   pointer-events: none;
 }
 
-.ghostnet-assimilation-dialog__footnote {
+.glitch-assimilation-dialog__footnote {
   color: rgba(245, 241, 255, 0.74);
 }
 
-.ghostnet-exit-line__text {
+.glitch-exit-line__text {
   position: relative;
   flex: 1;
   min-height: 1.45rem;
 }
 
-.ghostnet-exit-line__text::before {
+.glitch-exit-line__text::before {
   content: '> ';
   color: rgba(255, 95, 193, 0.58);
 }
 
-.ghostnet-exit-line--active .ghostnet-exit-line__text::after {
+.glitch-exit-line--active .glitch-exit-line__text::after {
   content: '▌';
   position: absolute;
   right: -0.55rem;
-  animation: ghostnet-exit-caret 0.5s steps(2, end) infinite;
+  animation: glitch-exit-caret 0.5s steps(2, end) infinite;
   color: rgba(255, 95, 193, 0.9);
 }
 
-@keyframes ghostnet-exit-caret {
+@keyframes glitch-exit-caret {
   0% {
     opacity: 1;
   }
@@ -893,7 +893,7 @@ body.ghostnet-exit-transition-active {
   }
 }
 
-.ghostnet-exit-line__status {
+.glitch-exit-line__status {
   font-size: clamp(0.88rem, 1.6vw, 0.98rem);
   letter-spacing: 0.24rem;
   text-transform: uppercase;
@@ -903,20 +903,20 @@ body.ghostnet-exit-transition-active {
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.ghostnet-exit-line[data-tone='warning'] .ghostnet-exit-line__status {
+.glitch-exit-line[data-tone='warning'] .glitch-exit-line__status {
   color: #ff5fc1;
 }
 
-.ghostnet-exit-line[data-tone='success'] .ghostnet-exit-line__status {
+.glitch-exit-line[data-tone='success'] .glitch-exit-line__status {
   color: #29f3c3;
 }
 
-.ghostnet-exit-line--status .ghostnet-exit-line__status {
+.glitch-exit-line--status .glitch-exit-line__status {
   opacity: 1;
   transform: translateY(0);
 }
 
-.ghostnet-exit-dialog__footnote {
+.glitch-exit-dialog__footnote {
   margin: 0;
   font-size: clamp(0.82rem, 1.8vw, 0.9rem);
   line-height: 1.4;
@@ -924,29 +924,29 @@ body.ghostnet-exit-transition-active {
   letter-spacing: 0.05em;
 }
 
-.ghostnet-exit-overlay--closing {
+.glitch-exit-overlay--closing {
   opacity: 0;
   transition: opacity 220ms ease;
 }
 
-.ghostnet-exit-dissolve {
+.glitch-exit-dissolve {
   pointer-events: none;
   transition: opacity 420ms cubic-bezier(0.55, 0, 0.45, 1), filter 420ms cubic-bezier(0.55, 0, 0.45, 1), transform 420ms cubic-bezier(0.55, 0, 0.45, 1);
 }
 
-.ghostnet-exit-dissolve--active {
+.glitch-exit-dissolve--active {
   opacity: 0;
   filter: saturate(0.55) blur(1.8px);
   transform: scale(0.985);
 }
 
-.ghostnet-exit-dissolve--active button,
-.ghostnet-exit-dissolve--active .button,
-.ghostnet-exit-dissolve--active [role='button'] {
-  animation: ghostnet-exit-button-dissolve 340ms cubic-bezier(0.6, 0.04, 0.98, 0.335) forwards;
+.glitch-exit-dissolve--active button,
+.glitch-exit-dissolve--active .button,
+.glitch-exit-dissolve--active [role='button'] {
+  animation: glitch-exit-button-dissolve 340ms cubic-bezier(0.6, 0.04, 0.98, 0.335) forwards;
 }
 
-@keyframes ghostnet-exit-button-dissolve {
+@keyframes glitch-exit-button-dissolve {
   0% {
     opacity: 1;
     transform: translateY(0);
@@ -965,25 +965,25 @@ body.ghostnet-exit-transition-active {
 }
 
 @media (max-width: 600px) {
-  .ghostnet-exit-overlay {
+  .glitch-exit-overlay {
     padding: 1.5rem;
   }
 
-  .ghostnet-exit-dialog {
+  .glitch-exit-dialog {
     width: min(94vw, 480px);
     padding: 1.6rem;
   }
 
-  .ghostnet-exit-dialog__badge {
+  .glitch-exit-dialog__badge {
     width: 3rem;
     height: 3rem;
   }
 
-  .ghostnet-exit-dialog__title {
+  .glitch-exit-dialog__title {
     font-size: 1rem;
   }
 
-  .ghostnet-exit-line {
+  .glitch-exit-line {
     font-size: 0.88rem;
   }
 }

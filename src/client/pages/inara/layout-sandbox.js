@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react'
-import GhostnetPage from '../inara'
+import GlitchPage from '../inara'
 import {
   generateMockCurrentSystem,
   generateMockFactionStandingsResponse,
   generateMockMissionsResponse,
   generateMockPristineMiningResponse,
   generateMockTradeRoutes
-} from '../../lib/ghostnet-mock-data'
+} from '../../lib/glitch-mock-data'
 
 function resolvePath (input) {
   if (typeof input === 'string') {
@@ -39,22 +39,22 @@ function parseBody (body) {
   }
 }
 
-export default function GhostnetLayoutSandboxPage () {
+export default function GlitchLayoutSandboxPage () {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
 
-    window.__GHOSTNET_LAYOUT_SANDBOX__ = true
+    window.__GLITCH_LAYOUT_SANDBOX__ = true
 
     const previousMockPreference = (() => {
       try {
-        return window.localStorage.getItem('ghostnetUseMockData')
+        return window.localStorage.getItem('glitchUseMockData')
       } catch (err) {
         return null
       }
     })()
 
     try {
-      window.localStorage.setItem('ghostnetUseMockData', 'true')
+      window.localStorage.setItem('glitchUseMockData', 'true')
     } catch (err) {
       // Ignore storage failures
     }
@@ -78,7 +78,7 @@ export default function GhostnetLayoutSandboxPage () {
         return jsonResponse(generateMockFactionStandingsResponse())
       }
 
-      if (path === '/api/ghostnet-missions') {
+      if (path === '/api/glitch-missions') {
         const body = parseBody(init?.body)
         const systemName = typeof body.system === 'string' && body.system.trim()
           ? body.system.trim()
@@ -86,7 +86,7 @@ export default function GhostnetLayoutSandboxPage () {
         return jsonResponse(generateMockMissionsResponse(systemName))
       }
 
-      if (path === '/api/ghostnet-pristine-mining') {
+      if (path === '/api/glitch-pristine-mining') {
         const body = parseBody(init?.body)
         const systemName = typeof body.system === 'string' && body.system.trim()
           ? body.system.trim()
@@ -94,7 +94,7 @@ export default function GhostnetLayoutSandboxPage () {
         return jsonResponse(generateMockPristineMiningResponse(systemName))
       }
 
-      if (path === '/api/ghostnet-trade-routes') {
+      if (path === '/api/glitch-trade-routes') {
         const body = parseBody(init?.body)
         const systemName = typeof body.system === 'string' && body.system.trim()
           ? body.system.trim()
@@ -119,18 +119,18 @@ export default function GhostnetLayoutSandboxPage () {
 
       try {
         if (previousMockPreference === null) {
-          window.localStorage.removeItem('ghostnetUseMockData')
+          window.localStorage.removeItem('glitchUseMockData')
         } else {
-          window.localStorage.setItem('ghostnetUseMockData', previousMockPreference)
+          window.localStorage.setItem('glitchUseMockData', previousMockPreference)
         }
       } catch (err) {
         // Ignore storage failures
       }
 
-      delete window.__GHOSTNET_LAYOUT_SANDBOX__
+      delete window.__GLITCH_LAYOUT_SANDBOX__
     }
   }, [])
 
-  return <GhostnetPage />
+  return <GlitchPage />
 }
 

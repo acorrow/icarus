@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import Layout from 'components/layout'
 import Panel from 'components/panel'
-import styles from '../ghostnet.module.css'
+import styles from '../glitch.module.css'
 
 const navItems = [
   {
@@ -18,17 +18,17 @@ const navItems = [
   }
 ]
 
-export default function GhostnetOutfittingPage () {
+export default function GlitchOutfittingPage () {
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
-    document.body.classList.add('ghostnet-theme')
-    return () => document.body.classList.remove('ghostnet-theme')
+    document.body.classList.add('glitch-theme')
+    return () => document.body.classList.remove('glitch-theme')
   }, [])
 
   return (
     <Layout>
-      <Panel layout='full-width' scrollable navigation={navItems} className={styles.ghostnetPanel}>
-        <div className={styles.ghostnet}>
+      <Panel layout='full-width' scrollable navigation={navItems} className={styles.glitchPanel}>
+        <div className={styles.glitch}>
           <div className={styles.hero}>
             <div className={styles.heroHeader}>
               <h1 className={styles.heroTitle}>Outfitting Tools</h1>

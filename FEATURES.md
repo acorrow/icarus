@@ -1,20 +1,20 @@
 
-## Theme Switching: ICARUS vs GhostNet
+## Theme Switching: ICARUS vs Glitch
 
-The INARA workspace supports a dynamic theme switch between the classic ICARUS theme and the GhostNet theme. This allows users to toggle between:
+The INARA workspace supports a dynamic theme switch between the classic ICARUS theme and the Glitch theme. This allows users to toggle between:
 
 - **ICARUS Theme:** Uses the legacy color palette, transitions, and layout conventions familiar from earlier versions of ICARUS Terminal. The ICARUS theme is characterized by its classic blue/indigo palette, subdued gradients, and minimal animation.
-- **GhostNet Theme:** Applies the new INARA visual identity, including royal purple (`#5D2EFF`) as the primary accent, neon gradients, animated overlays, and a denser, more immersive UI. The GhostNet theme can be enabled when the deployment exposes the `ghostnetThemeToggleEnabled` feature flag; otherwise the classic ICARUS palette remains active by default.
+- **Glitch Theme:** Applies the new INARA visual identity, including royal purple (`#5D2EFF`) as the primary accent, neon gradients, animated overlays, and a denser, more immersive UI. The Glitch theme can be enabled when the deployment exposes the `glitchThemeToggleEnabled` feature flag; otherwise the classic ICARUS palette remains active by default.
 
-Theme switching is managed via the settings modal (`ThemeSettings` in `src/client/components/settings.js`). The theme state is stored in localStorage and can be toggled at runtime without a page reload when the `ghostnetThemeToggleEnabled` feature flag is active. When the GhostNet theme is enabled, the workspace applies:
-- GhostNet palette tokens from `src/client/css/pages/ghostnet.css`
-- Animated arrival/exit transitions (`ghostnet-assimilation.js`)
+Theme switching is managed via the settings modal (`ThemeSettings` in `src/client/components/settings.js`). The theme state is stored in localStorage and can be toggled at runtime without a page reload when the `glitchThemeToggleEnabled` feature flag is active. When the Glitch theme is enabled, the workspace applies:
+- Glitch palette tokens from `src/client/css/pages/glitch.css`
+- Animated arrival/exit transitions (`glitch-assimilation.js`)
 - Neon overlays and signal mesh backgrounds
 - INARA-specific navigation and panel shells
 
-When the GhostNet theme is disabled—or when the feature flag is unavailable—the workspace reverts to ICARUS colors, transitions, and navigation. All INARA features remain available, but the visual experience matches the classic ICARUS look.
+When the Glitch theme is disabled—or when the feature flag is unavailable—the workspace reverts to ICARUS colors, transitions, and navigation. All INARA features remain available, but the visual experience matches the classic ICARUS look.
 
-**Note:** Theme switching is only available in the INARA workspace. Legacy Icarus pages do not support GhostNet theming.
+**Note:** Theme switching is only available in the INARA workspace. Legacy Icarus pages do not support Glitch theming.
 
 ---
 # ICARUS Terminal – Features Reference
@@ -47,26 +47,26 @@ This layout is designed to surface as much actionable data as possible, with tig
 
 Use these shortnames when coordinating INARA work:
 
-- **ROUTESCOUT – Trade Route Intelligence.** `TradeRoutesPanel` combines auto-detected ship stats (cargo capacity + landing pad size pulled via `getShipStatus`) with manual filters before calling `/api/ghostnet-trade-routes`. The panel normalizes INARA HTML into structured legs, exposes inline sort/filter controls, and surfaces contextual overlays summarizing faction relations and station metadata. Respect the `SHIP_STATUS_UPDATE_EVENTS` set when refreshing ship-derived filters and debounce outbound fetches when mutating filter state (`inara.js`).
-- **CARGO_LEDGER – Cargo Hold Valuation.** `CargoHoldPanel` pulls the live ship loadout and cargo inventory, derives a memoized cargo fingerprint, and requests `/api/ghostnet-commodity-values` to merge INARA submissions with in-game journal market logs. The valuation response contains INARA and local market health indicators; present both statuses in the UI so commanders can reconcile stale remote intel. Cache-heavy helpers (`isSameMarketEntry`, `mergeInventoryRows`) ensure we do not thrash the DOM when only metadata shifts. Keep the utilisation meter at the top of the panel in sync with the ship's capacity so miners can instantly judge how much space remains.
-- **MISSION_BEACON – Mining Mission Radar.** `MissionsPanel` watches the current system via `useSystemSelector`, hydrates faction reputation via `/api/faction-standings`, and caches the last eight system lookups in `localStorage`. INARA fetches stream in via `/api/ghostnet-missions` POST requests, automatically downgrading to cached payloads on errors. Maintain the status machine (`idle`, `loading`, `empty`, `error`, `populated`) so accessibility strings stay accurate.
+- **ROUTESCOUT – Trade Route Intelligence.** `TradeRoutesPanel` combines auto-detected ship stats (cargo capacity + landing pad size pulled via `getShipStatus`) with manual filters before calling `/api/glitch-trade-routes`. The panel normalizes INARA HTML into structured legs, exposes inline sort/filter controls, and surfaces contextual overlays summarizing faction relations and station metadata. Respect the `SHIP_STATUS_UPDATE_EVENTS` set when refreshing ship-derived filters and debounce outbound fetches when mutating filter state (`inara.js`).
+- **CARGO_LEDGER – Cargo Hold Valuation.** `CargoHoldPanel` pulls the live ship loadout and cargo inventory, derives a memoized cargo fingerprint, and requests `/api/glitch-commodity-values` to merge INARA submissions with in-game journal market logs. The valuation response contains INARA and local market health indicators; present both statuses in the UI so commanders can reconcile stale remote intel. Cache-heavy helpers (`isSameMarketEntry`, `mergeInventoryRows`) ensure we do not thrash the DOM when only metadata shifts. Keep the utilisation meter at the top of the panel in sync with the ship's capacity so miners can instantly judge how much space remains.
+- **MISSION_BEACON – Mining Mission Radar.** `MissionsPanel` watches the current system via `useSystemSelector`, hydrates faction reputation via `/api/faction-standings`, and caches the last eight system lookups in `localStorage`. INARA fetches stream in via `/api/glitch-missions` POST requests, automatically downgrading to cached payloads on errors. Maintain the status machine (`idle`, `loading`, `empty`, `error`, `populated`) so accessibility strings stay accurate.
 - **PRISTINE_TRACKER – Ring Prospecting.** `PristineMiningPanel` (lower in `inara.js`) cross-references INARA pristine mining listings with ICARUS system-map intel (`SystemMapProvider`). Rows expand into detail drawers populated via `NavigationInspectorPanel`, so ensure new fields are wired through that provider rather than injecting ad-hoc fetches. Keep an eye on `animateTableEffect()` hooks to preserve the neon scan reveal.
-- **RADIO_RELAY – Pirate Radio Broadcast Deck.** `PirateRadioPanel` (`src/client/components/ghostnet/pirate-radio.js`) hydrates the underground audio stream through `sendEvent('getPirateRadioPlaylist')`, wires directory management to `setPirateRadioDirectories`, and triggers rescans with `rescanPirateRadio`. It listens for `pirateRadioUpdate`/`pirateRadioDirectoriesUpdated` broadcasts to stay in sync and leans on the INARA panel shell styles so the navigation rail spacing remains consistent. Preserve the autoplay-on-ended flow when extending the deck so broadcasts continue looping seamlessly.
-- **UPLINK_FEED – Ambient Telemetry Overlay.** The uplink console (`inara.js` final sections) rotates pseudo-telemetry headlines, user-configurable cadence controls, and integrates with `ghostnetTickerMessages`. Additions should honor the animation timings and respect the reduced-motion guard.
-- **ASSIMILATION_GATE – Page Shell & Arrival Sequence.** `GhostnetPage` toggles the global theme class, triggers arrival animations, and manages top-level tab state. Extend it via composition—drop new sections into the existing `<Panel>` layout so navigation/ARIA wiring continues to work.
-- **TAB_SHELL – Tab Navigation.** The `ghostnetTabs` array describes the tab structure and icons; updates must keep the keyboard handlers (`handleTabKeyPress`) intact. When adding tabs, double-check breakpoints so the secondary nav remains scrollable on narrow widths.
+- **RADIO_RELAY – Pirate Radio Broadcast Deck.** `PirateRadioPanel` (`src/client/components/panels/inara/pirate-radio.js`) hydrates the underground audio stream through `sendEvent('getPirateRadioPlaylist')`, wires directory management to `setPirateRadioDirectories`, and triggers rescans with `rescanPirateRadio`. It listens for `pirateRadioUpdate`/`pirateRadioDirectoriesUpdated` broadcasts to stay in sync and leans on the INARA panel shell styles so the navigation rail spacing remains consistent. Preserve the autoplay-on-ended flow when extending the deck so broadcasts continue looping seamlessly.
+- **UPLINK_FEED – Ambient Telemetry Overlay.** The uplink console (`inara.js` final sections) rotates pseudo-telemetry headlines, user-configurable cadence controls, and integrates with `glitchTickerMessages`. Additions should honor the animation timings and respect the reduced-motion guard.
+- **ASSIMILATION_GATE – Page Shell & Arrival Sequence.** `GlitchPage` toggles the global theme class, triggers arrival animations, and manages top-level tab state. Extend it via composition—drop new sections into the existing `<Panel>` layout so navigation/ARIA wiring continues to work.
+- **TAB_SHELL – Tab Navigation.** The `glitchTabs` array describes the tab structure and icons; updates must keep the keyboard handlers (`handleTabKeyPress`) intact. When adding tabs, double-check breakpoints so the secondary nav remains scrollable on narrow widths.
 - _The former Engineering Opportunities manifest and related `/inara/engineering` routes have been removed; no active feature mapping remains for this surface._
 - **SEARCH_PLACEHOLDER / OUTFITTING_PLACEHOLDER.** These stub routes keep routing hooks hot while conveying that the surfaces are intentionally disabled. If you activate one, migrate the placeholder copy into a dismissible announcement rather than deleting it outright.
-- **API_COMMODITY_CACHE.** `/api/ghostnet-commodity-values` orchestrates commodity lookups. It uses `ingestJournalMarketEvent` to merge Commander market journals with INARA caches, writes cache hits to disk, and exposes cache age metadata. Always sanitize inbound commodity names—see `normalizeCommodityName` helpers before hitting remote endpoints.
-- **API_ROUTE_SCRAPER.** `/api/ghostnet-trade-routes` validates filters against a whitelist, scrapes INARA HTML via `cheerio`, and calculates profit metrics per leg. Keep CPU-bound parsing out of the request handler by extending the helper functions around line ~400.
-- **API_MISSION_SCRAPER.** `/api/ghostnet-missions` downloads INARA mission tables, pulls out system/faction columns, and annotates entries with ICARUS distance calculations. Favor adding derived fields server-side so the client can stay dumb.
-- **API_PRISTINE_SCRAPER.** `/api/ghostnet-pristine-mining` normalizes INARA pristine datasets, injects inspector URLs, and returns body/system metadata ready for inline expansion. It already dedupes by system; preserve that behavior when expanding filters.
-- **API_WEBSEARCH.** `/api/ghostnet-search` multiplexes INARA lookups for commodities, ships, outfitting, and materials. The endpoint constructs a queue of ICARUS service events—maintain the payload schema so `search.js` can continue to short-circuit unsupported search types.
-- **TOKEN_CURRENCY – Token Currency and INARA Data Exchange.** The token service (`src/service/lib/token-ledger.js`) maintains a per-commander ledger, writing human-readable audit trails (`ledger.log`), structured transaction history (`transactions.jsonl`), and remote retry telemetry (`remote-retry.log`) under `~/.config/Icarus/tokens/<userId>/` (or the platform-specific equivalent). When the feature flag `ghostnetTokenCurrencyEnabled` is **false** (default), the ledger operates in simulation mode: tokens are earned from simulated INARA submissions and spent by INARA API proxies without emitting any real network traffic. Setting `ghostnetTokenCurrencyEnabled=true` enables the remote mirror, switching ledger persistence to the external microservice while continuing to fall back to local storage if the service is unavailable.
+- **API_COMMODITY_CACHE.** `/api/glitch-commodity-values` orchestrates commodity lookups. It uses `ingestJournalMarketEvent` to merge Commander market journals with INARA caches, writes cache hits to disk, and exposes cache age metadata. Always sanitize inbound commodity names—see `normalizeCommodityName` helpers before hitting remote endpoints.
+- **API_ROUTE_SCRAPER.** `/api/glitch-trade-routes` validates filters against a whitelist, scrapes INARA HTML via `cheerio`, and calculates profit metrics per leg. Keep CPU-bound parsing out of the request handler by extending the helper functions around line ~400.
+- **API_MISSION_SCRAPER.** `/api/glitch-missions` downloads INARA mission tables, pulls out system/faction columns, and annotates entries with ICARUS distance calculations. Favor adding derived fields server-side so the client can stay dumb.
+- **API_PRISTINE_SCRAPER.** `/api/glitch-pristine-mining` normalizes INARA pristine datasets, injects inspector URLs, and returns body/system metadata ready for inline expansion. It already dedupes by system; preserve that behavior when expanding filters.
+- **API_WEBSEARCH.** `/api/glitch-search` multiplexes INARA lookups for commodities, ships, outfitting, and materials. The endpoint constructs a queue of ICARUS service events—maintain the payload schema so `search.js` can continue to short-circuit unsupported search types.
+- **TOKEN_CURRENCY – Token Currency and INARA Data Exchange.** The token service (`src/service/lib/token-ledger.js`) maintains a per-commander ledger, writing human-readable audit trails (`ledger.log`), structured transaction history (`transactions.jsonl`), and remote retry telemetry (`remote-retry.log`) under `~/.config/Icarus/tokens/<userId>/` (or the platform-specific equivalent). When the feature flag `glitchTokenCurrencyEnabled` is **false** (default), the ledger operates in simulation mode: tokens are earned from simulated INARA submissions and spent by INARA API proxies without emitting any real network traffic. Setting `glitchTokenCurrencyEnabled=true` enables the remote mirror, switching ledger persistence to the external microservice while continuing to fall back to local storage if the service is unavailable.
 - While in simulation mode the ledger protects commanders from deep debt:
-  - When the `ghostnetTokenJackpotEnabled` feature flag is **true**, crossing **-500,000** tokens arms a jackpot so the next earn transaction is multiplied by **100×**. The amplified entry carries `metadata.jackpot = true`, `metadata.multiplier = 100`, `metadata.jackpotSource = 'negative-balance-jackpot'`, and a randomized `metadata.jackpotCelebrationId` so the client can trigger a bespoke celebration inline with the earn.
+  - When the `glitchTokenJackpotEnabled` feature flag is **true**, crossing **-500,000** tokens arms a jackpot so the next earn transaction is multiplied by **100×**. The amplified entry carries `metadata.jackpot = true`, `metadata.multiplier = 100`, `metadata.jackpotSource = 'negative-balance-jackpot'`, and a randomized `metadata.jackpotCelebrationId` so the client can trigger a bespoke celebration inline with the earn.
   - The INARA uplink console exposes a manual `triggerJackpot` socket handler (wired to the `+` button) so QA can invoke a simulated jackpot on demand. The helper selects a random base credit, multiplies it by the active jackpot multiplier, stamps the entry with `metadata.event = 'negative-balance-recovery'`, and broadcasts the result so the UI renders the full celebration stack.
-  - Set `ghostnetTokenRecoveryCompatEnabled=true` to retain the legacy recovery schedule, which still grants a single-use **+1,000,000** `negative-balance-recovery` credit and mirrors the historic console celebration.
+  - Set `glitchTokenRecoveryCompatEnabled=true` to retain the legacy recovery schedule, which still grants a single-use **+1,000,000** `negative-balance-recovery` credit and mirrors the historic console celebration.
   - **Simulation vs. Remote Mode.** `TokenLedger.getSnapshot()` surfaces whether the ledger is simulating transfers (`simulation: true/false`) and includes remote sync metadata (`remote.pending`, `remote.lastSyncedAt`, `remote.lastError`). INARA submissions are deduplicated via hashed cache keys in `event-handlers.js`, and the simulated payload mirrors the production shape:
 
     ```json
@@ -88,7 +88,7 @@ Use these shortnames when coordinating INARA work:
     ```
 
     The byte length of the JSON payload determines the number of tokens credited for each journal event. Duplicate events (matching `event`, `timestamp`, and identifier hashes) are ignored to prevent double rewards between log replays.
-  - **INARA API Spend Hooks.** `src/client/pages/api/token-currency.js` instantiates a per-request ledger instance and debits tokens equal to the combined request/response byte size for every INARA INARA proxy (`/api/ghostnet-search`, `/api/ghostnet-websearch`, `/api/ghostnet-commodity-values`, `/api/ghostnet-missions`, `/api/ghostnet-pristine-mining`, `/api/ghostnet-trade-routes`). Metadata is captured with each spend to aid reconciliation when viewing the ledger history in INARA.
+  - **INARA API Spend Hooks.** `src/client/pages/api/token-currency.js` instantiates a per-request ledger instance and debits tokens equal to the combined request/response byte size for every INARA INARA proxy (`/api/glitch-search`, `/api/glitch-websearch`, `/api/glitch-commodity-values`, `/api/glitch-missions`, `/api/glitch-pristine-mining`, `/api/glitch-trade-routes`). Metadata is captured with each spend to aid reconciliation when viewing the ledger history in INARA.
   - **External Token Ledger API Contract.** When remote mode is enabled the service mirrors every transaction to an external microservice. The API contract is:
 
     - `GET /api/token-ledger/:userId` → Retrieve the current balance.
@@ -131,7 +131,7 @@ Use these shortnames when coordinating INARA work:
 
       {
         "amount": 2048,
-        "reason": "spend:ghostnet-search"
+        "reason": "spend:glitch-search"
       }
 
       HTTP/1.1 200 OK
@@ -148,12 +148,12 @@ Use these shortnames when coordinating INARA work:
 ## Token Currency Frontend Fallback & Diagnostics
 
 - **Frontend Fallback Logic:**
-  - The INARA terminal overlay (`GhostnetTerminalOverlay` in `src/client/pages/inara.js`) attempts to fetch the token balance via WebSocket broadcast events. If the broadcast fails or is unavailable, it falls back to an explicit HTTP API call (`/api/token-currency`).
+  - The INARA terminal overlay (`GlitchTerminalOverlay` in `src/client/pages/inara.js`) attempts to fetch the token balance via WebSocket broadcast events. If the broadcast fails or is unavailable, it falls back to an explicit HTTP API call (`/api/token-currency`).
   - Diagnostic logging is added to confirm whether the fallback HTTP fetch is called, what response is received, and whether `applySnapshot` and `setTokenBalance` are updated with valid data. This ensures the UI does not remain stuck on 'Syncing…'.
   - The fallback logic is critical for robust frontend/backend communication, especially when feature flags or simulation mode are toggled.
 
 - **Feature Flag Exposure:**
-  - Feature flag values (e.g., `GHOSTNET_TOKEN_CURRENCY_ENABLED`) are exposed in the UI overlay or settings for debugging. This helps diagnose environment variable handling and simulation/live mode toggling.
+  - Feature flag values (e.g., `GLITCH_TOKEN_CURRENCY_ENABLED`) are exposed in the UI overlay or settings for debugging. This helps diagnose environment variable handling and simulation/live mode toggling.
 
 ## Animated Feedback & Jackpot Intercepts
 

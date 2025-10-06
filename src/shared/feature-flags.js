@@ -36,29 +36,29 @@ function hasFlagKey (primaryKey, env = process.env) {
   return false
 }
 
-function isGhostnetTokenCurrencyEnabled (env = process.env) {
-  return resolveFlag('ghostnetTokenCurrencyEnabled', env)
+function isGlitchTokenCurrencyEnabled (env = process.env) {
+  return resolveFlag('glitchTokenCurrencyEnabled', env)
 }
 
 function isTokenJackpotEnabled (env = process.env) {
-  return resolveFlag('ghostnetTokenJackpotEnabled', env)
+  return resolveFlag('glitchTokenJackpotEnabled', env)
 }
 
 function isTokenRecoveryCompatibilityEnabled (env = process.env) {
-  if (!hasFlagKey('ghostnetTokenRecoveryCompatEnabled', env)) {
+  if (!hasFlagKey('glitchTokenRecoveryCompatEnabled', env)) {
     return true
   }
-  return resolveFlag('ghostnetTokenRecoveryCompatEnabled', env)
+  return resolveFlag('glitchTokenRecoveryCompatEnabled', env)
 }
 
-function isGhostnetThemeToggleEnabled (env = process.env) {
-  return resolveFlag('ghostnetThemeToggleEnabled', env)
+function isGlitchThemeToggleEnabled (env = process.env) {
+  return resolveFlag('glitchThemeToggleEnabled', env)
 }
 
 module.exports = {
-  isGhostnetTokenCurrencyEnabled,
+  isGlitchTokenCurrencyEnabled,
   isTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
-  isGhostnetThemeToggleEnabled,
+  isGlitchThemeToggleEnabled,
   _private: { normalizeFlagValue, resolveFlag, hasFlagKey }
 }

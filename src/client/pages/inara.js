@@ -3,23 +3,23 @@ import Layout from '../components/layout'
 import Panel from '../components/panel'
 import PanelNavigation from '../components/panel-navigation'
 import Icons from '../lib/icons'
-import TransferContextSummary from '../components/ghostnet/transfer-context-summary'
-import StationSummary, { StationIcon, DemandIndicator } from '../components/ghostnet/station-summary'
-import CommoditySummary, { CommodityIcon } from '../components/ghostnet/commodity-summary'
+import TransferContextSummary from '../components/panels/inara/transfer-context-summary'
+import StationSummary, { StationIcon, DemandIndicator } from '../components/panels/inara/station-summary'
+import CommoditySummary, { CommodityIcon } from '../components/panels/inara/commodity-summary'
 import CopyOnClick from '../components/copy-on-click'
-import PirateRadioPanel from '../components/ghostnet/pirate-radio'
+import PirateRadioPanel from '../components/panels/inara/pirate-radio'
 import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
-import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/ghostnet-formatters'
+import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/glitch-formatters'
 import getDistanceSeverityColor from '../lib/distance-colors'
 import { sanitizeInaraText } from '../lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from '../lib/station-icons'
-import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/ghostnet-mock-data'
-import { getGhostnetStrings, getGhostnetString } from '../lib/ghostnet-addon'
-import { isGhostnetThemeEnabled, addGhostnetThemeChangeListener, THEME_STORAGE_KEY } from '../lib/ghostnet-settings'
-import styles from './ghostnet.module.css'
+import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/glitch-mock-data'
+import { getGlitchStrings, getGlitchString } from '../lib/glitch-addon'
+import { isGlitchThemeEnabled, addGlitchThemeChangeListener, THEME_STORAGE_KEY } from '../lib/glitch-settings'
+import styles from './glitch.module.css'
 
 const METRIC_VARIANT_CLASS_MAP = {
   neutral: styles.metricChipNeutral,
@@ -86,12 +86,12 @@ const LARGE_PAD_SIZE_VALUE = '3'
 function LoadingSpinner ({ label, inline = false }) {
   return (
     <div
-      className={`ghostnet-spinner${inline ? ' ghostnet-spinner--inline' : ' ghostnet-spinner--block'}`}
+      className={`glitch-spinner${inline ? ' glitch-spinner--inline' : ' glitch-spinner--block'}`}
       role='status'
       aria-live='polite'
     >
-      <span className='ghostnet-spinner__icon' aria-hidden='true' />
-      {label ? <span className='ghostnet-spinner__label'>{label}</span> : null}
+      <span className='glitch-spinner__icon' aria-hidden='true' />
+      {label ? <span className='glitch-spinner__label'>{label}</span> : null}
     </div>
   )
 }
@@ -501,7 +501,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   return (
     <tr
       className={rowClasses.join(' ')}
-      data-ghostnet-table-row='pending'
+      data-glitch-table-row='pending'
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       role='button'
@@ -646,7 +646,7 @@ function normaliseName (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
 
-const MISSIONS_CACHE_KEY = 'icarus.ghostnetMiningMissions.v1'
+const MISSIONS_CACHE_KEY = 'icarus.glitchMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
 const STATION_TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }
@@ -780,7 +780,7 @@ function formatReputationPercent(value) {
 function shouldDebugFactionStandings () {
   if (typeof window === 'undefined') return false
   try {
-    return window.localStorage.getItem('ghostnetDebugFactions') === 'true'
+    return window.localStorage.getItem('glitchDebugFactions') === 'true'
   } catch (err) {
     return false
   }
@@ -878,7 +878,7 @@ function getFactionStandingDisplay(factionName, standings) {
 
   if (!key || !standings) {
     if (debug && factionName) {
-      console.debug('[Ghost Net] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
+      console.debug('[Glitch] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
     }
     return defaultResult
   }
@@ -886,7 +886,7 @@ function getFactionStandingDisplay(factionName, standings) {
   const info = standings[key]
   if (!info) {
     if (debug) {
-      console.debug('[Ghost Net] Faction standing missing', {
+      console.debug('[Glitch] Faction standing missing', {
         factionName,
         key,
         availableCount: Object.keys(standings || {}).length
@@ -896,7 +896,7 @@ function getFactionStandingDisplay(factionName, standings) {
   }
 
   if (debug) {
-    console.debug('[Ghost Net] Faction standing resolved', {
+    console.debug('[Glitch] Faction standing resolved', {
       factionName,
       key,
       standing: info.standing,
@@ -915,7 +915,7 @@ function getFactionStandingDisplay(factionName, standings) {
 
   const normalizedStanding = typeof info.standing === 'string' ? info.standing.trim().toLowerCase() : ''
   let className = null
-  let baseColor = 'var(--ghostnet-subdued)'
+  let baseColor = 'var(--glitch-subdued)'
   if (normalizedStanding === 'ally') {
     className = styles.tableTextSuccess
     baseColor = '#29f3c3'
@@ -924,7 +924,7 @@ function getFactionStandingDisplay(factionName, standings) {
     baseColor = '#ff5fc1'
   } else if (normalizedStanding) {
     className = styles.tableTextNeutral
-    baseColor = 'var(--ghostnet-accent)'
+    baseColor = 'var(--glitch-accent)'
   }
 
   const reputationLabel = typeof info.reputation === 'number'
@@ -1218,7 +1218,7 @@ const CURRENT_SYSTEM_CONTAINER_STYLE = {
 }
 
 const CURRENT_SYSTEM_LABEL_STYLE = {
-  color: 'var(--ghostnet-accent)',
+  color: 'var(--glitch-accent)',
   fontSize: '0.75rem',
   letterSpacing: '.08em',
   textTransform: 'uppercase',
@@ -1250,7 +1250,7 @@ const FILTER_FIELD_STYLE = {
 const FILTER_LABEL_STYLE = {
   display: 'block',
   marginBottom: 0,
-  color: 'var(--ghostnet-accent)',
+  color: 'var(--glitch-accent)',
   fontSize: '0.75rem',
   textTransform: 'uppercase',
   letterSpacing: '.08em'
@@ -1265,7 +1265,7 @@ const FILTER_CONTROL_STYLE = {
   borderRadius: '.35rem',
   border: '1px solid rgba(127, 233, 255, 0.35)',
   background: 'rgba(5, 8, 13, 0.75)',
-  color: 'var(--ghostnet-ink)',
+  color: 'var(--glitch-ink)',
   lineHeight: '1.2',
   boxSizing: 'border-box'
 }
@@ -1273,7 +1273,7 @@ const FILTER_CONTROL_STYLE = {
 const FILTER_TOGGLE_BUTTON_STYLE = {
   background: 'rgba(127, 233, 255, 0.12)',
   border: '1px solid rgba(127, 233, 255, 0.4)',
-  color: 'var(--ghostnet-accent)',
+  color: 'var(--glitch-accent)',
   borderRadius: '0',
   padding: '0 1rem',
   fontSize: '0.85rem',
@@ -1293,7 +1293,7 @@ const FILTER_SUMMARY_STYLE = {
 }
 
 const FILTER_SUMMARY_TEXT_STYLE = {
-  color: 'var(--ghostnet-accent)',
+  color: 'var(--glitch-accent)',
   fontSize: '0.85rem',
   fontWeight: 500,
   whiteSpace: 'nowrap',
@@ -1337,7 +1337,7 @@ function parseNumberFromText (value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-function CreditsIcon ({ size = 22, color = 'var(--ghostnet-color-success)' }) {
+function CreditsIcon ({ size = 22, color = 'var(--glitch-color-success)' }) {
   const paths = Icons.credits
   if (!paths) return null
   return (
@@ -1354,7 +1354,7 @@ function CreditsIcon ({ size = 22, color = 'var(--ghostnet-color-success)' }) {
 
 CreditsIcon.defaultProps = {
   size: 22,
-  color: 'var(--ghostnet-color-success)'
+  color: 'var(--glitch-color-success)'
 }
 
 function extractProfitPerTon (route) {
@@ -1997,7 +1997,7 @@ function MissionsPanel () {
 
     const loadMissions = async () => {
       try {
-        const response = await fetch('/api/ghostnet-missions', {
+        const response = await fetch('/api/glitch-missions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ system: trimmedSystem }),
@@ -2079,24 +2079,24 @@ function MissionsPanel () {
       >
         <div className={styles.tableSectionHeader}>
           <h2 className={styles.tableSectionTitle}>Mining Missions</h2>
-          <p className={styles.sectionHint}>Ghost Net decrypts volunteer INARA manifests to shortlist mining opportunities aligned to your current system.</p>
+          <p className={styles.sectionHint}>Glitch decrypts volunteer INARA manifests to shortlist mining opportunities aligned to your current system.</p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-              <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
+              <div className='glitch-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
             </div>
             {sourceUrl && (
-              <div className='ghostnet__data-source ghostnet-muted'>
-                Ghost Net intercept feed compiled from INARA community relays.
+              <div className='glitch__data-source glitch-muted'>
+                Glitch intercept feed compiled from INARA community relays.
               </div>
             )}
           </div>
-          <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+          <p style={{ color: 'var(--glitch-muted)', marginTop: '-0.5rem' }}>
             Availability signals originate from INARA contributors and may trail live mission boards.
           </p>
           {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
-        <div className='ghostnet-panel-table'>
+        <div className='glitch-panel-table'>
           <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
             {displayMessage && status !== 'idle' && status !== 'loading' && (
               <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
@@ -2154,7 +2154,7 @@ function MissionsPanel () {
                     .join(' · ') || undefined
 
                   return (
-                    <tr key={key} data-ghostnet-table-row='pending'>
+                    <tr key={key} data-glitch-table-row='pending'>
                       <td className={`${styles.tableCellTop}`}>
                         {mission.faction
                           ? (
@@ -2169,7 +2169,7 @@ function MissionsPanel () {
                               <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
                               )
                             : (
-                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
+                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--glitch-subdued)' }} />
                               )}
                           {mission.system
                             ? <CopyOnClick copyMessageKey='system'>{mission.system}</CopyOnClick>
@@ -2199,7 +2199,7 @@ function CargoHoldPanel () {
   const [cargo, setCargo] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
-  const [valuation, setValuation] = useState({ results: [], metadata: { ghostnetStatus: 'idle', marketStatus: 'idle' } })
+  const [valuation, setValuation] = useState({ results: [], metadata: { glitchStatus: 'idle', marketStatus: 'idle' } })
   const [activeCommodityDetail, setActiveCommodityDetail] = useState(null)
   const [commodityContext, setCommodityContext] = useState(null)
   const [stationSortField, setStationSortField] = useState('price')
@@ -2316,7 +2316,7 @@ function CargoHoldPanel () {
       setValuation({
         results: mockResults,
         metadata: {
-          ghostnetStatus: 'mock',
+          glitchStatus: 'mock',
           marketStatus: 'mock',
           historyStatus: 'mock'
         }
@@ -2343,7 +2343,7 @@ function CargoHoldPanel () {
         }))
     }
 
-    fetch('/api/ghostnet-commodity-values', {
+    fetch('/api/glitch-commodity-values', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -2354,7 +2354,7 @@ function CargoHoldPanel () {
         const results = Array.isArray(data?.results) ? data.results : []
         const metadata = data?.metadata && typeof data.metadata === 'object'
           ? data.metadata
-          : { ghostnetStatus: 'idle', marketStatus: 'idle', historyStatus: 'idle' }
+          : { glitchStatus: 'idle', marketStatus: 'idle', historyStatus: 'idle' }
         setValuation({ results, metadata })
         setStatus(results.length > 0 ? 'ready' : 'empty')
       })
@@ -2382,7 +2382,7 @@ function CargoHoldPanel () {
   }, [valuation?.results])
 
   const totals = useMemo(() => {
-    const summary = { best: 0, ghostnet: 0, local: 0 }
+    const summary = { best: 0, glitch: 0, local: 0 }
     if (!Array.isArray(cargo)) return summary
 
     cargo.forEach(item => {
@@ -2390,12 +2390,12 @@ function CargoHoldPanel () {
       if (!key) return
       const entry = valuationMap.get(key)
       const quantity = Number(item?.count) || 0
-      const ghostnetPrice = typeof entry?.ghostnet?.price === 'number' ? entry.ghostnet.price : null
+      const glitchPrice = typeof entry?.glitch?.price === 'number' ? entry.glitch.price : null
       const marketPrice = typeof entry?.market?.sellPrice === 'number' ? entry.market.sellPrice : null
       const historyPrice = typeof entry?.localHistory?.best?.sellPrice === 'number' ? entry.localHistory.best.sellPrice : null
 
-      if (typeof ghostnetPrice === 'number') {
-        summary.ghostnet += ghostnetPrice * quantity
+      if (typeof glitchPrice === 'number') {
+        summary.glitch += glitchPrice * quantity
       }
 
       let localBestPrice = null
@@ -2411,8 +2411,8 @@ function CargoHoldPanel () {
       }
 
       let bestPrice = localBestPrice
-      if (typeof ghostnetPrice === 'number' && (bestPrice === null || ghostnetPrice > bestPrice)) {
-        bestPrice = ghostnetPrice
+      if (typeof glitchPrice === 'number' && (bestPrice === null || glitchPrice > bestPrice)) {
+        bestPrice = glitchPrice
       }
 
       if (typeof bestPrice === 'number') {
@@ -2448,17 +2448,17 @@ function CargoHoldPanel () {
           localBestSource: null,
           historyEntries: [],
           marketEntry: null,
-          ghostnetEntry: null,
-          ghostnetListings: [],
-          ghostnetPrice: null,
-          ghostnetValue: null,
+          glitchEntry: null,
+          glitchListings: [],
+          glitchPrice: null,
+          glitchValue: null,
           localValue: null
         }
       }
 
       const marketEntry = entry?.market && typeof entry.market === 'object' ? entry.market : null
-      const ghostnetEntry = entry?.ghostnet && typeof entry.ghostnet === 'object' ? entry.ghostnet : null
-      const ghostnetListings = Array.isArray(entry?.ghostnetListings) ? entry.ghostnetListings : []
+      const glitchEntry = entry?.glitch && typeof entry.glitch === 'object' ? entry.glitch : null
+      const glitchListings = Array.isArray(entry?.glitchListings) ? entry.glitchListings : []
       const historyRaw = Array.isArray(entry?.localHistory?.entries) ? entry.localHistory.entries : []
       const historyEntries = historyRaw
         .filter(candidate => candidate && typeof candidate === 'object' && typeof candidate.sellPrice === 'number')
@@ -2473,7 +2473,7 @@ function CargoHoldPanel () {
         ? entry.localHistory.best
         : (historyEntries[0] || null)
 
-      const ghostnetPrice = typeof ghostnetEntry?.price === 'number' ? ghostnetEntry.price : null
+      const glitchPrice = typeof glitchEntry?.price === 'number' ? glitchEntry.price : null
 
       let localBestEntry = (marketEntry && typeof marketEntry.sellPrice === 'number') ? marketEntry : null
       let localBestPrice = localBestEntry ? localBestEntry.sellPrice : null
@@ -2500,13 +2500,13 @@ function CargoHoldPanel () {
       }
 
       const localValue = typeof localBestPrice === 'number' ? localBestPrice * quantity : null
-      const ghostnetValue = typeof ghostnetPrice === 'number' ? ghostnetPrice * quantity : null
+      const glitchValue = typeof glitchPrice === 'number' ? glitchPrice * quantity : null
 
       let bestPrice = localBestPrice
       let bestSource = localBestSource
-      if (typeof ghostnetPrice === 'number' && (bestPrice === null || ghostnetPrice > bestPrice)) {
-        bestPrice = ghostnetPrice
-        bestSource = 'ghostnet'
+      if (typeof glitchPrice === 'number' && (bestPrice === null || glitchPrice > bestPrice)) {
+        bestPrice = glitchPrice
+        bestSource = 'glitch'
       }
 
       const bestValue = typeof bestPrice === 'number' ? bestPrice * quantity : null
@@ -2524,10 +2524,10 @@ function CargoHoldPanel () {
         localBestSource,
         historyEntries,
         marketEntry,
-        ghostnetEntry,
-        ghostnetListings,
-        ghostnetPrice,
-        ghostnetValue,
+        glitchEntry,
+        glitchListings,
+        glitchPrice,
+        glitchValue,
         localValue,
         nonCommodity: false
       }
@@ -2548,9 +2548,9 @@ function CargoHoldPanel () {
     if (!container) return undefined
 
     const timeoutId = window.setTimeout(() => {
-      container.querySelectorAll('[data-ghostnet-table-row]').forEach(element => {
-        if (element.getAttribute('data-ghostnet-table-row') !== 'visible') {
-          element.setAttribute('data-ghostnet-table-row', 'visible')
+      container.querySelectorAll('[data-glitch-table-row]').forEach(element => {
+        if (element.getAttribute('data-glitch-table-row') !== 'visible') {
+          element.setAttribute('data-glitch-table-row', 'visible')
         }
       })
     }, 600)
@@ -2575,9 +2575,9 @@ function CargoHoldPanel () {
 
     const commodityName = row?.item?.name || row?.item?.symbol || 'Unknown'
     const commoditySymbol = row?.item?.symbol || ''
-    const listingsSource = Array.isArray(row?.ghostnetListings) && row.ghostnetListings.length > 0
-      ? row.ghostnetListings
-      : (row?.ghostnetEntry ? [row.ghostnetEntry] : [])
+    const listingsSource = Array.isArray(row?.glitchListings) && row.glitchListings.length > 0
+      ? row.glitchListings
+      : (row?.glitchEntry ? [row.glitchEntry] : [])
 
     const listings = listingsSource
       .map((listing, index) => {
@@ -2593,14 +2593,14 @@ function CargoHoldPanel () {
 
     const marketEntry = sanitizeMarketListingEntry(row.marketEntry)
     const localBestEntry = sanitizeMarketListingEntry(row.localBestEntry)
-    const ghostnetEntry = sanitizeCommodityListingEntry(row.ghostnetEntry)
+    const glitchEntry = sanitizeCommodityListingEntry(row.glitchEntry)
 
     let selectedIndex = listings.findIndex(listing => {
-      if (!ghostnetEntry) return false
+      if (!glitchEntry) return false
       const listingStation = normaliseName(listing?.stationName)
       const listingSystem = normaliseName(listing?.systemName)
-      const entryStation = normaliseName(ghostnetEntry?.stationName)
-      const entrySystem = normaliseName(ghostnetEntry?.systemName)
+      const entryStation = normaliseName(glitchEntry?.stationName)
+      const entrySystem = normaliseName(glitchEntry?.systemName)
       if (!listingStation || !entryStation) return false
       if (listingStation !== entryStation) return false
       if (entrySystem && listingSystem) return listingSystem === entrySystem
@@ -2618,7 +2618,7 @@ function CargoHoldPanel () {
       quantity: row.quantity,
       listings,
       selectedListingId: listings[selectedIndex]?.__id || null,
-      ghostnetEntry,
+      glitchEntry,
       marketEntry,
       localBestEntry,
       localBestPrice: typeof row.localBestPrice === 'number'
@@ -2687,7 +2687,7 @@ function CargoHoldPanel () {
     const byId = sortedDetailListings.find(entry => entry.__id === activeCommodityDetail.selectedListingId)
     if (byId) return byId
     if (sortedDetailListings.length > 0) return sortedDetailListings[0]
-    return activeCommodityDetail.ghostnetEntry || null
+    return activeCommodityDetail.glitchEntry || null
   }, [activeCommodityDetail, sortedDetailListings])
 
   const handleStationContextSelect = useCallback(listingId => {
@@ -2702,7 +2702,7 @@ function CargoHoldPanel () {
     setActiveCommodityDetail(prev => {
       if (prev) {
         const listing = prev.listings.find(entry => entry.__id === prev.selectedListingId)
-        const destinationEntry = listing || prev.ghostnetEntry || null
+        const destinationEntry = listing || prev.glitchEntry || null
         const sanitizedDestination = destinationEntry
           ? (listing ? listing : sanitizeCommodityListingEntry(destinationEntry))
           : null
@@ -2769,7 +2769,7 @@ function CargoHoldPanel () {
   }, [])
 
   const renderSourceBadge = source => {
-    if (source === 'ghostnet') {
+    if (source === 'glitch') {
       return <span className={`${styles.tableBadge} ${styles.tableBadgeWarning}`}>INARA</span>
     }
     if (source === 'local-station') {
@@ -2863,7 +2863,7 @@ function CargoHoldPanel () {
     ? `${cargoCount.toLocaleString()} of ${cargoCapacity.toLocaleString()} tonnes`
     : `${cargoCount.toLocaleString()} tonnes in hold`
 
-  const ghostnetStatus = valuation?.metadata?.ghostnetStatus || 'idle'
+  const glitchStatus = valuation?.metadata?.glitchStatus || 'idle'
   const marketStatus = valuation?.metadata?.marketStatus || 'idle'
   const historyStatus = valuation?.metadata?.historyStatus || 'idle'
 
@@ -2896,7 +2896,7 @@ function CargoHoldPanel () {
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
             <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{currentSystemName || 'Unknown'}</div>
+            <div className='glitch-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{currentSystemName || 'Unknown'}</div>
           </div>
         </div>
       </div>
@@ -2913,7 +2913,7 @@ function CargoHoldPanel () {
           </div>
           <div className={styles.metricItem}>
             <span className={styles.metricLabel}>Hold Value (INARA)</span>
-            <span className={`${styles.metricValue} ${styles.metricValueWarning}`}>{formatCredits(totals.ghostnet, '--')}</span>
+            <span className={`${styles.metricValue} ${styles.metricValueWarning}`}>{formatCredits(totals.glitch, '--')}</span>
           </div>
           <div className={styles.metricItem}>
             <span className={styles.metricLabel}>Hold Value (Local Data)</span>
@@ -2921,9 +2921,9 @@ function CargoHoldPanel () {
           </div>
         </div>
 
-        {(ghostnetStatus === 'error' || ghostnetStatus === 'partial') && (
+        {(glitchStatus === 'error' || glitchStatus === 'partial') && (
           <div className={styles.notice}>
-            {ghostnetStatus === 'error'
+            {glitchStatus === 'error'
               ? 'Unable to retrieve INARA price data at this time.'
               : 'Some commodities are missing INARA price data. Displayed values use local market prices where available.'}
           </div>
@@ -3125,7 +3125,7 @@ function CargoHoldPanel () {
                 </div>
               </div>
 
-              <div className='ghostnet-panel-table'>
+              <div className='glitch-panel-table'>
                 <div className='scrollable' style={STATION_TABLE_SCROLL_AREA_STYLE}>
                   {listings.length === 0 ? (
                     <div className={styles.detailEmptyState}>
@@ -3222,7 +3222,7 @@ function CargoHoldPanel () {
                                 tabIndex={0}
                                 role='button'
                                 aria-pressed={isSelected}
-                                data-ghostnet-table-row='visible'
+                                data-glitch-table-row='visible'
                               >
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
                                   <StationSummary
@@ -3274,7 +3274,7 @@ function CargoHoldPanel () {
         })()
         : (
           <>
-            <div className='ghostnet-panel-table'>
+            <div className='glitch-panel-table'>
               <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
                 {commodityContext ? (
                   <CommoditySummary
@@ -3311,37 +3311,37 @@ function CargoHoldPanel () {
                       item,
                       entry,
                       quantity,
-                      ghostnetPrice,
+                      glitchPrice,
                       localBestEntry,
                       localBestSource,
                       historyEntries,
                       marketEntry,
                       bestValue,
                       bestSource,
-                      ghostnetValue,
+                      glitchValue,
                       localValue,
-                      ghostnetEntry
+                      glitchEntry
                     } = row
 
-                    const ghostnetContextEntry = ghostnetEntry || entry?.ghostnet || null
-                    const ghostnetStation = sanitizeInaraText(ghostnetContextEntry?.stationName) || ghostnetContextEntry?.stationName || ''
-                    const ghostnetSystem = sanitizeInaraText(ghostnetContextEntry?.systemName) || ghostnetContextEntry?.systemName || ''
-                    const ghostnetDemand = sanitizeInaraText(ghostnetContextEntry?.demandText) || (typeof ghostnetContextEntry?.demand === 'number' ? ghostnetContextEntry.demand.toLocaleString() : '')
-                    const ghostnetDemandIndicator = (ghostnetContextEntry?.demandText || ghostnetDemand)
+                    const glitchContextEntry = glitchEntry || entry?.glitch || null
+                    const glitchStation = sanitizeInaraText(glitchContextEntry?.stationName) || glitchContextEntry?.stationName || ''
+                    const glitchSystem = sanitizeInaraText(glitchContextEntry?.systemName) || glitchContextEntry?.systemName || ''
+                    const glitchDemand = sanitizeInaraText(glitchContextEntry?.demandText) || (typeof glitchContextEntry?.demand === 'number' ? glitchContextEntry.demand.toLocaleString() : '')
+                    const glitchDemandIndicator = (glitchContextEntry?.demandText || glitchDemand)
                       ? (
                         <DemandIndicator
-                          label={ghostnetContextEntry?.demandText || ghostnetDemand}
-                          fallbackLabel={ghostnetDemand}
-                          isLow={Boolean(ghostnetContextEntry?.demandIsLow)}
+                          label={glitchContextEntry?.demandText || glitchDemand}
+                          fallbackLabel={glitchDemand}
+                          isLow={Boolean(glitchContextEntry?.demandIsLow)}
                           subtle
                         />
                         )
                       : null
-                    const ghostnetUpdatedText = sanitizeInaraText(ghostnetContextEntry?.updatedText) || ghostnetContextEntry?.updatedText || ''
-                    const ghostnetUpdated = ghostnetContextEntry?.updatedAt
-                      ? formatRelativeTime(ghostnetContextEntry.updatedAt)
-                      : ghostnetUpdatedText
-                    const ghostnetPriceDisplay = typeof ghostnetPrice === 'number' ? formatCredits(ghostnetPrice, '--') : '--'
+                    const glitchUpdatedText = sanitizeInaraText(glitchContextEntry?.updatedText) || glitchContextEntry?.updatedText || ''
+                    const glitchUpdated = glitchContextEntry?.updatedAt
+                      ? formatRelativeTime(glitchContextEntry.updatedAt)
+                      : glitchUpdatedText
+                    const glitchPriceDisplay = typeof glitchPrice === 'number' ? formatCredits(glitchPrice, '--') : '--'
                     const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
 
                     const localEntriesForDisplay = []
@@ -3401,7 +3401,7 @@ function CargoHoldPanel () {
                       <tr
                         key={`${row.key}-${index}`}
                         className={rowClassNames.join(' ')}
-                        data-ghostnet-table-row='pending'
+                        data-glitch-table-row='pending'
                         onClick={() => handleOpenCommodityDetail(row)}
                         onKeyDown={handleRowKeyDown}
                         tabIndex={0}
@@ -3418,8 +3418,8 @@ function CargoHoldPanel () {
                               {item?.symbol && item?.symbol !== item?.name && (
                                 <div className={styles.tableSubtext}>{item.symbol}</div>
                               )}
-                              {entry?.errors?.ghostnet && !entry?.ghostnet && (
-                                <div className={styles.tableWarning}>{entry.errors.ghostnet}</div>
+                              {entry?.errors?.glitch && !entry?.glitch && (
+                                <div className={styles.tableWarning}>{entry.errors.glitch}</div>
                               )}
                               {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
                                 <div className={styles.tableWarning}>{entry.errors.market}</div>
@@ -3468,32 +3468,32 @@ function CargoHoldPanel () {
                           )}
                         </td>
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div>{ghostnetPriceDisplay}</div>
-                          {ghostnetStation && (
+                          <div>{glitchPriceDisplay}</div>
+                          {glitchStation && (
                             <div className={styles.tableSubtext}>
-                              <CopyOnClick copyMessageKey='station'>{ghostnetStation}</CopyOnClick>
-                              {ghostnetSystem ? (
+                              <CopyOnClick copyMessageKey='station'>{glitchStation}</CopyOnClick>
+                              {glitchSystem ? (
                                 <>
                                   {' · '}
-                                  <CopyOnClick copyMessageKey='system'>{ghostnetSystem}</CopyOnClick>
+                                  <CopyOnClick copyMessageKey='system'>{glitchSystem}</CopyOnClick>
                                 </>
                               ) : null}
                             </div>
                           )}
-                          {ghostnetDemand && (
+                          {glitchDemand && (
                             <div className={styles.tableMetaMuted}>
-                              Demand: {ghostnetDemandIndicator || ghostnetDemand}
+                              Demand: {glitchDemandIndicator || glitchDemand}
                             </div>
                           )}
-                          {ghostnetUpdated && (
-                            <div className={styles.tableMetaMuted}>Updated {ghostnetUpdated}</div>
+                          {glitchUpdated && (
+                            <div className={styles.tableMetaMuted}>Updated {glitchUpdated}</div>
                           )}
                         </td>
                         <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>
                           <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
-                          {typeof localValue === 'number' && typeof ghostnetValue === 'number' && Math.abs(localValue - ghostnetValue) > 0.01 && (
+                          {typeof localValue === 'number' && typeof glitchValue === 'number' && Math.abs(localValue - glitchValue) > 0.01 && (
                             <div className={styles.tableMetaMuted}>
-                              INARA {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
+                              INARA {formatCredits(glitchValue, '--')} · Local {formatCredits(localValue, '--')}
                             </div>
                           )}
                         </td>
@@ -3949,7 +3949,7 @@ function TradeRoutesPanel () {
       filters
     }
 
-    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('ghostnetUseMockData') === 'true'
+    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('glitchUseMockData') === 'true'
     if (shouldUseMockData) {
       const mockRoutes = generateMockTradeRoutes({
         systemName: trimmedTargetSystem,
@@ -3957,13 +3957,13 @@ function TradeRoutesPanel () {
       })
 
       applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (INARA) settings to restore live results.'
+        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Glitch (INARA) settings to restore live results.'
       })
       setIsRefreshing(false)
       return
     }
 
-    fetch('/api/ghostnet-trade-routes', {
+    fetch('/api/glitch-trade-routes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -4700,7 +4700,7 @@ function TradeRoutesPanel () {
           </div>
         </div>
       </Panel>
-      <div className='ghostnet-panel-table'>
+      <div className='glitch-panel-table'>
         <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
           {message && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
@@ -4775,7 +4775,7 @@ function PristineMiningPanel () {
     setMessage('')
     setLastUpdatedAt(null)
 
-    fetch('/api/ghostnet-pristine-mining', {
+    fetch('/api/glitch-pristine-mining', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: trimmedSystem })
@@ -4939,25 +4939,25 @@ function PristineMiningPanel () {
       >
         <div className={styles.tableSectionHeader}>
           <h2 className={styles.tableSectionTitle}>Pristine Mining Locations</h2>
-          <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across INARA to pinpoint high-value extraction sites.</p>
+          <p className={styles.sectionHint}>Glitch listens for rare reserve chatter across INARA to pinpoint high-value extraction sites.</p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-              <div className='ghostnet-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
+              <div className='glitch-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
             </div>
             {sourceUrl && (
-              <div className='ghostnet__data-source ghostnet-muted'>
-                Ghost Net prospecting relays aligned with INARA survey intel.
+              <div className='glitch__data-source glitch-muted'>
+                Glitch prospecting relays aligned with INARA survey intel.
               </div>
             )}
           </div>
-          <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
+          <p style={{ color: 'var(--glitch-muted)', marginTop: '-0.5rem' }}>
             Geological echoes are sourced from volunteer INARA submissions and may lag in-system discoveries.
           </p>
           {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
         <div
-          className={`ghostnet-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
+          className={`glitch-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
         >
           <div
             className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
@@ -5011,7 +5011,7 @@ function PristineMiningPanel () {
                     <Fragment key={key}>
                       <tr
                         className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
-                        data-ghostnet-table-row='pending'
+                        data-glitch-table-row='pending'
                         role='button'
                         tabIndex={0}
                         aria-expanded={isExpanded}
@@ -5020,7 +5020,7 @@ function PristineMiningPanel () {
                       >
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span className='ghostnet-accent'>{location.body || '--'}</span>
+                            <span className='glitch-accent'>{location.body || '--'}</span>
                             {detailText && (
                               <span className={styles.tableSubtext}>{detailText}</span>
                             )}
@@ -5030,12 +5030,12 @@ function PristineMiningPanel () {
                           <div className={`${styles.tableCellInline} text-no-wrap`}>
                             {location.isTargetSystem
                               ? (
-                                <i className='icon system-object-icon icarus-terminal-location-filled ghostnet-accent' style={{ marginRight: '.5rem' }} />
+                                <i className='icon system-object-icon icarus-terminal-location-filled glitch-accent' style={{ marginRight: '.5rem' }} />
                                 )
                               : (
-                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--ghostnet-subdued)' }} />
+                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--glitch-subdued)' }} />
                                 )}
-                            <span className='ghostnet-accent'>
+                            <span className='glitch-accent'>
                               {location.system
                                 ? <CopyOnClick copyMessageKey='system'>{location.system}</CopyOnClick>
                                 : '--'}
@@ -5046,22 +5046,22 @@ function PristineMiningPanel () {
                         <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
                       </tr>
                       {isExpanded && (
-                        <tr className={`${styles.tableDetailRow} ghostnet-table-detail-row`} data-ghostnet-table-row='pending'>
+                        <tr className={`${styles.tableDetailRow} glitch-table-detail-row`} data-glitch-table-row='pending'>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
                                 <div className='pristine-mining__detail-summary'>
                                   {detailText && <span>{detailText}</span>}
-                                  {bodyDistanceDisplay && <span>Body Distance: <span className='ghostnet-accent'>{bodyDistanceDisplay}</span></span>}
-                                  {distanceDisplay && <span>System Distance: <span className='ghostnet-accent'>{distanceDisplay}</span></span>}
+                                  {bodyDistanceDisplay && <span>Body Distance: <span className='glitch-accent'>{bodyDistanceDisplay}</span></span>}
+                                  {distanceDisplay && <span>System Distance: <span className='glitch-accent'>{distanceDisplay}</span></span>}
                                 </div>
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
                                     {location.systemUrl && (
-                                      <span>Ghost Net linked INARA system dossier</span>
+                                      <span>Glitch linked INARA system dossier</span>
                                     )}
                                     {location.bodyUrl && (
-                                      <span>Ghost Net linked INARA body dossier</span>
+                                      <span>Glitch linked INARA body dossier</span>
                                     )}
                                   </div>
                                 )}
@@ -5135,7 +5135,7 @@ const DEFAULT_GREEK_SYMBOLS = [
   'psi',
   'omega'
 ]
-const GREEK_SYMBOLS = getGhostnetStrings('glyphs.greekSymbols', DEFAULT_GREEK_SYMBOLS)
+const GREEK_SYMBOLS = getGlitchStrings('glyphs.greekSymbols', DEFAULT_GREEK_SYMBOLS)
 const TERMINAL_BUFFER = 36
 const TERMINAL_WINDOW = 7
 const TERMINAL_WINDOW_EXPANDED = 14
@@ -5172,7 +5172,7 @@ function randomCallsign () {
 
 function randomEndpoint () {
   const protocol = randomChoice(['mesh', 'flux', 'relay', 'beacon', 'packet', 'datastream'])
-  const host = `${randomChoice(['ghostnet', 'syndicate', 'perseus', 'umbra', 'aurora', 'dusk'])}.${randomChoice(['alpha', 'beta', 'gamma', 'delta', 'kappa', 'lambda'])}`
+  const host = `${randomChoice(['glitch', 'syndicate', 'perseus', 'umbra', 'aurora', 'dusk'])}.${randomChoice(['alpha', 'beta', 'gamma', 'delta', 'kappa', 'lambda'])}`
   return `${protocol}://${host}.${randomChoice(['io', 'net', 'grid', 'node'])}`
 }
 
@@ -5214,14 +5214,14 @@ const DEFAULT_CURRENCY_GLYPHS = [
   '฿',
   '₾'
 ]
-const CURRENCY_GLYPHS = getGhostnetStrings('glyphs.currencyGlyphs', DEFAULT_CURRENCY_GLYPHS)
+const CURRENCY_GLYPHS = getGlitchStrings('glyphs.currencyGlyphs', DEFAULT_CURRENCY_GLYPHS)
 
 function generateCurrencyCascadeString (length = 96) {
   return Array.from({ length }).map(() => randomChoice(CURRENCY_GLYPHS)).join('')
 }
 
 const DEFAULT_DEBIT_GLYPHS = ['✖', '⛔', '⚠', '!', '−', '↓', '×', '⨯', '▾', '✕', '⛓']
-const DEBIT_GLYPHS = getGhostnetStrings('glyphs.debitGlyphs', DEFAULT_DEBIT_GLYPHS)
+const DEBIT_GLYPHS = getGlitchStrings('glyphs.debitGlyphs', DEFAULT_DEBIT_GLYPHS)
 
 function generateDebitGlyphString (length = 72) {
   const debitPool = [...DEBIT_GLYPHS, ...'XXXX----!!!!']
@@ -5416,37 +5416,37 @@ const DEFAULT_JACKPOT_SUMMARY_TAILS = [
 const DEFAULT_JACKPOT_SWIRL_GLYPHS = ['✶', '✷', '✺', '✹', '✸', '✧', '✦', '✩', '✪', '☄', '⚡', '⭑']
 const DEFAULT_FALLBACK_LOCATIONS = ['Obsidian Relay', 'Nyx Archive', 'Perseus Node', 'Umbra Vault', 'Helios Array', 'Dusk Citadel']
 
-const TRANSACTION_VECTOR_LABELS = getGhostnetStrings(
+const TRANSACTION_VECTOR_LABELS = getGlitchStrings(
   'terminal.transaction.vectorLabels',
   DEFAULT_TRANSACTION_VECTOR_LABELS
 )
-const TRANSACTION_ALIAS_WORDS = getGhostnetStrings(
+const TRANSACTION_ALIAS_WORDS = getGlitchStrings(
   'terminal.transaction.aliasWords',
   DEFAULT_TRANSACTION_ALIAS_WORDS
 )
-const TRANSACTION_OPERATIONS = getGhostnetStrings(
+const TRANSACTION_OPERATIONS = getGlitchStrings(
   'terminal.transaction.operations',
   DEFAULT_TRANSACTION_OPERATIONS
 )
-const TRANSACTION_SIGNAL_WORDS = getGhostnetStrings(
+const TRANSACTION_SIGNAL_WORDS = getGlitchStrings(
   'terminal.transaction.signalWords',
   DEFAULT_TRANSACTION_SIGNAL_WORDS
 )
-const TRANSACTION_SOURCE_PREFIXES = getGhostnetStrings(
+const TRANSACTION_SOURCE_PREFIXES = getGlitchStrings(
   'terminal.transaction.sourcePrefixes',
   DEFAULT_TRANSACTION_SOURCE_PREFIXES
 )
-const TRANSACTION_REASON_SUFFIXES = getGhostnetStrings(
+const TRANSACTION_REASON_SUFFIXES = getGlitchStrings(
   'terminal.transaction.reasonSuffixes',
   DEFAULT_TRANSACTION_REASON_SUFFIXES
 )
-const SIMULATION_BADGES = getGhostnetStrings('terminal.simulationBadges', DEFAULT_SIMULATION_BADGES)
-const SIMULATION_TRAILS = getGhostnetStrings('terminal.simulationTrails', DEFAULT_SIMULATION_TRAILS)
-const JACKPOT_ASCII_BANNER = getGhostnetStrings('terminal.jackpotAsciiBanner', DEFAULT_JACKPOT_ASCII_BANNER)
-const JACKPOT_SUMMARY_INTROS = getGhostnetStrings('terminal.jackpotSummaryIntros', DEFAULT_JACKPOT_SUMMARY_INTROS)
-const JACKPOT_SUMMARY_TAILS = getGhostnetStrings('terminal.jackpotSummaryTails', DEFAULT_JACKPOT_SUMMARY_TAILS)
-const JACKPOT_SWIRL_GLYPHS = getGhostnetStrings('terminal.jackpotSwirlGlyphs', DEFAULT_JACKPOT_SWIRL_GLYPHS)
-const FALLBACK_LOCATIONS = getGhostnetStrings('terminal.fallbackLocations', DEFAULT_FALLBACK_LOCATIONS)
+const SIMULATION_BADGES = getGlitchStrings('terminal.simulationBadges', DEFAULT_SIMULATION_BADGES)
+const SIMULATION_TRAILS = getGlitchStrings('terminal.simulationTrails', DEFAULT_SIMULATION_TRAILS)
+const JACKPOT_ASCII_BANNER = getGlitchStrings('terminal.jackpotAsciiBanner', DEFAULT_JACKPOT_ASCII_BANNER)
+const JACKPOT_SUMMARY_INTROS = getGlitchStrings('terminal.jackpotSummaryIntros', DEFAULT_JACKPOT_SUMMARY_INTROS)
+const JACKPOT_SUMMARY_TAILS = getGlitchStrings('terminal.jackpotSummaryTails', DEFAULT_JACKPOT_SUMMARY_TAILS)
+const JACKPOT_SWIRL_GLYPHS = getGlitchStrings('terminal.jackpotSwirlGlyphs', DEFAULT_JACKPOT_SWIRL_GLYPHS)
+const FALLBACK_LOCATIONS = getGlitchStrings('terminal.fallbackLocations', DEFAULT_FALLBACK_LOCATIONS)
 
 function generateSwirlGlyphString (length = 48) {
   return Array.from({ length }).map(() => randomChoice([...JACKPOT_SWIRL_GLYPHS, ...CURRENCY_GLYPHS])).join('')
@@ -5464,7 +5464,7 @@ function formatTokenAmount (value) {
 function extractLedgerSource (metadata = {}) {
   const candidates = [metadata.source, metadata.endpoint, metadata.event, metadata.origin]
   const resolved = candidates.find(value => typeof value === 'string' && value.trim())
-  return resolved ? resolved.trim() : 'ghostnet'
+  return resolved ? resolved.trim() : 'glitch'
 }
 
 function extractLedgerReason (metadata = {}) {
@@ -5666,10 +5666,10 @@ const DEFAULT_CREDIT_GLYPH_SYMBOLS = [
   '⊛'
 ]
 
-const MENACE_ALERTS = getGhostnetStrings('terminal.menace.alerts', DEFAULT_MENACE_ALERTS)
-const MENACE_ECHOES = getGhostnetStrings('terminal.menace.echoes', DEFAULT_MENACE_ECHOES)
-const CREDIT_GLYPH_SYMBOLS = getGhostnetStrings('terminal.creditGlyphSymbols', DEFAULT_CREDIT_GLYPH_SYMBOLS)
-const CREDIT_CELEBRATION_MESSAGE = getGhostnetString(
+const MENACE_ALERTS = getGlitchStrings('terminal.menace.alerts', DEFAULT_MENACE_ALERTS)
+const MENACE_ECHOES = getGlitchStrings('terminal.menace.echoes', DEFAULT_MENACE_ECHOES)
+const CREDIT_GLYPH_SYMBOLS = getGlitchStrings('terminal.creditGlyphSymbols', DEFAULT_CREDIT_GLYPH_SYMBOLS)
+const CREDIT_CELEBRATION_MESSAGE = getGlitchString(
   'terminal.creditCelebrationMessage',
   'INARA intercept completed. Ledger flush inbound.'
 )
@@ -5693,13 +5693,13 @@ function generateMenaceLines (balance) {
   const echoText = randomChoice(MENACE_ECHOES)()
   return [
     { type: 'alert', label: '!!!', text: alertText },
-    { type: 'system', label: 'ghostnet', text: echoText }
+    { type: 'system', label: 'glitch', text: echoText }
   ]
 }
 
 function generateTerminalLine () {
   const generators = {
-    command: () => ({ type: 'command', label: 'ghostnet@ship', text: generateCommandText() }),
+    command: () => ({ type: 'command', label: 'glitch@ship', text: generateCommandText() }),
     response: () => ({ type: 'response', label: randomChoice(['mesh', 'telemetry', 'analysis']), text: generateResponseText() }),
     cipher: () => ({ type: 'cipher', label: 'cipher', text: generateCipherString(randomInteger(32, 64)) }),
     binary: () => ({ type: 'binary', label: 'payload', text: generateBinaryString(randomInteger(6, 10)) }),
@@ -5864,7 +5864,7 @@ function createTerminalLineEntries (seed = '', baseLine, maxLength = TERMINAL_LI
   })
 }
 
-function GhostnetTerminalOverlay () {
+function GlitchTerminalOverlay () {
   const [viewState, setViewState] = useState(TERMINAL_VIEW.NORMAL)
   const terminalLineMaxLengthRef = useRef(TERMINAL_LINE_MAX_LENGTH)
   const [terminalLineMaxLength, setTerminalLineMaxLength] = useState(TERMINAL_LINE_MAX_LENGTH)
@@ -6043,14 +6043,14 @@ function GhostnetTerminalOverlay () {
         : viewState === TERMINAL_VIEW.EXPANDED
           ? TERMINAL_HEIGHT_EXPANDED
           : TERMINAL_HEIGHT_NORMAL
-    host.style.setProperty('--ghostnet-terminal-height', nextHeight)
+    host.style.setProperty('--glitch-terminal-height', nextHeight)
   }, [viewState])
 
   useEffect(() => {
     const host = terminalRef.current?.parentElement
     return () => {
       if (host) {
-        host.style.removeProperty('--ghostnet-terminal-height')
+        host.style.removeProperty('--glitch-terminal-height')
       }
     }
   }, [])
@@ -6130,7 +6130,7 @@ function GhostnetTerminalOverlay () {
     ref.timeouts = []
   }, [])
 
-  const triggerCreditCelebration = useCallback((entry = {}, { message, messageLabel = 'ghostnet', messageType = 'jackpotSummary' } = {}) => {
+  const triggerCreditCelebration = useCallback((entry = {}, { message, messageLabel = 'glitch', messageType = 'jackpotSummary' } = {}) => {
     if (typeof window === 'undefined') return
     if (!entry || typeof entry !== 'object') return
     const entryId = entry.id || null
@@ -6218,7 +6218,7 @@ function GhostnetTerminalOverlay () {
       simulation
     })
 
-    triggerCreditCelebration(entry, { message: summary, messageLabel: 'ghostnet', messageType: 'jackpotSummary' })
+    triggerCreditCelebration(entry, { message: summary, messageLabel: 'glitch', messageType: 'jackpotSummary' })
 
     const { floodLines, floodDuration } = createJackpotFloodConfig(entry, { prefersReducedMotion })
 
@@ -6262,7 +6262,7 @@ function GhostnetTerminalOverlay () {
       {
         line: {
           type: 'jackpotSummary',
-          label: 'ghostnet',
+          label: 'glitch',
           text: summary,
           seed: 'jackpot-summary'
         }
@@ -6413,7 +6413,7 @@ function GhostnetTerminalOverlay () {
         tokenStateRef.current = { balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } }
       })
 
-    unsubscribe = eventListener('ghostnetTokensUpdated', applySnapshot)
+    unsubscribe = eventListener('glitchTokensUpdated', applySnapshot)
 
     return () => {
       isMounted = false
@@ -6577,7 +6577,7 @@ function GhostnetTerminalOverlay () {
     setTokenActionPending(true)
     try {
       await sendEvent('triggerJackpot', {
-        source: 'ghostnet-console'
+        source: 'glitch-console'
       })
     } catch (error) {
       console.error('[INARA] Failed to award tokens from console', error)
@@ -6671,12 +6671,12 @@ function GhostnetTerminalOverlay () {
 
   const maximizeIcon = isExpanded ? '▭' : '▢'
 
-  const statusPreviewLabel = latestLine?.label ?? 'ghostnet'
+  const statusPreviewLabel = latestLine?.label ?? 'glitch'
   const statusPreviewText = latestLine?.text ?? 'Link stable'
 
   return (
     <div className={terminalClassName} ref={terminalRef}>
-      <div className={shellClassName} role='region' aria-label='Ghost Net ship uplink activity log'>
+      <div className={shellClassName} role='region' aria-label='Glitch ship uplink activity log'>
         <div
           className={[styles.terminalCelebration, creditCelebration ? styles.terminalCelebrationActive : ''].filter(Boolean).join(' ')}
           aria-hidden='true'
@@ -6743,7 +6743,7 @@ function GhostnetTerminalOverlay () {
             ) : (
               <div className={styles.terminalHeaderContent}>
                 <span className={styles.terminalTitle}>Ship Uplink Console</span>
-                <span className={styles.terminalStatus}>Channel mesh://ghostnet</span>
+                <span className={styles.terminalStatus}>Channel mesh://glitch</span>
               </div>
             )}
           </div>
@@ -6803,12 +6803,12 @@ function GhostnetTerminalOverlay () {
   )
 }
 
-export default function GhostnetPage() {
+export default function GlitchPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [arrivalMode, setArrivalMode] = useState(false)
   const [themeEnabled, setThemeEnabled] = useState(() => {
     if (typeof window === 'undefined') return false
-    return isGhostnetThemeEnabled()
+    return isGlitchThemeEnabled()
   })
   const { connected, ready, active: socketActive } = useSocket()
   useLayoutEffect(() => {
@@ -6816,13 +6816,13 @@ export default function GhostnetPage() {
 
     const { body } = document
     if (themeEnabled) {
-      body.classList.add('ghostnet-theme')
+      body.classList.add('glitch-theme')
     } else {
-      body.classList.remove('ghostnet-theme')
+      body.classList.remove('glitch-theme')
     }
 
     return () => {
-      body.classList.remove('ghostnet-theme')
+      body.classList.remove('glitch-theme')
     }
   }, [themeEnabled])
   useEffect(() => {
@@ -6830,11 +6830,11 @@ export default function GhostnetPage() {
 
     const storageHandler = (event) => {
       if (event.key === THEME_STORAGE_KEY) {
-        setThemeEnabled(isGhostnetThemeEnabled())
+        setThemeEnabled(isGlitchThemeEnabled())
       }
     }
 
-    const removeListener = addGhostnetThemeChangeListener(setThemeEnabled)
+    const removeListener = addGlitchThemeChangeListener(setThemeEnabled)
     window.addEventListener('storage', storageHandler)
 
     return () => {
@@ -6846,14 +6846,14 @@ export default function GhostnetPage() {
     if (typeof window === 'undefined') return undefined
     let timeoutId
     try {
-      const stored = window.sessionStorage?.getItem('ghostnet.assimilationArrival')
+      const stored = window.sessionStorage?.getItem('glitch.assimilationArrival')
       if (stored) {
         const timestamp = Number(stored)
         if (!Number.isNaN(timestamp) && Date.now() - timestamp < 8000) {
           setArrivalMode(true)
           timeoutId = window.setTimeout(() => setArrivalMode(false), 5200)
         }
-        window.sessionStorage.removeItem('ghostnet.assimilationArrival')
+        window.sessionStorage.removeItem('glitch.assimilationArrival')
       }
     } catch (err) {
       // Ignore storage read errors
@@ -6874,28 +6874,28 @@ export default function GhostnetPage() {
 
   ]), [activeTab])
 
-  const ghostnetClassName = [
-    styles.ghostnet,
+  const glitchClassName = [
+    styles.glitch,
     arrivalMode ? styles.arrival : '',
-    themeEnabled ? '' : styles.ghostnetIcarus
+    themeEnabled ? '' : styles.glitchIcarus
   ].filter(Boolean).join(' ')
   const navigationClassName = [
-    styles.ghostnetNavigation,
-    themeEnabled ? '' : styles.ghostnetNavigationClassic
+    styles.glitchNavigation,
+    themeEnabled ? '' : styles.glitchNavigationClassic
   ].filter(Boolean).join(' ')
   const scrollRegionClassName = [
-    styles.ghostnetScrollRegion,
-    themeEnabled ? '' : styles.ghostnetScrollRegionClassic
+    styles.glitchScrollRegion,
+    themeEnabled ? '' : styles.glitchScrollRegionClassic
   ].filter(Boolean).join(' ')
   return (
-    <Layout connected={connected} active={socketActive} ready={ready} loader={false} className={styles.ghostnetLayout}>
-      <div className={styles.ghostnetViewport}>
+    <Layout connected={connected} active={socketActive} ready={ready} loader={false} className={styles.glitchLayout}>
+      <div className={styles.glitchViewport}>
         <div className={navigationClassName}>
           <PanelNavigation items={navigationItems} search={false} />
         </div>
-        <div className={styles.ghostnetContentArea}>
+        <div className={styles.glitchContentArea}>
           <div className={scrollRegionClassName}>
-            <div className={ghostnetClassName}>
+            <div className={glitchClassName}>
               <div className={styles.shell}>
                 <div className={styles.tabPanels}>
                   <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
@@ -6915,7 +6915,7 @@ export default function GhostnetPage() {
                   </div>
                 </div>
               </div>
-              <GhostnetTerminalOverlay />
+              <GlitchTerminalOverlay />
             </div>
           </div>
         </div>

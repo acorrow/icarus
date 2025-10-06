@@ -4,7 +4,7 @@ The INARA token currency system awards virtual credits to commanders whenever th
 
 ## Feature flag and configuration
 
-- `ghostnetTokenCurrencyEnabled` controls whether the runtime mirrors ledger activity to the external token microservice. The flag defaults to `false`, enabling the local simulation.
+- `glitchTokenCurrencyEnabled` controls whether the runtime mirrors ledger activity to the external token microservice. The flag defaults to `false`, enabling the local simulation.
 - `ICARUS_TOKENS_MODE` remains available for future expansion but is currently derived from the feature flag: when the flag is disabled the ledger operates in simulation mode.
 - Remote mirroring draws configuration from:
   - `ICARUS_TOKENS_REMOTE_ENDPOINT` – Base URL of the external service (required in remote mode).
@@ -34,12 +34,12 @@ A dedicated retry queue flushes pending transactions sequentially. Each queued t
 
 `src/service/lib/event-handlers.js` hooks every ingested journal event and constructs the payload INARA would send to INARA. The payload matches the documented header + events schema and the byte length of the JSON string determines how many tokens are credited. Cache keys built from the event name, timestamp, and domain-specific identifiers ensure a journal replay never awards the same entry twice.
 
-When `ghostnetTokenCurrencyEnabled` is set to `true` the same infrastructure prepares the payload but marks credits with `reason: "inara-credit"` instead of `"inara-simulated-credit"`. The outbound request body and metadata can be reused when the production submission path is wired in.
+When `glitchTokenCurrencyEnabled` is set to `true` the same infrastructure prepares the payload but marks credits with `reason: "inara-credit"` instead of `"inara-simulated-credit"`. The outbound request body and metadata can be reused when the production submission path is wired in.
 
 ## Negative balance recovery
 
 - Simulation mode keeps commanders from spiralling indefinitely: when the local ledger balance crosses **-500,000** tokens, the next spend transaction records `metadata.recoveryTriggered: true` and schedules a `negative-balance-recovery` credit for **+1,000,000** tokens.
-- The recovery credit is stored like any other transaction and emits a `ghostnetTokensUpdated` broadcast containing the new entry. The INARA console listens for `metadata.event === 'negative-balance-recovery'` to unleash a jackpot sequence: rapid glyph floods, a shimmering “JACKPOT” banner, milestone balance ticks, and a procedurally generated summary describing the recovered cache.
+- The recovery credit is stored like any other transaction and emits a `glitchTokensUpdated` broadcast containing the new entry. The INARA console listens for `metadata.event === 'negative-balance-recovery'` to unleash a jackpot sequence: rapid glyph floods, a shimmering “JACKPOT” banner, milestone balance ticks, and a procedurally generated summary describing the recovered cache.
 - Recovery only fires once per threshold crossing; the ledger re-arms the guard after the balance climbs above -500,000 so future deficits can produce fresh celebration events. The scheduling helper records failures and re-arms if a write error occurs so future transactions can try again.
 - Future gameplay hooks (e.g. discovering valuable scans) can reuse the same celebration plumbing by emitting transactions with a distinct `metadata.event` and pointing the UI handler at the new identifier.
 
@@ -51,7 +51,7 @@ The Next.js API routes under `src/client/pages/api/` call `token-currency.js` to
 
 - Unit tests in `src/service/lib/__tests__/token-ledger.test.js` cover sequential writes, negative balances, remote mirroring, and retry behaviour.
 - When adding new reward sources ensure the dedupe cache key includes enough identifiers to prevent double counting across journal replays.
-- For integration testing with a real token service, configure the environment variables above and set `ghostnetTokenCurrencyEnabled=true`. The ledger will continue to record local backups even when remote mirroring is active.
+- For integration testing with a real token service, configure the environment variables above and set `glitchTokenCurrencyEnabled=true`. The ledger will continue to record local backups even when remote mirroring is active.
 
 ## Future integration points
 

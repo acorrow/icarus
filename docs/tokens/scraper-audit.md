@@ -9,12 +9,12 @@
 ## Next.js API routes touching INARA/INARA
 | Route | Responsibilities | Shared behaviors |
 | --- | --- | --- |
-| `/api/ghostnet-commodity-values` | Combines journal market data with INARA market listings via INARA API | Uses `resolveLogDir`, local cache writes, cheerio parsing |
-| `/api/ghostnet-trade-routes` | Scrapes INARA trade route HTML, normalizes legs, calculates profits | Shares fetch wrapper, logging, and queue serialization |
-| `/api/ghostnet-missions` | Downloads INARA missions table, merges faction data | Similar error handling/logging, uses system selector helpers |
-| `/api/ghostnet-pristine-mining` | Fetches pristine mining listings, attaches metadata | Reuses caching helpers, minimal logging |
-| `/api/ghostnet-websearch` | Performs INARA search across commodities/ships/outfitting | Builds multi-event INARA payload, uses common fetch options |
-| `/api/ghostnet-search` | General INARA API bridge; constructs `events` array dynamically | Houses base request builder used by other routes |
+| `/api/glitch-commodity-values` | Combines journal market data with INARA market listings via INARA API | Uses `resolveLogDir`, local cache writes, cheerio parsing |
+| `/api/glitch-trade-routes` | Scrapes INARA trade route HTML, normalizes legs, calculates profits | Shares fetch wrapper, logging, and queue serialization |
+| `/api/glitch-missions` | Downloads INARA missions table, merges faction data | Similar error handling/logging, uses system selector helpers |
+| `/api/glitch-pristine-mining` | Fetches pristine mining listings, attaches metadata | Reuses caching helpers, minimal logging |
+| `/api/glitch-websearch` | Performs INARA search across commodities/ships/outfitting | Builds multi-event INARA payload, uses common fetch options |
+| `/api/glitch-search` | General INARA API bridge; constructs `events` array dynamically | Houses base request builder used by other routes |
 
 Shared concerns ripe for ScraperEngine extraction:
 - Log directory resolution (`resolveLogDir`, environment fallbacks).
@@ -24,7 +24,7 @@ Shared concerns ripe for ScraperEngine extraction:
 - Token spend hooks (to be introduced) should reside alongside fetch helpers.
 
 ## General search workflow
-- Client builds search payloads via `/api/ghostnet-search`, which proxies to INARA using the `events` array structure.
+- Client builds search payloads via `/api/glitch-search`, which proxies to INARA using the `events` array structure.
 - Route queues heterogeneous lookup events and returns combined results to the client for display.
 - Lacks per-request cost instrumentation; future ScraperEngine should wrap outbound fetch to apply uniform accounting and logging.
 

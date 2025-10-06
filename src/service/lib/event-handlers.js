@@ -8,11 +8,11 @@ const crypto = require('crypto')
 
 const { UNKNOWN_VALUE } = require('../../shared/consts')
 const { TOKEN_REWARD_VALUES } = require('../../shared/token-config')
-const { isGhostnetTokenCurrencyEnabled } = require('../../shared/feature-flags')
+const { isGlitchTokenCurrencyEnabled } = require('../../shared/feature-flags')
 
 const InaraClient = require('./inara-client')
 const tokenLedger = global.TOKEN_LEDGER
-const TOKEN_BROADCAST_EVENT = 'ghostnetTokensUpdated'
+const TOKEN_BROADCAST_EVENT = 'glitchTokensUpdated'
 const JACKPOT_BASE_MIN = 2500
 const JACKPOT_BASE_MAX = 12500
 const JACKPOT_MULTIPLIER_FALLBACK = 100
@@ -96,7 +96,7 @@ class EventHandlers {
     // Caches keep track of the most recent rewards so a replayed log does not double-award tokens
     this.tokenRewardCache = new Set()
     this.tokenRewardQueue = []
-    this.tokenCurrencyEnabled = isGhostnetTokenCurrencyEnabled()
+    this.tokenCurrencyEnabled = isGlitchTokenCurrencyEnabled()
     this.simulateInaraExchange = !this.tokenCurrencyEnabled
     this.inaraSimulationCache = new Set()
     this.inaraSimulationQueue = []
@@ -177,7 +177,7 @@ class EventHandlers {
           await this._broadcastTokenUpdate(entry)
           return entry
         },
-        triggerJackpot: async ({ baseAmount, multiplier, source = 'ghostnet-console', celebrationId } = {}) => {
+        triggerJackpot: async ({ baseAmount, multiplier, source = 'glitch-console', celebrationId } = {}) => {
           if (!this.tokenLedger) {
             return { error: 'TOKEN_LEDGER_UNAVAILABLE' }
           }
