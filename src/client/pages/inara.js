@@ -83,22 +83,50 @@ const SHIP_STATUS_UPDATE_EVENTS = new Set([
 
 const LARGE_PAD_SIZE_VALUE = '3'
 
-function LoadingSpinner ({ label, inline = false }) {
+function LoadingSpinner ({ label }) {
   return (
-    <div
-      className={`ghostnet-spinner${inline ? ' ghostnet-spinner--inline' : ' ghostnet-spinner--block'}`}
-      role='status'
-      aria-live='polite'
-    >
-      <span className='ghostnet-spinner__icon' aria-hidden='true' />
-      {label ? <span className='ghostnet-spinner__label'>{label}</span> : null}
+    <div className={styles.tradeRoutesSpinner} role='status' aria-live='polite'>
+      <div className={styles.tradeRoutesSpinnerGraphic} aria-hidden='true'>
+        <div className='loader__row'>
+          <span className='loader__arrow loader__arrow--outer-18' />
+          <span className='loader__arrow loader__arrow--down lloader__arrow--outer-17' />
+          <span className='loader__arrow loader__arrow--outer-16' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-15' />
+          <span className='loader__arrow loader__arrow--outer-14' />
+        </div>
+        <div className='loader__row'>
+          <span className='loader__arrow loader__arrow--outer-1' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-2' />
+          <span className='loader__arrow loader__arrow--inner-6' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--inner-5' />
+          <span className='loader__arrow loader__arrow--inner-4' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-13' />
+          <span className='loader__arrow loader__arrow--outer-12' />
+        </div>
+        <div className='loader__row'>
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-3' />
+          <span className='loader__arrow loader__arrow--outer-4' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--inner-1' />
+          <span className='loader__arrow loader__arrow--inner-2' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--inner-3' />
+          <span className='loader__arrow loader__arrow--outer-11' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-10' />
+        </div>
+        <div className='loader__row'>
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-5' />
+          <span className='loader__arrow loader__arrow--outer-6' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-7' />
+          <span className='loader__arrow loader__arrow--outer-8' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-9' />
+        </div>
+      </div>
+      {label ? <span className={styles.tradeRoutesSpinnerLabel}>{label}</span> : null}
     </div>
   )
 }
 
 LoadingSpinner.defaultProps = {
-  label: '',
-  inline: false
+  label: ''
 }
 
 function TradeRouteFilterPanel ({
@@ -650,6 +678,7 @@ const MISSIONS_CACHE_KEY = 'icarus.ghostnetMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
 const STATION_TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }
+const TRADE_ROUTES_CLEARING_DURATION_MS = 260
 
 function getMissionsCacheStorage () {
   if (typeof window === 'undefined') {
@@ -1755,6 +1784,42 @@ function getRouteCommodityInfo (route, phase) {
   const sellReturn = route?.origin?.sellReturn || null
   const commodity = buyReturn?.commodity || sellReturn?.commodity || ''
   return { commodity: commodity || '', buy: buyReturn, sell: sellReturn }
+}
+
+function getRouteIdentifier (route) {
+  if (!route) return ''
+
+  const summary = route?.summary || {}
+  const explicitId = summary?.id || summary?.routeId || route?.id || route?.routeId
+  if (explicitId !== undefined && explicitId !== null) {
+    return String(explicitId)
+  }
+
+  const originInfo = getRouteStationInfo(route, 'origin')
+  const destinationInfo = getRouteStationInfo(route, 'destination')
+  const outboundInfo = getRouteCommodityInfo(route, 'outbound')
+  const returnInfo = getRouteCommodityInfo(route, 'return')
+
+  const originStationId = route?.origin?.stationId || route?.origin?.id || null
+  const destinationStationId = route?.destination?.stationId || route?.destination?.id || null
+
+  const originSystem = normaliseName(sanitizeInaraText(originInfo.system) || originInfo.system)
+  const originStation = normaliseName(sanitizeInaraText(originInfo.station) || originInfo.station)
+  const destinationSystem = normaliseName(sanitizeInaraText(destinationInfo.system) || destinationInfo.system)
+  const destinationStation = normaliseName(sanitizeInaraText(destinationInfo.station) || destinationInfo.station)
+  const outboundCommodity = normaliseCommodityKey(sanitizeInaraText(outboundInfo.commodity) || outboundInfo.commodity)
+  const returnCommodity = normaliseCommodityKey(sanitizeInaraText(returnInfo.commodity) || returnInfo.commodity)
+
+  return [
+    originStationId ? `o#${originStationId}` : '',
+    destinationStationId ? `d#${destinationStationId}` : '',
+    originSystem,
+    originStation,
+    destinationSystem,
+    destinationStation,
+    outboundCommodity,
+    returnCommodity
+  ].filter(Boolean).join('|')
 }
 
 function useSystemSelector ({ autoSelectCurrent = false } = {}) {
@@ -3588,6 +3653,8 @@ function TradeRoutesPanel () {
   const [sortDirection, setSortDirection] = useState('desc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [selectedRouteContext, setSelectedRouteContext] = useState(null)
+  const [selectedRouteId, setSelectedRouteId] = useState('')
+  const [isClearing, setIsClearing] = useState(false)
   const [navRoute, setNavRoute] = useState(null)
   const factionStandings = useFactionStandings()
   const setFilterValue = useCallback((field, value) => {
@@ -3595,13 +3662,35 @@ function TradeRoutesPanel () {
   }, [])
   const lastAutoRefreshSystem = useRef('')
   const isMountedRef = useRef(true)
+  const isClearingRef = useRef(false)
+  const clearingTimeoutRef = useRef(null)
+  const refreshRequestRef = useRef(0)
+  const pendingActionsRef = useRef([])
 
   useEffect(() => {
     isMountedRef.current = true
     return () => {
       isMountedRef.current = false
+      if (clearingTimeoutRef.current) {
+        clearTimeout(clearingTimeoutRef.current)
+        clearingTimeoutRef.current = null
+      }
+      pendingActionsRef.current = []
     }
   }, [])
+
+  useEffect(() => {
+    isClearingRef.current = isClearing
+    if (!isClearing && pendingActionsRef.current.length > 0) {
+      const actions = pendingActionsRef.current
+      pendingActionsRef.current = []
+      actions.forEach(action => {
+        if (typeof action === 'function') {
+          action()
+        }
+      })
+    }
+  }, [isClearing])
 
   const refreshNavRoute = useCallback(async () => {
     if (!connected || !ready) return
@@ -3892,6 +3981,16 @@ function TradeRoutesPanel () {
     setError(nextError)
     setMessage(nextMessage)
 
+    if (selectedRouteId) {
+      setSelectedRouteContext(prev => {
+        if (!selectedRouteId) return prev
+        const matchedRoute = sortedRoutes.find(route => getRouteIdentifier(route) === selectedRouteId)
+        if (!matchedRoute) return prev
+        if (prev?.route === matchedRoute) return prev
+        return { route: matchedRoute }
+      })
+    }
+
     if (nextError && filteredRoutes.length === 0) {
       setStatus('error')
       setLastUpdatedAt(null)
@@ -3902,12 +4001,36 @@ function TradeRoutesPanel () {
       setStatus('populated')
       setLastUpdatedAt(Date.now())
     }
-  }, [filterRoutes, sortRoutes])
+  }, [filterRoutes, sortRoutes, selectedRouteId])
+
+  const queueAfterClearing = useCallback((requestId, action) => {
+    if (typeof action !== 'function') return
+    if (requestId !== refreshRequestRef.current) return
+
+    const run = () => {
+      if (requestId !== refreshRequestRef.current) return
+      if (!isMountedRef.current) return
+      action()
+    }
+
+    if (isClearingRef.current) {
+      pendingActionsRef.current.push(run)
+    } else {
+      run()
+    }
+  }, [])
 
   const refreshRoutes = useCallback(targetSystem => {
     const trimmedTargetSystem = typeof targetSystem === 'string' ? targetSystem.trim() : ''
 
     if (!trimmedTargetSystem) {
+      if (clearingTimeoutRef.current) {
+        clearTimeout(clearingTimeoutRef.current)
+        clearingTimeoutRef.current = null
+      }
+      pendingActionsRef.current = []
+      isClearingRef.current = false
+      setIsClearing(false)
       setError('Current system unknown. Unable to load trade routes.')
       setMessage('')
       setRoutes([])
@@ -3918,15 +4041,34 @@ function TradeRoutesPanel () {
       return
     }
 
+    if (clearingTimeoutRef.current) {
+      clearTimeout(clearingTimeoutRef.current)
+      clearingTimeoutRef.current = null
+    }
+    pendingActionsRef.current = []
+
+    const requestId = refreshRequestRef.current + 1
+    refreshRequestRef.current = requestId
+
     setError('')
     setMessage('')
+    setIsRefreshing(true)
 
-    const hasExistingResults = status === 'populated' || status === 'empty'
+    const hasExistingResults = status === 'populated' && routes.length > 0
     if (hasExistingResults) {
-      setIsRefreshing(true)
+      isClearingRef.current = true
+      setIsClearing(true)
+      clearingTimeoutRef.current = setTimeout(() => {
+        isClearingRef.current = false
+        setIsClearing(false)
+        clearingTimeoutRef.current = null
+      }, TRADE_ROUTES_CLEARING_DURATION_MS)
     } else {
-      setStatus('loading')
+      isClearingRef.current = false
+      setIsClearing(false)
     }
+
+    setStatus('loading')
 
     const filters = {
       ...(cargoCapacity !== '' ? { cargoCapacity } : {}),
@@ -3956,10 +4098,12 @@ function TradeRoutesPanel () {
         cargoCapacity
       })
 
-      applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (INARA) settings to restore live results.'
+      queueAfterClearing(requestId, () => {
+        applyResults(mockRoutes, {
+          message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (INARA) settings to restore live results.'
+        })
+        setIsRefreshing(false)
       })
-      setIsRefreshing(false)
       return
     }
 
@@ -3976,31 +4120,33 @@ function TradeRoutesPanel () {
             ? data.results
             : []
 
-        applyResults(nextRoutes, { error: data?.error, message: data?.message })
+        queueAfterClearing(requestId, () => {
+          applyResults(nextRoutes, { error: data?.error, message: data?.message })
+          setIsRefreshing(false)
+        })
       })
       .catch(err => {
-        setError(err.message || 'Unable to fetch trade routes.')
-        setMessage('')
-        setRoutes([])
-        setRawRoutes([])
-        setStatus('error')
-        setLastUpdatedAt(null)
+        queueAfterClearing(requestId, () => {
+          setError(err.message || 'Unable to fetch trade routes.')
+          setMessage('')
+          setRoutes([])
+          setRawRoutes([])
+          setStatus('error')
+          setLastUpdatedAt(null)
+          setIsRefreshing(false)
+        })
       })
-      .finally(() => {
-        setIsRefreshing(false)
-      })
-  }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, sourcePower, targetPower, orderBy, includeRoundTrips, displayPowerplay, status])
-
-  useEffect(() => {
-    setSelectedRouteContext(null)
-  }, [rawRoutes])
+  }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, sourcePower, targetPower, orderBy, includeRoundTrips, displayPowerplay, status, routes.length, queueAfterClearing])
 
   const handleRouteSelect = useCallback(route => {
     if (!route) {
       setSelectedRouteContext(null)
+      setSelectedRouteId('')
       return
     }
+    const identifier = getRouteIdentifier(route) || ''
     setSelectedRouteContext({ route })
+    setSelectedRouteId(identifier)
   }, [])
 
   const handleRouteKeyDown = useCallback((event, route) => {
@@ -4349,12 +4495,16 @@ function TradeRoutesPanel () {
     return classes.join(' ')
   }, [])
 
-  const renderRoutesTable = () => (
-    <div className={styles.dataTableContainer}>
-      <table className={`${styles.dataTable} ${styles.dataTableDense} ${styles.tradeRoutesTable}`}>
-        <thead>
-          <tr>
-            <th aria-hidden='true' className={styles.tableCellCaret} />
+  const renderRoutesTable = () => {
+    const containerClasses = [styles.dataTableContainer]
+    if (isClearing) containerClasses.push(styles.tradeRoutesTableClearing)
+
+    return (
+      <div className={containerClasses.join(' ')} aria-hidden={status === 'loading'}>
+        <table className={`${styles.dataTable} ${styles.dataTableDense} ${styles.tradeRoutesTable}`}>
+          <thead>
+            <tr>
+              <th aria-hidden='true' className={styles.tableCellCaret} />
             <th
               scope='col'
               aria-sort={sortField === 'stationA' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
@@ -4411,8 +4561,9 @@ function TradeRoutesPanel () {
           ))}
         </tbody>
       </table>
-    </div>
-  )
+      </div>
+    )
+  }
 
   return (
     <section className={styles.tableSection}>
@@ -4708,7 +4859,7 @@ function TradeRoutesPanel () {
           {status === 'idle' && (
             <div className={styles.tableIdleState}>Tune the filters and pulse refresh to surface profitable corridors.</div>
           )}
-          {status === 'loading' && (
+          {status === 'loading' && !isClearing && (
             <LoadingSpinner label='Loading trade routes…' />
           )}
           {status === 'error' && (
@@ -4717,7 +4868,7 @@ function TradeRoutesPanel () {
           {status === 'empty' && (
             <div className={styles.tableEmptyState}>No profitable routes detected near {selectedSystemName || 'Unknown System'}.</div>
           )}
-          {status === 'populated' && renderRoutesTable()}
+          {(status === 'populated' || isClearing) && renderRoutesTable()}
         </div>
       </div>
     </section>
