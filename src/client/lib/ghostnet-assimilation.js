@@ -2,6 +2,7 @@ import {
   getAssimilationDurationSeconds,
   ASSIMILATION_DURATION_DEFAULT
 } from 'lib/ghostnet-settings'
+import { getGhostnetStrings, getGhostnetString } from './ghostnet-addon'
 
 let assimilationInProgress = false
 let assimilationStartTime = 0
@@ -148,7 +149,14 @@ function isInAssimilationOverlaySection (element) {
   return false
 }
 
-const ASSIMILATION_ALERT_LINES = [
+const DEFAULT_ASSIMILATION_DIALOG = {
+  ariaLabel: 'GhostNet assimilation in progress',
+  title: 'ATLAS PROTOCOL // LOCKDOWN',
+  subtitle: 'Intrusion confirmed — commandeering viewport to stabilise assimilation.',
+  footnote: 'Maintain focus on the console. ATLAS is shielding visual artifacts while GhostNet synchronises.'
+}
+
+const DEFAULT_ASSIMILATION_ALERT_LINES = [
   {
     text: 'Unauthorized GhostNet signal traced to active console',
     status: 'LOCK',
@@ -176,6 +184,23 @@ const ASSIMILATION_ALERT_LINES = [
   }
 ]
 
+const DEFAULT_ASSIMILATION_COMPLETION = {
+  forced: {
+    text: 'Interference detected. Forcing containment and masking residual artifacts.',
+    status: 'FORCE',
+    tone: 'warning'
+  },
+  stabilized: {
+    text: 'Viewport secured. GhostNet interface is stabilised for operator focus.',
+    status: 'SEALED',
+    tone: 'success'
+  }
+}
+
+const ASSIMILATION_ALERT_LINES = getGhostnetStrings('assimilation.alerts', DEFAULT_ASSIMILATION_ALERT_LINES)
+const ASSIMILATION_DIALOG_COPY = getGhostnetStrings('assimilation.dialog', DEFAULT_ASSIMILATION_DIALOG)
+const ASSIMILATION_COMPLETION_COPY = getGhostnetStrings('assimilation.completion', DEFAULT_ASSIMILATION_COMPLETION)
+
 let assimilationOverlayState = null
 let assimilationOverlayTimer = null
 
@@ -188,7 +213,10 @@ function buildAssimilationOverlay () {
   dialog.className = 'ghostnet-exit-dialog ghostnet-assimilation-dialog'
   dialog.setAttribute('role', 'alertdialog')
   dialog.setAttribute('aria-live', 'assertive')
-  dialog.setAttribute('aria-label', 'GhostNet assimilation in progress')
+  dialog.setAttribute(
+    'aria-label',
+    getGhostnetString('assimilation.dialog.ariaLabel', DEFAULT_ASSIMILATION_DIALOG.ariaLabel)
+  )
 
   const header = document.createElement('div')
   header.className = 'ghostnet-exit-dialog__header'
@@ -215,11 +243,11 @@ function buildAssimilationOverlay () {
 
   const title = document.createElement('p')
   title.className = 'ghostnet-exit-dialog__title'
-  title.textContent = 'ATLAS PROTOCOL // LOCKDOWN'
+  title.textContent = ASSIMILATION_DIALOG_COPY.title || DEFAULT_ASSIMILATION_DIALOG.title
 
   const subtitle = document.createElement('p')
   subtitle.className = 'ghostnet-exit-dialog__subtitle'
-  subtitle.textContent = 'Intrusion confirmed — commandeering viewport to stabilise assimilation.'
+  subtitle.textContent = ASSIMILATION_DIALOG_COPY.subtitle || DEFAULT_ASSIMILATION_DIALOG.subtitle
 
   headerText.appendChild(title)
   headerText.appendChild(subtitle)
@@ -248,7 +276,7 @@ function buildAssimilationOverlay () {
 
   const footnote = document.createElement('p')
   footnote.className = 'ghostnet-exit-dialog__footnote ghostnet-assimilation-dialog__footnote'
-  footnote.textContent = 'Maintain focus on the console. ATLAS is shielding visual artifacts while GhostNet synchronises.'
+  footnote.textContent = ASSIMILATION_DIALOG_COPY.footnote || DEFAULT_ASSIMILATION_DIALOG.footnote
 
   dialog.appendChild(header)
   dialog.appendChild(log)
@@ -1428,18 +1456,11 @@ export function initiateGhostnetAssimilation (callback) {
       // Ignore storage write issues
     }
 
-    const finalLine = forced
-      ? {
-          text: 'Interference detected. Forcing containment and masking residual artifacts.',
-          status: 'FORCE',
-          tone: 'warning'
-        }
-      : {
-          text: 'Viewport secured. GhostNet interface is stabilised for operator focus.',
-          status: 'SEALED',
-          tone: 'success'
-        }
-    freezeAssimilationOverlayMessage(finalLine)
+    const forcedLine = ASSIMILATION_COMPLETION_COPY.forced || DEFAULT_ASSIMILATION_COMPLETION.forced
+    const stabilizedLine =
+      ASSIMILATION_COMPLETION_COPY.stabilized || DEFAULT_ASSIMILATION_COMPLETION.stabilized
+    const finalLineTemplate = forced ? forcedLine : stabilizedLine
+    freezeAssimilationOverlayMessage({ ...finalLineTemplate })
 
     let viewportStabilized = false
     const stabilizeViewport = () => {

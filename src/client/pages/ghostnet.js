@@ -17,6 +17,7 @@ import getDistanceSeverityColor from '../lib/distance-colors'
 import { sanitizeInaraText } from '../lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from '../lib/station-icons'
 import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/ghostnet-mock-data'
+import { getGhostnetStrings, getGhostnetString } from '../lib/ghostnet-addon'
 import styles from './ghostnet.module.css'
 
 const METRIC_VARIANT_CLASS_MAP = {
@@ -5133,7 +5134,33 @@ function PristineMiningPanel () {
   )
 }
 
-const GREEK_SYMBOLS = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega']
+const DEFAULT_GREEK_SYMBOLS = [
+  'alpha',
+  'beta',
+  'gamma',
+  'delta',
+  'epsilon',
+  'zeta',
+  'eta',
+  'theta',
+  'iota',
+  'kappa',
+  'lambda',
+  'mu',
+  'nu',
+  'xi',
+  'omicron',
+  'pi',
+  'rho',
+  'sigma',
+  'tau',
+  'upsilon',
+  'phi',
+  'chi',
+  'psi',
+  'omega'
+]
+const GREEK_SYMBOLS = getGhostnetStrings('glyphs.greekSymbols', DEFAULT_GREEK_SYMBOLS)
 const TERMINAL_BUFFER = 36
 const TERMINAL_WINDOW = 7
 const TERMINAL_WINDOW_EXPANDED = 14
@@ -5185,15 +5212,41 @@ function generateCipherString (length = 48) {
   return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
 }
 
-const CURRENCY_GLYPHS = [
-  '₿', '¤', 'Ξ', '§', '₪', '¥', '₡', '₢', '₣', '₤', '₥', '₦', '₧', '₨', '₩', '₫', '€', '£', '₭', '₮', '₯', '₰', '₱', '฿', '₾'
+const DEFAULT_CURRENCY_GLYPHS = [
+  '₿',
+  '¤',
+  'Ξ',
+  '§',
+  '₪',
+  '¥',
+  '₡',
+  '₢',
+  '₣',
+  '₤',
+  '₥',
+  '₦',
+  '₧',
+  '₨',
+  '₩',
+  '₫',
+  '€',
+  '£',
+  '₭',
+  '₮',
+  '₯',
+  '₰',
+  '₱',
+  '฿',
+  '₾'
 ]
+const CURRENCY_GLYPHS = getGhostnetStrings('glyphs.currencyGlyphs', DEFAULT_CURRENCY_GLYPHS)
 
 function generateCurrencyCascadeString (length = 96) {
   return Array.from({ length }).map(() => randomChoice(CURRENCY_GLYPHS)).join('')
 }
 
-const DEBIT_GLYPHS = ['✖', '⛔', '⚠', '!', '−', '↓', '×', '⨯', '▾', '✕', '⛓']
+const DEFAULT_DEBIT_GLYPHS = ['✖', '⛔', '⚠', '!', '−', '↓', '×', '⨯', '▾', '✕', '⛓']
+const DEBIT_GLYPHS = getGhostnetStrings('glyphs.debitGlyphs', DEFAULT_DEBIT_GLYPHS)
 
 function generateDebitGlyphString (length = 72) {
   const debitPool = [...DEBIT_GLYPHS, ...'XXXX----!!!!']
@@ -5335,35 +5388,90 @@ function generateGlitchString (length = 64) {
   return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
 }
 
-const TRANSACTION_VECTOR_LABELS = ['vector', 'conduit', 'relay', 'channel', 'flux', 'helix', 'circuit', 'vault']
-const TRANSACTION_ALIAS_WORDS = ['Helios Bloom', 'Umbra Siphon', 'Specter Loom', 'Aurora Spindle', 'Perseus Vault', 'Nyx Cascade', 'Zenith Lattice', 'Dusk Prism']
-const TRANSACTION_OPERATIONS = ['tribute splice', 'ledger weave', 'credit siphon', 'token handshake', 'cache imprint', 'mesh splice', 'flux injection', 'ledger braid']
-const TRANSACTION_SIGNAL_WORDS = ['pulse', 'cascade', 'flare', 'surge', 'ember', 'echo', 'flare', 'spark']
-const TRANSACTION_SOURCE_PREFIXES = ['origin', 'source', 'channel', 'uplink', 'handoff', 'vector']
-const TRANSACTION_REASON_SUFFIXES = ['protocol', 'whisper', 'script', 'manifest', 'seeding', 'cipher', 'routine']
-const SIMULATION_BADGES = ['SIMULATION MODE', 'TRAINING SCENARIO', 'SANDBOX RELAY']
-const SIMULATION_TRAILS = ['ghostfire rehearsal', 'tribute drill active', 'mesh rehearsal running', 'no live traffic detected']
-const JACKPOT_ASCII_BANNER = [
+const DEFAULT_TRANSACTION_VECTOR_LABELS = ['vector', 'conduit', 'relay', 'channel', 'flux', 'helix', 'circuit', 'vault']
+const DEFAULT_TRANSACTION_ALIAS_WORDS = [
+  'Helios Bloom',
+  'Umbra Siphon',
+  'Specter Loom',
+  'Aurora Spindle',
+  'Perseus Vault',
+  'Nyx Cascade',
+  'Zenith Lattice',
+  'Dusk Prism'
+]
+const DEFAULT_TRANSACTION_OPERATIONS = [
+  'tribute splice',
+  'ledger weave',
+  'credit siphon',
+  'token handshake',
+  'cache imprint',
+  'mesh splice',
+  'flux injection',
+  'ledger braid'
+]
+const DEFAULT_TRANSACTION_SIGNAL_WORDS = ['pulse', 'cascade', 'flare', 'surge', 'ember', 'echo', 'flare', 'spark']
+const DEFAULT_TRANSACTION_SOURCE_PREFIXES = ['origin', 'source', 'channel', 'uplink', 'handoff', 'vector']
+const DEFAULT_TRANSACTION_REASON_SUFFIXES = ['protocol', 'whisper', 'script', 'manifest', 'seeding', 'cipher', 'routine']
+const DEFAULT_SIMULATION_BADGES = ['SIMULATION MODE', 'TRAINING SCENARIO', 'SANDBOX RELAY']
+const DEFAULT_SIMULATION_TRAILS = [
+  'ghostfire rehearsal',
+  'tribute drill active',
+  'mesh rehearsal running',
+  'no live traffic detected'
+]
+const DEFAULT_JACKPOT_ASCII_BANNER = [
   '══════════════════════════════════════════════════════════════════',
   '   JACKPOT VECTOR LOCKED · CREDIT CASCADE INBOUND · TRIBUTE SURGE  ',
   '══════════════════════════════════════════════════════════════════'
 ]
-const JACKPOT_SUMMARY_INTROS = [
+const DEFAULT_JACKPOT_SUMMARY_INTROS = [
   'Encrypted cache recovered from',
   'GhostNet dredged a tribute vault at',
   'Covert intercept latched onto',
   'Phantom escrow liberated within',
   'Shadow broker ping returned from'
 ]
-const JACKPOT_SUMMARY_TAILS = [
+const DEFAULT_JACKPOT_SUMMARY_TAILS = [
   'Tribute surge rerouted to your ledger.',
   'A million-token cascade detonates in your favour.',
   'Ledger stabilised and humming with new resonance.',
   'GhostNet celebrates with an ultraviolet windfall.',
   'Balance spike recorded—enjoy the surge.'
 ]
-const JACKPOT_SWIRL_GLYPHS = ['✶', '✷', '✺', '✹', '✸', '✧', '✦', '✩', '✪', '☄', '⚡', '⭑']
-const FALLBACK_LOCATIONS = ['Obsidian Relay', 'Nyx Archive', 'Perseus Node', 'Umbra Vault', 'Helios Array', 'Dusk Citadel']
+const DEFAULT_JACKPOT_SWIRL_GLYPHS = ['✶', '✷', '✺', '✹', '✸', '✧', '✦', '✩', '✪', '☄', '⚡', '⭑']
+const DEFAULT_FALLBACK_LOCATIONS = ['Obsidian Relay', 'Nyx Archive', 'Perseus Node', 'Umbra Vault', 'Helios Array', 'Dusk Citadel']
+
+const TRANSACTION_VECTOR_LABELS = getGhostnetStrings(
+  'terminal.transaction.vectorLabels',
+  DEFAULT_TRANSACTION_VECTOR_LABELS
+)
+const TRANSACTION_ALIAS_WORDS = getGhostnetStrings(
+  'terminal.transaction.aliasWords',
+  DEFAULT_TRANSACTION_ALIAS_WORDS
+)
+const TRANSACTION_OPERATIONS = getGhostnetStrings(
+  'terminal.transaction.operations',
+  DEFAULT_TRANSACTION_OPERATIONS
+)
+const TRANSACTION_SIGNAL_WORDS = getGhostnetStrings(
+  'terminal.transaction.signalWords',
+  DEFAULT_TRANSACTION_SIGNAL_WORDS
+)
+const TRANSACTION_SOURCE_PREFIXES = getGhostnetStrings(
+  'terminal.transaction.sourcePrefixes',
+  DEFAULT_TRANSACTION_SOURCE_PREFIXES
+)
+const TRANSACTION_REASON_SUFFIXES = getGhostnetStrings(
+  'terminal.transaction.reasonSuffixes',
+  DEFAULT_TRANSACTION_REASON_SUFFIXES
+)
+const SIMULATION_BADGES = getGhostnetStrings('terminal.simulationBadges', DEFAULT_SIMULATION_BADGES)
+const SIMULATION_TRAILS = getGhostnetStrings('terminal.simulationTrails', DEFAULT_SIMULATION_TRAILS)
+const JACKPOT_ASCII_BANNER = getGhostnetStrings('terminal.jackpotAsciiBanner', DEFAULT_JACKPOT_ASCII_BANNER)
+const JACKPOT_SUMMARY_INTROS = getGhostnetStrings('terminal.jackpotSummaryIntros', DEFAULT_JACKPOT_SUMMARY_INTROS)
+const JACKPOT_SUMMARY_TAILS = getGhostnetStrings('terminal.jackpotSummaryTails', DEFAULT_JACKPOT_SUMMARY_TAILS)
+const JACKPOT_SWIRL_GLYPHS = getGhostnetStrings('terminal.jackpotSwirlGlyphs', DEFAULT_JACKPOT_SWIRL_GLYPHS)
+const FALLBACK_LOCATIONS = getGhostnetStrings('terminal.fallbackLocations', DEFAULT_FALLBACK_LOCATIONS)
 
 function generateSwirlGlyphString (length = 48) {
   return Array.from({ length }).map(() => randomChoice([...JACKPOT_SWIRL_GLYPHS, ...CURRENCY_GLYPHS])).join('')
@@ -5534,23 +5642,62 @@ function generateAlertText () {
   return `${randomChoice(['ANOMALY', 'INTRUSION', 'SIGNAL'])} ${randomChoice(['DELTA', 'OMEGA', 'SIGMA'])} DETECTED · cascade ${randomInteger(1000, 9999)}`
 }
 
-const MENACE_ALERTS = [
+const DEFAULT_MENACE_ALERTS = [
   formatted => `LEDGER IMBALANCE · ${formatted} TOKENS BELOW ZERO`,
   formatted => `TRIBUTE DEFICIT DETECTED · ${formatted} TOKENS OUTSTANDING`,
   formatted => `NEGATIVE CREDIT VECTOR · ${formatted} TOKENS OWED`
 ]
 
-const MENACE_ECHOES = [
+const DEFAULT_MENACE_ECHOES = [
   () => 'GhostNet growls: repay your tribute or be assimilated.',
   () => 'GhostNet whispers from the void: settle the debt before the mesh tightens.',
   () => 'GhostNet watches. Tribute is expected. Delay invites eradication.'
 ]
 
-const CREDIT_GLYPH_SYMBOLS = [
-  '₿', '¤', 'Ξ', '§', '₪', '¥', '₡', '₢', '₣', '₤', '₥', '₦', '₧', '₨', '₩', '₪', '₫', '€', '£', '₭', '₮', '₯', '₰', '₱', '฿', '₾', '✧', '✦', '✺', '✹', '✶', '✸', '✳', '⊚', '⊛'
+const DEFAULT_CREDIT_GLYPH_SYMBOLS = [
+  '₿',
+  '¤',
+  'Ξ',
+  '§',
+  '₪',
+  '¥',
+  '₡',
+  '₢',
+  '₣',
+  '₤',
+  '₥',
+  '₦',
+  '₧',
+  '₨',
+  '₩',
+  '₫',
+  '€',
+  '£',
+  '₭',
+  '₮',
+  '₯',
+  '₰',
+  '₱',
+  '฿',
+  '₾',
+  '✧',
+  '✦',
+  '✺',
+  '✹',
+  '✶',
+  '✸',
+  '✳',
+  '⊚',
+  '⊛'
 ]
 
-const CREDIT_CELEBRATION_MESSAGE = 'GhostNet intercept completed. Ledger flush inbound.'
+const MENACE_ALERTS = getGhostnetStrings('terminal.menace.alerts', DEFAULT_MENACE_ALERTS)
+const MENACE_ECHOES = getGhostnetStrings('terminal.menace.echoes', DEFAULT_MENACE_ECHOES)
+const CREDIT_GLYPH_SYMBOLS = getGhostnetStrings('terminal.creditGlyphSymbols', DEFAULT_CREDIT_GLYPH_SYMBOLS)
+const CREDIT_CELEBRATION_MESSAGE = getGhostnetString(
+  'terminal.creditCelebrationMessage',
+  'GhostNet intercept completed. Ledger flush inbound.'
+)
 
 function generateCreditGlyphsConfig (count = 32) {
   const seed = Date.now().toString(36)
