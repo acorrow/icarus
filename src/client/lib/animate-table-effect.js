@@ -3,7 +3,7 @@ module.exports = () => {
     return () => {}
   }
 
-  const selector = "[data-glitch-table-row], table.table--animated tbody tr"
+  const selector = "[data-inara-table-row], table.table--animated tbody tr"
   const observer = new IntersectionObserver(entries => {
     let shownItems = 0
 
@@ -13,9 +13,9 @@ module.exports = () => {
       const target = entry.target
       const delay = `${shownItems++ * 0.03}s`
 
-      if (target.matches('[data-glitch-table-row]')) {
+      if (target.matches('[data-inara-table-row]')) {
         target.style.setProperty('--glitch-row-delay', delay)
-        target.setAttribute('data-glitch-table-row', 'visible')
+        target.setAttribute('data-inara-table-row', 'visible')
       } else {
         target.style.animationDelay = delay
         target.classList.add('--shown')
@@ -28,10 +28,10 @@ module.exports = () => {
   const observeElements = () => {
     const elements = document.querySelectorAll(selector)
     elements.forEach(element => {
-      if (element.matches('[data-glitch-table-row]')) {
-        const state = element.getAttribute('data-glitch-table-row')
+      if (element.matches('[data-inara-table-row]')) {
+        const state = element.getAttribute('data-inara-table-row')
         if (state === 'visible') return
-        if (!state) element.setAttribute('data-glitch-table-row', 'pending')
+        if (!state) element.setAttribute('data-inara-table-row', 'pending')
       }
       observer.observe(element)
     })

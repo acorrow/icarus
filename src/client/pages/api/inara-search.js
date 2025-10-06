@@ -67,7 +67,7 @@ export default async function handler(req, res) {
       responseBytes: estimateByteSize(responseText),
       metadata
     }).catch(ledgerError => {
-      console.error('[TokenLedger] Failed to record INARA spend (glitch-search)', ledgerError)
+      console.error('[TokenLedger] Failed to record INARA spend (inara-search)', ledgerError)
     })
   }
 }

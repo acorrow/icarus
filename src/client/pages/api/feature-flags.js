@@ -1,6 +1,6 @@
 import {
-  isGlitchTokenCurrencyEnabled,
-  isTokenJackpotEnabled,
+  isInaraTokenCurrencyEnabled,
+  isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
   isGlitchThemeToggleEnabled,
   _private as featureFlagInternals
@@ -10,21 +10,21 @@ const { hasFlagKey } = featureFlagInternals
 
 const FLAG_DEFINITIONS = [
   {
-    key: 'glitchTokenCurrencyEnabled',
+    key: 'inaraTokenCurrencyEnabled',
     label: 'INARA Token Currency',
     description: 'Enables the remote INARA token currency ledger and INARA data exchange integration.',
-    resolver: isGlitchTokenCurrencyEnabled,
+    resolver: isInaraTokenCurrencyEnabled,
     defaultValue: false
   },
   {
-    key: 'glitchTokenJackpotEnabled',
+    key: 'inaraTokenJackpotEnabled',
     label: 'Token Jackpot Bonus',
     description: 'Unlocks the simulated jackpot multiplier when commanders recover from deep token debt.',
-    resolver: isTokenJackpotEnabled,
+    resolver: isInaraTokenJackpotEnabled,
     defaultValue: false
   },
   {
-    key: 'glitchTokenRecoveryCompatEnabled',
+    key: 'inaraTokenRecoveryCompatEnabled',
     label: 'Token Recovery Compatibility Mode',
     description: 'Retains the legacy negative-balance recovery schedule for the INARA token ledger.',
     resolver: isTokenRecoveryCompatibilityEnabled,

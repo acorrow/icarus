@@ -1,4 +1,4 @@
-const DEFAULT_GLITCH_STRINGS = {
+const DEFAULT_INARA_STRINGS = {
   glyphs: {
     greekSymbols: [
       'alpha',
@@ -259,12 +259,12 @@ function deepFreeze (value) {
   return Object.freeze(value)
 }
 
-const glitchStrings = deepFreeze(DEFAULT_GLITCH_STRINGS)
+const inaraStrings = deepFreeze(DEFAULT_INARA_STRINGS)
 
 function resolvePath (path) {
   if (!path) return undefined
   const segments = Array.isArray(path) ? path : String(path).split('.').filter(Boolean)
-  let current = glitchStrings
+  let current = inaraStrings
   for (const segment of segments) {
     if (current == null) return undefined
     current = current[segment]
@@ -272,15 +272,15 @@ function resolvePath (path) {
   return current
 }
 
-export function getGlitchStrings (path, fallback) {
+export function getInaraStrings (path, fallback) {
   const value = resolvePath(path)
   return value === undefined ? fallback : value
 }
 
-export function getGlitchString (path, fallback = '') {
+export function getInaraString (path, fallback = '') {
   const value = resolvePath(path)
   if (value == null) return fallback
   return value
 }
 
-export default glitchStrings
+export default inaraStrings

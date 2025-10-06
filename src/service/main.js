@@ -102,7 +102,7 @@ global.LOG_DIR = LOG_DIR
 global.USING_MOCK_DATA = USING_MOCK_DATA
 global.BROADCAST_EVENT = broadcastEvent
 
-const tokenLedgerUserId = process.env.GLITCH_TOKEN_USER_ID || process.env.ICARUS_COMMANDER_ID || 'local'
+const tokenLedgerUserId = process.env.INARA_TOKEN_USER_ID || process.env.ICARUS_COMMANDER_ID || 'local'
 const tokenLedger = new TokenLedger({ userId: tokenLedgerUserId })
 global.TOKEN_LEDGER = tokenLedger
 
@@ -185,7 +185,7 @@ async function startService () {
   try {
     const snapshot = await tokenLedger.bootstrap()
     console.log(`[TokenLedger] Bootstrapped in ${snapshot.mode} mode with balance ${snapshot.balance}`)
-    broadcastEvent('glitchTokensUpdated', { snapshot })
+    broadcastEvent('inaraTokensUpdated', { snapshot })
   } catch (error) {
     console.error('Failed to bootstrap token ledger', error)
   }

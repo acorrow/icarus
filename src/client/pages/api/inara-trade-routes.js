@@ -7,13 +7,13 @@ import https from 'https'
 import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
-import { appendGlitchLogEntry } from './glitch-log-utils.js'
+import { appendInaraLogEntry } from './inara-log-utils.js'
 import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
 
-const logPath = path.join(process.cwd(), 'glitch-trade-routes.log')
+const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
-function logGlitchTrade(entry) {
-  appendGlitchLogEntry(logPath, entry)
+function logInaraTrade(entry) {
+  appendInaraLogEntry(logPath, entry)
 }
 
 function resolveLogDir() {
@@ -53,18 +53,18 @@ async function ensureSystemInstance() {
           await eliteLog.load({ reload: true })
           if (typeof eliteLog.watch === 'function') eliteLog.watch()
           global.ICARUS_ELITE_LOG = eliteLog
-          logGlitchTrade(`ELITE_LOG_LOADED: dir=${logDir}`)
+          logInaraTrade(`ELITE_LOG_LOADED: dir=${logDir}`)
         } catch (err) {
-          logGlitchTrade(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
+          logInaraTrade(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
           eliteLog = null
         }
       } else {
-        logGlitchTrade('ELITE_LOG_DIR_MISSING')
+        logInaraTrade('ELITE_LOG_DIR_MISSING')
       }
     }
 
     if (!eliteLog) {
-      logGlitchTrade('ELITE_LOG_FALLBACK: using stub eliteLog')
+      logInaraTrade('ELITE_LOG_FALLBACK: using stub eliteLog')
       eliteLog = {
         getEvent: async () => null,
         getEventsFromTimestamp: async () => [],
@@ -323,7 +323,7 @@ const allowedOrder = new Set(['0', '1', '2', '3', '4'])
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    logGlitchTrade(`INVALID_METHOD: ${req.method} ${req.url}`)
+    logInaraTrade(`INVALID_METHOD: ${req.method} ${req.url}`)
     res.status(405).json({ error: 'Method not allowed' })
     return
   }
@@ -333,7 +333,7 @@ export default async function handler(req, res) {
   const system = typeof body.system === 'string' && body.system.trim() ? body.system : (typeof filters.system === 'string' ? filters.system : null)
 
   if (!system || typeof system !== 'string' || !system.trim()) {
-    logGlitchTrade(`MISSING_SYSTEM: system=${system}`)
+    logInaraTrade(`MISSING_SYSTEM: system=${system}`)
     res.status(400).json({ error: 'Missing origin system. Please provide a star system to search from.' })
     return
   }
@@ -468,7 +468,7 @@ export default async function handler(req, res) {
   }
 
   const url = `https://inara.cz/elite/market-traderoutes/?${params.toString()}`
-  logGlitchTrade(`REQUEST: system=${system} url=${url}`)
+  logInaraTrade(`REQUEST: system=${system} url=${url}`)
 
   const requestBytes = estimateByteSize(url)
   let responseText = ''
@@ -489,7 +489,7 @@ export default async function handler(req, res) {
 
     const routes = parseTradeRoutes(responseText)
     if (!routes.length) {
-      logGlitchTrade(`RESPONSE: system=${system} url=${url} NO_RESULTS`)
+      logInaraTrade(`RESPONSE: system=${system} url=${url} NO_RESULTS`)
       res.status(200).json({ results: [], message: 'No trade routes found on INARA.' })
       return
     }
@@ -527,12 +527,12 @@ export default async function handler(req, res) {
         }
         const [entry] = await eliteLogInstance._query(query, 1, { timestamp: -1 })
         if (entry) {
-          logGlitchTrade(`JOURNAL_LOOKUP_MATCH: station=${stationName} event=${entry.event || ''} timestamp=${entry.timestamp || ''}`)
+          logInaraTrade(`JOURNAL_LOOKUP_MATCH: station=${stationName} event=${entry.event || ''} timestamp=${entry.timestamp || ''}`)
           return entry
         }
-        logGlitchTrade(`JOURNAL_LOOKUP_MISS: station=${stationName}`)
+        logInaraTrade(`JOURNAL_LOOKUP_MISS: station=${stationName}`)
       } catch (err) {
-        logGlitchTrade(`JOURNAL_LOOKUP_ERROR: station=${stationName} error=${err}`)
+        logInaraTrade(`JOURNAL_LOOKUP_ERROR: station=${stationName} error=${err}`)
       }
 
       return null
@@ -582,11 +582,11 @@ export default async function handler(req, res) {
           systemCache.set(key, data)
           addSystemToStationIndex(data)
           const stationCount = collectStations(data).length
-          logGlitchTrade(`SYSTEM_LOOKUP_RESULT: source=service query=${systemName} resolved=${data.name} stations=${stationCount}`)
+          logInaraTrade(`SYSTEM_LOOKUP_RESULT: source=service query=${systemName} resolved=${data.name} stations=${stationCount}`)
           return data
         }
       } catch (err) {
-        logGlitchTrade(`SYSTEM_LOOKUP_ERROR: system=${systemName} error=${err}`)
+        logInaraTrade(`SYSTEM_LOOKUP_ERROR: system=${systemName} error=${err}`)
       }
       if (global.CACHE?.SYSTEMS) {
         const cached = global.CACHE.SYSTEMS[key]
@@ -594,11 +594,11 @@ export default async function handler(req, res) {
           systemCache.set(key, cached)
           addSystemToStationIndex(cached)
           const stationCount = collectStations(cached).length
-          logGlitchTrade(`SYSTEM_LOOKUP_RESULT: source=cache query=${systemName} resolved=${cached.name || systemName} stations=${stationCount}`)
+          logInaraTrade(`SYSTEM_LOOKUP_RESULT: source=cache query=${systemName} resolved=${cached.name || systemName} stations=${stationCount}`)
           return cached
         }
       }
-      logGlitchTrade(`SYSTEM_LOOKUP_MISS: system=${systemName}`)
+      logInaraTrade(`SYSTEM_LOOKUP_MISS: system=${systemName}`)
       return null
     }
 
@@ -852,7 +852,7 @@ export default async function handler(req, res) {
             `allegiance=${result.allegiance || ''}`,
             `factionSource=${result.factionSource || ''}`
           ]
-          logGlitchTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
+          logInaraTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
           return result
         }
       }
@@ -875,7 +875,7 @@ export default async function handler(req, res) {
           `allegiance=${result.allegiance || ''}`,
           `factionSource=${result.factionSource || ''}`
         ]
-        logGlitchTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
+        logInaraTrade(`LOCAL_LOOKUP_MATCH: ${logParts.join(' ')}`)
         return result
       }
 
@@ -891,12 +891,12 @@ export default async function handler(req, res) {
           `allegiance=${journalResult.allegiance || ''}`,
           'factionSource=journal-only'
         ]
-        logGlitchTrade(`LOCAL_LOOKUP_JOURNAL_ONLY: ${logParts.join(' ')}`)
+        logInaraTrade(`LOCAL_LOOKUP_JOURNAL_ONLY: ${logParts.join(' ')}`)
         return journalResult
       }
 
       localStationCache.set(normalizedStation, null)
-      logGlitchTrade(`LOCAL_LOOKUP_MISS: station=${stationName} systems=${searchOrder.join('|')}`)
+      logInaraTrade(`LOCAL_LOOKUP_MISS: station=${stationName} systems=${searchOrder.join('|')}`)
       return null
     }
 
@@ -921,15 +921,15 @@ export default async function handler(req, res) {
         `destinationSystem=${route.destination.systemName || ''}`,
         `destinationFaction=${destinationFaction}`
       ]
-      logGlitchTrade(`ROUTE_FACTION_DATA: ${routeLogParts.join(' ')}`)
+      logInaraTrade(`ROUTE_FACTION_DATA: ${routeLogParts.join(' ')}`)
       return enrichedRoute
     }))
 
-    logGlitchTrade(`RESPONSE: system=${system} url=${url} results=${enrichedResults.length}`)
+    logInaraTrade(`RESPONSE: system=${system} url=${url} results=${enrichedResults.length}`)
     res.status(200).json({ results: enrichedResults })
   } catch (err) {
     caughtError = err
-    logGlitchTrade(`ERROR: system=${system} url=${url} error=${err}`)
+    logInaraTrade(`ERROR: system=${system} url=${url} error=${err}`)
     res.status(500).json({ error: 'Failed to fetch or parse INARA results', details: err.message })
   } finally {
     const metadata = {
@@ -945,7 +945,7 @@ export default async function handler(req, res) {
       responseBytes: estimateByteSize(responseText),
       metadata
     }).catch(ledgerError => {
-      logGlitchTrade(`TOKEN_LEDGER_ERROR: ${ledgerError}`)
+      logInaraTrade(`TOKEN_LEDGER_ERROR: ${ledgerError}`)
     })
   }
 }

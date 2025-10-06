@@ -12,12 +12,12 @@ import NavigationInspectorPanel from '../components/panels/nav/navigation-inspec
 import animateTableEffect from '../lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from '../lib/socket'
 import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
-import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/glitch-formatters'
+import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/inara-formatters'
 import getDistanceSeverityColor from '../lib/distance-colors'
 import { sanitizeInaraText } from '../lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from '../lib/station-icons'
-import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/glitch-mock-data'
-import { getGlitchStrings, getGlitchString } from '../lib/glitch-addon'
+import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/inara-mock-data'
+import { getInaraStrings, getInaraString } from '../lib/inara-addon'
 import { isGlitchThemeEnabled, addGlitchThemeChangeListener, THEME_STORAGE_KEY } from '../lib/glitch-settings'
 import styles from './glitch.module.css'
 
@@ -501,7 +501,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   return (
     <tr
       className={rowClasses.join(' ')}
-      data-glitch-table-row='pending'
+      data-inara-table-row='pending'
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       role='button'
@@ -646,7 +646,7 @@ function normaliseName (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
 
-const MISSIONS_CACHE_KEY = 'icarus.glitchMiningMissions.v1'
+const MISSIONS_CACHE_KEY = 'icarus.inaraMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
 const STATION_TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }
@@ -780,7 +780,7 @@ function formatReputationPercent(value) {
 function shouldDebugFactionStandings () {
   if (typeof window === 'undefined') return false
   try {
-    return window.localStorage.getItem('glitchDebugFactions') === 'true'
+    return window.localStorage.getItem('inaraDebugFactions') === 'true'
   } catch (err) {
     return false
   }
@@ -878,7 +878,7 @@ function getFactionStandingDisplay(factionName, standings) {
 
   if (!key || !standings) {
     if (debug && factionName) {
-      console.debug('[Glitch] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
+      console.debug('[INARA] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
     }
     return defaultResult
   }
@@ -886,7 +886,7 @@ function getFactionStandingDisplay(factionName, standings) {
   const info = standings[key]
   if (!info) {
     if (debug) {
-      console.debug('[Glitch] Faction standing missing', {
+      console.debug('[INARA] Faction standing missing', {
         factionName,
         key,
         availableCount: Object.keys(standings || {}).length
@@ -896,7 +896,7 @@ function getFactionStandingDisplay(factionName, standings) {
   }
 
   if (debug) {
-    console.debug('[Glitch] Faction standing resolved', {
+    console.debug('[INARA] Faction standing resolved', {
       factionName,
       key,
       standing: info.standing,
@@ -1997,7 +1997,7 @@ function MissionsPanel () {
 
     const loadMissions = async () => {
       try {
-        const response = await fetch('/api/glitch-missions', {
+        const response = await fetch('/api/inara-missions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ system: trimmedSystem }),
@@ -2079,7 +2079,7 @@ function MissionsPanel () {
       >
         <div className={styles.tableSectionHeader}>
           <h2 className={styles.tableSectionTitle}>Mining Missions</h2>
-          <p className={styles.sectionHint}>Glitch decrypts volunteer INARA manifests to shortlist mining opportunities aligned to your current system.</p>
+          <p className={styles.sectionHint}>INARA decrypts volunteer manifests to shortlist mining opportunities aligned to your current system.</p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -2087,7 +2087,7 @@ function MissionsPanel () {
             </div>
             {sourceUrl && (
               <div className='glitch__data-source glitch-muted'>
-                Glitch intercept feed compiled from INARA community relays.
+                INARA intercept feed compiled from community relays.
               </div>
             )}
           </div>
@@ -2154,7 +2154,7 @@ function MissionsPanel () {
                     .join(' · ') || undefined
 
                   return (
-                    <tr key={key} data-glitch-table-row='pending'>
+                    <tr key={key} data-inara-table-row='pending'>
                       <td className={`${styles.tableCellTop}`}>
                         {mission.faction
                           ? (
@@ -2199,7 +2199,7 @@ function CargoHoldPanel () {
   const [cargo, setCargo] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
-  const [valuation, setValuation] = useState({ results: [], metadata: { glitchStatus: 'idle', marketStatus: 'idle' } })
+  const [valuation, setValuation] = useState({ results: [], metadata: { inaraStatus: 'idle', marketStatus: 'idle' } })
   const [activeCommodityDetail, setActiveCommodityDetail] = useState(null)
   const [commodityContext, setCommodityContext] = useState(null)
   const [stationSortField, setStationSortField] = useState('price')
@@ -2316,7 +2316,7 @@ function CargoHoldPanel () {
       setValuation({
         results: mockResults,
         metadata: {
-          glitchStatus: 'mock',
+          inaraStatus: 'mock',
           marketStatus: 'mock',
           historyStatus: 'mock'
         }
@@ -2343,7 +2343,7 @@ function CargoHoldPanel () {
         }))
     }
 
-    fetch('/api/glitch-commodity-values', {
+    fetch('/api/inara-commodity-values', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -2354,7 +2354,7 @@ function CargoHoldPanel () {
         const results = Array.isArray(data?.results) ? data.results : []
         const metadata = data?.metadata && typeof data.metadata === 'object'
           ? data.metadata
-          : { glitchStatus: 'idle', marketStatus: 'idle', historyStatus: 'idle' }
+          : { inaraStatus: 'idle', marketStatus: 'idle', historyStatus: 'idle' }
         setValuation({ results, metadata })
         setStatus(results.length > 0 ? 'ready' : 'empty')
       })
@@ -2382,7 +2382,7 @@ function CargoHoldPanel () {
   }, [valuation?.results])
 
   const totals = useMemo(() => {
-    const summary = { best: 0, glitch: 0, local: 0 }
+    const summary = { best: 0, inara: 0, local: 0 }
     if (!Array.isArray(cargo)) return summary
 
     cargo.forEach(item => {
@@ -2390,12 +2390,12 @@ function CargoHoldPanel () {
       if (!key) return
       const entry = valuationMap.get(key)
       const quantity = Number(item?.count) || 0
-      const glitchPrice = typeof entry?.glitch?.price === 'number' ? entry.glitch.price : null
+      const inaraPrice = typeof entry?.inara?.price === 'number' ? entry.inara.price : null
       const marketPrice = typeof entry?.market?.sellPrice === 'number' ? entry.market.sellPrice : null
       const historyPrice = typeof entry?.localHistory?.best?.sellPrice === 'number' ? entry.localHistory.best.sellPrice : null
 
-      if (typeof glitchPrice === 'number') {
-        summary.glitch += glitchPrice * quantity
+      if (typeof inaraPrice === 'number') {
+        summary.inara += inaraPrice * quantity
       }
 
       let localBestPrice = null
@@ -2411,8 +2411,8 @@ function CargoHoldPanel () {
       }
 
       let bestPrice = localBestPrice
-      if (typeof glitchPrice === 'number' && (bestPrice === null || glitchPrice > bestPrice)) {
-        bestPrice = glitchPrice
+      if (typeof inaraPrice === 'number' && (bestPrice === null || inaraPrice > bestPrice)) {
+        bestPrice = inaraPrice
       }
 
       if (typeof bestPrice === 'number') {
@@ -2448,17 +2448,17 @@ function CargoHoldPanel () {
           localBestSource: null,
           historyEntries: [],
           marketEntry: null,
-          glitchEntry: null,
-          glitchListings: [],
-          glitchPrice: null,
-          glitchValue: null,
+          inaraEntry: null,
+          inaraListings: [],
+          inaraPrice: null,
+          inaraValue: null,
           localValue: null
         }
       }
 
       const marketEntry = entry?.market && typeof entry.market === 'object' ? entry.market : null
-      const glitchEntry = entry?.glitch && typeof entry.glitch === 'object' ? entry.glitch : null
-      const glitchListings = Array.isArray(entry?.glitchListings) ? entry.glitchListings : []
+      const inaraEntry = entry?.inara && typeof entry.inara === 'object' ? entry.inara : null
+      const inaraListings = Array.isArray(entry?.inaraListings) ? entry.inaraListings : []
       const historyRaw = Array.isArray(entry?.localHistory?.entries) ? entry.localHistory.entries : []
       const historyEntries = historyRaw
         .filter(candidate => candidate && typeof candidate === 'object' && typeof candidate.sellPrice === 'number')
@@ -2473,7 +2473,7 @@ function CargoHoldPanel () {
         ? entry.localHistory.best
         : (historyEntries[0] || null)
 
-      const glitchPrice = typeof glitchEntry?.price === 'number' ? glitchEntry.price : null
+      const inaraPrice = typeof inaraEntry?.price === 'number' ? inaraEntry.price : null
 
       let localBestEntry = (marketEntry && typeof marketEntry.sellPrice === 'number') ? marketEntry : null
       let localBestPrice = localBestEntry ? localBestEntry.sellPrice : null
@@ -2500,13 +2500,13 @@ function CargoHoldPanel () {
       }
 
       const localValue = typeof localBestPrice === 'number' ? localBestPrice * quantity : null
-      const glitchValue = typeof glitchPrice === 'number' ? glitchPrice * quantity : null
+      const inaraValue = typeof inaraPrice === 'number' ? inaraPrice * quantity : null
 
       let bestPrice = localBestPrice
       let bestSource = localBestSource
-      if (typeof glitchPrice === 'number' && (bestPrice === null || glitchPrice > bestPrice)) {
-        bestPrice = glitchPrice
-        bestSource = 'glitch'
+      if (typeof inaraPrice === 'number' && (bestPrice === null || inaraPrice > bestPrice)) {
+        bestPrice = inaraPrice
+        bestSource = 'inara'
       }
 
       const bestValue = typeof bestPrice === 'number' ? bestPrice * quantity : null
@@ -2524,10 +2524,10 @@ function CargoHoldPanel () {
         localBestSource,
         historyEntries,
         marketEntry,
-        glitchEntry,
-        glitchListings,
-        glitchPrice,
-        glitchValue,
+        inaraEntry,
+        inaraListings,
+        inaraPrice,
+        inaraValue,
         localValue,
         nonCommodity: false
       }
@@ -2548,9 +2548,9 @@ function CargoHoldPanel () {
     if (!container) return undefined
 
     const timeoutId = window.setTimeout(() => {
-      container.querySelectorAll('[data-glitch-table-row]').forEach(element => {
-        if (element.getAttribute('data-glitch-table-row') !== 'visible') {
-          element.setAttribute('data-glitch-table-row', 'visible')
+      container.querySelectorAll('[data-inara-table-row]').forEach(element => {
+        if (element.getAttribute('data-inara-table-row') !== 'visible') {
+          element.setAttribute('data-inara-table-row', 'visible')
         }
       })
     }, 600)
@@ -2575,9 +2575,9 @@ function CargoHoldPanel () {
 
     const commodityName = row?.item?.name || row?.item?.symbol || 'Unknown'
     const commoditySymbol = row?.item?.symbol || ''
-    const listingsSource = Array.isArray(row?.glitchListings) && row.glitchListings.length > 0
-      ? row.glitchListings
-      : (row?.glitchEntry ? [row.glitchEntry] : [])
+    const listingsSource = Array.isArray(row?.inaraListings) && row.inaraListings.length > 0
+      ? row.inaraListings
+      : (row?.inaraEntry ? [row.inaraEntry] : [])
 
     const listings = listingsSource
       .map((listing, index) => {
@@ -2593,14 +2593,14 @@ function CargoHoldPanel () {
 
     const marketEntry = sanitizeMarketListingEntry(row.marketEntry)
     const localBestEntry = sanitizeMarketListingEntry(row.localBestEntry)
-    const glitchEntry = sanitizeCommodityListingEntry(row.glitchEntry)
+    const inaraEntry = sanitizeCommodityListingEntry(row.inaraEntry)
 
     let selectedIndex = listings.findIndex(listing => {
-      if (!glitchEntry) return false
+      if (!inaraEntry) return false
       const listingStation = normaliseName(listing?.stationName)
       const listingSystem = normaliseName(listing?.systemName)
-      const entryStation = normaliseName(glitchEntry?.stationName)
-      const entrySystem = normaliseName(glitchEntry?.systemName)
+      const entryStation = normaliseName(inaraEntry?.stationName)
+      const entrySystem = normaliseName(inaraEntry?.systemName)
       if (!listingStation || !entryStation) return false
       if (listingStation !== entryStation) return false
       if (entrySystem && listingSystem) return listingSystem === entrySystem
@@ -2618,7 +2618,7 @@ function CargoHoldPanel () {
       quantity: row.quantity,
       listings,
       selectedListingId: listings[selectedIndex]?.__id || null,
-      glitchEntry,
+      inaraEntry,
       marketEntry,
       localBestEntry,
       localBestPrice: typeof row.localBestPrice === 'number'
@@ -2687,7 +2687,7 @@ function CargoHoldPanel () {
     const byId = sortedDetailListings.find(entry => entry.__id === activeCommodityDetail.selectedListingId)
     if (byId) return byId
     if (sortedDetailListings.length > 0) return sortedDetailListings[0]
-    return activeCommodityDetail.glitchEntry || null
+    return activeCommodityDetail.inaraEntry || null
   }, [activeCommodityDetail, sortedDetailListings])
 
   const handleStationContextSelect = useCallback(listingId => {
@@ -2702,7 +2702,7 @@ function CargoHoldPanel () {
     setActiveCommodityDetail(prev => {
       if (prev) {
         const listing = prev.listings.find(entry => entry.__id === prev.selectedListingId)
-        const destinationEntry = listing || prev.glitchEntry || null
+        const destinationEntry = listing || prev.inaraEntry || null
         const sanitizedDestination = destinationEntry
           ? (listing ? listing : sanitizeCommodityListingEntry(destinationEntry))
           : null
@@ -2769,7 +2769,7 @@ function CargoHoldPanel () {
   }, [])
 
   const renderSourceBadge = source => {
-    if (source === 'glitch') {
+    if (source === 'inara') {
       return <span className={`${styles.tableBadge} ${styles.tableBadgeWarning}`}>INARA</span>
     }
     if (source === 'local-station') {
@@ -2863,7 +2863,7 @@ function CargoHoldPanel () {
     ? `${cargoCount.toLocaleString()} of ${cargoCapacity.toLocaleString()} tonnes`
     : `${cargoCount.toLocaleString()} tonnes in hold`
 
-  const glitchStatus = valuation?.metadata?.glitchStatus || 'idle'
+  const inaraStatus = valuation?.metadata?.inaraStatus || 'idle'
   const marketStatus = valuation?.metadata?.marketStatus || 'idle'
   const historyStatus = valuation?.metadata?.historyStatus || 'idle'
 
@@ -2913,7 +2913,7 @@ function CargoHoldPanel () {
           </div>
           <div className={styles.metricItem}>
             <span className={styles.metricLabel}>Hold Value (INARA)</span>
-            <span className={`${styles.metricValue} ${styles.metricValueWarning}`}>{formatCredits(totals.glitch, '--')}</span>
+            <span className={`${styles.metricValue} ${styles.metricValueWarning}`}>{formatCredits(totals.inara, '--')}</span>
           </div>
           <div className={styles.metricItem}>
             <span className={styles.metricLabel}>Hold Value (Local Data)</span>
@@ -2921,9 +2921,9 @@ function CargoHoldPanel () {
           </div>
         </div>
 
-        {(glitchStatus === 'error' || glitchStatus === 'partial') && (
+        {(inaraStatus === 'error' || inaraStatus === 'partial') && (
           <div className={styles.notice}>
-            {glitchStatus === 'error'
+            {inaraStatus === 'error'
               ? 'Unable to retrieve INARA price data at this time.'
               : 'Some commodities are missing INARA price data. Displayed values use local market prices where available.'}
           </div>
@@ -3222,7 +3222,7 @@ function CargoHoldPanel () {
                                 tabIndex={0}
                                 role='button'
                                 aria-pressed={isSelected}
-                                data-glitch-table-row='visible'
+                                data-inara-table-row='visible'
                               >
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
                                   <StationSummary
@@ -3311,37 +3311,37 @@ function CargoHoldPanel () {
                       item,
                       entry,
                       quantity,
-                      glitchPrice,
+                      inaraPrice,
                       localBestEntry,
                       localBestSource,
                       historyEntries,
                       marketEntry,
                       bestValue,
                       bestSource,
-                      glitchValue,
+                      inaraValue,
                       localValue,
-                      glitchEntry
+                      inaraEntry
                     } = row
 
-                    const glitchContextEntry = glitchEntry || entry?.glitch || null
-                    const glitchStation = sanitizeInaraText(glitchContextEntry?.stationName) || glitchContextEntry?.stationName || ''
-                    const glitchSystem = sanitizeInaraText(glitchContextEntry?.systemName) || glitchContextEntry?.systemName || ''
-                    const glitchDemand = sanitizeInaraText(glitchContextEntry?.demandText) || (typeof glitchContextEntry?.demand === 'number' ? glitchContextEntry.demand.toLocaleString() : '')
-                    const glitchDemandIndicator = (glitchContextEntry?.demandText || glitchDemand)
+                    const inaraContextEntry = inaraEntry || entry?.inara || null
+                    const inaraStation = sanitizeInaraText(inaraContextEntry?.stationName) || inaraContextEntry?.stationName || ''
+                    const inaraSystem = sanitizeInaraText(inaraContextEntry?.systemName) || inaraContextEntry?.systemName || ''
+                    const inaraDemand = sanitizeInaraText(inaraContextEntry?.demandText) || (typeof inaraContextEntry?.demand === 'number' ? inaraContextEntry.demand.toLocaleString() : '')
+                    const inaraDemandIndicator = (inaraContextEntry?.demandText || inaraDemand)
                       ? (
                         <DemandIndicator
-                          label={glitchContextEntry?.demandText || glitchDemand}
-                          fallbackLabel={glitchDemand}
-                          isLow={Boolean(glitchContextEntry?.demandIsLow)}
+                          label={inaraContextEntry?.demandText || inaraDemand}
+                          fallbackLabel={inaraDemand}
+                          isLow={Boolean(inaraContextEntry?.demandIsLow)}
                           subtle
                         />
                         )
                       : null
-                    const glitchUpdatedText = sanitizeInaraText(glitchContextEntry?.updatedText) || glitchContextEntry?.updatedText || ''
-                    const glitchUpdated = glitchContextEntry?.updatedAt
-                      ? formatRelativeTime(glitchContextEntry.updatedAt)
-                      : glitchUpdatedText
-                    const glitchPriceDisplay = typeof glitchPrice === 'number' ? formatCredits(glitchPrice, '--') : '--'
+                    const inaraUpdatedText = sanitizeInaraText(inaraContextEntry?.updatedText) || inaraContextEntry?.updatedText || ''
+                    const inaraUpdated = inaraContextEntry?.updatedAt
+                      ? formatRelativeTime(inaraContextEntry.updatedAt)
+                      : inaraUpdatedText
+                    const inaraPriceDisplay = typeof inaraPrice === 'number' ? formatCredits(inaraPrice, '--') : '--'
                     const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
 
                     const localEntriesForDisplay = []
@@ -3401,7 +3401,7 @@ function CargoHoldPanel () {
                       <tr
                         key={`${row.key}-${index}`}
                         className={rowClassNames.join(' ')}
-                        data-glitch-table-row='pending'
+                        data-inara-table-row='pending'
                         onClick={() => handleOpenCommodityDetail(row)}
                         onKeyDown={handleRowKeyDown}
                         tabIndex={0}
@@ -3418,8 +3418,8 @@ function CargoHoldPanel () {
                               {item?.symbol && item?.symbol !== item?.name && (
                                 <div className={styles.tableSubtext}>{item.symbol}</div>
                               )}
-                              {entry?.errors?.glitch && !entry?.glitch && (
-                                <div className={styles.tableWarning}>{entry.errors.glitch}</div>
+                              {entry?.errors?.inara && !entry?.inara && (
+                                <div className={styles.tableWarning}>{entry.errors.inara}</div>
                               )}
                               {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
                                 <div className={styles.tableWarning}>{entry.errors.market}</div>
@@ -3468,32 +3468,32 @@ function CargoHoldPanel () {
                           )}
                         </td>
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div>{glitchPriceDisplay}</div>
-                          {glitchStation && (
+                          <div>{inaraPriceDisplay}</div>
+                          {inaraStation && (
                             <div className={styles.tableSubtext}>
-                              <CopyOnClick copyMessageKey='station'>{glitchStation}</CopyOnClick>
-                              {glitchSystem ? (
+                              <CopyOnClick copyMessageKey='station'>{inaraStation}</CopyOnClick>
+                              {inaraSystem ? (
                                 <>
                                   {' · '}
-                                  <CopyOnClick copyMessageKey='system'>{glitchSystem}</CopyOnClick>
+                                  <CopyOnClick copyMessageKey='system'>{inaraSystem}</CopyOnClick>
                                 </>
                               ) : null}
                             </div>
                           )}
-                          {glitchDemand && (
+                          {inaraDemand && (
                             <div className={styles.tableMetaMuted}>
-                              Demand: {glitchDemandIndicator || glitchDemand}
+                              Demand: {inaraDemandIndicator || inaraDemand}
                             </div>
                           )}
-                          {glitchUpdated && (
-                            <div className={styles.tableMetaMuted}>Updated {glitchUpdated}</div>
+                          {inaraUpdated && (
+                            <div className={styles.tableMetaMuted}>Updated {inaraUpdated}</div>
                           )}
                         </td>
                         <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>
                           <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
-                          {typeof localValue === 'number' && typeof glitchValue === 'number' && Math.abs(localValue - glitchValue) > 0.01 && (
+                          {typeof localValue === 'number' && typeof inaraValue === 'number' && Math.abs(localValue - inaraValue) > 0.01 && (
                             <div className={styles.tableMetaMuted}>
-                              INARA {formatCredits(glitchValue, '--')} · Local {formatCredits(localValue, '--')}
+                              INARA {formatCredits(inaraValue, '--')} · Local {formatCredits(localValue, '--')}
                             </div>
                           )}
                         </td>
@@ -3949,7 +3949,7 @@ function TradeRoutesPanel () {
       filters
     }
 
-    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('glitchUseMockData') === 'true'
+    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('inaraUseMockData') === 'true'
     if (shouldUseMockData) {
       const mockRoutes = generateMockTradeRoutes({
         systemName: trimmedTargetSystem,
@@ -3957,13 +3957,13 @@ function TradeRoutesPanel () {
       })
 
       applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Glitch (INARA) settings to restore live results.'
+        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in INARA settings to restore live results.'
       })
       setIsRefreshing(false)
       return
     }
 
-    fetch('/api/glitch-trade-routes', {
+    fetch('/api/inara-trade-routes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -4775,7 +4775,7 @@ function PristineMiningPanel () {
     setMessage('')
     setLastUpdatedAt(null)
 
-    fetch('/api/glitch-pristine-mining', {
+    fetch('/api/inara-pristine-mining', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: trimmedSystem })
@@ -4939,7 +4939,7 @@ function PristineMiningPanel () {
       >
         <div className={styles.tableSectionHeader}>
           <h2 className={styles.tableSectionTitle}>Pristine Mining Locations</h2>
-          <p className={styles.sectionHint}>Glitch listens for rare reserve chatter across INARA to pinpoint high-value extraction sites.</p>
+          <p className={styles.sectionHint}>INARA listens for rare reserve chatter across the network to pinpoint high-value extraction sites.</p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -4947,7 +4947,7 @@ function PristineMiningPanel () {
             </div>
             {sourceUrl && (
               <div className='glitch__data-source glitch-muted'>
-                Glitch prospecting relays aligned with INARA survey intel.
+                INARA prospecting relays aligned with survey intel.
               </div>
             )}
           </div>
@@ -5011,7 +5011,7 @@ function PristineMiningPanel () {
                     <Fragment key={key}>
                       <tr
                         className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
-                        data-glitch-table-row='pending'
+                        data-inara-table-row='pending'
                         role='button'
                         tabIndex={0}
                         aria-expanded={isExpanded}
@@ -5046,7 +5046,7 @@ function PristineMiningPanel () {
                         <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
                       </tr>
                       {isExpanded && (
-                        <tr className={`${styles.tableDetailRow} glitch-table-detail-row`} data-glitch-table-row='pending'>
+                        <tr className={`${styles.tableDetailRow} glitch-table-detail-row`} data-inara-table-row='pending'>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
@@ -5058,10 +5058,10 @@ function PristineMiningPanel () {
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
                                     {location.systemUrl && (
-                                      <span>Glitch linked INARA system dossier</span>
+                                      <span>INARA-linked system dossier</span>
                                     )}
                                     {location.bodyUrl && (
-                                      <span>Glitch linked INARA body dossier</span>
+                                      <span>INARA-linked body dossier</span>
                                     )}
                                   </div>
                                 )}
@@ -5135,7 +5135,7 @@ const DEFAULT_GREEK_SYMBOLS = [
   'psi',
   'omega'
 ]
-const GREEK_SYMBOLS = getGlitchStrings('glyphs.greekSymbols', DEFAULT_GREEK_SYMBOLS)
+const GREEK_SYMBOLS = getInaraStrings('glyphs.greekSymbols', DEFAULT_GREEK_SYMBOLS)
 const TERMINAL_BUFFER = 36
 const TERMINAL_WINDOW = 7
 const TERMINAL_WINDOW_EXPANDED = 14
@@ -5214,14 +5214,14 @@ const DEFAULT_CURRENCY_GLYPHS = [
   '฿',
   '₾'
 ]
-const CURRENCY_GLYPHS = getGlitchStrings('glyphs.currencyGlyphs', DEFAULT_CURRENCY_GLYPHS)
+const CURRENCY_GLYPHS = getInaraStrings('glyphs.currencyGlyphs', DEFAULT_CURRENCY_GLYPHS)
 
 function generateCurrencyCascadeString (length = 96) {
   return Array.from({ length }).map(() => randomChoice(CURRENCY_GLYPHS)).join('')
 }
 
 const DEFAULT_DEBIT_GLYPHS = ['✖', '⛔', '⚠', '!', '−', '↓', '×', '⨯', '▾', '✕', '⛓']
-const DEBIT_GLYPHS = getGlitchStrings('glyphs.debitGlyphs', DEFAULT_DEBIT_GLYPHS)
+const DEBIT_GLYPHS = getInaraStrings('glyphs.debitGlyphs', DEFAULT_DEBIT_GLYPHS)
 
 function generateDebitGlyphString (length = 72) {
   const debitPool = [...DEBIT_GLYPHS, ...'XXXX----!!!!']
@@ -5416,37 +5416,37 @@ const DEFAULT_JACKPOT_SUMMARY_TAILS = [
 const DEFAULT_JACKPOT_SWIRL_GLYPHS = ['✶', '✷', '✺', '✹', '✸', '✧', '✦', '✩', '✪', '☄', '⚡', '⭑']
 const DEFAULT_FALLBACK_LOCATIONS = ['Obsidian Relay', 'Nyx Archive', 'Perseus Node', 'Umbra Vault', 'Helios Array', 'Dusk Citadel']
 
-const TRANSACTION_VECTOR_LABELS = getGlitchStrings(
+const TRANSACTION_VECTOR_LABELS = getInaraStrings(
   'terminal.transaction.vectorLabels',
   DEFAULT_TRANSACTION_VECTOR_LABELS
 )
-const TRANSACTION_ALIAS_WORDS = getGlitchStrings(
+const TRANSACTION_ALIAS_WORDS = getInaraStrings(
   'terminal.transaction.aliasWords',
   DEFAULT_TRANSACTION_ALIAS_WORDS
 )
-const TRANSACTION_OPERATIONS = getGlitchStrings(
+const TRANSACTION_OPERATIONS = getInaraStrings(
   'terminal.transaction.operations',
   DEFAULT_TRANSACTION_OPERATIONS
 )
-const TRANSACTION_SIGNAL_WORDS = getGlitchStrings(
+const TRANSACTION_SIGNAL_WORDS = getInaraStrings(
   'terminal.transaction.signalWords',
   DEFAULT_TRANSACTION_SIGNAL_WORDS
 )
-const TRANSACTION_SOURCE_PREFIXES = getGlitchStrings(
+const TRANSACTION_SOURCE_PREFIXES = getInaraStrings(
   'terminal.transaction.sourcePrefixes',
   DEFAULT_TRANSACTION_SOURCE_PREFIXES
 )
-const TRANSACTION_REASON_SUFFIXES = getGlitchStrings(
+const TRANSACTION_REASON_SUFFIXES = getInaraStrings(
   'terminal.transaction.reasonSuffixes',
   DEFAULT_TRANSACTION_REASON_SUFFIXES
 )
-const SIMULATION_BADGES = getGlitchStrings('terminal.simulationBadges', DEFAULT_SIMULATION_BADGES)
-const SIMULATION_TRAILS = getGlitchStrings('terminal.simulationTrails', DEFAULT_SIMULATION_TRAILS)
-const JACKPOT_ASCII_BANNER = getGlitchStrings('terminal.jackpotAsciiBanner', DEFAULT_JACKPOT_ASCII_BANNER)
-const JACKPOT_SUMMARY_INTROS = getGlitchStrings('terminal.jackpotSummaryIntros', DEFAULT_JACKPOT_SUMMARY_INTROS)
-const JACKPOT_SUMMARY_TAILS = getGlitchStrings('terminal.jackpotSummaryTails', DEFAULT_JACKPOT_SUMMARY_TAILS)
-const JACKPOT_SWIRL_GLYPHS = getGlitchStrings('terminal.jackpotSwirlGlyphs', DEFAULT_JACKPOT_SWIRL_GLYPHS)
-const FALLBACK_LOCATIONS = getGlitchStrings('terminal.fallbackLocations', DEFAULT_FALLBACK_LOCATIONS)
+const SIMULATION_BADGES = getInaraStrings('terminal.simulationBadges', DEFAULT_SIMULATION_BADGES)
+const SIMULATION_TRAILS = getInaraStrings('terminal.simulationTrails', DEFAULT_SIMULATION_TRAILS)
+const JACKPOT_ASCII_BANNER = getInaraStrings('terminal.jackpotAsciiBanner', DEFAULT_JACKPOT_ASCII_BANNER)
+const JACKPOT_SUMMARY_INTROS = getInaraStrings('terminal.jackpotSummaryIntros', DEFAULT_JACKPOT_SUMMARY_INTROS)
+const JACKPOT_SUMMARY_TAILS = getInaraStrings('terminal.jackpotSummaryTails', DEFAULT_JACKPOT_SUMMARY_TAILS)
+const JACKPOT_SWIRL_GLYPHS = getInaraStrings('terminal.jackpotSwirlGlyphs', DEFAULT_JACKPOT_SWIRL_GLYPHS)
+const FALLBACK_LOCATIONS = getInaraStrings('terminal.fallbackLocations', DEFAULT_FALLBACK_LOCATIONS)
 
 function generateSwirlGlyphString (length = 48) {
   return Array.from({ length }).map(() => randomChoice([...JACKPOT_SWIRL_GLYPHS, ...CURRENCY_GLYPHS])).join('')
@@ -5666,10 +5666,10 @@ const DEFAULT_CREDIT_GLYPH_SYMBOLS = [
   '⊛'
 ]
 
-const MENACE_ALERTS = getGlitchStrings('terminal.menace.alerts', DEFAULT_MENACE_ALERTS)
-const MENACE_ECHOES = getGlitchStrings('terminal.menace.echoes', DEFAULT_MENACE_ECHOES)
-const CREDIT_GLYPH_SYMBOLS = getGlitchStrings('terminal.creditGlyphSymbols', DEFAULT_CREDIT_GLYPH_SYMBOLS)
-const CREDIT_CELEBRATION_MESSAGE = getGlitchString(
+const MENACE_ALERTS = getInaraStrings('terminal.menace.alerts', DEFAULT_MENACE_ALERTS)
+const MENACE_ECHOES = getInaraStrings('terminal.menace.echoes', DEFAULT_MENACE_ECHOES)
+const CREDIT_GLYPH_SYMBOLS = getInaraStrings('terminal.creditGlyphSymbols', DEFAULT_CREDIT_GLYPH_SYMBOLS)
+const CREDIT_CELEBRATION_MESSAGE = getInaraString(
   'terminal.creditCelebrationMessage',
   'INARA intercept completed. Ledger flush inbound.'
 )
@@ -5864,11 +5864,11 @@ function createTerminalLineEntries (seed = '', baseLine, maxLength = TERMINAL_LI
   })
 }
 
-function GlitchTerminalOverlay () {
+function InaraTerminalOverlay () {
   const [viewState, setViewState] = useState(TERMINAL_VIEW.NORMAL)
   const terminalLineMaxLengthRef = useRef(TERMINAL_LINE_MAX_LENGTH)
   const [terminalLineMaxLength, setTerminalLineMaxLength] = useState(TERMINAL_LINE_MAX_LENGTH)
-  const [terminalLines, setTerminalLines] = useState(() => {
+  const [inaraTickerMessages, setInaraTickerMessages] = useState(() => {
     const seeded = Array.from({ length: TERMINAL_BUFFER }).flatMap((_, index) =>
       createTerminalLineEntries(`seed-${index}`, undefined, TERMINAL_LINE_MAX_LENGTH)
     )
@@ -5946,7 +5946,7 @@ function GlitchTerminalOverlay () {
   }, [terminalLineMaxLength])
 
   useEffect(() => {
-    setTerminalLines(previous => {
+    setInaraTickerMessages(previous => {
       if (!Array.isArray(previous) || previous.length === 0) return previous
       return rewrapTerminalLines(previous, terminalLineMaxLength)
     })
@@ -6094,7 +6094,7 @@ function GlitchTerminalOverlay () {
     const entries = createTerminalLineEntries(seed, payload, terminalLineMaxLengthRef.current)
     if (!entries.length) return
 
-    setTerminalLines(previous => {
+    setInaraTickerMessages(previous => {
       let next = [...previous, ...entries]
       if (next.length > TERMINAL_BUFFER) {
         next = next.slice(next.length - TERMINAL_BUFFER)
@@ -6155,7 +6155,7 @@ function GlitchTerminalOverlay () {
 
     const messageTimeout = window.setTimeout(() => {
       celebrationRef.current.messageDisplayed = true
-      setTerminalLines(previous => {
+      setInaraTickerMessages(previous => {
         const messageLines = createTerminalLineEntries('credit-message', {
           type: messageType,
           label: messageLabel,
@@ -6180,7 +6180,7 @@ function GlitchTerminalOverlay () {
     }, celebrationDuration)
 
     celebrationRef.current.timeouts = [messageTimeout, completionTimeout]
-  }, [clearCelebrationTimeouts, setTerminalLines])
+  }, [clearCelebrationTimeouts, setInaraTickerMessages])
 
   const buildTransactionSequence = useCallback((entry = {}, { simulation = false } = {}) => {
     return createTransactionSequence(entry, { simulation, prefersReducedMotion })
@@ -6413,7 +6413,7 @@ function GlitchTerminalOverlay () {
         tokenStateRef.current = { balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } }
       })
 
-    unsubscribe = eventListener('glitchTokensUpdated', applySnapshot)
+    unsubscribe = eventListener('inaraTokensUpdated', applySnapshot)
 
     return () => {
       isMounted = false
@@ -6553,7 +6553,7 @@ function GlitchTerminalOverlay () {
     const schedule = delay => {
       timeoutRef.current = window.setTimeout(() => {
         const { lines, delay: nextDelay } = advanceCadence()
-        setTerminalLines(previous => {
+        setInaraTickerMessages(previous => {
           let next = [...previous, ...lines]
           if (next.length > TERMINAL_BUFFER) {
             next = next.slice(next.length - TERMINAL_BUFFER)
@@ -6577,7 +6577,7 @@ function GlitchTerminalOverlay () {
     setTokenActionPending(true)
     try {
       await sendEvent('triggerJackpot', {
-        source: 'glitch-console'
+        source: 'inara-console'
       })
     } catch (error) {
       console.error('[INARA] Failed to award tokens from console', error)
@@ -6624,12 +6624,12 @@ function GlitchTerminalOverlay () {
   }, [isCompressed, isExpanded])
 
   const visibleLines = useMemo(() => {
-    return terminalLines.slice(-terminalWindowSize)
-  }, [terminalLines, terminalWindowSize])
+    return inaraTickerMessages.slice(-terminalWindowSize)
+  }, [inaraTickerMessages, terminalWindowSize])
 
   const latestLine = useMemo(() => {
-    return terminalLines[terminalLines.length - 1]
-  }, [terminalLines])
+    return inaraTickerMessages[inaraTickerMessages.length - 1]
+  }, [inaraTickerMessages])
 
   const handleMinimize = useCallback(() => {
     setViewState(TERMINAL_VIEW.COMPRESSED)
@@ -6676,7 +6676,7 @@ function GlitchTerminalOverlay () {
 
   return (
     <div className={terminalClassName} ref={terminalRef}>
-      <div className={shellClassName} role='region' aria-label='Glitch ship uplink activity log'>
+      <div className={shellClassName} role='region' aria-label='INARA ship uplink activity log'>
         <div
           className={[styles.terminalCelebration, creditCelebration ? styles.terminalCelebrationActive : ''].filter(Boolean).join(' ')}
           aria-hidden='true'
@@ -6803,7 +6803,7 @@ function GlitchTerminalOverlay () {
   )
 }
 
-export default function GlitchPage() {
+export default function InaraPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [arrivalMode, setArrivalMode] = useState(false)
   const [themeEnabled, setThemeEnabled] = useState(() => {
@@ -6864,7 +6864,7 @@ export default function GlitchPage() {
       }
     }
   }, [])
-  const navigationItems = useMemo(() => ([
+  const inaraTabs = useMemo(() => ([
     { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
     { name: 'Cargo Hold', icon: 'cargo', active: activeTab === 'cargoHold', onClick: () => setActiveTab('cargoHold') },
     { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
@@ -6891,7 +6891,7 @@ export default function GlitchPage() {
     <Layout connected={connected} active={socketActive} ready={ready} loader={false} className={styles.glitchLayout}>
       <div className={styles.glitchViewport}>
         <div className={navigationClassName}>
-          <PanelNavigation items={navigationItems} search={false} />
+          <PanelNavigation items={inaraTabs} search={false} />
         </div>
         <div className={styles.glitchContentArea}>
           <div className={scrollRegionClassName}>
@@ -6915,7 +6915,7 @@ export default function GlitchPage() {
                   </div>
                 </div>
               </div>
-              <GlitchTerminalOverlay />
+              <InaraTerminalOverlay />
             </div>
           </div>
         </div>

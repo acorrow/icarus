@@ -18,7 +18,7 @@ const navItems = [
   }
 ]
 
-export default function GlitchSearchPage() {
+export default function InaraSearchPage() {
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
     document.body.classList.add('glitch-theme')

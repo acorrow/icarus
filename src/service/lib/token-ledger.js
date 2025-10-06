@@ -11,8 +11,8 @@ const {
   TOKEN_REMOTE_MODES
 } = require('../../shared/token-config')
 const {
-  isGlitchTokenCurrencyEnabled,
-  isTokenJackpotEnabled,
+  isInaraTokenCurrencyEnabled,
+  isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled
 } = require('../../shared/feature-flags')
 
@@ -235,7 +235,7 @@ class TokenLedger {
     this.mode = options.mode || getTokenMode()
     this.initialBalance = options.initialBalance ?? getInitialTokenBalance()
     this.userId = normalizeUserId(options.userId)
-    this.featureEnabled = options.featureEnabled !== undefined ? options.featureEnabled : isGlitchTokenCurrencyEnabled()
+    this.featureEnabled = options.featureEnabled !== undefined ? options.featureEnabled : isInaraTokenCurrencyEnabled()
     const baseStorage = options.storageDir || path.join(Preferences.preferencesDir(), 'tokens')
     this.storageDir = path.join(baseStorage, this.userId)
     this.ledgerPath = path.join(this.storageDir, LEDGER_FILENAME)
@@ -259,7 +259,7 @@ class TokenLedger {
 
     const jackpotFlag = options.jackpotEnabled !== undefined
       ? Boolean(options.jackpotEnabled)
-      : isTokenJackpotEnabled()
+      : isInaraTokenJackpotEnabled()
     const compatibilityFlag = options.negativeRecoveryCompatibility !== undefined
       ? Boolean(options.negativeRecoveryCompatibility)
       : isTokenRecoveryCompatibilityEnabled()

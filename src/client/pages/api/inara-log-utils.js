@@ -12,18 +12,18 @@ function readEnvFlag (name) {
   return null
 }
 
-export function shouldLogGlitchActivity () {
-  const explicitEnable = readEnvFlag('ICARUS_ENABLE_GLITCH_LOGS')
+export function shouldLogInaraActivity () {
+  const explicitEnable = readEnvFlag('ICARUS_ENABLE_INARA_LOGS')
   if (explicitEnable !== null) return explicitEnable
 
-  const explicitDisable = readEnvFlag('ICARUS_DISABLE_GLITCH_LOGS')
+  const explicitDisable = readEnvFlag('ICARUS_DISABLE_INARA_LOGS')
   if (explicitDisable === true) return false
 
   return (process.env.NODE_ENV || '').toLowerCase() === 'development'
 }
 
-export function appendGlitchLogEntry (logPath, entry) {
-  if (!shouldLogGlitchActivity()) return
+export function appendInaraLogEntry (logPath, entry) {
+  if (!shouldLogInaraActivity()) return
   try {
     fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${entry}\n`)
   } catch (e) {}

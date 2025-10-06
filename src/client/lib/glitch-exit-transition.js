@@ -1,4 +1,4 @@
-import { getGlitchStrings, getGlitchString } from './glitch-addon'
+import { getInaraStrings, getInaraString } from './inara-addon'
 import { isGlitchThemeEnabled } from './glitch-settings'
 
 const DEFAULT_EXIT_LOG_LINES = [
@@ -36,8 +36,8 @@ const DEFAULT_EXIT_DIALOG = {
   footnote: 'Residual spectral links will be locked by ATLAS if reconnection is attempted.'
 }
 
-const TERMINAL_LINES = getGlitchStrings('exitTransition.logLines', DEFAULT_EXIT_LOG_LINES)
-const EXIT_DIALOG_COPY = getGlitchStrings('exitTransition.dialog', DEFAULT_EXIT_DIALOG)
+const TERMINAL_LINES = getInaraStrings('exitTransition.logLines', DEFAULT_EXIT_LOG_LINES)
+const EXIT_DIALOG_COPY = getInaraStrings('exitTransition.dialog', DEFAULT_EXIT_DIALOG)
 
 const TYPE_INTERVAL = 14
 const INITIAL_LINE_DELAY = 120
@@ -84,7 +84,7 @@ function buildOverlay () {
   dialog.setAttribute('aria-live', 'assertive')
   dialog.setAttribute(
     'aria-label',
-    getGlitchString('exitTransition.dialog.ariaLabel', DEFAULT_EXIT_DIALOG.ariaLabel)
+    getInaraString('exitTransition.dialog.ariaLabel', DEFAULT_EXIT_DIALOG.ariaLabel)
   )
 
   const header = document.createElement('div')

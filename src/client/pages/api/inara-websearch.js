@@ -8,12 +8,12 @@ import os from 'os'
 import EliteLog from '../../../service/lib/elite-log.js'
 import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
-import { appendGlitchLogEntry } from './glitch-log-utils.js'
+import { appendInaraLogEntry } from './inara-log-utils.js'
 import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
 
-const logPath = path.join(process.cwd(), 'glitch-websearch.log')
-function logGlitchSearch(entry) {
-  appendGlitchLogEntry(logPath, entry)
+const logPath = path.join(process.cwd(), 'inara-websearch.log')
+function logInaraSearch(entry) {
+  appendInaraLogEntry(logPath, entry)
 }
 
 function resolveLogDir() {
@@ -52,14 +52,14 @@ async function ensureSystemInstance() {
           if (typeof eliteLog.watch === 'function') eliteLog.watch()
           global.ICARUS_ELITE_LOG = eliteLog
         } catch (err) {
-          logGlitchSearch(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
+          logInaraSearch(`ELITE_LOG_LOAD_ERROR: dir=${logDir} error=${err}`)
           eliteLog = null
         }
       }
     }
 
     if (!eliteLog) {
-      logGlitchSearch('ELITE_LOG_FALLBACK: using stub eliteLog')
+      logInaraSearch('ELITE_LOG_FALLBACK: using stub eliteLog')
       eliteLog = {
         getEvent: async () => null,
         getEventsFromTimestamp: async () => [],
@@ -80,14 +80,14 @@ async function ensureSystemInstance() {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    logGlitchSearch(`INVALID_METHOD: ${req.method} ${req.url}`)
+    logInaraSearch(`INVALID_METHOD: ${req.method} ${req.url}`)
     res.status(405).json({ error: 'Method not allowed' })
     return
   }
 
   const { shipId, system } = req.body || {}
   if (!shipId || !system) {
-    logGlitchSearch(`MISSING_PARAMS: shipId=${shipId} system=${system}`)
+    logInaraSearch(`MISSING_PARAMS: shipId=${shipId} system=${system}`)
     res.status(400).json({ error: 'Missing ship selection or system. Please select a ship and system before searching.' })
     return
   }
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
         return data
       }
     } catch (err) {
-      logGlitchSearch(`SYSTEM_LOOKUP_ERROR: system=${systemName} error=${err}`)
+      logInaraSearch(`SYSTEM_LOOKUP_ERROR: system=${systemName} error=${err}`)
     }
     return null
   }
@@ -248,7 +248,7 @@ export default async function handler(req, res) {
       }
     }
 
-    logGlitchSearch(`LOCAL_LOOKUP_MISS: station=${stationName}`)
+    logInaraSearch(`LOCAL_LOOKUP_MISS: station=${stationName}`)
     return {
       station: stationName,
       system: searchOrder[0] || '',
@@ -262,7 +262,7 @@ export default async function handler(req, res) {
     const ships = JSON.parse(fs.readFileSync(filePath, 'utf8'))
     const ship = ships.find(s => s.id === shipId || s.symbol === shipId || s.name === shipId)
     if (ship) {
-      const glitchShipMap = {
+      const inaraShipMap = {
         'Sidewinder': 'xship1',
         'Eagle': 'xship2',
         'Hauler': 'xship3',
@@ -302,13 +302,13 @@ export default async function handler(req, res) {
         'Alliance Crusader': 'xship39',
         'Alliance Challenger': 'xship40'
       }
-      xshipCode = glitchShipMap[ship.name] || null
+      xshipCode = inaraShipMap[ship.name] || null
     }
   } catch (e) {
-    logGlitchSearch(`SHIP_LOOKUP_ERROR: ${e}`)
+    logInaraSearch(`SHIP_LOOKUP_ERROR: ${e}`)
   }
   if (!xshipCode) {
-    logGlitchSearch(`SHIP_CODE_NOT_FOUND: shipId=${shipId} system=${system}`)
+    logInaraSearch(`SHIP_CODE_NOT_FOUND: shipId=${shipId} system=${system}`)
     res.status(400).json({ error: 'Could not map the selected ship to an INARA search code. Please choose a valid ship.' })
     return
   }
@@ -322,7 +322,7 @@ export default async function handler(req, res) {
   params.append('pi17', '0')
   params.append('pi14', '0')
   const url = `https://inara.cz/elite/nearest-outfitting/?${params.toString()}`
-  logGlitchSearch(`REQUEST: shipId=${shipId} system=${system} url=${url}`)
+  logInaraSearch(`REQUEST: shipId=${shipId} system=${system} url=${url}`)
 
   const requestBytes = estimateByteSize(url)
   let responseText = ''
@@ -341,7 +341,7 @@ export default async function handler(req, res) {
     responseText = await response.text()
 
     if (/No station within [\d,]+ Ly range found/i.test(responseText)) {
-      logGlitchSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} NO_RESULTS`)
+      logInaraSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} NO_RESULTS`)
       res.status(200).json({ results: [], message: 'No station within range found on INARA.' })
       return
     }
@@ -407,11 +407,11 @@ export default async function handler(req, res) {
     const detailResults = await Promise.all(detailPromises)
     const results = detailResults.filter(Boolean)
 
-    logGlitchSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} results=${results.length}`)
+    logInaraSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} results=${results.length}`)
     res.status(200).json({ results })
   } catch (err) {
     caughtError = err
-    logGlitchSearch(`ERROR: shipId=${shipId} system=${system} url=${url} error=${err}`)
+    logInaraSearch(`ERROR: shipId=${shipId} system=${system} url=${url} error=${err}`)
     res.status(500).json({ error: 'Failed to fetch or parse INARA results', details: err.message })
   } finally {
     const metadata = {
@@ -428,7 +428,7 @@ export default async function handler(req, res) {
       responseBytes: estimateByteSize(responseText),
       metadata
     }).catch(ledgerError => {
-      logGlitchSearch(`TOKEN_LEDGER_ERROR: ${ledgerError}`)
+      logInaraSearch(`TOKEN_LEDGER_ERROR: ${ledgerError}`)
     })
   }
 }

@@ -79,7 +79,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         {activeSettingsPanel === 'Theme' && <ThemeSettings visible={visible} />}
         {activeSettingsPanel === 'Sounds' && <SoundSettings visible={visible} />}
         {activeSettingsPanel === 'Feature Flags' && <FeatureFlagSettings />}
-        {activeSettingsPanel === 'INARA' && <GlitchSettings />}
+        {activeSettingsPanel === 'INARA' && <InaraSettings />}
         <div className='modal-dialog__footer'>
           <hr style={{ margin: '1rem 0 .5rem 0' }} />
           <button className='float-right' onClick={toggleVisible}>
@@ -91,7 +91,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
   )
 }
 
-function GlitchSettings () {
+function InaraSettings () {
   const [useMockData, setUseMockData] = useState(false)
   const [assimilationDuration, setAssimilationDuration] = useState(ASSIMILATION_DURATION_DEFAULT)
   const [saved, setSaved] = useState(false)
@@ -99,7 +99,7 @@ function GlitchSettings () {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setUseMockData(window.localStorage.getItem('glitchUseMockData') === 'true')
+      setUseMockData(window.localStorage.getItem('inaraUseMockData') === 'true')
     }
     setAssimilationDuration(getAssimilationDurationSeconds())
   }, [])
@@ -125,7 +125,7 @@ function GlitchSettings () {
   function handleSave(e) {
     e.preventDefault()
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('glitchUseMockData', useMockData ? 'true' : 'false')
+      window.localStorage.setItem('inaraUseMockData', useMockData ? 'true' : 'false')
     }
     const sanitizedDuration = saveAssimilationDurationSeconds(assimilationDuration)
     setAssimilationDuration(sanitizedDuration)

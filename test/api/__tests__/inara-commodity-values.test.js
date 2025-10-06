@@ -1,9 +1,9 @@
 const { createMockReq, createMockRes, createFetchResponse } = require('../helpers')
 
-const handlerPath = '../../../src/client/pages/api/glitch-commodity-values.js'
+const handlerPath = '../../../src/client/pages/api/inara-commodity-values.js'
 const tokenCurrencyPath = '../../../src/client/pages/api/token-currency.js'
 
-describe('glitch-commodity-values API handler', () => {
+describe('inara-commodity-values API handler', () => {
   beforeEach(() => {
     jest.resetModules()
     delete global.LOG_DIR

@@ -1,9 +1,9 @@
 const { createMockReq, createMockRes, createFetchResponse } = require('../helpers')
 
-const handlerPath = '../../../src/client/pages/api/glitch-pristine-mining.js'
+const handlerPath = '../../../src/client/pages/api/inara-search.js'
 const tokenCurrencyPath = '../../../src/client/pages/api/token-currency.js'
 
-describe('glitch-pristine-mining API handler', () => {
+describe('inara-search API handler', () => {
   beforeEach(() => {
     jest.resetModules()
   })
@@ -21,56 +21,55 @@ describe('glitch-pristine-mining API handler', () => {
     return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
   }
 
-  it('records token spend metadata when pristine mining locations are returned', async () => {
+  it('records token spend metadata for successful searches', async () => {
     const { handler, fetchMock, spendTokensMock } = await loadModule()
 
-    const html = `
-      <table class="tablesortercollapsed">
-        <tbody>
-          <tr>
-            <td><a href="/elite/system/1">Sol</a></td>
-            <td><a href="/elite/body/2">Sol A Ring</a></td>
-            <td>Metallic Ring</td>
-            <td data-order="1200">1,200 Ls</td>
-            <td data-order="15">15 Ly</td>
-          </tr>
-        </tbody>
-      </table>
-    `
-
-    fetchMock.mockResolvedValue(createFetchResponse({ status: 200, ok: true, body: html }))
+    fetchMock.mockResolvedValue(createFetchResponse({
+      status: 200,
+      ok: true,
+      body: JSON.stringify({ data: [{ id: 1 }] })
+    }))
 
     const req = createMockReq({
       method: 'POST',
-      body: { system: 'Sol' }
+      body: {
+        searchType: 'commodity',
+        searchTerm: 'Tritium',
+        appName: 'INARA Tests',
+        appVersion: '1.0.0'
+      }
     })
     const res = createMockRes()
 
     await handler(req, res)
 
     expect(res.statusCode).toBe(200)
-    expect(res.body?.locations).toBeDefined()
     expect(spendTokensMock).toHaveBeenCalledTimes(1)
 
     const call = spendTokensMock.mock.calls[0][0]
-    expect(call.endpoint).toContain('nearest-bodies')
+    expect(call.endpoint).toBe('https://inara.cz/inapi/v1/')
     expect(call.metadata).toMatchObject({
-      method: 'GET',
+      method: 'POST',
       reason: 'inara-request',
       status: 200,
-      system: 'Sol',
+      searchType: 'commodity',
       error: undefined
     })
   })
 
-  it('records token spend metadata when pristine mining fetch fails', async () => {
+  it('records token spend metadata when the INARA request fails', async () => {
     const { handler, fetchMock, spendTokensMock } = await loadModule()
 
-    fetchMock.mockResolvedValue(createFetchResponse({ status: 500, ok: false, body: 'error' }))
+    fetchMock.mockRejectedValue(new Error('network down'))
 
     const req = createMockReq({
       method: 'POST',
-      body: { system: 'Achenar' }
+      body: {
+        searchType: 'module',
+        searchTerm: 'Shield Generator',
+        appName: 'INARA Tests',
+        appVersion: '1.0.0'
+      }
     })
     const res = createMockRes()
 
@@ -81,11 +80,11 @@ describe('glitch-pristine-mining API handler', () => {
 
     const call = spendTokensMock.mock.calls[0][0]
     expect(call.metadata).toMatchObject({
-      method: 'GET',
+      method: 'POST',
       reason: 'inara-request-error',
-      status: 500,
-      system: 'Achenar',
-      error: 'INARA request failed with status 500'
+      status: null,
+      searchType: 'module',
+      error: 'network down'
     })
   })
 })
