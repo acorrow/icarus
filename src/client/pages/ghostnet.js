@@ -3867,13 +3867,6 @@ function TradeRoutesPanel () {
     })
   }, [])
 
-  const handleSortKeyDown = useCallback((event, field) => {
-    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
-      event.preventDefault()
-      handleSortChange(field)
-    }
-  }, [handleSortChange])
-
   const renderSortArrow = field => {
     if (sortField !== field) return null
     const arrow = sortDirection === 'asc' ? String.fromCharCode(0x25B2) : String.fromCharCode(0x25BC)
@@ -4363,57 +4356,44 @@ function TradeRoutesPanel () {
           <tr>
             <th aria-hidden='true' className={styles.tableCellCaret} />
             <th
-              className={styles.tableHeaderInteractive}
-              onClick={() => handleSortChange('stationA')}
-              onKeyDown={event => handleSortKeyDown(event, 'stationA')}
-              tabIndex={0}
+              scope='col'
               aria-sort={sortField === 'stationA' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
             >
-              <div className={styles.tradeRoutesHeader}>
-                <div className={styles.tradeRoutesHeaderTitle}>
-                  <span>Station A</span>
-                  {renderSortArrow('stationA')}
-                </div>
-                <span className={styles.tradeRoutesHeaderSubtitle}>Origin Station</span>
-              </div>
+              <button
+                type='button'
+                className={`${styles.tableHeaderButton} ${sortField === 'stationA' ? styles.tableHeaderButtonActive : ''}`}
+                onClick={() => handleSortChange('stationA')}
+              >
+                Station A
+                {renderSortArrow('stationA')}
+              </button>
             </th>
-            <th aria-sort='none'>
-              <div className={styles.tradeRoutesHeader}>
-                <div className={styles.tradeRoutesHeaderTitle}>
-                  <span>Commodities</span>
-                </div>
-                <span className={styles.tradeRoutesHeaderSubtitle}>Outbound &amp; Return</span>
-              </div>
-            </th>
+            <th scope='col' aria-sort='none'>Commodities</th>
             <th
-              className={styles.tableHeaderInteractive}
-              onClick={() => handleSortChange('stationB')}
-              onKeyDown={event => handleSortKeyDown(event, 'stationB')}
-              tabIndex={0}
+              scope='col'
               aria-sort={sortField === 'stationB' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
             >
-              <div className={styles.tradeRoutesHeader}>
-                <div className={styles.tradeRoutesHeaderTitle}>
-                  <span>Station B</span>
-                  {renderSortArrow('stationB')}
-                </div>
-                <span className={styles.tradeRoutesHeaderSubtitle}>Destination Station</span>
-              </div>
+              <button
+                type='button'
+                className={`${styles.tableHeaderButton} ${sortField === 'stationB' ? styles.tableHeaderButtonActive : ''}`}
+                onClick={() => handleSortChange('stationB')}
+              >
+                Station B
+                {renderSortArrow('stationB')}
+              </button>
             </th>
             <th
-              className={styles.tableHeaderInteractive}
-              onClick={() => handleSortChange('profit')}
-              onKeyDown={event => handleSortKeyDown(event, 'profit')}
-              tabIndex={0}
+              scope='col'
               aria-sort={sortField === 'profit' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
             >
-              <div className={styles.tradeRoutesHeader}>
-                <div className={styles.tradeRoutesHeaderTitle}>
-                  <span>Profit</span>
-                  {renderSortArrow('profit')}
-                </div>
-                <span className={styles.tradeRoutesHeaderSubtitle}>Per t, Trip, Hour</span>
-              </div>
+              <button
+                type='button'
+                className={`${styles.tableHeaderButton} ${sortField === 'profit' ? styles.tableHeaderButtonActive : ''}`}
+                onClick={() => handleSortChange('profit')}
+              >
+                Profit
+                {renderSortArrow('profit')}
+              </button>
             </th>
           </tr>
         </thead>

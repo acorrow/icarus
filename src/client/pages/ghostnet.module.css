@@ -2375,35 +2375,6 @@ button.terminalStatusPreview:focus-visible {
   border: 0;
 }
 
-.tradeRoutesHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.tradeRoutesHeaderTitle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--ghostnet-ink);
-  text-transform: none;
-}
-
-.tradeRoutesHeaderSubtitle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.68rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ghostnet-text-soft);
-  background: color-mix(in srgb, var(--ghostnet-color-primary) 24%, transparent);
-  padding: 0.18rem 0.55rem;
-  border-radius: 999px;
-}
-
 .tradeRoutesQuantityBadge {
   display: inline-flex;
   align-items: center;
@@ -2509,11 +2480,6 @@ button.terminalStatusPreview:focus-visible {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-}
-
-.tableHeaderInteractive {
-  cursor: pointer;
-  user-select: none;
 }
 
 .tableHeaderButton {
