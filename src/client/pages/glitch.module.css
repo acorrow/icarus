@@ -57,33 +57,35 @@
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--glitch-color-background);
-  scrollbar-color: var(--glitch-color-scroll-thumb) var(--glitch-color-scroll-track);
-  scrollbar-width: thin;
 }
 
 .glitchScrollRegionClassic {
   background: #000;
-  scrollbar-color: var(--color-secondary) #000;
 }
 
 .glitchScrollRegion::-webkit-scrollbar {
-  width: 14px;
-  background-color: var(--glitch-color-scroll-track);
+  width: 16px;
 }
 
 .glitchScrollRegion::-webkit-scrollbar-track {
-  background: var(--glitch-color-scroll-track);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-scroll-thumb-border) 40%, transparent);
+  background-image: linear-gradient(
+    90deg,
+    transparent 41.67%,
+    var(--color-primary) 41.67%,
+    var(--color-primary) 50%,
+    transparent 50%,
+    transparent 91.67%,
+    var(--color-primary) 91.67%,
+    var(--color-primary) 100%
+  );
+  background-size: 48px 48px;
+  background-position-x: 10px;
 }
 
 .glitchScrollRegion::-webkit-scrollbar-thumb {
-  background: var(--glitch-color-scroll-thumb);
-  border: 1px solid var(--glitch-color-scroll-thumb-border);
-  box-shadow: 0 0 1.5rem color-mix(in srgb, var(--glitch-color-primary) 28%, transparent);
-}
-
-.glitchScrollRegion::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--glitch-color-scroll-thumb) 70%, var(--glitch-color-primary-light));
+  background: var(--color-primary);
+  min-height: 4rem;
+  box-shadow: 0 0 10px var(--color-primary-dark);
 }
 
 .glitch {
@@ -180,30 +182,31 @@
 .glitchPanel :global(.layout__panel-scroll) {
   padding: 0;
   background: var(--glitch-bg);
-  scrollbar-color: var(--glitch-scrollbar-thumb) var(--glitch-scrollbar-track);
-  scrollbar-width: thin;
 }
 
 .glitchPanel :global(.layout__panel-scroll::-webkit-scrollbar) {
-  width: 14px;
-  background-color: var(--glitch-scrollbar-track);
+  width: 16px;
 }
 
 .glitchPanel :global(.layout__panel-scroll::-webkit-scrollbar-track) {
-  background: var(--glitch-scrollbar-track);
-  border: 1px solid color-mix(in srgb, var(--glitch-scrollbar-thumb-border) 40%, transparent);
-  border-radius: 0;
+  background-image: linear-gradient(
+    90deg,
+    transparent 41.67%,
+    var(--color-primary) 41.67%,
+    var(--color-primary) 50%,
+    transparent 50%,
+    transparent 91.67%,
+    var(--color-primary) 91.67%,
+    var(--color-primary) 100%
+  );
+  background-size: 48px 48px;
+  background-position-x: 10px;
 }
 
 .glitchPanel :global(.layout__panel-scroll::-webkit-scrollbar-thumb) {
-  background: var(--glitch-scrollbar-thumb);
-  border: 1px solid var(--glitch-scrollbar-thumb-border);
-  border-radius: 0;
-  box-shadow: 0 0 1.5rem color-mix(in srgb, var(--glitch-color-primary) 28%, transparent);
-}
-
-.glitchPanel :global(.layout__panel-scroll::-webkit-scrollbar-thumb:hover) {
-  background: color-mix(in srgb, var(--glitch-scrollbar-thumb) 70%, var(--glitch-color-primary-light));
+  background: var(--color-primary);
+  min-height: 4rem;
+  box-shadow: 0 0 10px var(--color-primary-dark);
 }
 
 .arrival {
@@ -1194,28 +1197,31 @@ button.terminalStatusPreview:focus-visible {
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  scrollbar-width: thin;
-  scrollbar-color: var(--glitch-color-scroll-thumb) transparent;
 }
 
 .dataTableContainer::-webkit-scrollbar {
-  height: 12px;
-  background: transparent;
+  height: 16px;
 }
 
 .dataTableContainer::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--glitch-color-scroll-track) 80%, transparent);
-  border-radius: 999px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 41.67%,
+    var(--color-primary) 41.67%,
+    var(--color-primary) 50%,
+    transparent 50%,
+    transparent 91.67%,
+    var(--color-primary) 91.67%,
+    var(--color-primary) 100%
+  );
+  background-size: 48px 48px;
+  background-position-x: 10px;
 }
 
 .dataTableContainer::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--glitch-color-scroll-thumb) 88%, transparent);
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--glitch-color-scroll-thumb-border) 60%, transparent);
-}
-
-.dataTableContainer::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--glitch-color-scroll-thumb) 95%, transparent);
+  background: var(--color-primary);
+  min-height: 4rem;
+  box-shadow: 0 0 10px var(--color-primary-dark);
 }
 
 .tradeFiltersForm {
@@ -3180,28 +3186,31 @@ button.terminalStatusPreview:focus-visible {
   background: transparent;
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-color: var(--glitch-color-scroll-thumb) transparent;
-  scrollbar-width: thin;
 }
 
 .glitch :global(.glitch-panel-table > .scrollable::-webkit-scrollbar) {
-  height: 12px;
-  background: transparent;
+  height: 16px;
 }
 
 .glitch :global(.glitch-panel-table > .scrollable::-webkit-scrollbar-track) {
-  background: color-mix(in srgb, var(--glitch-color-scroll-track) 80%, transparent);
-  border-radius: 999px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 41.67%,
+    var(--color-primary) 41.67%,
+    var(--color-primary) 50%,
+    transparent 50%,
+    transparent 91.67%,
+    var(--color-primary) 91.67%,
+    var(--color-primary) 100%
+  );
+  background-size: 48px 48px;
+  background-position-x: 10px;
 }
 
 .glitch :global(.glitch-panel-table > .scrollable::-webkit-scrollbar-thumb) {
-  background: color-mix(in srgb, var(--glitch-color-scroll-thumb) 88%, transparent);
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--glitch-color-scroll-thumb-border) 60%, transparent);
-}
-
-.glitch :global(.glitch-panel-table > .scrollable::-webkit-scrollbar-thumb:hover) {
-  background: color-mix(in srgb, var(--glitch-color-scroll-thumb) 95%, transparent);
+  background: var(--color-primary);
+  min-height: 4rem;
+  box-shadow: 0 0 10px var(--color-primary-dark);
 }
 
 .glitch :global(.glitch-panel-table table thead) {

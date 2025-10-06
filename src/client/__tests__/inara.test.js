@@ -1,12 +1,12 @@
 import React from 'react'
 import { render, screen, act } from '@testing-library/react'
 import { getMockTokenBalanceSnapshot } from '../lib/inara-mock-data'
-import InaraPage, {
+import InaraStatusPage, {
   createTransactionSequence,
   createJackpotFloodConfig,
   TERMINAL_PROMPT_TYPE_CLASS_MAP,
   TERMINAL_TEXT_TYPE_CLASS_MAP
-} from '../pages/inara'
+} from '../pages/inara/status'
 import styles from '../pages/glitch.module.css'
 
 jest.mock('next/router', () => ({
@@ -43,7 +43,7 @@ describe('INARA page', () => {
   })
 
   it('renders without a hero summary or redundant page title', async () => {
-    await act(async () => { render(<InaraPage />) })
+    await act(async () => { render(<InaraStatusPage />) })
 
     expect(screen.queryByRole('heading', { level: 1, name: /inara operations/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
@@ -51,7 +51,7 @@ describe('INARA page', () => {
   })
 
   it('exposes key INARA panels for missions and mining', async () => {
-    await act(async () => { render(<InaraPage />) })
+    await act(async () => { render(<InaraStatusPage />) })
 
     expect(await screen.findByRole('heading', { name: /find trade routes/i })).toBeInTheDocument()
     expect(screen.getByText(/cross-reference inara freight whispers/i)).toBeInTheDocument()
@@ -60,7 +60,7 @@ describe('INARA page', () => {
   })
 
   it('renders the token console meter with request control', async () => {
-    await act(async () => { render(<InaraPage />) })
+    await act(async () => { render(<InaraStatusPage />) })
 
     expect(mockSendEvent).toHaveBeenCalledWith('getTokenBalance')
     expect(await screen.findByText(/tokens/i)).toBeInTheDocument()

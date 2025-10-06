@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import InaraPage from '../inara'
+import InaraStatusPage from './status'
 import {
   generateMockCurrentSystem,
   generateMockFactionStandingsResponse,
@@ -131,6 +131,6 @@ export default function InaraLayoutSandboxPage () {
     }
   }, [])
 
-  return <InaraPage />
+  return <InaraStatusPage />
 }
 
