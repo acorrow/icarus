@@ -46,6 +46,7 @@ const NAV_BUTTONS = [
 ]
 
 let IS_WINDOWS_APP = false
+const GHOSTNET_NAV_VISIBILITY_KEY = 'ghostnet.nav.visible'
 
 export default function Header ({ connected, active }) {
   const router = useRouter()
@@ -54,6 +55,7 @@ export default function Header ({ connected, active }) {
   const [isPinned, setIsPinned] = useState(false)
   const [notificationsVisible, setNotificationsVisible] = useState(socketOptions.notifications)
   const [settingsVisible, setSettingsVisible] = useState(false)
+  const [ghostnetButtonVisible, setGhostnetButtonVisible] = useState(true)
   const [titleChars, setTitleChars] = useState(ORIGINAL_TITLE.split(''))
   const [titleAssimilated, setTitleAssimilated] = useState(false)
   const titleAnimationState = useRef({ running: false, completed: false })
@@ -62,6 +64,17 @@ export default function Header ({ connected, active }) {
   const titleGlitchLoopTimeout = useRef(null)
   const titleGlitchRevertTimeouts = useRef([])
   const activeTitleGlitchIndices = useRef(new Set())
+  const restoreGhostnetButtonRef = useRef(null)
+  const ghostnetNavButtonRef = useRef(null)
+  const ghostnetVisibilityHydrated = useRef(false)
+  const persistGhostnetVisibility = useCallback((isVisible) => {
+    if (typeof window === 'undefined') return
+    try {
+      window.localStorage.setItem(GHOSTNET_NAV_VISIBILITY_KEY, isVisible ? 'true' : 'false')
+    } catch (err) {
+      // Ignore storage write issues
+    }
+  }, [])
   const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
   const isGhostnetRouteActive = currentPath === '/ghostnet'
 
@@ -184,6 +197,44 @@ export default function Header ({ connected, active }) {
     }
   }, [clearTitleGlitchTimeouts])
 
+  const scheduleFocus = useCallback((ref) => {
+    if (!ref) return
+    const setTimeoutFn = typeof window !== 'undefined' ? window.setTimeout : setTimeout
+    setTimeoutFn(() => {
+      if (ref.current && typeof ref.current.focus === 'function') {
+        ref.current.focus()
+      }
+    }, 0)
+  }, [])
+
+  const hideGhostnetNavButton = useCallback((event) => {
+    setGhostnetButtonVisible(false)
+    persistGhostnetVisibility(false)
+
+    const nativeEvent = event?.nativeEvent
+    const shouldFocusRestore = !nativeEvent || nativeEvent.detail === 0 || nativeEvent.pointerType === 'keyboard'
+
+    if (shouldFocusRestore) {
+      scheduleFocus(restoreGhostnetButtonRef)
+    } else if (event?.currentTarget && typeof event.currentTarget.blur === 'function') {
+      event.currentTarget.blur()
+    }
+  }, [persistGhostnetVisibility, scheduleFocus])
+
+  const showGhostnetNavButton = useCallback((event) => {
+    setGhostnetButtonVisible(true)
+    persistGhostnetVisibility(true)
+
+    const nativeEvent = event?.nativeEvent
+    const shouldFocusGhostnetNav = !nativeEvent || nativeEvent.detail === 0 || nativeEvent.pointerType === 'keyboard'
+
+    if (shouldFocusGhostnetNav) {
+      scheduleFocus(ghostnetNavButtonRef)
+    } else if (event?.currentTarget && typeof event.currentTarget.blur === 'function') {
+      event.currentTarget.blur()
+    }
+  }, [persistGhostnetVisibility, scheduleFocus])
+
   const startTitleMorph = useCallback(() => {
     if (titleAnimationState.current.running || titleAnimationState.current.completed) return
     clearTitleAnimationTimeouts()
@@ -293,6 +344,21 @@ export default function Header ({ connected, active }) {
   }, [])
 
   useEffect(() => {
+    if (typeof window === 'undefined' || ghostnetVisibilityHydrated.current) return undefined
+    try {
+      const storedVisibility = window.localStorage.getItem(GHOSTNET_NAV_VISIBILITY_KEY)
+      if (storedVisibility !== null) {
+        const isVisible = storedVisibility !== 'false'
+        setGhostnetButtonVisible(isVisible)
+      }
+    } catch (err) {
+      // Ignore storage access issues
+    }
+    ghostnetVisibilityHydrated.current = true
+    return undefined
+  }, [scheduleFocus])
+
+  useEffect(() => {
     return () => {
       clearTitleAnimationTimeouts()
       clearTitleGlitchTimeouts()
@@ -364,6 +430,8 @@ export default function Header ({ connected, active }) {
     router.push(path)
   }
 
+  const visibleNavButtons = (ghostnetButtonVisible ? NAV_BUTTONS : NAV_BUTTONS.filter(button => button.path !== '/ghostnet')).filter(Boolean)
+
   return (
     <header>
       <hr className='small' />
@@ -396,6 +464,19 @@ export default function Header ({ connected, active }) {
         </span>
       </h1>
       <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
+        {!ghostnetButtonVisible && (
+          <button
+            ref={restoreGhostnetButtonRef}
+            tabIndex='1'
+            onClick={(event) => showGhostnetNavButton(event)}
+            className='button--icon'
+            style={{ marginRight: '.5rem' }}
+            aria-label='Show GhostNet navigation'
+            title='Show GhostNet navigation'
+          >
+            <i className='icon icarus-terminal-warning' style={{ fontSize: '2rem' }} />
+          </button>
+        )}
         <p
           className='text-primary text-center text-uppercase'
           style={{ display: 'inline-block', padding: 0, margin: 0, lineHeight: '1rem', minWidth: '7.5rem' }}
@@ -434,20 +515,56 @@ export default function Header ({ connected, active }) {
       </div>
       <hr />
       <div id='primaryNavigation' className='button-group'>
-        {NAV_BUTTONS.filter(button => button).map((button, i) => {
+        {visibleNavButtons.map((button, i) => {
           const isActive = button.path === currentPath
           const isGhostNet = button.path === '/ghostnet'
           const exitActive = isGhostnetExitTransitionActive()
+
+          if (isGhostNet) {
+            return (
+              <div key={button.name} className='ghostnet-nav-button-wrapper'>
+                <button
+                  data-primary-navigation={i + 1}
+                  tabIndex='1'
+                  disabled={isActive || (isGhostNet && isGhostnetAssimilationActive()) || exitActive}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={[
+                    isActive ? 'button--active' : '',
+                    'ghostnet-nav-button'
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => handleNavigate(button.path)}
+                  style={{ fontSize: '1.5rem' }}
+                  ref={ghostnetNavButtonRef}
+                >
+                  <span className='visible-small'>{button.abbr}</span>
+                  <span className='hidden-small'>{button.name}</span>
+                </button>
+                <button
+                  type='button'
+                  className='ghostnet-nav-button__dismiss'
+                  aria-label='Hide GhostNet navigation'
+                  title='Hide GhostNet navigation'
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    event.preventDefault()
+                    hideGhostnetNavButton(event)
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            )
+          }
+
           return (
             <button
               key={button.name}
               data-primary-navigation={i + 1}
               tabIndex='1'
-              disabled={isActive || (isGhostNet && isGhostnetAssimilationActive()) || exitActive}
+              disabled={isActive || exitActive}
               aria-current={isActive ? 'page' : undefined}
               className={[
-                isActive ? 'button--active' : '',
-                isGhostNet ? 'ghostnet-nav-button' : ''
+                isActive ? 'button--active' : ''
               ].filter(Boolean).join(' ')}
               onClick={() => handleNavigate(button.path)}
               style={{ fontSize: '1.5rem' }}
