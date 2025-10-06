@@ -54,7 +54,7 @@ Code contributions, pull requests and bug reports are not currently being accept
 
 ## INARA Page
 
-ICARUS Terminal ships with a dedicated INARA page that pulls together trade, ship, mission and resource intel submitted by the INARA community. The page is accessible from the left-hand navigation inside the app (or directly at `/ghostnet` when running the web client) and currently provides:
+ICARUS Terminal ships with a dedicated INARA page that pulls together trade, ship, mission and resource intel submitted by the INARA community. The page is accessible from the left-hand navigation inside the app (or directly at `/inara` when running the web client) and currently provides:
 
 * **Ship availability search** – find stations selling a selected ship and view enriched details (distance, services, landing pads) from ICARUS's canonical data sets.
 * **Trade route scouting** – mirror INARA's public trade route search, including profit-per-trip and per-hour metrics, with an optional sandbox mode for layout testing.

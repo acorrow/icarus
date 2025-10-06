@@ -43,7 +43,7 @@ const NAV_BUTTONS = [
   {
     name: 'INARA',
     abbr: 'INARA',
-    path: '/ghostnet'
+    path: '/inara'
   },
   {
     name: 'Log',
@@ -72,7 +72,7 @@ export default function Header ({ connected, active }) {
   const titleGlitchRevertTimeouts = useRef([])
   const activeTitleGlitchIndices = useRef(new Set())
   const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
-  const isGhostnetRouteActive = currentPath === '/ghostnet'
+  const isGhostnetRouteActive = currentPath === '/inara'
 
   const clearTitleAnimationTimeouts = useCallback(() => {
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -396,12 +396,12 @@ export default function Header ({ connected, active }) {
   const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
 
   function handleNavigate (path) {
-    if (path === '/ghostnet') {
+    if (path === '/inara') {
       if (isGhostnetAssimilationActive()) return
       initiateGhostnetAssimilation(() => router.push(path))
       return
     }
-    if (currentPath === '/ghostnet') {
+    if (currentPath === '/inara') {
       if (isGhostnetExitTransitionActive()) return
       if (!ghostnetThemeEnabled) {
         router.push(path)
@@ -413,7 +413,7 @@ export default function Header ({ connected, active }) {
     router.push(path)
   }
 
-  const visibleNavButtons = (ghostnetButtonVisible ? NAV_BUTTONS : NAV_BUTTONS.filter(button => button.path !== '/ghostnet')).filter(Boolean)
+  const visibleNavButtons = (ghostnetButtonVisible ? NAV_BUTTONS : NAV_BUTTONS.filter(button => button.path !== '/inara')).filter(Boolean)
 
   return (
     <header>
@@ -487,7 +487,7 @@ export default function Header ({ connected, active }) {
       <div id='primaryNavigation' className='button-group'>
         {visibleNavButtons.map((button, i) => {
           const isActive = button.path === currentPath
-          const isINARA = button.path === '/ghostnet'
+          const isINARA = button.path === '/inara'
           const exitActive = isGhostnetExitTransitionActive()
 
           if (isINARA) {

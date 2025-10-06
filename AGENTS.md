@@ -101,7 +101,7 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - Treat `src/app` (Go launcher), `src/service` (Node backend), and `src/client` (Next/React UI) as separate concerns; the launcher expects the service binary in the same directory or it will exit on startup.
 
 ## INARA theming & asset references
-- Primary surfaces live in `src/client/pages/ghostnet.js` and `src/client/pages/ghostnet.module.css`; the hero animation draws from `src/client/public/ghostnet/signal-mesh.svg`.
+- Primary surfaces live in `src/client/pages/inara.js` and `src/client/pages/ghostnet.module.css`; the hero animation draws from `src/client/public/ghostnet/signal-mesh.svg`.
 - Jest + Testing Library smoke tests in `src/client/__tests__/ghostnet.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
 - Maintain the Ghost Net copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `GhostnetPage`; update both arrays to keep the loop seamless.
 - When undoing Ghost Net changes, delete `ghostnet.module.css`, the asset folder (`src/client/public/ghostnet/`), and associated imports, then remove the Jest configuration and dependencies if the testing stack is no longer desired.
@@ -145,7 +145,7 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 ## Repository orientation
 - **`src/app/` (Go)** – Windows-native bootstrapper responsible for creating the launcher/terminal window, spawning the Node service, and monitoring lifecycle state. Keep this layer focused on window management, updater orchestration, and save-game directory discovery (`main.go`, `execute.go`, `updater.go`).
 - **`src/service/` (Node)** – Backend process that tails Elite Dangerous journal files, normalizes live JSON telemetry, and exposes both HTTP endpoints and a WebSocket bridge. `main.js` wires up static asset serving, dev proxying, and the WebSocket server; `lib/events.js` binds log readers and publishes broadcast events.
-- **`src/client/` (Next/React)** – Browser UI for ICARUS/INARA. Components in `components/` provide shared layout primitives, while `pages/` contain route-specific views (including the monolithic `ghostnet.js`). CSS modules live alongside their consumers.
+- **`src/client/` (Next/React)** – Browser UI for ICARUS/INARA. Components in `components/` provide shared layout primitives, while `pages/` contain route-specific views (including the monolithic `inara.js`). CSS modules live alongside their consumers.
 - **`src/service/lib/event-handlers/`** – Domain-specific modules that respond to ingested journal/state changes. They form the authoritative source for Commander/system data queried by INARA panels (e.g., ship inventory, mission caches, route lookup helpers).
 - **`resources/mock-game-data/`** – Development fixtures consumed when the service cannot reach real journal directories. Respect the `USING_MOCK_DATA` guard so the UI clearly communicates when mock values drive results.
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import GhostnetPage from '../ghostnet'
+import GhostnetPage from '../inara'
 import {
   generateMockCurrentSystem,
   generateMockFactionStandingsResponse,

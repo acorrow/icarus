@@ -7,18 +7,18 @@ const navItems = [
   {
     name: 'Search',
     icon: 'search',
-    url: '/ghostnet/search',
-    active: true
+    url: '/inara/search',
+    active: false
   },
   {
     name: 'Outfitting',
     icon: 'wrench',
-    url: '/ghostnet/outfitting',
-    active: false
+    url: '/inara/outfitting',
+    active: true
   }
 ]
 
-export default function GhostnetSearchPage() {
+export default function GhostnetOutfittingPage () {
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
     document.body.classList.add('ghostnet-theme')
@@ -31,15 +31,15 @@ export default function GhostnetSearchPage() {
         <div className={styles.ghostnet}>
           <div className={styles.hero}>
             <div className={styles.heroHeader}>
-              <h1 className={styles.heroTitle}>Signal Search</h1>
+              <h1 className={styles.heroTitle}>Outfitting Tools</h1>
               <p className={styles.heroSubtitle}>
-                Global lookup is recalibrating to the new assimilation backbone. Search returns soon.
+                Ship build intelligence is in fabrication. Stay tuned for modular loadouts and curated upgrade paths.
               </p>
             </div>
           </div>
 
           <div className={styles.shell}>
-            <div className={styles.placeholder}>General search is temporarily disabled.</div>
+            <div className={styles.placeholder}>Outfitting consoles are coming online soon.</div>
           </div>
         </div>
       </Panel>

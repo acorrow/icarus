@@ -6,12 +6,12 @@ import GhostnetPage, {
   createJackpotFloodConfig,
   TERMINAL_PROMPT_TYPE_CLASS_MAP,
   TERMINAL_TEXT_TYPE_CLASS_MAP
-} from '../pages/ghostnet'
+} from '../pages/inara'
 import styles from '../pages/ghostnet.module.css'
 
 jest.mock('next/router', () => ({
   useRouter: () => ({
-    pathname: '/ghostnet',
+    pathname: '/inara',
     push: jest.fn()
   })
 }))
