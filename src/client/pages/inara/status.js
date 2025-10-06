@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, Fragment } from 'react'
-import Layout from '../components/layout'
-import Panel from '../components/panel'
-import PanelNavigation from '../components/panel-navigation'
-import Icons from '../lib/icons'
-import TransferContextSummary from '../components/panels/inara/transfer-context-summary'
-import StationSummary, { StationIcon, DemandIndicator } from '../components/panels/inara/station-summary'
-import CommoditySummary, { CommodityIcon } from '../components/panels/inara/commodity-summary'
-import CopyOnClick from '../components/copy-on-click'
-import PirateRadioPanel from '../components/panels/inara/pirate-radio'
-import NavigationInspectorPanel from '../components/panels/nav/navigation-inspector-panel'
-import animateTableEffect from '../lib/animate-table-effect'
-import { useSocket, sendEvent, eventListener } from '../lib/socket'
-import { getShipLandingPadSize } from '../lib/ship-pad-sizes'
-import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from '../lib/inara-formatters'
-import getDistanceSeverityColor from '../lib/distance-colors'
-import { sanitizeInaraText } from '../lib/sanitize-inara-text'
-import { stationIconFromType, getStationIconName } from '../lib/station-icons'
-import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/inara-mock-data'
-import { getInaraStrings, getInaraString } from '../lib/inara-addon'
-import { isGlitchThemeEnabled, addGlitchThemeChangeListener, THEME_STORAGE_KEY } from '../lib/glitch-settings'
-import styles from './glitch.module.css'
+import Layout from 'components/layout'
+import Panel from 'components/panel'
+import Icons from 'lib/icons'
+import TransferContextSummary from 'components/panels/inara/transfer-context-summary'
+import StationSummary, { StationIcon, DemandIndicator } from 'components/panels/inara/station-summary'
+import CommoditySummary, { CommodityIcon } from 'components/panels/inara/commodity-summary'
+import CopyOnClick from 'components/copy-on-click'
+import PirateRadioPanel from 'components/panels/inara/pirate-radio'
+import NavigationInspectorPanel from 'components/panels/nav/navigation-inspector-panel'
+import animateTableEffect from 'lib/animate-table-effect'
+import { useSocket, sendEvent, eventListener } from 'lib/socket'
+import { getShipLandingPadSize } from 'lib/ship-pad-sizes'
+import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from 'lib/inara-formatters'
+import getDistanceSeverityColor from 'lib/distance-colors'
+import { sanitizeInaraText } from 'lib/sanitize-inara-text'
+import { stationIconFromType, getStationIconName } from 'lib/station-icons'
+import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from 'lib/inara-mock-data'
+import { getInaraStrings, getInaraString } from 'lib/inara-addon'
+import { isGlitchThemeEnabled, addGlitchThemeChangeListener, THEME_STORAGE_KEY } from 'lib/glitch-settings'
+import { InaraPanelNavItems } from 'lib/navigation-items'
+import styles from '../glitch.module.css'
 
 const METRIC_VARIANT_CLASS_MAP = {
   neutral: styles.metricChipNeutral,
@@ -7017,7 +7017,7 @@ function InaraTerminalOverlay () {
   )
 }
 
-export default function InaraPage() {
+export default function InaraStatusPage () {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [tradeRoutesStatus, setTradeRoutesStatus] = useState('idle')
   const [arrivalMode, setArrivalMode] = useState(false)
@@ -7079,63 +7079,58 @@ export default function InaraPage() {
       }
     }
   }, [])
-  const inaraTabs = useMemo(() => ([
-    { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
-    { name: 'Cargo Hold', icon: 'cargo', active: activeTab === 'cargoHold', onClick: () => setActiveTab('cargoHold') },
-    { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
-    { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
-    { name: 'Pirate Radio', icon: 'signal', active: activeTab === 'pirateRadio', onClick: () => setActiveTab('pirateRadio') },
-    { name: 'Search', icon: 'search', type: 'SEARCH', active: false }
-
-  ]), [activeTab])
+  const inaraTabs = useMemo(() => {
+    const panelItems = [
+      { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
+      { name: 'Cargo Hold', icon: 'cargo', active: activeTab === 'cargoHold', onClick: () => setActiveTab('cargoHold') },
+      { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
+      { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
+      { name: 'Pirate Radio', icon: 'signal', active: activeTab === 'pirateRadio', onClick: () => setActiveTab('pirateRadio') }
+    ]
+    const sharedNavItems = InaraPanelNavItems('Status').filter(item => item.name !== 'Status')
+    return [...panelItems, ...sharedNavItems]
+  }, [activeTab])
 
   const glitchClassName = [
     styles.glitch,
     arrivalMode ? styles.arrival : '',
     themeEnabled ? '' : styles.glitchIcarus
   ].filter(Boolean).join(' ')
-  const navigationClassName = [
-    styles.glitchNavigation,
-    themeEnabled ? '' : styles.glitchNavigationClassic
-  ].filter(Boolean).join(' ')
-  const scrollRegionClassName = [
-    styles.glitchScrollRegion,
-    themeEnabled ? '' : styles.glitchScrollRegionClassic
-  ].filter(Boolean).join(' ')
+
   const loaderVisible = activeTab === 'tradeRoutes' && tradeRoutesStatus === 'loading'
+
   return (
     <Layout connected={connected} active={socketActive} ready={ready} loader={loaderVisible} className={styles.glitchLayout}>
-      <div className={styles.glitchViewport}>
-        <div className={navigationClassName}>
-          <PanelNavigation items={inaraTabs} search={false} />
-        </div>
-        <div className={styles.glitchContentArea}>
-          <div className={scrollRegionClassName}>
-            <div className={glitchClassName}>
-              <div className={styles.shell}>
-                <div className={styles.tabPanels}>
-                  <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
-                    <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
-                  </div>
-                  <div style={{ display: activeTab === 'cargoHold' ? 'block' : 'none' }}>
-                    <CargoHoldPanel />
-                  </div>
-                  <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
-                    <MissionsPanel />
-                  </div>
-                  <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
-                    <PristineMiningPanel />
-                  </div>
-                  <div style={{ display: activeTab === 'pirateRadio' ? 'block' : 'none' }}>
-                    <PirateRadioPanel />
-                  </div>
-                </div>
+      <Panel
+        layout='full-width'
+        scrollable
+        navigation={inaraTabs}
+        search={false}
+        className={styles.glitchPanel}
+      >
+        <div className={glitchClassName}>
+          <div className={styles.shell}>
+            <div className={styles.tabPanels}>
+              <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+                <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
               </div>
-              <InaraTerminalOverlay />
+              <div style={{ display: activeTab === 'cargoHold' ? 'block' : 'none' }}>
+                <CargoHoldPanel />
+              </div>
+              <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
+                <MissionsPanel />
+              </div>
+              <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
+                <PristineMiningPanel />
+              </div>
+              <div style={{ display: activeTab === 'pirateRadio' ? 'block' : 'none' }}>
+                <PirateRadioPanel />
+              </div>
             </div>
           </div>
+          <InaraTerminalOverlay />
         </div>
-      </div>
+      </Panel>
     </Layout>
   )
 }

@@ -65,6 +65,32 @@ function NavPanelNavItems (activePanel, query) {
   return navigationItems
 }
 
+function InaraPanelNavItems (activePanel) {
+  const navigationItems = [
+    {
+      name: 'Status',
+      icon: 'route',
+      url: '/inara/status'
+    },
+    {
+      name: 'Search',
+      icon: 'search',
+      url: '/inara/search'
+    },
+    {
+      name: 'Outfitting',
+      icon: 'wrench',
+      url: '/inara/outfitting'
+    }
+  ]
+
+  navigationItems.forEach(item => {
+    if (item.name.toLowerCase() === activePanel.toLowerCase()) item.active = true
+  })
+
+  return navigationItems
+}
+
 function EngineeringPanelNavItems (activePanel) {
   const navigationItems = [
     {
@@ -128,6 +154,7 @@ function SettingsNavItems (activePanel) {
 module.exports = {
   ShipPanelNavItems,
   NavPanelNavItems,
+  InaraPanelNavItems,
   EngineeringPanelNavItems,
   SettingsNavItems
 }
