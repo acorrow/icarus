@@ -2136,12 +2136,12 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteCommodityRow {
   display: grid;
-  grid-template-columns: minmax(2.1rem, auto) minmax(0, 1fr) max-content;
+  grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
   gap: 0.35rem;
   min-width: 0;
   position: relative;
-  padding: 0.4rem 0.6rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 0.75rem;
   overflow: hidden;
   z-index: 0;
@@ -2200,20 +2200,12 @@ button.terminalStatusPreview:focus-visible {
   --trade-route-flow-fill: rgba(255, 95, 193, 0.52);
 }
 
-.tradeRouteCommodityIcon {
-  grid-column: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ghostnet-accent);
-  justify-self: center;
-}
-
 .tradeRouteCommodityName {
-  grid-column: 2;
+  grid-column: 1;
   font-size: 1rem;
   font-weight: 600;
   color: var(--ghostnet-ink);
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   min-width: 0;
@@ -2222,7 +2214,7 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteCommodityPrice {
-  grid-column: 3;
+  grid-column: 2;
   color: var(--ghostnet-text-soft);
   font-size: 0.9rem;
   white-space: nowrap;
