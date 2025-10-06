@@ -2,6 +2,7 @@ import {
   isGhostnetTokenCurrencyEnabled,
   isTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
+  isGhostnetThemeToggleEnabled,
   _private as featureFlagInternals
 } from '../../../shared/feature-flags.js'
 
@@ -28,6 +29,13 @@ const FLAG_DEFINITIONS = [
     description: 'Retains the legacy negative-balance recovery schedule for the INARA token ledger.',
     resolver: isTokenRecoveryCompatibilityEnabled,
     defaultValue: true
+  },
+  {
+    key: 'ghostnetThemeToggleEnabled',
+    label: 'GhostNet Theme Toggle',
+    description: 'Allows commanders to enable the immersive GhostNet visual theme from the settings modal.',
+    resolver: isGhostnetThemeToggleEnabled,
+    defaultValue: false
   }
 ]
 

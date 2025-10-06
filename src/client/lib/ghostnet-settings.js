@@ -6,6 +6,16 @@ export const THEME_STORAGE_KEY = 'ghostnetThemeEnabled'
 export const GHOSTNET_NAV_VISIBILITY_KEY = 'ghostnet.nav.visible'
 const THEME_CHANGE_EVENT = 'ghostnetThemeChange'
 const NAV_VISIBILITY_CHANGE_EVENT = 'ghostnetNavVisibilityChange'
+const THEME_TOGGLE_DATASET_KEY = 'ghostnetThemeToggleEnabled'
+
+export function isGhostnetThemeToggleAvailable () {
+  if (typeof document === 'undefined' || !document?.documentElement) return false
+  const datasetValue = document.documentElement.dataset?.[THEME_TOGGLE_DATASET_KEY]
+  if (typeof datasetValue === 'string') {
+    return datasetValue === 'true'
+  }
+  return false
+}
 
 function clampDuration (value) {
   if (!Number.isFinite(value)) return ASSIMILATION_DURATION_DEFAULT
@@ -41,31 +51,44 @@ export function saveAssimilationDurationSeconds (value) {
 }
 
 export function isGhostnetThemeEnabled () {
-  if (typeof window === 'undefined' || !window.localStorage) return true
+  if (!isGhostnetThemeToggleAvailable()) {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem(THEME_STORAGE_KEY, 'false')
+      } catch (error) {
+        // Ignore storage write failures when enforcing the default theme
+      }
+    }
+    return false
+  }
+
+  if (typeof window === 'undefined' || !window.localStorage) return false
 
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
-    if (stored === null) return true
+    if (stored === null) return false
     return stored !== 'false'
   } catch (error) {
-    return true
+    return false
   }
 }
 
 export function saveGhostnetThemeEnabled (value) {
+  const sanitized = isGhostnetThemeToggleAvailable() && !!value
+
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, value ? 'true' : 'false')
+      window.localStorage.setItem(THEME_STORAGE_KEY, sanitized ? 'true' : 'false')
     } catch (error) {
       // Ignore write failures
     }
     try {
-      window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: { enabled: !!value } }))
+      window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: { enabled: sanitized } }))
     } catch (error) {
       // Ignore dispatch failures
     }
   }
-  return !!value
+  return sanitized
 }
 
 export function addGhostnetThemeChangeListener (listener) {

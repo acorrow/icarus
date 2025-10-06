@@ -6807,7 +6807,7 @@ export default function GhostnetPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [arrivalMode, setArrivalMode] = useState(false)
   const [themeEnabled, setThemeEnabled] = useState(() => {
-    if (typeof window === 'undefined') return true
+    if (typeof window === 'undefined') return false
     return isGhostnetThemeEnabled()
   })
   const { connected, ready, active: socketActive } = useSocket()

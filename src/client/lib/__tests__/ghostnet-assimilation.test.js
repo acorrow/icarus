@@ -16,6 +16,10 @@ const mockRect = (element, rect) => {
 }
 
 describe('ghostnet assimilation opt-out', () => {
+  beforeEach(() => {
+    document.documentElement.dataset.ghostnetThemeToggleEnabled = 'true'
+  })
+
   afterEach(() => {
     jest.clearAllTimers()
     jest.useRealTimers()
@@ -24,10 +28,15 @@ describe('ghostnet assimilation opt-out', () => {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.clear()
     }
+    delete document.documentElement.dataset.ghostnetThemeToggleEnabled
   })
 
   it('does not assimilate nodes inside data-no-assimilation containers', () => {
     jest.useFakeTimers()
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('ghostnetThemeEnabled', 'true')
+    }
 
     render(
       <div>
@@ -79,6 +88,29 @@ describe('ghostnet assimilation opt-out', () => {
 
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem('ghostnetThemeEnabled', 'false')
+    }
+
+    const callback = jest.fn()
+
+    act(() => {
+      initiateGhostnetAssimilation(callback)
+    })
+
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(document.body.classList.contains('ghostnet-assimilation-mode')).toBe(false)
+
+    act(() => {
+      jest.runAllTimers()
+    })
+  })
+
+  it('skips assimilation when the GhostNet theme toggle flag is disabled', () => {
+    jest.useFakeTimers()
+
+    document.documentElement.dataset.ghostnetThemeToggleEnabled = 'false'
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('ghostnetThemeEnabled', 'true')
     }
 
     const callback = jest.fn()

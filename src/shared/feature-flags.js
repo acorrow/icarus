@@ -51,9 +51,14 @@ function isTokenRecoveryCompatibilityEnabled (env = process.env) {
   return resolveFlag('ghostnetTokenRecoveryCompatEnabled', env)
 }
 
+function isGhostnetThemeToggleEnabled (env = process.env) {
+  return resolveFlag('ghostnetThemeToggleEnabled', env)
+}
+
 module.exports = {
   isGhostnetTokenCurrencyEnabled,
   isTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
+  isGhostnetThemeToggleEnabled,
   _private: { normalizeFlagValue, resolveFlag, hasFlagKey }
 }
