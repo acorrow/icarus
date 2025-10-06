@@ -2,12 +2,12 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 import EliteLog from '../../../service/lib/elite-log.js'
-import { appendGhostnetLogEntry } from './ghostnet-log-utils.js'
+import { appendGlitchLogEntry } from './glitch-log-utils.js'
 
-const logPath = path.join(process.cwd(), 'ghostnet-trade-routes.log')
+const logPath = path.join(process.cwd(), 'glitch-trade-routes.log')
 
 function logFactionStandings (entry) {
-  appendGhostnetLogEntry(logPath, entry)
+  appendGlitchLogEntry(logPath, entry)
 }
 
 function resolveLogDir () {

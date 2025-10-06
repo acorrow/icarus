@@ -7,16 +7,16 @@ import {
   ASSIMILATION_DURATION_DEFAULT,
   getAssimilationDurationSeconds,
   saveAssimilationDurationSeconds,
-  isGhostnetThemeEnabled,
-  saveGhostnetThemeEnabled,
-  addGhostnetThemeChangeListener,
-  isGhostnetThemeToggleAvailable,
+  isGlitchThemeEnabled,
+  saveGlitchThemeEnabled,
+  addGlitchThemeChangeListener,
+  isGlitchThemeToggleAvailable,
   THEME_STORAGE_KEY,
-  isGhostnetNavVisible,
-  saveGhostnetNavVisible,
-  addGhostnetNavVisibilityListener,
-  GHOSTNET_NAV_VISIBILITY_KEY
-} from 'lib/ghostnet-settings'
+  isGlitchNavVisible,
+  saveGlitchNavVisible,
+  addGlitchNavVisibilityListener,
+  GLITCH_NAV_VISIBILITY_KEY
+} from 'lib/glitch-settings'
 import packageJson from '../../../package.json'
 
 function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPanel = 'Theme' }) {
@@ -79,7 +79,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         {activeSettingsPanel === 'Theme' && <ThemeSettings visible={visible} />}
         {activeSettingsPanel === 'Sounds' && <SoundSettings visible={visible} />}
         {activeSettingsPanel === 'Feature Flags' && <FeatureFlagSettings />}
-        {activeSettingsPanel === 'INARA' && <GhostnetSettings />}
+        {activeSettingsPanel === 'INARA' && <GlitchSettings />}
         <div className='modal-dialog__footer'>
           <hr style={{ margin: '1rem 0 .5rem 0' }} />
           <button className='float-right' onClick={toggleVisible}>
@@ -91,15 +91,15 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
   )
 }
 
-function GhostnetSettings () {
+function GlitchSettings () {
   const [useMockData, setUseMockData] = useState(false)
   const [assimilationDuration, setAssimilationDuration] = useState(ASSIMILATION_DURATION_DEFAULT)
   const [saved, setSaved] = useState(false)
-  const [ghostnetNavVisible, setGhostnetNavVisible] = useState(() => isGhostnetNavVisible())
+  const [glitchNavVisible, setGlitchNavVisible] = useState(() => isGlitchNavVisible())
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setUseMockData(window.localStorage.getItem('ghostnetUseMockData') === 'true')
+      setUseMockData(window.localStorage.getItem('glitchUseMockData') === 'true')
     }
     setAssimilationDuration(getAssimilationDurationSeconds())
   }, [])
@@ -108,12 +108,12 @@ function GhostnetSettings () {
     if (typeof window === 'undefined') return undefined
 
     const handleStorage = (event) => {
-      if (event.key === GHOSTNET_NAV_VISIBILITY_KEY) {
-        setGhostnetNavVisible(isGhostnetNavVisible())
+      if (event.key === GLITCH_NAV_VISIBILITY_KEY) {
+        setGlitchNavVisible(isGlitchNavVisible())
       }
     }
 
-    const removeListener = addGhostnetNavVisibilityListener(setGhostnetNavVisible)
+    const removeListener = addGlitchNavVisibilityListener(setGlitchNavVisible)
     window.addEventListener('storage', handleStorage)
 
     return () => {
@@ -125,7 +125,7 @@ function GhostnetSettings () {
   function handleSave(e) {
     e.preventDefault()
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('ghostnetUseMockData', useMockData ? 'true' : 'false')
+      window.localStorage.setItem('glitchUseMockData', useMockData ? 'true' : 'false')
     }
     const sanitizedDuration = saveAssimilationDurationSeconds(assimilationDuration)
     setAssimilationDuration(sanitizedDuration)
@@ -139,10 +139,10 @@ function GhostnetSettings () {
       <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0 0 1.25rem 0', fontSize: '1rem' }}>
         <input
           type='checkbox'
-          checked={ghostnetNavVisible}
+          checked={glitchNavVisible}
           onChange={(event) => {
-            const sanitized = saveGhostnetNavVisible(event.target.checked)
-            setGhostnetNavVisible(sanitized)
+            const sanitized = saveGlitchNavVisible(event.target.checked)
+            setGlitchNavVisible(sanitized)
           }}
         />
         <span>
@@ -165,11 +165,11 @@ function GhostnetSettings () {
           </span>
         </label>
         <div style={{ marginBottom: '1.5rem' }}>
-          <label htmlFor='ghostnet-assimilation-duration' className='text-primary' style={{ display: 'block', marginBottom: '.5rem' }}>
+          <label htmlFor='glitch-assimilation-duration' className='text-primary' style={{ display: 'block', marginBottom: '.5rem' }}>
             INARA assimilation transition length
           </label>
           <input
-            id='ghostnet-assimilation-duration'
+            id='glitch-assimilation-duration'
             type='range'
             min={ASSIMILATION_DURATION_MIN}
             max={ASSIMILATION_DURATION_MAX}
@@ -355,8 +355,8 @@ function ThemeSettings () {
   const [primaryColorModifier, setPrimaryColorModifier] = useState(getPrimaryColorModifier())
   const [secondaryColor, setSecondaryColor] = useState(getSecondaryColorAsHex())
   const [secondaryColorModifier, setSecondaryColorModifier] = useState(getSecondaryColorModifier())
-  const [ghostnetThemeEnabled, setGhostnetThemeEnabled] = useState(() => isGhostnetThemeEnabled())
-  const [themeToggleAvailable, setThemeToggleAvailable] = useState(() => isGhostnetThemeToggleAvailable())
+  const [glitchThemeEnabled, setGlitchThemeEnabled] = useState(() => isGlitchThemeEnabled())
+  const [themeToggleAvailable, setThemeToggleAvailable] = useState(() => isGlitchThemeToggleAvailable())
 
   // Update this component if another window updates the theme settings
   const storageEventHandler = (event) => {
@@ -375,7 +375,7 @@ function ThemeSettings () {
   }, [])
 
   useEffect(() => {
-    setThemeToggleAvailable(isGhostnetThemeToggleAvailable())
+    setThemeToggleAvailable(isGlitchThemeToggleAvailable())
   }, [])
 
   useEffect(() => eventListener('syncMessage', async (event) => {
@@ -392,11 +392,11 @@ function ThemeSettings () {
 
     const handleThemeStorage = (event) => {
       if (event.key === THEME_STORAGE_KEY) {
-        setGhostnetThemeEnabled(isGhostnetThemeEnabled())
+        setGlitchThemeEnabled(isGlitchThemeEnabled())
       }
     }
 
-    const removeListener = addGhostnetThemeChangeListener(setGhostnetThemeEnabled)
+    const removeListener = addGlitchThemeChangeListener(setGlitchThemeEnabled)
     window.addEventListener('storage', handleThemeStorage)
 
     return () => {
@@ -548,15 +548,15 @@ function ThemeSettings () {
       <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', fontSize: '1rem' }}>
         <input
           type='checkbox'
-          checked={ghostnetThemeEnabled}
+          checked={glitchThemeEnabled}
           disabled={!themeToggleAvailable}
           onChange={(event) => {
-            const sanitized = saveGhostnetThemeEnabled(event.target.checked)
-            setGhostnetThemeEnabled(sanitized)
+            const sanitized = saveGlitchThemeEnabled(event.target.checked)
+            setGlitchThemeEnabled(sanitized)
           }}
         />
         <span>
-          Use GhostNet Theme
+          Use Glitch Theme
         </span>
       </label>
       <p className='text-muted' style={{ marginTop: 0, fontSize: '.95rem' }}>
@@ -564,7 +564,7 @@ function ThemeSettings () {
       </p>
       {!themeToggleAvailable && (
         <p className='text-muted' style={{ marginTop: '-0.35rem', fontSize: '.95rem' }}>
-          The GhostNet theme toggle is disabled for this deployment, so the classic ICARUS theme remains active by default.
+          The Glitch theme toggle is disabled for this deployment, so the classic ICARUS theme remains active by default.
         </p>
       )}
     </div>

@@ -5,16 +5,16 @@ import { isWindowFullScreen, isWindowPinned, toggleFullScreen, togglePinWindow }
 import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
-import { initiateGhostnetAssimilation, isGhostnetAssimilationActive, GHOSTNET_ASSIMILATION_EVENT } from 'lib/ghostnet-assimilation'
-import { initiateGhostnetExitTransition, isGhostnetExitTransitionActive } from 'lib/ghostnet-exit-transition'
+import { initiateGlitchAssimilation, isGlitchAssimilationActive, GLITCH_ASSIMILATION_EVENT } from 'lib/glitch-assimilation'
+import { initiateGlitchExitTransition, isGlitchExitTransitionActive } from 'lib/glitch-exit-transition'
 import {
-  isGhostnetThemeEnabled,
-  addGhostnetThemeChangeListener,
+  isGlitchThemeEnabled,
+  addGlitchThemeChangeListener,
   THEME_STORAGE_KEY,
-  isGhostnetNavVisible,
-  addGhostnetNavVisibilityListener,
-  GHOSTNET_NAV_VISIBILITY_KEY
-} from 'lib/ghostnet-settings'
+  isGlitchNavVisible,
+  addGlitchNavVisibilityListener,
+  GLITCH_NAV_VISIBILITY_KEY
+} from 'lib/glitch-settings'
 
 const ORIGINAL_TITLE = 'ICARUS TERMINAL'
 const TARGET_TITLE = 'INARA-ATLAS'
@@ -61,8 +61,8 @@ export default function Header ({ connected, active }) {
   const [isPinned, setIsPinned] = useState(false)
   const [notificationsVisible, setNotificationsVisible] = useState(socketOptions.notifications)
   const [settingsVisible, setSettingsVisible] = useState(false)
-  const [ghostnetButtonVisible, setGhostnetButtonVisible] = useState(() => isGhostnetNavVisible())
-  const [ghostnetThemeEnabled, setGhostnetThemeEnabled] = useState(() => isGhostnetThemeEnabled())
+  const [glitchButtonVisible, setGlitchButtonVisible] = useState(() => isGlitchNavVisible())
+  const [glitchThemeEnabled, setGlitchThemeEnabled] = useState(() => isGlitchThemeEnabled())
   const [titleChars, setTitleChars] = useState(ORIGINAL_TITLE.split(''))
   const [titleAssimilated, setTitleAssimilated] = useState(false)
   const titleAnimationState = useRef({ running: false, completed: false })
@@ -72,7 +72,7 @@ export default function Header ({ connected, active }) {
   const titleGlitchRevertTimeouts = useRef([])
   const activeTitleGlitchIndices = useRef(new Set())
   const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
-  const isGhostnetRouteActive = currentPath === '/inara'
+  const isGlitchRouteActive = currentPath === '/inara'
 
   const clearTitleAnimationTimeouts = useCallback(() => {
     const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
@@ -306,11 +306,11 @@ export default function Header ({ connected, active }) {
 
     const handleThemeStorage = (event) => {
       if (event.key === THEME_STORAGE_KEY) {
-        setGhostnetThemeEnabled(isGhostnetThemeEnabled())
+        setGlitchThemeEnabled(isGlitchThemeEnabled())
       }
     }
 
-    const removeListener = addGhostnetThemeChangeListener(setGhostnetThemeEnabled)
+    const removeListener = addGlitchThemeChangeListener(setGlitchThemeEnabled)
     window.addEventListener('storage', handleThemeStorage)
 
     return () => {
@@ -323,12 +323,12 @@ export default function Header ({ connected, active }) {
     if (typeof window === 'undefined') return undefined
 
     const handleStorage = (event) => {
-      if (event.key === GHOSTNET_NAV_VISIBILITY_KEY) {
-        setGhostnetButtonVisible(isGhostnetNavVisible())
+      if (event.key === GLITCH_NAV_VISIBILITY_KEY) {
+        setGlitchButtonVisible(isGlitchNavVisible())
       }
     }
 
-    const removeListener = addGhostnetNavVisibilityListener(setGhostnetButtonVisible)
+    const removeListener = addGlitchNavVisibilityListener(setGlitchButtonVisible)
     window.addEventListener('storage', handleStorage)
 
     return () => {
@@ -347,7 +347,7 @@ export default function Header ({ connected, active }) {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
     try {
-      if (window.sessionStorage && window.sessionStorage.getItem('ghostnet.assimilationArrival')) {
+      if (window.sessionStorage && window.sessionStorage.getItem('glitch.assimilationArrival')) {
         const targetChars = getTargetTitleChars()
         setTitleChars(targetChars)
         titleAnimationState.current.completed = true
@@ -359,19 +359,19 @@ export default function Header ({ connected, active }) {
     const handleAssimilation = () => {
       startTitleMorph()
     }
-    window.addEventListener(GHOSTNET_ASSIMILATION_EVENT, handleAssimilation)
-    if (isGhostnetAssimilationActive()) {
+    window.addEventListener(GLITCH_ASSIMILATION_EVENT, handleAssimilation)
+    if (isGlitchAssimilationActive()) {
       startTitleMorph()
     }
     return () => {
-      window.removeEventListener(GHOSTNET_ASSIMILATION_EVENT, handleAssimilation)
+      window.removeEventListener(GLITCH_ASSIMILATION_EVENT, handleAssimilation)
     }
   }, [startTitleMorph])
 
   useEffect(() => {
     if (!titleAssimilated) return undefined
 
-    if (isGhostnetRouteActive) {
+    if (isGlitchRouteActive) {
       startTitleGlitching()
       return () => {
         stopTitleGlitching(true)
@@ -380,7 +380,7 @@ export default function Header ({ connected, active }) {
 
     stopTitleGlitching(true)
     return undefined
-  }, [isGhostnetRouteActive, startTitleGlitching, stopTitleGlitching, titleAssimilated])
+  }, [isGlitchRouteActive, startTitleGlitching, stopTitleGlitching, titleAssimilated])
 
   let signalClassName = 'icon icarus-terminal-signal '
   if (!connected) {
@@ -397,23 +397,23 @@ export default function Header ({ connected, active }) {
 
   function handleNavigate (path) {
     if (path === '/inara') {
-      if (isGhostnetAssimilationActive()) return
-      initiateGhostnetAssimilation(() => router.push(path))
+      if (isGlitchAssimilationActive()) return
+      initiateGlitchAssimilation(() => router.push(path))
       return
     }
     if (currentPath === '/inara') {
-      if (isGhostnetExitTransitionActive()) return
-      if (!ghostnetThemeEnabled) {
+      if (isGlitchExitTransitionActive()) return
+      if (!glitchThemeEnabled) {
         router.push(path)
         return
       }
-      initiateGhostnetExitTransition(() => router.push(path))
+      initiateGlitchExitTransition(() => router.push(path))
       return
     }
     router.push(path)
   }
 
-  const visibleNavButtons = (ghostnetButtonVisible ? NAV_BUTTONS : NAV_BUTTONS.filter(button => button.path !== '/inara')).filter(Boolean)
+  const visibleNavButtons = (glitchButtonVisible ? NAV_BUTTONS : NAV_BUTTONS.filter(button => button.path !== '/inara')).filter(Boolean)
 
   return (
     <header>
@@ -421,18 +421,18 @@ export default function Header ({ connected, active }) {
       <h1 className='text-info' style={{ padding: '.6rem 0 .25rem 3.75rem' }}>
         <i className='icon icarus-terminal-logo' style={{ position: 'absolute', fontSize: '3rem', left: 0 }} />
         <span
-          className={['ghostnet-title-morph', titleAssimilated ? 'ghostnet-title-morph--assimilated' : ''].filter(Boolean).join(' ')}
+          className={['glitch-title-morph', titleAssimilated ? 'glitch-title-morph--assimilated' : ''].filter(Boolean).join(' ')}
           aria-label={accessibleTitle}
           style={{ minWidth: TITLE_MIN_WIDTH }}
         >
-          <span className='ghostnet-title-morph__characters' aria-hidden='true'>
+          <span className='glitch-title-morph__characters' aria-hidden='true'>
             {titleChars.map((char, index) => {
               const displayChar = char === ' ' ? ' ' : char
-              const charClasses = ['ghostnet-title-morph__char']
-              if (char === ' ') charClasses.push('ghostnet-title-morph__char--space')
+              const charClasses = ['glitch-title-morph__char']
+              if (char === ' ') charClasses.push('glitch-title-morph__char--space')
               if (index >= smallVisibleLimit) charClasses.push('hidden-small')
               const charStyle = charGlitchStyles[index]
-              if (charStyle) charClasses.push('ghostnet-title-morph__char--glitch')
+              if (charStyle) charClasses.push('glitch-title-morph__char--glitch')
               return (
                 <span
                   key={`title-char-${index}`}
@@ -488,7 +488,7 @@ export default function Header ({ connected, active }) {
         {visibleNavButtons.map((button, i) => {
           const isActive = button.path === currentPath
           const isINARA = button.path === '/inara'
-          const exitActive = isGhostnetExitTransitionActive()
+          const exitActive = isGlitchExitTransitionActive()
 
           if (isINARA) {
             return (
@@ -496,11 +496,11 @@ export default function Header ({ connected, active }) {
                 key={button.name}
                 data-primary-navigation={i + 1}
                 tabIndex='1'
-                disabled={isActive || (isINARA && isGhostnetAssimilationActive()) || exitActive}
+                disabled={isActive || (isINARA && isGlitchAssimilationActive()) || exitActive}
                 aria-current={isActive ? 'page' : undefined}
                 className={[
                   isActive ? 'button--active' : '',
-                  'ghostnet-nav-button'
+                  'glitch-nav-button'
                 ].filter(Boolean).join(' ')}
                 onClick={() => handleNavigate(button.path)}
                 style={{ fontSize: '1.5rem' }}

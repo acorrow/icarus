@@ -8,7 +8,7 @@ export function getDistanceSeverityColor (distanceLy, jumpRangeLy, options = {})
   }
 
   if (distanceLy <= 0 || distanceLy <= jumpRangeLy) {
-    return 'var(--ghostnet-color-success)'
+    return 'var(--glitch-color-success)'
   }
 
   const ratio = Math.max(1, distanceLy / jumpRangeLy)
@@ -18,10 +18,10 @@ export function getDistanceSeverityColor (distanceLy, jumpRangeLy, options = {})
   const successWeight = 100 - warningWeight
 
   if (warningWeight === 100) {
-    return 'var(--ghostnet-color-warning)'
+    return 'var(--glitch-color-warning)'
   }
 
-  return `color-mix(in srgb, var(--ghostnet-color-success) ${successWeight}%, var(--ghostnet-color-warning) ${warningWeight}%)`
+  return `color-mix(in srgb, var(--glitch-color-success) ${successWeight}%, var(--glitch-color-warning) ${warningWeight}%)`
 }
 
 export default getDistanceSeverityColor

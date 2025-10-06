@@ -6,7 +6,7 @@ The INARA/ICARUS service process now instantiates a `TokenLedger` singleton on b
 
 - Persists balance snapshots at `~/.config/Icarus/tokens/ledger.json` and appends transactions to `transactions.jsonl` in the same directory.
 - Supports debits (`recordSpend`) and credits (`recordEarn`) while allowing negative balances. Each transaction entry contains `{ id, type, amount, delta, balance, timestamp, metadata, mode, remote }`.
-- Emits structured logs describing every mutation and broadcasts token updates via the `ghostnetTokensUpdated` WebSocket event.
+- Emits structured logs describing every mutation and broadcasts token updates via the `glitchTokensUpdated` WebSocket event.
 - Can mirror transactions to a remote service when the `ICARUS_TOKENS_REMOTE_MODE` feature flag enables it (see below). Remote sync failures do **not** block local writes; they simply mark the transaction as `remote.synced === false`.
 - Syncs the initial balance from disk (or the remote service if the mirror is active) and exposes `getSnapshot()` for API routes and socket handlers. The snapshot now includes `remote` metadata so the UI can surface mirror status.
 
@@ -27,7 +27,7 @@ The remote mirror is only activated when `ICARUS_TOKENS_REMOTE_MODE=MIRROR` **an
 
 - The INARA console footer now renders the live token balance, a status badge describing whether the ledger is simulated or mirrored, and a grant button that triggers a simulated jackpot payout via the `triggerJackpot` socket event. The helper multiplies a random base credit by the jackpot multiplier so testers can rehearse the full celebration sequence on demand.
 - When the balance drops below zero, INARA injects “menacing” warnings into the console feed to remind the commander that tribute is overdue.
-- Balance updates arrive via the existing `ghostnetTokensUpdated` broadcast; the UI also polls `getTokenBalance` on page load.
+- Balance updates arrive via the existing `glitchTokensUpdated` broadcast; the UI also polls `getTokenBalance` on page load.
 
 ## Planned remote service API
 
@@ -65,7 +65,7 @@ Credits the commander’s balance.
 {
   "amount": 750,
   "metadata": {
-    "source": "ghostnet-console",
+    "source": "glitch-console",
     "reason": "manual-grant"
   }
 }
@@ -83,7 +83,7 @@ Credits the commander’s balance.
     "balance": 124206,
     "timestamp": "2024-03-20T18:45:02.004Z",
     "metadata": {
-      "source": "ghostnet-console",
+      "source": "glitch-console",
       "reason": "manual-grant"
     }
   }

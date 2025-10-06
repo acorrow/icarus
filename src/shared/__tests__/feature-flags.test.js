@@ -1,5 +1,5 @@
 const {
-  isGhostnetTokenCurrencyEnabled,
+  isGlitchTokenCurrencyEnabled,
   isTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
   _private
@@ -14,18 +14,18 @@ describe('feature-flags', () => {
     expect(normalizeFlagValue('')).toBeNull()
   })
 
-  it('resolves ghostnet token currency flag from camelCase env', () => {
-    const env = { ghostnetTokenCurrencyEnabled: 'true' }
-    expect(isGhostnetTokenCurrencyEnabled(env)).toBe(true)
+  it('resolves glitch token currency flag from camelCase env', () => {
+    const env = { glitchTokenCurrencyEnabled: 'true' }
+    expect(isGlitchTokenCurrencyEnabled(env)).toBe(true)
   })
 
-  it('resolves ghostnet token currency flag from uppercase env', () => {
-    const env = { GHOSTNET_TOKEN_CURRENCY_ENABLED: '1' }
-    expect(isGhostnetTokenCurrencyEnabled(env)).toBe(true)
+  it('resolves glitch token currency flag from uppercase env', () => {
+    const env = { GLITCH_TOKEN_CURRENCY_ENABLED: '1' }
+    expect(isGlitchTokenCurrencyEnabled(env)).toBe(true)
   })
 
   it('falls back to false when unset', () => {
-    expect(isGhostnetTokenCurrencyEnabled({})).toBe(false)
+    expect(isGlitchTokenCurrencyEnabled({})).toBe(false)
   })
 
   it('resolveFlag prioritises explicit values', () => {
@@ -34,13 +34,13 @@ describe('feature-flags', () => {
   })
 
   it('resolves jackpot flag independently of currency flag', () => {
-    const env = { ghostnetTokenJackpotEnabled: 'true', ghostnetTokenCurrencyEnabled: 'false' }
+    const env = { glitchTokenJackpotEnabled: 'true', glitchTokenCurrencyEnabled: 'false' }
     expect(isTokenJackpotEnabled(env)).toBe(true)
-    expect(isGhostnetTokenCurrencyEnabled(env)).toBe(false)
+    expect(isGlitchTokenCurrencyEnabled(env)).toBe(false)
   })
 
   it('reads recovery compatibility flag from uppercase env', () => {
-    const env = { GHOSTNET_TOKEN_RECOVERY_COMPAT_ENABLED: '1' }
+    const env = { GLITCH_TOKEN_RECOVERY_COMPAT_ENABLED: '1' }
     expect(isTokenRecoveryCompatibilityEnabled(env)).toBe(true)
   })
 
@@ -49,8 +49,8 @@ describe('feature-flags', () => {
   })
 
   it('allows disabling compatibility explicitly', () => {
-    const env = { ghostnetTokenRecoveryCompatEnabled: 'false' }
+    const env = { glitchTokenRecoveryCompatEnabled: 'false' }
     expect(isTokenRecoveryCompatibilityEnabled(env)).toBe(false)
-    expect(hasFlagKey('ghostnetTokenRecoveryCompatEnabled', env)).toBe(true)
+    expect(hasFlagKey('glitchTokenRecoveryCompatEnabled', env)).toBe(true)
   })
 })

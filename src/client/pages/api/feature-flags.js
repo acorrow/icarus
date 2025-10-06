@@ -1,8 +1,8 @@
 import {
-  isGhostnetTokenCurrencyEnabled,
+  isGlitchTokenCurrencyEnabled,
   isTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
-  isGhostnetThemeToggleEnabled,
+  isGlitchThemeToggleEnabled,
   _private as featureFlagInternals
 } from '../../../shared/feature-flags.js'
 
@@ -10,31 +10,31 @@ const { hasFlagKey } = featureFlagInternals
 
 const FLAG_DEFINITIONS = [
   {
-    key: 'ghostnetTokenCurrencyEnabled',
+    key: 'glitchTokenCurrencyEnabled',
     label: 'INARA Token Currency',
     description: 'Enables the remote INARA token currency ledger and INARA data exchange integration.',
-    resolver: isGhostnetTokenCurrencyEnabled,
+    resolver: isGlitchTokenCurrencyEnabled,
     defaultValue: false
   },
   {
-    key: 'ghostnetTokenJackpotEnabled',
+    key: 'glitchTokenJackpotEnabled',
     label: 'Token Jackpot Bonus',
     description: 'Unlocks the simulated jackpot multiplier when commanders recover from deep token debt.',
     resolver: isTokenJackpotEnabled,
     defaultValue: false
   },
   {
-    key: 'ghostnetTokenRecoveryCompatEnabled',
+    key: 'glitchTokenRecoveryCompatEnabled',
     label: 'Token Recovery Compatibility Mode',
     description: 'Retains the legacy negative-balance recovery schedule for the INARA token ledger.',
     resolver: isTokenRecoveryCompatibilityEnabled,
     defaultValue: true
   },
   {
-    key: 'ghostnetThemeToggleEnabled',
-    label: 'GhostNet Theme Toggle',
-    description: 'Allows commanders to enable the immersive GhostNet visual theme from the settings modal.',
-    resolver: isGhostnetThemeToggleEnabled,
+    key: 'glitchThemeToggleEnabled',
+    label: 'Glitch Theme Toggle',
+    description: 'Allows commanders to enable the immersive Glitch visual theme from the settings modal.',
+    resolver: isGlitchThemeToggleEnabled,
     defaultValue: false
   }
 ]

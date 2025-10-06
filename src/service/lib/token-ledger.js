@@ -11,7 +11,7 @@ const {
   TOKEN_REMOTE_MODES
 } = require('../../shared/token-config')
 const {
-  isGhostnetTokenCurrencyEnabled,
+  isGlitchTokenCurrencyEnabled,
   isTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled
 } = require('../../shared/feature-flags')
@@ -235,7 +235,7 @@ class TokenLedger {
     this.mode = options.mode || getTokenMode()
     this.initialBalance = options.initialBalance ?? getInitialTokenBalance()
     this.userId = normalizeUserId(options.userId)
-    this.featureEnabled = options.featureEnabled !== undefined ? options.featureEnabled : isGhostnetTokenCurrencyEnabled()
+    this.featureEnabled = options.featureEnabled !== undefined ? options.featureEnabled : isGlitchTokenCurrencyEnabled()
     const baseStorage = options.storageDir || path.join(Preferences.preferencesDir(), 'tokens')
     this.storageDir = path.join(baseStorage, this.userId)
     this.ledgerPath = path.join(this.storageDir, LEDGER_FILENAME)

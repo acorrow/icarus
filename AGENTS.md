@@ -1,12 +1,12 @@
 
-## INARA/ICARUS vs GhostNet Theme
+## INARA/ICARUS vs Glitch Theme
 
-The INARA workspace supports a theme switch between the classic ICARUS theme and the GhostNet theme. CODEX contributors must ensure:
+The INARA workspace supports a theme switch between the classic ICARUS theme and the Glitch theme. CODEX contributors must ensure:
 
 - All INARA workspace pages and panels support both themes, toggled via the settings modal (`ThemeSettings`).
-- The GhostNet theme uses the new palette, animated overlays, and immersive UI as described in `FEATURES.md`.
+- The Glitch theme uses the new palette, animated overlays, and immersive UI as described in `FEATURES.md`.
 - The ICARUS theme preserves legacy colors, transitions, and navigation for users who prefer the classic look.
-- Theme switching is only available in the INARA workspace; legacy Icarus pages do not support GhostNet theming.
+- Theme switching is only available in the INARA workspace; legacy Icarus pages do not support Glitch theming.
 
 When documenting or implementing features, always specify which theme(s) the feature supports and test both modes for visual consistency.
 
@@ -35,7 +35,7 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
 - After the build, launch one of the sanctioned rendering targets:
   - Preferred production snapshot: `npm run serve:export` (serves <http://127.0.0.1:4100> once `npm run build:client` has finished).
   - Fast iteration: `npm run dev:web` (Next.js dev server on <http://127.0.0.1:3000> without SWC).
-- Use the `browser_container` Playwright helper to capture a screenshot **for each iteration of your UI work**. Always reference the screenshot path in your final notes so reviewers can trace the visual verification. Set the viewport to `1280x720`, wait for the DOM to settle, and capture full-page shots unless the task specifies otherwise. The dedicated helper in `scripts/browser/screenshot_ghostnet.py` waits for the workspace fade-in to finish so loaders are never captured.
+- Use the `browser_container` Playwright helper to capture a screenshot **for each iteration of your UI work**. Always reference the screenshot path in your final notes so reviewers can trace the visual verification. Set the viewport to `1280x720`, wait for the DOM to settle, and capture full-page shots unless the task specifies otherwise. The dedicated helper in `scripts/browser/screenshot_glitch.py` waits for the workspace fade-in to finish so loaders are never captured.
 - Treat every GUI task as an iterative design exercise. After you collect each screenshot, compare it against the task requirements and ask yourself:
   - Does this state fulfill the user request, both functionally and visually?
   - Are there lingering rough edges (spacing, alignment, color usage, accessibility) that would distract a commander interacting with the page?
@@ -50,12 +50,12 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
   1. Run `npm test -- --runInBand --config jest.config.js` (serial mode keeps Jest aligned with `jest.config.js`). The repo includes the optional dependency `@next/swc-linux-x64-gnu@12.3.4` so the build will not fail on missing SWC binaries.
   2. Run `npm run build:client` to regenerate the static export required for screenshots.
   3. In a dedicated shell start one of the preview servers above.
-  4. Use the `browser_container` Playwright helper to run `scripts/browser/screenshot_ghostnet.py` against the running URL. The container has the required GTK/Atk libraries, so Chromium launches reliably. Example:
+  4. Use the `browser_container` Playwright helper to run `scripts/browser/screenshot_glitch.py` against the running URL. The container has the required GTK/Atk libraries, so Chromium launches reliably. Example:
 
      ```python
      import asyncio
 
-     from scripts.browser.screenshot_ghostnet import capture, DEFAULT_OUTPUT, DEFAULT_URL, DEFAULT_VIEWPORT
+     from scripts.browser.screenshot_glitch import capture, DEFAULT_OUTPUT, DEFAULT_URL, DEFAULT_VIEWPORT
 
 
      async def main():
@@ -101,11 +101,11 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - Treat `src/app` (Go launcher), `src/service` (Node backend), and `src/client` (Next/React UI) as separate concerns; the launcher expects the service binary in the same directory or it will exit on startup.
 
 ## INARA theming & asset references
-- Primary surfaces live in `src/client/pages/inara.js` and `src/client/pages/ghostnet.module.css`; the hero animation draws from `src/client/public/ghostnet/signal-mesh.svg`.
-- Jest + Testing Library smoke tests in `src/client/__tests__/ghostnet.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
-- Maintain the Ghost Net copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `GhostnetPage`; update both arrays to keep the loop seamless.
-- When undoing Ghost Net changes, delete `ghostnet.module.css`, the asset folder (`src/client/public/ghostnet/`), and associated imports, then remove the Jest configuration and dependencies if the testing stack is no longer desired.
-- Respect the palette guidance below—new CSS tokens must document their intent and derive from `src/client/css/pages/ghostnet.css` rather than introducing bespoke colors.
+- Primary surfaces live in `src/client/pages/inara.js` and `src/client/pages/glitch.module.css`; the hero animation draws from `src/client/public/glitch/signal-mesh.svg`.
+- Jest + Testing Library smoke tests in `src/client/__tests__/glitch.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
+- Maintain the Glitch copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `GlitchPage`; update both arrays to keep the loop seamless.
+- When undoing Glitch changes, delete `glitch.module.css`, the asset folder (`src/client/public/glitch/`), and associated imports, then remove the Jest configuration and dependencies if the testing stack is no longer desired.
+- Respect the palette guidance below—new CSS tokens must document their intent and derive from `src/client/css/pages/glitch.css` rather than introducing bespoke colors.
 
 ## INARA implementation principles
 - Treat the **INARA** page as the sole surface for intentional UI enhancements. References to "the app" in these instructions should be interpreted as the INARA page unless a task explicitly states otherwise.
@@ -125,7 +125,7 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - Avoid ad-hoc styling or bespoke CSS for one-off views. Extend the INARA CSS tokens or shared utility classes, and document any new token additions with rationale and usage guidance.
 
 ### Palette hygiene
-- Keep the INARA palette constrained to the core tokens defined in `src/client/css/pages/ghostnet.css`.
+- Keep the INARA palette constrained to the core tokens defined in `src/client/css/pages/glitch.css`.
 - When a design needs subtle variation, derive it with opacity or other modifiers from the shared tokens instead of introducing new hex values.
 - Avoid dumping long lists of bespoke color variables into module files; rely on the shared palette for consistency and easier maintenance.
 - Declare each palette token with a single color format (hex **or** rgb, not both) and document its primary usage with a block comment so future contributors understand the intent.
@@ -168,7 +168,7 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
 - **Request/response handlers.** Expose pull-based APIs by adding functions to `eventHandlers` via `EventHandlers.getEventHandlers()`. These respond to `sendEvent('handlerName')` calls from the client. Prefer returning plain JSON—complex formatting belongs client-side.
 - **Client listeners.** Components subscribe to broadcasts by calling `eventListener('<eventName>', callback)` from `src/client/lib/socket.js`. Always clean up subscriptions in the `useEffect` teardown to prevent duplicate handlers when panels remount. Use `useSocket()` if you need connection status (e.g., disable refresh actions until `ready === true`).
 - **Triggering refreshes.** Let journal events drive updates whenever possible. For example, `TradeRoutesPanel` refreshes ship-derived filters whenever `SHIP_STATUS_UPDATE_EVENTS` arrives, and `useSystemSelector` refetches the commander's location on `Location`/`FSDJump`. When adding new INARA features, decide whether to listen for an existing broadcast or to extend the service layer with a new broadcast tailored to your feature.
-- **Development ergonomics.** The client automatically queues outbound `sendEvent` calls while disconnected. Avoid manual retry loops—trust the socket layer. When mocking, use the `ghostnetUseMockData` flag so production builds continue to hit the live service.
+- **Development ergonomics.** The client automatically queues outbound `sendEvent` calls while disconnected. Avoid manual retry loops—trust the socket layer. When mocking, use the `glitchUseMockData` flag so production builds continue to hit the live service.
 
 ## Scope
 These instructions apply to the entire repository unless a more specific `AGENTS.md` overrides them.
