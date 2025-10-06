@@ -19,6 +19,13 @@ import { stationIconFromType, getStationIconName } from '../lib/station-icons'
 import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/ghostnet-mock-data'
 import styles from './ghostnet.module.css'
 
+const METRIC_VARIANT_CLASS_MAP = {
+  neutral: styles.metricChipNeutral,
+  success: styles.metricChipSuccess,
+  caution: styles.metricChipCaution,
+  warning: styles.metricChipWarning
+}
+
 export const TERMINAL_PROMPT_TYPE_CLASS_MAP = {
   command: styles.terminalPromptCommand,
   response: styles.terminalPromptResponse,
@@ -4130,6 +4137,197 @@ function TradeRoutesPanel () {
     return hops.slice(originIndex, destinationIndex + 1)
   }, [navRoute?.route, routeContext])
 
+  const originFactionName = useMemo(() => {
+    if (!routeContext) return ''
+    const faction = resolveRouteFactionName(selectedRoute?.origin?.local, selectedRoute?.origin)
+    if (!faction) return ''
+    const sanitized = sanitizeInaraText(faction)
+    return sanitized || faction
+  }, [routeContext, selectedRoute])
+
+  const destinationFactionName = useMemo(() => {
+    if (!routeContext) return ''
+    const faction = resolveRouteFactionName(selectedRoute?.destination?.local, selectedRoute?.destination)
+    if (!faction) return ''
+    const sanitized = sanitizeInaraText(faction)
+    return sanitized || faction
+  }, [routeContext, selectedRoute])
+
+  const originStandingDisplay = useMemo(
+    () => getFactionStandingDisplay(originFactionName, factionStandings),
+    [originFactionName, factionStandings]
+  )
+
+  const destinationStandingDisplay = useMemo(
+    () => getFactionStandingDisplay(destinationFactionName, factionStandings),
+    [destinationFactionName, factionStandings]
+  )
+
+  const originStationDistance = useMemo(
+    () => (routeContext ? resolveStationDistance(selectedRoute?.origin) : { display: '', value: null }),
+    [routeContext, selectedRoute]
+  )
+
+  const destinationStationDistance = useMemo(
+    () => (routeContext ? resolveStationDistance(selectedRoute?.destination) : { display: '', value: null }),
+    [routeContext, selectedRoute]
+  )
+
+  const originSystemDistance = useMemo(
+    () => (routeContext ? resolveStationSystemDistance(selectedRoute, 'origin') : { display: '', value: null }),
+    [routeContext, selectedRoute]
+  )
+
+  const destinationSystemDistance = useMemo(
+    () => (routeContext ? resolveStationSystemDistance(selectedRoute, 'destination') : { display: '', value: null }),
+    [routeContext, selectedRoute]
+  )
+
+  const originStationDistanceVariant = getStationDistanceVariant(originStationDistance.value)
+  const destinationStationDistanceVariant = getStationDistanceVariant(destinationStationDistance.value)
+  const originSystemDistanceVariant = getSystemDistanceVariant(originSystemDistance.value, shipStatus?.maxJumpRange ?? null)
+  const destinationSystemDistanceVariant = getSystemDistanceVariant(destinationSystemDistance.value, shipStatus?.maxJumpRange ?? null)
+  const originSystemDistanceColor = getDistanceSeverityColor(originSystemDistance.value, shipStatus?.maxJumpRange ?? null)
+  const destinationSystemDistanceColor = getDistanceSeverityColor(destinationSystemDistance.value, shipStatus?.maxJumpRange ?? null)
+
+  const originStationType = useMemo(() => {
+    if (!routeContext) return ''
+    const station = selectedRoute?.origin || {}
+    const local = station?.local || {}
+    const candidates = [
+      local?.stationType,
+      local?.type,
+      station?.stationType,
+      station?.type,
+      station?.stationTypeName
+    ]
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        const sanitized = sanitizeInaraText(candidate)
+        return sanitized || candidate.trim()
+      }
+    }
+    return ''
+  }, [routeContext, selectedRoute])
+
+  const destinationStationType = useMemo(() => {
+    if (!routeContext) return ''
+    const station = selectedRoute?.destination || {}
+    const local = station?.local || {}
+    const candidates = [
+      local?.stationType,
+      local?.type,
+      station?.stationType,
+      station?.type,
+      station?.stationTypeName
+    ]
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        const sanitized = sanitizeInaraText(candidate)
+        return sanitized || candidate.trim()
+      }
+    }
+    return ''
+  }, [routeContext, selectedRoute])
+
+  const originEconomy = useMemo(() => {
+    if (!routeContext) return ''
+    const station = selectedRoute?.origin || {}
+    const local = station?.local || {}
+    const candidates = [
+      local?.economy,
+      local?.Economy,
+      local?.primaryEconomy,
+      local?.PrimaryEconomy,
+      station?.economy,
+      station?.primaryEconomy
+    ]
+    const seen = new Set()
+    const values = []
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        const sanitized = sanitizeInaraText(candidate) || candidate.trim()
+        if (!seen.has(sanitized)) {
+          values.push(sanitized)
+          seen.add(sanitized)
+        }
+      }
+    }
+    return values.join(' · ')
+  }, [routeContext, selectedRoute])
+
+  const destinationEconomy = useMemo(() => {
+    if (!routeContext) return ''
+    const station = selectedRoute?.destination || {}
+    const local = station?.local || {}
+    const candidates = [
+      local?.economy,
+      local?.Economy,
+      local?.primaryEconomy,
+      local?.PrimaryEconomy,
+      station?.economy,
+      station?.primaryEconomy
+    ]
+    const seen = new Set()
+    const values = []
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        const sanitized = sanitizeInaraText(candidate) || candidate.trim()
+        if (!seen.has(sanitized)) {
+          values.push(sanitized)
+          seen.add(sanitized)
+        }
+      }
+    }
+    return values.join(' · ')
+  }, [routeContext, selectedRoute])
+
+  const outboundCommodityContext = useMemo(() => {
+    if (!routeContext) return null
+    const info = getRouteCommodityInfo(selectedRoute, 'outbound')
+    return {
+      info,
+      price: resolvePriceDisplay(info.buy, 'Buy'),
+      demand: resolveDemandFlowState(info.sell),
+      quantity: resolveQuantityText(info.sell),
+      supply: resolveQuantityText(info.buy)
+    }
+  }, [routeContext, selectedRoute])
+
+  const inboundCommodityContext = useMemo(() => {
+    if (!routeContext) return null
+    const info = getRouteCommodityInfo(selectedRoute, 'return')
+    return {
+      info,
+      price: resolvePriceDisplay(info.buy, 'Buy'),
+      demand: resolveDemandFlowState(info.sell),
+      quantity: resolveQuantityText(info.sell),
+      supply: resolveQuantityText(info.buy)
+    }
+  }, [routeContext, selectedRoute])
+
+  const routeDistanceDisplay = useMemo(() => {
+    if (!routeContext) return ''
+    const value = extractSystemDistance(selectedRoute)
+    if (typeof value !== 'number' || Number.isNaN(value)) return ''
+    const precision = value < 10 ? 2 : 1
+    return `${value.toFixed(precision)} ly`
+  }, [routeContext, selectedRoute])
+
+  const routeUpdatedDisplay = useMemo(() => {
+    if (!routeContext) return ''
+    const updated = extractUpdatedAt(selectedRoute)
+    if (!updated) return ''
+    return formatRelativeTime(updated)
+  }, [routeContext, selectedRoute])
+
+  const buildMetricChipClasses = useCallback((variant = 'neutral') => {
+    const classes = [styles.metricChip, styles.metricChipContext]
+    const variantClass = METRIC_VARIANT_CLASS_MAP[variant] || METRIC_VARIANT_CLASS_MAP.neutral
+    if (variantClass) classes.push(variantClass)
+    return classes.join(' ')
+  }, [])
+
   const renderRoutesTable = () => (
     <div className={styles.dataTableContainer}>
       <table className={`${styles.dataTable} ${styles.dataTableDense} ${styles.tradeRoutesTable}`}>
@@ -4242,70 +4440,215 @@ function TradeRoutesPanel () {
             </div>
             {routeContext ? (
               <>
-                <div className={styles.tradeRouteContextGrid}>
-                  <div className={styles.tradeRouteContextItem}>
-                    <span className={styles.tradeRouteContextLabel}>Station A</span>
-                    <div className={styles.tradeRouteContextValue}>
-                      {routeContext.origin.iconName && (
-                        <span className={styles.tradeRouteContextIcon}>
-                          <StationIcon icon={routeContext.origin.iconName} size={28} />
+                <div className={styles.tradeRouteContextStations}>
+                  <div className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardOrigin}`}>
+                    <div className={styles.tradeRouteContextStationHeader}>
+                      <span className={styles.tradeRouteContextBadge}>Station A</span>
+                      {originStationType ? (
+                        <span className={styles.tradeRouteContextBadgeDetail}>{originStationType}</span>
+                      ) : null}
+                    </div>
+                    <div className={styles.tradeRouteContextStationBody}>
+                      {routeContext.origin.iconName ? (
+                        <span className={styles.tradeRouteContextStationIconLarge}>
+                          <StationIcon
+                            icon={routeContext.origin.iconName}
+                            size='100%'
+                            color={originStandingDisplay.iconColor}
+                          />
                         </span>
-                      )}
-                      <div className={styles.tradeRouteContextValueText}>
-                        <span className={styles.tradeRouteContextPrimary}>
+                      ) : null}
+                      <div className={styles.tradeRouteContextStationText}>
+                        <span className={styles.tradeRouteContextStationName}>
                           {routeContext.origin.station
                             ? <CopyOnClick copyMessageKey='station'>{routeContext.origin.station}</CopyOnClick>
                             : '--'}
                         </span>
-                        <span className={styles.tradeRouteContextMeta}>
+                        <span className={styles.tradeRouteContextStationSystem}>
                           {routeContext.origin.system
                             ? <CopyOnClick copyMessageKey='system'>{routeContext.origin.system}</CopyOnClick>
                             : '--'}
                         </span>
+                        {originFactionName ? (
+                          <span className={styles.tradeRouteContextStationFaction}>{originFactionName}</span>
+                        ) : null}
+                        {originEconomy ? (
+                          <span className={styles.tradeRouteContextStationEconomy}>{originEconomy}</span>
+                        ) : null}
                       </div>
                     </div>
-                  </div>
-                  <div className={styles.tradeRouteContextItem}>
-                    <span className={styles.tradeRouteContextLabel}>Commodity A</span>
-                    <div className={styles.tradeRouteContextValue}>
-                      <span className={styles.tradeRouteContextIcon}>
-                        <CommodityIcon category={routeContext.outbound.category || ''} size={24} />
-                      </span>
-                      <div className={styles.tradeRouteContextValueText}>
-                        <span className={styles.tradeRouteContextPrimary}>{routeContext.outbound.commodity || '--'}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.tradeRouteContextItem}>
-                    <span className={styles.tradeRouteContextLabel}>Station B</span>
-                    <div className={styles.tradeRouteContextValue}>
-                      {routeContext.destination.iconName && (
-                        <span className={styles.tradeRouteContextIcon}>
-                          <StationIcon icon={routeContext.destination.iconName} size={28} />
+                    <div className={styles.tradeRouteContextMetrics}>
+                      <div className={styles.tradeRouteContextMetric}>
+                        <span className={styles.tradeRouteContextMetricLabel}>System Distance</span>
+                        <span
+                          className={buildMetricChipClasses(originSystemDistanceVariant)}
+                          style={originSystemDistanceColor ? { '--chip-color': originSystemDistanceColor } : undefined}
+                        >
+                          {originSystemDistance.display || '--'}
                         </span>
-                      )}
-                      <div className={styles.tradeRouteContextValueText}>
-                        <span className={styles.tradeRouteContextPrimary}>
+                      </div>
+                      <div className={styles.tradeRouteContextMetric}>
+                        <span className={styles.tradeRouteContextMetricLabel}>Orbital Distance</span>
+                        <span className={buildMetricChipClasses(originStationDistanceVariant)}>
+                          {originStationDistance.display || '--'}
+                        </span>
+                      </div>
+                      {originStandingDisplay?.statusLabel ? (
+                        <div className={styles.tradeRouteContextMetric}>
+                          <span className={styles.tradeRouteContextMetricLabel}>Faction Standing</span>
+                          <span
+                            className={buildMetricChipClasses('neutral')}
+                            style={originStandingDisplay.color ? { '--chip-color': originStandingDisplay.color } : undefined}
+                          >
+                            {originStandingDisplay.statusLabel}
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className={styles.tradeRouteContextStationConnector}>
+                    <div className={styles.tradeRouteContextConnectorTrack}>
+                      <span className={styles.tradeRouteContextConnectorEndpoint} aria-hidden='true' />
+                      <span className={styles.tradeRouteContextConnectorLine}>
+                        {routeDistanceDisplay ? (
+                          <span className={styles.tradeRouteContextConnectorMetric}>{routeDistanceDisplay}</span>
+                        ) : null}
+                        <span className={styles.tradeRouteContextConnectorPulse} />
+                      </span>
+                      <span className={styles.tradeRouteContextConnectorEndpoint} aria-hidden='true' />
+                    </div>
+                    {routeUpdatedDisplay ? (
+                      <div className={styles.tradeRouteContextConnectorMeta}>
+                        <span className={styles.tradeRouteContextConnectorMetaText}>Updated {routeUpdatedDisplay}</span>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardDestination}`}>
+                    <div className={styles.tradeRouteContextStationHeader}>
+                      <span className={styles.tradeRouteContextBadge}>Station B</span>
+                      {destinationStationType ? (
+                        <span className={styles.tradeRouteContextBadgeDetail}>{destinationStationType}</span>
+                      ) : null}
+                    </div>
+                    <div className={styles.tradeRouteContextStationBody}>
+                      {routeContext.destination.iconName ? (
+                        <span className={styles.tradeRouteContextStationIconLarge}>
+                          <StationIcon
+                            icon={routeContext.destination.iconName}
+                            size='100%'
+                            color={destinationStandingDisplay.iconColor}
+                          />
+                        </span>
+                      ) : null}
+                      <div className={styles.tradeRouteContextStationText}>
+                        <span className={styles.tradeRouteContextStationName}>
                           {routeContext.destination.station
                             ? <CopyOnClick copyMessageKey='station'>{routeContext.destination.station}</CopyOnClick>
                             : '--'}
                         </span>
-                        <span className={styles.tradeRouteContextMeta}>
+                        <span className={styles.tradeRouteContextStationSystem}>
                           {routeContext.destination.system
                             ? <CopyOnClick copyMessageKey='system'>{routeContext.destination.system}</CopyOnClick>
                             : '--'}
                         </span>
+                        {destinationFactionName ? (
+                          <span className={styles.tradeRouteContextStationFaction}>{destinationFactionName}</span>
+                        ) : null}
+                        {destinationEconomy ? (
+                          <span className={styles.tradeRouteContextStationEconomy}>{destinationEconomy}</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className={styles.tradeRouteContextMetrics}>
+                      <div className={styles.tradeRouteContextMetric}>
+                        <span className={styles.tradeRouteContextMetricLabel}>System Distance</span>
+                        <span
+                          className={buildMetricChipClasses(destinationSystemDistanceVariant)}
+                          style={destinationSystemDistanceColor ? { '--chip-color': destinationSystemDistanceColor } : undefined}
+                        >
+                          {destinationSystemDistance.display || '--'}
+                        </span>
+                      </div>
+                      <div className={styles.tradeRouteContextMetric}>
+                        <span className={styles.tradeRouteContextMetricLabel}>Orbital Distance</span>
+                        <span className={buildMetricChipClasses(destinationStationDistanceVariant)}>
+                          {destinationStationDistance.display || '--'}
+                        </span>
+                      </div>
+                      {destinationStandingDisplay?.statusLabel ? (
+                        <div className={styles.tradeRouteContextMetric}>
+                          <span className={styles.tradeRouteContextMetricLabel}>Faction Standing</span>
+                          <span
+                            className={buildMetricChipClasses('neutral')}
+                            style={destinationStandingDisplay.color ? { '--chip-color': destinationStandingDisplay.color } : undefined}
+                          >
+                            {destinationStandingDisplay.statusLabel}
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.tradeRouteContextCommodities}>
+                  <div className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityOutbound}`}>
+                    <div className={styles.tradeRouteContextCommodityHeader}>
+                      <span className={styles.tradeRouteContextLabel}>Outbound Commodity</span>
+                      {outboundCommodityContext?.price ? (
+                        <span className={styles.tradeRouteContextCommodityPrice}>{outboundCommodityContext.price}</span>
+                      ) : null}
+                    </div>
+                    <div className={styles.tradeRouteContextCommodityBody}>
+                      <span className={styles.tradeRouteContextCommodityIconLarge}>
+                        <CommodityIcon category={routeContext.outbound.category || ''} size={32} />
+                      </span>
+                      <div className={styles.tradeRouteContextCommodityText}>
+                        <span className={styles.tradeRouteContextCommodityName}>{routeContext.outbound.commodity || '--'}</span>
+                        {outboundCommodityContext?.demand?.label ? (
+                          <span className={styles.tradeRouteContextCommodityMeta}>{outboundCommodityContext.demand.label}</span>
+                        ) : null}
+                        {outboundCommodityContext?.quantity ? (
+                          <span className={styles.tradeRouteContextCommodityFootnote}>
+                            Demand window: {outboundCommodityContext.quantity}
+                          </span>
+                        ) : null}
+                        {outboundCommodityContext?.supply ? (
+                          <span className={styles.tradeRouteContextCommodityFootnote}>
+                            Supply: {outboundCommodityContext.supply}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
-                  <div className={styles.tradeRouteContextItem}>
-                    <span className={styles.tradeRouteContextLabel}>Commodity B</span>
-                    <div className={styles.tradeRouteContextValue}>
-                      <span className={styles.tradeRouteContextIcon}>
-                        <CommodityIcon category={routeContext.inbound.category || ''} size={24} />
+
+                  <div className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityReturn}`}>
+                    <div className={styles.tradeRouteContextCommodityHeader}>
+                      <span className={styles.tradeRouteContextLabel}>Return Commodity</span>
+                      {inboundCommodityContext?.price ? (
+                        <span className={styles.tradeRouteContextCommodityPrice}>{inboundCommodityContext.price}</span>
+                      ) : null}
+                    </div>
+                    <div className={styles.tradeRouteContextCommodityBody}>
+                      <span className={styles.tradeRouteContextCommodityIconLarge}>
+                        <CommodityIcon category={routeContext.inbound.category || ''} size={32} />
                       </span>
-                      <div className={styles.tradeRouteContextValueText}>
-                        <span className={styles.tradeRouteContextPrimary}>{routeContext.inbound.commodity || '--'}</span>
+                      <div className={styles.tradeRouteContextCommodityText}>
+                        <span className={styles.tradeRouteContextCommodityName}>{routeContext.inbound.commodity || '--'}</span>
+                        {inboundCommodityContext?.demand?.label ? (
+                          <span className={styles.tradeRouteContextCommodityMeta}>{inboundCommodityContext.demand.label}</span>
+                        ) : null}
+                        {inboundCommodityContext?.quantity ? (
+                          <span className={styles.tradeRouteContextCommodityFootnote}>
+                            Demand window: {inboundCommodityContext.quantity}
+                          </span>
+                        ) : null}
+                        {inboundCommodityContext?.supply ? (
+                          <span className={styles.tradeRouteContextCommodityFootnote}>
+                            Supply: {inboundCommodityContext.supply}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
