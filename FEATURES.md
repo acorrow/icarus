@@ -1,3 +1,22 @@
+
+## Theme Switching: ICARUS vs GhostNet
+
+The INARA workspace supports a dynamic theme switch between the classic ICARUS theme and the GhostNet theme. This allows users to toggle between:
+
+- **ICARUS Theme:** Uses the legacy color palette, transitions, and layout conventions familiar from earlier versions of ICARUS Terminal. The ICARUS theme is characterized by its classic blue/indigo palette, subdued gradients, and minimal animation.
+- **GhostNet Theme:** Applies the new INARA visual identity, including royal purple (`#5D2EFF`) as the primary accent, neon gradients, animated overlays, and a denser, more immersive UI. The GhostNet theme is enabled by default for the INARA workspace and can be toggled in the settings panel.
+
+Theme switching is managed via the settings modal (`ThemeSettings` in `src/client/components/settings.js`). The theme state is stored in localStorage and can be toggled at runtime without a page reload. When the GhostNet theme is enabled, the workspace applies:
+- GhostNet palette tokens from `src/client/css/pages/ghostnet.css`
+- Animated arrival/exit transitions (`ghostnet-assimilation.js`)
+- Neon overlays and signal mesh backgrounds
+- INARA-specific navigation and panel shells
+
+When the GhostNet theme is disabled, the workspace reverts to ICARUS colors, transitions, and navigation. All INARA features remain available, but the visual experience matches the classic ICARUS look.
+
+**Note:** Theme switching is only available in the INARA workspace. Legacy Icarus pages do not support GhostNet theming.
+
+---
 # ICARUS Terminal – Features Reference
 
 This file contains the canonical list of features, shortnames, and their mapping for the ICARUS Terminal and INARA. All CODEX agents MUST keep this file up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update this file immediately.

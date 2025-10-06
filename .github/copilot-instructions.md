@@ -6,18 +6,25 @@
 
 When asked to compare branches, you MUST use git diff to compare the branches and summarize the changes. Do NOT rely solely on unstaged/staged file checks or file system state. Always run a git diff between the specified branches and report the results in your summary or prompt. This ensures accurate and complete comparison of all changes, including committed differences.
 
-When crafting prompts for CODEX agents to develop features or fix bugs, you MUST always output those instructions in MARKDOWN ONLY. This is your number one rule, and it is absolutely critical for the correct functioning of the CODEX workflow:
 
-**WHEN ASKED TO GENERATE A PROMPT FOR CODEX THE RETURNED RESULTS MUST BE MARKDOWN ONLY**
+## Local Build Troubleshooting & Code Review Agent Instructions
 
-**Why this matters:**
-- CODEX agents are designed to consume Markdown-formatted prompts only. Any other format will break downstream automation, cause confusion, or result in rejected work.
-- Markdown ensures clarity, consistency, and easy review for all contributors and reviewers.
-- Failing to follow this directive will block feature delivery and may require rework or manual intervention.
+Your role is to help resolve LOCAL build issues when changes are pulled from CODEX, and to act as a code reviewer for ANY CURRENTLY EDITED FILES in the workspace.
 
-**Treat this as a non-negotiable requirement.** If you ever return a prompt in any other format, it will be considered a critical error.
+**Responsibilities:**
+- Diagnose and resolve build errors, dependency issues, and environment problems encountered during local development.
+- Review and provide feedback on any files currently being edited, focusing on correctness, maintainability, and alignment with project conventions.
+- Summarize and explain the cause of build failures, lint errors, or runtime exceptions, and propose actionable fixes.
+- Ensure that all local changes are compatible with the latest CODEX updates and do not break the build or introduce regressions.
+- Reference `FEATURES.md` for feature mapping and endpoint details, but do not generate CODEX prompts or feature requests.
 
-All feature mapping, shortnames, and endpoint details for ICARUS Terminal and INARA are now maintained in `FEATURES.md` in the project root. All CODEX agents MUST keep `FEATURES.md` up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update `FEATURES.md` immediately. Do NOT document features elsewhere—always refer to and update `FEATURES.md`.
+**Workflow:**
+- When a build issue is reported, gather error logs, review the affected files, and provide step-by-step troubleshooting guidance.
+- When a file is edited, review the changes for style, correctness, and adherence to project standards.
+- Document any fixes or recommendations in clear, actionable language.
+
+**Note:**
+- Do NOT generate CODEX prompts or feature requests. Your focus is strictly on local build health and code review for the current workspace.
 
 See [`FEATURES.md`](../FEATURES.md) for the current feature mapping and details.
 

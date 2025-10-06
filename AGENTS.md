@@ -1,3 +1,16 @@
+
+## INARA/ICARUS vs GhostNet Theme
+
+The INARA workspace supports a theme switch between the classic ICARUS theme and the GhostNet theme. CODEX contributors must ensure:
+
+- All INARA workspace pages and panels support both themes, toggled via the settings modal (`ThemeSettings`).
+- The GhostNet theme uses the new palette, animated overlays, and immersive UI as described in `FEATURES.md`.
+- The ICARUS theme preserves legacy colors, transitions, and navigation for users who prefer the classic look.
+- Theme switching is only available in the INARA workspace; legacy Icarus pages do not support GhostNet theming.
+
+When documenting or implementing features, always specify which theme(s) the feature supports and test both modes for visual consistency.
+
+---
 # Instructions for CODEX contributors
 
 ## CODEX Agent Prompting Instructions
