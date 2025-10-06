@@ -8,7 +8,7 @@
 - **Error handling:** Non-2xx HTTP responses indicate transport failures. Within 200 responses, failed events carry `eventStatus` values `300`+ and detailed text. Clients should log and optionally retry after the recommended delay.
 
 ## INARA request comparison
-- Existing INARA scrapers (e.g., `/api/glitch-search`) currently post JSON objects with `appName`, `appVersion`, and `events` to INARA, omitting `APIkey` until credentials are supplied.
+- Existing INARA scrapers (e.g., `/api/inara-search`) currently post JSON objects with `appName`, `appVersion`, and `events` to INARA, omitting `APIkey` until credentials are supplied.
 - INARA queues heterogeneous events per request (market, outfitting, shipyard) matching the official schema but currently stubs authentication fields.
 - The payload structure aligns with INARA’s expectations, so the token system can treat each outbound request as a unit of cost without additional normalization.
 

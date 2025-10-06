@@ -1467,14 +1467,14 @@ button.terminalStatusPreview:focus-visible {
   color: var(--glitch-muted);
 }
 
-.dataTable :global([data-glitch-table-row]) {
+.dataTable :global([data-inara-table-row]) {
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 0.35s ease, transform 0.35s ease;
   transition-delay: var(--glitch-row-delay, 0s);
 }
 
-.dataTable :global([data-glitch-table-row='visible']) {
+.dataTable :global([data-inara-table-row='visible']) {
   opacity: 1;
   transform: translateY(0);
 }

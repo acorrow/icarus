@@ -11,7 +11,7 @@ import {
   formatRelativeTime,
   formatStationDistance,
   formatSystemDistance
-} from 'lib/glitch-formatters'
+} from 'lib/inara-formatters'
 import { stationIconFromType } from 'lib/station-icons'
 import getDistanceSeverityColor from 'lib/distance-colors'
 

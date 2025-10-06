@@ -3,7 +3,7 @@ import {
   ASSIMILATION_DURATION_DEFAULT,
   isGlitchThemeEnabled
 } from 'lib/glitch-settings'
-import { getGlitchStrings, getGlitchString } from './glitch-addon'
+import { getInaraStrings, getInaraString } from './inara-addon'
 
 let assimilationInProgress = false
 let assimilationStartTime = 0
@@ -198,9 +198,9 @@ const DEFAULT_ASSIMILATION_COMPLETION = {
   }
 }
 
-const ASSIMILATION_ALERT_LINES = getGlitchStrings('assimilation.alerts', DEFAULT_ASSIMILATION_ALERT_LINES)
-const ASSIMILATION_DIALOG_COPY = getGlitchStrings('assimilation.dialog', DEFAULT_ASSIMILATION_DIALOG)
-const ASSIMILATION_COMPLETION_COPY = getGlitchStrings('assimilation.completion', DEFAULT_ASSIMILATION_COMPLETION)
+const ASSIMILATION_ALERT_LINES = getInaraStrings('assimilation.alerts', DEFAULT_ASSIMILATION_ALERT_LINES)
+const ASSIMILATION_DIALOG_COPY = getInaraStrings('assimilation.dialog', DEFAULT_ASSIMILATION_DIALOG)
+const ASSIMILATION_COMPLETION_COPY = getInaraStrings('assimilation.completion', DEFAULT_ASSIMILATION_COMPLETION)
 
 let assimilationOverlayState = null
 let assimilationOverlayTimer = null
@@ -216,7 +216,7 @@ function buildAssimilationOverlay () {
   dialog.setAttribute('aria-live', 'assertive')
   dialog.setAttribute(
     'aria-label',
-    getGlitchString('assimilation.dialog.ariaLabel', DEFAULT_ASSIMILATION_DIALOG.ariaLabel)
+    getInaraString('assimilation.dialog.ariaLabel', DEFAULT_ASSIMILATION_DIALOG.ariaLabel)
   )
 
   const header = document.createElement('div')

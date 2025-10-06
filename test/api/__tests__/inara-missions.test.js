@@ -1,9 +1,9 @@
 const { createMockReq, createMockRes, createFetchResponse } = require('../helpers')
 
-const handlerPath = '../../../src/client/pages/api/glitch-missions.js'
+const handlerPath = '../../../src/client/pages/api/inara-missions.js'
 const tokenCurrencyPath = '../../../src/client/pages/api/token-currency.js'
 
-describe('glitch-missions API handler', () => {
+describe('inara-missions API handler', () => {
   beforeEach(() => {
     jest.resetModules()
   })

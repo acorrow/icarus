@@ -80,7 +80,7 @@ describe('EventHandlers.triggerJackpot', () => {
 
     expect(recordEarnMock).toHaveBeenCalledTimes(1)
     expect(getSnapshotMock).toHaveBeenCalledTimes(1)
-    expect(global.BROADCAST_EVENT).toHaveBeenCalledWith('glitchTokensUpdated', {
+    expect(global.BROADCAST_EVENT).toHaveBeenCalledWith('inaraTokensUpdated', {
       snapshot,
       entry: expect.objectContaining({
         metadata: expect.objectContaining({

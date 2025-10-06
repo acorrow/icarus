@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react'
-import GlitchPage from '../inara'
+import InaraPage from '../inara'
 import {
   generateMockCurrentSystem,
   generateMockFactionStandingsResponse,
   generateMockMissionsResponse,
   generateMockPristineMiningResponse,
   generateMockTradeRoutes
-} from '../../lib/glitch-mock-data'
+} from '../../lib/inara-mock-data'
 
 function resolvePath (input) {
   if (typeof input === 'string') {
@@ -39,22 +39,22 @@ function parseBody (body) {
   }
 }
 
-export default function GlitchLayoutSandboxPage () {
+export default function InaraLayoutSandboxPage () {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
 
-    window.__GLITCH_LAYOUT_SANDBOX__ = true
+    window.__INARA_LAYOUT_SANDBOX__ = true
 
     const previousMockPreference = (() => {
       try {
-        return window.localStorage.getItem('glitchUseMockData')
+        return window.localStorage.getItem('inaraUseMockData')
       } catch (err) {
         return null
       }
     })()
 
     try {
-      window.localStorage.setItem('glitchUseMockData', 'true')
+      window.localStorage.setItem('inaraUseMockData', 'true')
     } catch (err) {
       // Ignore storage failures
     }
@@ -78,7 +78,7 @@ export default function GlitchLayoutSandboxPage () {
         return jsonResponse(generateMockFactionStandingsResponse())
       }
 
-      if (path === '/api/glitch-missions') {
+      if (path === '/api/inara-missions') {
         const body = parseBody(init?.body)
         const systemName = typeof body.system === 'string' && body.system.trim()
           ? body.system.trim()
@@ -86,7 +86,7 @@ export default function GlitchLayoutSandboxPage () {
         return jsonResponse(generateMockMissionsResponse(systemName))
       }
 
-      if (path === '/api/glitch-pristine-mining') {
+      if (path === '/api/inara-pristine-mining') {
         const body = parseBody(init?.body)
         const systemName = typeof body.system === 'string' && body.system.trim()
           ? body.system.trim()
@@ -94,7 +94,7 @@ export default function GlitchLayoutSandboxPage () {
         return jsonResponse(generateMockPristineMiningResponse(systemName))
       }
 
-      if (path === '/api/glitch-trade-routes') {
+      if (path === '/api/inara-trade-routes') {
         const body = parseBody(init?.body)
         const systemName = typeof body.system === 'string' && body.system.trim()
           ? body.system.trim()
@@ -119,18 +119,18 @@ export default function GlitchLayoutSandboxPage () {
 
       try {
         if (previousMockPreference === null) {
-          window.localStorage.removeItem('glitchUseMockData')
+          window.localStorage.removeItem('inaraUseMockData')
         } else {
-          window.localStorage.setItem('glitchUseMockData', previousMockPreference)
+          window.localStorage.setItem('inaraUseMockData', previousMockPreference)
         }
       } catch (err) {
         // Ignore storage failures
       }
 
-      delete window.__GLITCH_LAYOUT_SANDBOX__
+      delete window.__INARA_LAYOUT_SANDBOX__
     }
   }, [])
 
-  return <GlitchPage />
+  return <InaraPage />
 }
 

@@ -36,19 +36,19 @@ function hasFlagKey (primaryKey, env = process.env) {
   return false
 }
 
-function isGlitchTokenCurrencyEnabled (env = process.env) {
-  return resolveFlag('glitchTokenCurrencyEnabled', env)
+function isInaraTokenCurrencyEnabled (env = process.env) {
+  return resolveFlag('inaraTokenCurrencyEnabled', env)
 }
 
-function isTokenJackpotEnabled (env = process.env) {
-  return resolveFlag('glitchTokenJackpotEnabled', env)
+function isInaraTokenJackpotEnabled (env = process.env) {
+  return resolveFlag('inaraTokenJackpotEnabled', env)
 }
 
 function isTokenRecoveryCompatibilityEnabled (env = process.env) {
-  if (!hasFlagKey('glitchTokenRecoveryCompatEnabled', env)) {
+  if (!hasFlagKey('inaraTokenRecoveryCompatEnabled', env)) {
     return true
   }
-  return resolveFlag('glitchTokenRecoveryCompatEnabled', env)
+  return resolveFlag('inaraTokenRecoveryCompatEnabled', env)
 }
 
 function isGlitchThemeToggleEnabled (env = process.env) {
@@ -56,8 +56,8 @@ function isGlitchThemeToggleEnabled (env = process.env) {
 }
 
 module.exports = {
-  isGlitchTokenCurrencyEnabled,
-  isTokenJackpotEnabled,
+  isInaraTokenCurrencyEnabled,
+  isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
   isGlitchThemeToggleEnabled,
   _private: { normalizeFlagValue, resolveFlag, hasFlagKey }

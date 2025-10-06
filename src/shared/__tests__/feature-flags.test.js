@@ -1,6 +1,6 @@
 const {
-  isGlitchTokenCurrencyEnabled,
-  isTokenJackpotEnabled,
+  isInaraTokenCurrencyEnabled,
+  isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
   _private
 } = require('../feature-flags')
@@ -14,18 +14,18 @@ describe('feature-flags', () => {
     expect(normalizeFlagValue('')).toBeNull()
   })
 
-  it('resolves glitch token currency flag from camelCase env', () => {
-    const env = { glitchTokenCurrencyEnabled: 'true' }
-    expect(isGlitchTokenCurrencyEnabled(env)).toBe(true)
+  it('resolves INARA token currency flag from camelCase env', () => {
+    const env = { inaraTokenCurrencyEnabled: 'true' }
+    expect(isInaraTokenCurrencyEnabled(env)).toBe(true)
   })
 
-  it('resolves glitch token currency flag from uppercase env', () => {
-    const env = { GLITCH_TOKEN_CURRENCY_ENABLED: '1' }
-    expect(isGlitchTokenCurrencyEnabled(env)).toBe(true)
+  it('resolves INARA token currency flag from uppercase env', () => {
+    const env = { INARA_TOKEN_CURRENCY_ENABLED: '1' }
+    expect(isInaraTokenCurrencyEnabled(env)).toBe(true)
   })
 
   it('falls back to false when unset', () => {
-    expect(isGlitchTokenCurrencyEnabled({})).toBe(false)
+    expect(isInaraTokenCurrencyEnabled({})).toBe(false)
   })
 
   it('resolveFlag prioritises explicit values', () => {
@@ -34,13 +34,13 @@ describe('feature-flags', () => {
   })
 
   it('resolves jackpot flag independently of currency flag', () => {
-    const env = { glitchTokenJackpotEnabled: 'true', glitchTokenCurrencyEnabled: 'false' }
-    expect(isTokenJackpotEnabled(env)).toBe(true)
-    expect(isGlitchTokenCurrencyEnabled(env)).toBe(false)
+    const env = { inaraTokenJackpotEnabled: 'true', inaraTokenCurrencyEnabled: 'false' }
+    expect(isInaraTokenJackpotEnabled(env)).toBe(true)
+    expect(isInaraTokenCurrencyEnabled(env)).toBe(false)
   })
 
   it('reads recovery compatibility flag from uppercase env', () => {
-    const env = { GLITCH_TOKEN_RECOVERY_COMPAT_ENABLED: '1' }
+    const env = { INARA_TOKEN_RECOVERY_COMPAT_ENABLED: '1' }
     expect(isTokenRecoveryCompatibilityEnabled(env)).toBe(true)
   })
 
@@ -49,8 +49,8 @@ describe('feature-flags', () => {
   })
 
   it('allows disabling compatibility explicitly', () => {
-    const env = { glitchTokenRecoveryCompatEnabled: 'false' }
+    const env = { inaraTokenRecoveryCompatEnabled: 'false' }
     expect(isTokenRecoveryCompatibilityEnabled(env)).toBe(false)
-    expect(hasFlagKey('glitchTokenRecoveryCompatEnabled', env)).toBe(true)
+    expect(hasFlagKey('inaraTokenRecoveryCompatEnabled', env)).toBe(true)
   })
 })

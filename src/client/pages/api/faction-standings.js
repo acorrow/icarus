@@ -2,12 +2,12 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 import EliteLog from '../../../service/lib/elite-log.js'
-import { appendGlitchLogEntry } from './glitch-log-utils.js'
+import { appendInaraLogEntry } from './inara-log-utils.js'
 
-const logPath = path.join(process.cwd(), 'glitch-trade-routes.log')
+const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
 
 function logFactionStandings (entry) {
-  appendGlitchLogEntry(logPath, entry)
+  appendInaraLogEntry(logPath, entry)
 }
 
 function resolveLogDir () {

@@ -102,8 +102,8 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 
 ## INARA theming & asset references
 - Primary surfaces live in `src/client/pages/inara.js` and `src/client/pages/glitch.module.css`; the hero animation draws from `src/client/public/glitch/signal-mesh.svg`.
-- Jest + Testing Library smoke tests in `src/client/__tests__/glitch.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
-- Maintain the Glitch copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `GlitchPage`; update both arrays to keep the loop seamless.
+- Jest + Testing Library smoke tests in `src/client/__tests__/inara.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
+- Maintain the Glitch copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `InaraPage`; update both arrays to keep the loop seamless.
 - When undoing Glitch changes, delete `glitch.module.css`, the asset folder (`src/client/public/glitch/`), and associated imports, then remove the Jest configuration and dependencies if the testing stack is no longer desired.
 - Respect the palette guidance below—new CSS tokens must document their intent and derive from `src/client/css/pages/glitch.css` rather than introducing bespoke colors.
 
@@ -168,7 +168,7 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
 - **Request/response handlers.** Expose pull-based APIs by adding functions to `eventHandlers` via `EventHandlers.getEventHandlers()`. These respond to `sendEvent('handlerName')` calls from the client. Prefer returning plain JSON—complex formatting belongs client-side.
 - **Client listeners.** Components subscribe to broadcasts by calling `eventListener('<eventName>', callback)` from `src/client/lib/socket.js`. Always clean up subscriptions in the `useEffect` teardown to prevent duplicate handlers when panels remount. Use `useSocket()` if you need connection status (e.g., disable refresh actions until `ready === true`).
 - **Triggering refreshes.** Let journal events drive updates whenever possible. For example, `TradeRoutesPanel` refreshes ship-derived filters whenever `SHIP_STATUS_UPDATE_EVENTS` arrives, and `useSystemSelector` refetches the commander's location on `Location`/`FSDJump`. When adding new INARA features, decide whether to listen for an existing broadcast or to extend the service layer with a new broadcast tailored to your feature.
-- **Development ergonomics.** The client automatically queues outbound `sendEvent` calls while disconnected. Avoid manual retry loops—trust the socket layer. When mocking, use the `glitchUseMockData` flag so production builds continue to hit the live service.
+- **Development ergonomics.** The client automatically queues outbound `sendEvent` calls while disconnected. Avoid manual retry loops—trust the socket layer. When mocking, use the `inaraUseMockData` flag so production builds continue to hit the live service.
 
 ## Scope
 These instructions apply to the entire repository unless a more specific `AGENTS.md` overrides them.

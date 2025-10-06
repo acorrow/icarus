@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import notification from 'lib/notification'
 import { sendEvent, eventListener } from 'lib/socket'
-import { formatRelativeTime } from 'lib/glitch-formatters'
+import { formatRelativeTime } from 'lib/inara-formatters'
 import glitchStyles from 'pages/glitch.module.css'
 import styles from './pirate-radio.module.css'
 
@@ -310,7 +310,7 @@ export default function PirateRadioPanel () {
       <div className={glitchStyles.tableSectionHeader}>
         <h2 className={glitchStyles.tableSectionTitle}>Pirate Radio</h2>
         <p className={styles.subtitle}>
-          Glitch’s outlaw signal crawler stitches together volunteer library submissions and station commercials
+          INARA’s outlaw signal crawler stitches together volunteer library submissions and station commercials
           into a persistent underground broadcast. Configure your directories and let the uplink spin.
         </p>
         <div className={styles.statusMeta}>

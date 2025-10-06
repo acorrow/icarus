@@ -1,7 +1,7 @@
 /* global WebSocket, CustomEvent */
 import { createContext, useState, useContext, useEffect } from 'react'
 import notification from 'lib/notification'
-import { getMockShipStatus, getMockSystemData, getMockTokenBalanceSnapshot, getMockTokenLedger } from './glitch-mock-data'
+import { getMockShipStatus, getMockSystemData, getMockTokenBalanceSnapshot, getMockTokenLedger } from './inara-mock-data'
 
 let socket = null // Store socket connection (defaults to null)
 let callbackHandlers = {} // Store callbacks waiting to be executed (pending response from server)
@@ -20,7 +20,7 @@ const socketOptions = {
 
 function isLayoutSandbox () {
   if (typeof window === 'undefined') return false
-  return Boolean(window.__GLITCH_LAYOUT_SANDBOX__)
+  return Boolean(window.__INARA_LAYOUT_SANDBOX__)
 }
 
 function socketDebugMessage () { /* console.log(...arguments) */ }

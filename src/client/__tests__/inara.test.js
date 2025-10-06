@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen, act } from '@testing-library/react'
-import { getMockTokenBalanceSnapshot } from '../lib/glitch-mock-data'
-import GlitchPage, {
+import { getMockTokenBalanceSnapshot } from '../lib/inara-mock-data'
+import InaraPage, {
   createTransactionSequence,
   createJackpotFloodConfig,
   TERMINAL_PROMPT_TYPE_CLASS_MAP,
@@ -29,7 +29,7 @@ jest.mock('../components/layout', () => ({ children }) => <>{children}</>)
 jest.mock('../components/panel', () => ({ children }) => <div>{children}</div>)
 jest.mock('../components/panels/nav/navigation-inspector-panel', () => () => <div data-testid='navigation-inspector-placeholder' />)
 
-describe('Glitch page', () => {
+describe('INARA page', () => {
   beforeEach(() => {
     mockSendEvent.mockClear()
     mockEventListener.mockClear()
@@ -43,24 +43,24 @@ describe('Glitch page', () => {
   })
 
   it('renders without a hero summary or redundant page title', async () => {
-    await act(async () => { render(<GlitchPage />) })
+    await act(async () => { render(<InaraPage />) })
 
-    expect(screen.queryByRole('heading', { level: 1, name: /glitch operations/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1, name: /inara operations/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
   })
 
-  it('exposes key Glitch panels for missions and mining', async () => {
-    await act(async () => { render(<GlitchPage />) })
+  it('exposes key INARA panels for missions and mining', async () => {
+    await act(async () => { render(<InaraPage />) })
 
     expect(await screen.findByRole('heading', { name: /find trade routes/i })).toBeInTheDocument()
     expect(screen.getByText(/cross-reference inara freight whispers/i)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /mining missions/i, hidden: true })).toBeInTheDocument()
-    expect(screen.getByText(/glitch decrypts volunteer inara manifests/i)).toBeInTheDocument()
+    expect(screen.getByText(/inara decrypts volunteer manifests/i)).toBeInTheDocument()
   })
 
   it('renders the token console meter with request control', async () => {
-    await act(async () => { render(<GlitchPage />) })
+    await act(async () => { render(<InaraPage />) })
 
     expect(mockSendEvent).toHaveBeenCalledWith('getTokenBalance')
     expect(await screen.findByText(/tokens/i)).toBeInTheDocument()
@@ -68,7 +68,7 @@ describe('Glitch page', () => {
   })
 })
 
-describe('Glitch terminal sequences', () => {
+describe('INARA terminal sequences', () => {
   it('creates jackpot flood glyph lines when metadata marks a jackpot', () => {
     const entry = {
       id: 'jackpot-entry',

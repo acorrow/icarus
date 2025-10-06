@@ -6,9 +6,9 @@ import fetch from 'node-fetch'
 import { load } from 'cheerio'
 import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
 
-const GLITCH_BASE_URL = 'https://inara.cz'
-const GLITCH_COMMODITY_SEARCH_URL = `${GLITCH_BASE_URL}/elite/commodities/`
-const GLITCH_SEARCH_DEFAULT_PARAMS = Object.freeze({
+const INARA_BASE_URL = 'https://inara.cz'
+const INARA_COMMODITY_SEARCH_URL = `${INARA_BASE_URL}/elite/commodities/`
+const INARA_SEARCH_DEFAULT_PARAMS = Object.freeze({
   formbrief: '1',
   pi1: '2',
   pi3: '1',
@@ -24,15 +24,15 @@ const GLITCH_SEARCH_DEFAULT_PARAMS = Object.freeze({
   pi14: '0'
 })
 
-const GLITCH_MARKET_CACHE_DIR = path.join(process.cwd(), 'resources', 'cache')
-const GLITCH_MARKET_CACHE_FILE = path.join(GLITCH_MARKET_CACHE_DIR, 'glitch-market-cache.json')
-const GLITCH_MARKET_CACHE_VERSION = 1
-const DEFAULT_GLITCH_CACHE_TTL_MS = 15 * 60 * 1000
-const MIN_GLITCH_REFRESH_INTERVAL_MS = 15 * 60 * 1000
-const configuredGlitchCacheTtl = Number(process.env.ICARUS_GLITCH_SEARCH_TTL_MS)
-const GLITCH_CACHE_TTL_MS = Number.isFinite(configuredGlitchCacheTtl)
-  ? Math.max(configuredGlitchCacheTtl, MIN_GLITCH_REFRESH_INTERVAL_MS)
-  : DEFAULT_GLITCH_CACHE_TTL_MS
+const INARA_MARKET_CACHE_DIR = path.join(process.cwd(), 'resources', 'cache')
+const INARA_MARKET_CACHE_FILE = path.join(INARA_MARKET_CACHE_DIR, 'inara-market-cache.json')
+const INARA_MARKET_CACHE_VERSION = 1
+const DEFAULT_INARA_CACHE_TTL_MS = 15 * 60 * 1000
+const MIN_INARA_REFRESH_INTERVAL_MS = 15 * 60 * 1000
+const configuredInaraCacheTtl = Number(process.env.ICARUS_INARA_SEARCH_TTL_MS)
+const INARA_CACHE_TTL_MS = Number.isFinite(configuredInaraCacheTtl)
+  ? Math.max(configuredInaraCacheTtl, MIN_INARA_REFRESH_INTERVAL_MS)
+  : DEFAULT_INARA_CACHE_TTL_MS
 
 const commodityDataPath = path.join(process.cwd(), 'src', 'service', 'data', 'all-commodites.json')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -47,7 +47,7 @@ let cachedCommodityOptionsFetchedAt = 0
 let cachedCommodityOptionsPromise = null
 let cachedCommoditySynonyms = null
 let cachedMarketCache = null
-const inMemoryGlitchCommodityCache = new Map()
+const inMemoryInaraCommodityCache = new Map()
 
 function ensureDirectoryExists (dirPath) {
   if (!dirPath) return
@@ -85,41 +85,41 @@ function loadCommoditySynonyms () {
   }
 }
 
-function loadGlitchMarketCache () {
+function loadInaraMarketCache () {
   if (cachedMarketCache) return cachedMarketCache
   try {
-    if (!fs.existsSync(GLITCH_MARKET_CACHE_FILE)) {
-      cachedMarketCache = { version: GLITCH_MARKET_CACHE_VERSION, commodities: {} }
+    if (!fs.existsSync(INARA_MARKET_CACHE_FILE)) {
+      cachedMarketCache = { version: INARA_MARKET_CACHE_VERSION, commodities: {} }
       return cachedMarketCache
     }
-    const raw = fs.readFileSync(GLITCH_MARKET_CACHE_FILE, 'utf8')
+    const raw = fs.readFileSync(INARA_MARKET_CACHE_FILE, 'utf8')
     const parsed = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object') {
-      cachedMarketCache = { version: GLITCH_MARKET_CACHE_VERSION, commodities: {} }
+      cachedMarketCache = { version: INARA_MARKET_CACHE_VERSION, commodities: {} }
       return cachedMarketCache
     }
-    if (parsed.version !== GLITCH_MARKET_CACHE_VERSION || typeof parsed.commodities !== 'object') {
-      cachedMarketCache = { version: GLITCH_MARKET_CACHE_VERSION, commodities: {} }
+    if (parsed.version !== INARA_MARKET_CACHE_VERSION || typeof parsed.commodities !== 'object') {
+      cachedMarketCache = { version: INARA_MARKET_CACHE_VERSION, commodities: {} }
       return cachedMarketCache
     }
     cachedMarketCache = parsed
     return cachedMarketCache
   } catch (err) {
-    cachedMarketCache = { version: GLITCH_MARKET_CACHE_VERSION, commodities: {} }
+    cachedMarketCache = { version: INARA_MARKET_CACHE_VERSION, commodities: {} }
     return cachedMarketCache
   }
 }
 
-function saveGlitchMarketCache (cache) {
+function saveInaraMarketCache (cache) {
   if (!cache || typeof cache !== 'object') return
   try {
-    ensureDirectoryExists(GLITCH_MARKET_CACHE_DIR)
-    fs.writeFileSync(GLITCH_MARKET_CACHE_FILE, JSON.stringify(cache, null, 2), 'utf8')
+    ensureDirectoryExists(INARA_MARKET_CACHE_DIR)
+    fs.writeFileSync(INARA_MARKET_CACHE_FILE, JSON.stringify(cache, null, 2), 'utf8')
     cachedMarketCache = cache
   } catch (err) {}
 }
 
-function getCachedCommoditySearch (cache, commodityKey, systemName, { ttlMs = GLITCH_CACHE_TTL_MS } = {}) {
+function getCachedCommoditySearch (cache, commodityKey, systemName, { ttlMs = INARA_CACHE_TTL_MS } = {}) {
   if (!cache || typeof cache !== 'object') return null
   if (!commodityKey) return null
   const byCommodity = cache.commodities?.[commodityKey]
@@ -176,32 +176,32 @@ function setCachedCommoditySearch (cache, commodityKey, systemName, listings) {
   return true
 }
 
-function buildGlitchMemoryKey (commodityKey, systemName) {
+function buildInaraMemoryKey (commodityKey, systemName) {
   if (!commodityKey) return ''
   const systemKey = normalise(systemName)
   return systemKey ? `${commodityKey}::${systemKey}` : commodityKey
 }
 
-function getGlitchMemoryEntry (commodityKey, systemName) {
-  const key = buildGlitchMemoryKey(commodityKey, systemName)
+function getInaraMemoryEntry (commodityKey, systemName) {
+  const key = buildInaraMemoryKey(commodityKey, systemName)
   if (!key) return { key: null, entry: null }
-  const entry = inMemoryGlitchCommodityCache.get(key)
+  const entry = inMemoryInaraCommodityCache.get(key)
   if (!entry) return { key, entry: null }
-  if (entry.fetchedAt && (Date.now() - entry.fetchedAt) > GLITCH_CACHE_TTL_MS) {
-    inMemoryGlitchCommodityCache.delete(key)
+  if (entry.fetchedAt && (Date.now() - entry.fetchedAt) > INARA_CACHE_TTL_MS) {
+    inMemoryInaraCommodityCache.delete(key)
     return { key, entry: null }
   }
   return { key, entry }
 }
 
-function setGlitchMemoryPromise (key, promise) {
+function setInaraMemoryPromise (key, promise) {
   if (!key || typeof promise?.then !== 'function') return
-  inMemoryGlitchCommodityCache.set(key, { promise, fetchedAt: Date.now() })
+  inMemoryInaraCommodityCache.set(key, { promise, fetchedAt: Date.now() })
 }
 
-function setGlitchMemoryResult (key, listings, error = null) {
+function setInaraMemoryResult (key, listings, error = null) {
   if (!key) return
-  inMemoryGlitchCommodityCache.set(key, {
+  inMemoryInaraCommodityCache.set(key, {
     listings: Array.isArray(listings) ? listings : [],
     error: error || null,
     fetchedAt: Date.now()
@@ -229,7 +229,7 @@ async function loadCommodityOptions () {
   if (cachedCommodityOptionsPromise) return cachedCommodityOptionsPromise
 
   cachedCommodityOptionsPromise = (async () => {
-    const url = new URL(GLITCH_COMMODITY_SEARCH_URL)
+    const url = new URL(INARA_COMMODITY_SEARCH_URL)
     url.searchParams.set('formbrief', '1')
 
     const requestBytes = estimateByteSize(url.toString())
@@ -347,7 +347,7 @@ function parseCommoditySearchResults (html) {
     const locationCell = $(cells[0])
     const stationLink = locationCell.find('a[href*="/elite/station-market/"]').first()
     const stationHref = stationLink.attr('href') || ''
-    const stationUrl = stationHref ? `${GLITCH_BASE_URL}${stationHref}` : null
+    const stationUrl = stationHref ? `${INARA_BASE_URL}${stationHref}` : null
     const stationName = cleanText(stationLink.find('.standardcase').text().replace(/\|$/, '')) || null
     const systemName = cleanText(stationLink.find('.uppercase').text()) || null
 
@@ -385,7 +385,7 @@ function parseCommoditySearchResults (html) {
       updatedText,
       updatedAt: parseEpochSecondsToIso(updatedAttr),
       fetchedAt: new Date().toISOString(),
-      source: 'glitch-search'
+      source: 'inara-search'
     }
 
     listings.push(listing)
@@ -403,10 +403,10 @@ function parseCommoditySearchResults (html) {
 
 async function fetchCommoditySearchListings ({ commodityId, commodityName, nearSystem }) {
   if (!commodityId) throw new Error(`Unknown INARA commodity id for ${commodityName || 'commodity'}`)
-  const params = new URLSearchParams({ ...GLITCH_SEARCH_DEFAULT_PARAMS })
+  const params = new URLSearchParams({ ...INARA_SEARCH_DEFAULT_PARAMS })
   params.append('pa1[]', commodityId)
   if (nearSystem) params.set('ps1', nearSystem)
-  const url = `${GLITCH_COMMODITY_SEARCH_URL}?${params.toString()}`
+  const url = `${INARA_COMMODITY_SEARCH_URL}?${params.toString()}`
   const requestBytes = estimateByteSize(url)
   let responseText = ''
   let responseStatus = null
@@ -767,7 +767,7 @@ export default async function handler (req, res) {
     .filter(item => item.name)
 
   if (requestedCommodities.length === 0) {
-    return res.status(200).json({ results: [], metadata: { glitchStatus: 'empty', marketStatus: 'empty' } })
+    return res.status(200).json({ results: [], metadata: { inaraStatus: 'empty', marketStatus: 'empty' } })
   }
 
   const logDir = resolveLogDir()
@@ -775,15 +775,15 @@ export default async function handler (req, res) {
   const marketStatus = marketData ? 'ok' : 'missing'
   const { history: localHistory, status: historyStatus } = buildLocalMarketHistory(logDir, marketData?.marketId || null)
 
-  const glitchSearchCache = loadGlitchMarketCache()
-  let glitchCacheDirty = false
-  const glitchResults = new Map()
+  const inaraSearchCache = loadInaraMarketCache()
+  let inaraCacheDirty = false
+  const inaraResults = new Map()
   const results = []
-  let glitchStatus = 'ok'
+  let inaraStatus = 'ok'
 
   for (const commodity of requestedCommodities) {
     const commodityKey = commodity.key || normaliseCommodityKey(commodity.name)
-    if (!commodityKey || glitchResults.has(commodityKey)) continue
+    if (!commodityKey || inaraResults.has(commodityKey)) continue
 
     let option = null
     let searchError = null
@@ -805,7 +805,7 @@ export default async function handler (req, res) {
     let memoryEntry = null
 
     if (!searchError && option) {
-      ({ key: memoryKey, entry: memoryEntry } = getGlitchMemoryEntry(commodityKey, nearSystem))
+      ({ key: memoryKey, entry: memoryEntry } = getInaraMemoryEntry(commodityKey, nearSystem))
 
       if (memoryEntry) {
         if (Array.isArray(memoryEntry.listings) && memoryEntry.listings.length > 0) {
@@ -823,7 +823,7 @@ export default async function handler (req, res) {
             hardFailure = true
           }
 
-          const resolvedMemory = getGlitchMemoryEntry(commodityKey, nearSystem).entry
+          const resolvedMemory = getInaraMemoryEntry(commodityKey, nearSystem).entry
           if ((!Array.isArray(listings) || listings.length === 0) && resolvedMemory && Array.isArray(resolvedMemory.listings)) {
             listings = resolvedMemory.listings
             if (!searchError && resolvedMemory.error) searchError = resolvedMemory.error
@@ -834,10 +834,10 @@ export default async function handler (req, res) {
       }
 
       if ((!Array.isArray(listings) || listings.length === 0) && !searchError) {
-        const cached = getCachedCommoditySearch(glitchSearchCache, commodityKey, nearSystem)
+        const cached = getCachedCommoditySearch(inaraSearchCache, commodityKey, nearSystem)
         if (cached) {
           listings = Array.isArray(cached.listings) ? cached.listings : []
-          if (memoryKey) setGlitchMemoryResult(memoryKey, listings, null)
+          if (memoryKey) setInaraMemoryResult(memoryKey, listings, null)
         }
       }
 
@@ -848,20 +848,20 @@ export default async function handler (req, res) {
           nearSystem
         })
           .then(freshListings => {
-            if (memoryKey) setGlitchMemoryResult(memoryKey, freshListings, null)
+            if (memoryKey) setInaraMemoryResult(memoryKey, freshListings, null)
             if (Array.isArray(freshListings) && freshListings.length > 0) {
-              const didUpdate = setCachedCommoditySearch(glitchSearchCache, commodityKey, nearSystem, freshListings)
-              if (didUpdate) glitchCacheDirty = true
+              const didUpdate = setCachedCommoditySearch(inaraSearchCache, commodityKey, nearSystem, freshListings)
+              if (didUpdate) inaraCacheDirty = true
             }
             return { listings: freshListings, error: null }
           })
           .catch(err => {
             const message = err.message || 'Failed to retrieve INARA listings'
-            if (memoryKey) setGlitchMemoryResult(memoryKey, [], message)
+            if (memoryKey) setInaraMemoryResult(memoryKey, [], message)
             throw new Error(message)
           })
 
-        if (memoryKey) setGlitchMemoryPromise(memoryKey, fetchPromise)
+        if (memoryKey) setInaraMemoryPromise(memoryKey, fetchPromise)
 
         try {
           const result = await fetchPromise
@@ -880,33 +880,33 @@ export default async function handler (req, res) {
     }
 
     if (memoryKey && searchError) {
-      setGlitchMemoryResult(memoryKey, Array.isArray(listings) ? listings : [], searchError)
+      setInaraMemoryResult(memoryKey, Array.isArray(listings) ? listings : [], searchError)
     }
 
     if (searchError) {
       if (hardFailure) {
-        glitchStatus = 'error'
-      } else if (glitchStatus === 'ok') {
-        glitchStatus = 'partial'
+        inaraStatus = 'error'
+      } else if (inaraStatus === 'ok') {
+        inaraStatus = 'partial'
       }
     }
 
-    glitchResults.set(commodityKey, {
+    inaraResults.set(commodityKey, {
       listings: Array.isArray(listings) ? listings : [],
       error: searchError || null
     })
   }
 
-  if (glitchCacheDirty) {
-    saveGlitchMarketCache(glitchSearchCache)
+  if (inaraCacheDirty) {
+    saveInaraMarketCache(inaraSearchCache)
   }
 
   requestedCommodities.forEach(commodity => {
     const commodityKey = commodity.key || normaliseCommodityKey(commodity.name)
-    const cacheEntry = commodityKey ? glitchResults.get(commodityKey) : null
+    const cacheEntry = commodityKey ? inaraResults.get(commodityKey) : null
     const resolvedEntry = cacheEntry || { listings: [], error: 'No INARA data available' }
-    if (resolvedEntry.error && resolvedEntry.listings.length === 0 && glitchStatus === 'ok') {
-      glitchStatus = 'partial'
+    if (resolvedEntry.error && resolvedEntry.listings.length === 0 && inaraStatus === 'ok') {
+      inaraStatus = 'partial'
     }
 
     let marketEntry = null
@@ -931,7 +931,7 @@ export default async function handler (req, res) {
       }
     }
 
-    const bestGlitchListing = resolvedEntry.listings.find(entry => typeof entry.price === 'number') || null
+    const bestInaraListing = resolvedEntry.listings.find(entry => typeof entry.price === 'number') || null
 
     let historyEntries = []
     let historyBestEntry = null
@@ -957,15 +957,15 @@ export default async function handler (req, res) {
       name: commodity.name,
       count: commodity.count,
       market: marketEntry,
-      glitch: bestGlitchListing,
-      glitchListings: Array.isArray(resolvedEntry.listings) ? resolvedEntry.listings : [],
+      inara: bestInaraListing,
+      inaraListings: Array.isArray(resolvedEntry.listings) ? resolvedEntry.listings : [],
       localHistory: {
         best: historyBestEntry,
         entries: historyEntries
       },
       errors: {
         market: !marketEntry && marketStatus !== 'missing' ? 'Commodity not found in latest market data.' : null,
-        glitch: resolvedEntry.error || null
+        inara: resolvedEntry.error || null
       }
     })
   })
@@ -973,7 +973,7 @@ export default async function handler (req, res) {
   res.status(200).json({
     results,
     metadata: {
-      glitchStatus,
+      inaraStatus,
       marketStatus,
       historyStatus
     }
