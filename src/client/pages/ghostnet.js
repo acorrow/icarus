@@ -4321,6 +4321,38 @@ function TradeRoutesPanel () {
     return formatRelativeTime(updated)
   }, [routeContext, selectedRoute])
 
+  const routeProfitMetrics = useMemo(() => {
+    if (!routeContext) return []
+
+    const metrics = []
+
+    const profitPerTrip = formatCredits(
+      selectedRoute?.summary?.profitPerTrip ?? selectedRoute?.profitPerTrip,
+      selectedRoute?.summary?.profitPerTripText || selectedRoute?.profitPerTripText
+    )
+    if (profitPerTrip && profitPerTrip !== '--') {
+      metrics.push({ key: 'trip', label: 'Profit / Trip', value: profitPerTrip })
+    }
+
+    const profitPerHour = formatCredits(
+      selectedRoute?.summary?.profitPerHour ?? selectedRoute?.profitPerHour,
+      selectedRoute?.summary?.profitPerHourText || selectedRoute?.profitPerHourText
+    )
+    if (profitPerHour && profitPerHour !== '--') {
+      metrics.push({ key: 'hour', label: 'Profit / Hour', value: profitPerHour })
+    }
+
+    const profitPerUnit = formatCredits(
+      selectedRoute?.summary?.profitPerUnit ?? selectedRoute?.profitPerUnit,
+      selectedRoute?.summary?.profitPerUnitText || selectedRoute?.profitPerUnitText
+    )
+    if (profitPerUnit && profitPerUnit !== '--') {
+      metrics.push({ key: 'unit', label: 'Profit / Tonne', value: profitPerUnit })
+    }
+
+    return metrics
+  }, [routeContext, selectedRoute])
+
   const buildMetricChipClasses = useCallback((variant = 'neutral') => {
     const classes = [styles.metricChip, styles.metricChipContext]
     const variantClass = METRIC_VARIANT_CLASS_MAP[variant] || METRIC_VARIANT_CLASS_MAP.neutral
@@ -4440,6 +4472,16 @@ function TradeRoutesPanel () {
             </div>
             {routeContext ? (
               <>
+                {routeProfitMetrics.length > 0 && (
+                  <div className={styles.tradeRouteContextProfitRow}>
+                    {routeProfitMetrics.map(metric => (
+                      <div key={`route-context-${metric.key}`} className={styles.tradeRouteContextProfitMetric}>
+                        <span className={styles.tradeRouteContextProfitLabel}>{metric.label}</span>
+                        <span className={styles.tradeRouteContextProfitValue}>{metric.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className={styles.tradeRouteContextStations}>
                   <div className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardOrigin}`}>
                     <div className={styles.tradeRouteContextStationHeader}>
