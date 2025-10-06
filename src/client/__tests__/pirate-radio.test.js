@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
-import PirateRadioPanel from '../components/glitch/pirate-radio'
+import PirateRadioPanel from '../components/panels/inara/pirate-radio'
 
 jest.mock('lib/socket', () => ({
   sendEvent: jest.fn(),

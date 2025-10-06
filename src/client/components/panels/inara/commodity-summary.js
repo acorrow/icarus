@@ -2,18 +2,18 @@ import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import TransferContextSummary from './transfer-context-summary'
 import { StationIcon, DemandIndicator } from './station-summary'
-import Icons from '../../lib/icons'
-import { getCommodityIconConfig } from '../../lib/commodity-icons'
-import { sanitizeInaraText } from '../../lib/sanitize-inara-text'
-import CopyOnClick from '../copy-on-click'
+import Icons from 'lib/icons'
+import { getCommodityIconConfig } from 'lib/commodity-icons'
+import { sanitizeInaraText } from 'lib/sanitize-inara-text'
+import CopyOnClick from 'components/copy-on-click'
 import {
   formatCredits,
   formatRelativeTime,
   formatStationDistance,
   formatSystemDistance
-} from '../../lib/glitch-formatters'
-import { stationIconFromType } from '../../lib/station-icons'
-import getDistanceSeverityColor from '../../lib/distance-colors'
+} from 'lib/glitch-formatters'
+import { stationIconFromType } from 'lib/station-icons'
+import getDistanceSeverityColor from 'lib/distance-colors'
 
 export function CommodityIcon ({ category, size = 26 }) {
   const config = getCommodityIconConfig(category)

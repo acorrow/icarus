@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import notification from 'lib/notification'
 import { sendEvent, eventListener } from 'lib/socket'
 import { formatRelativeTime } from 'lib/glitch-formatters'
-import glitchStyles from '../../pages/glitch.module.css'
+import glitchStyles from 'pages/glitch.module.css'
 import styles from './pirate-radio.module.css'
 
 const INITIAL_DIRECTORIES = { library: '', commercial: '' }

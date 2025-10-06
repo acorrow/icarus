@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { sanitizeInaraText } from '../../lib/sanitize-inara-text'
-import CopyOnClick from '../copy-on-click'
+import { sanitizeInaraText } from 'lib/sanitize-inara-text'
+import CopyOnClick from 'components/copy-on-click'
 import StackedCell from './stacked-cell'
 import styles from './trade-route-cells.module.css'
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import CopyOnClick from '../copy-on-click'
+import CopyOnClick from 'components/copy-on-click'
 import styles from './transfer-context-summary.module.css'
 
 const BAD_TEXT_PATTERN = /[\u25A0-\u25A3\u25A9\uFFFD]/g

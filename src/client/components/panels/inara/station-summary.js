@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Icons from '../../lib/icons'
-import { sanitizeInaraText } from '../../lib/sanitize-inara-text'
-import CopyOnClick from '../copy-on-click'
+import Icons from 'lib/icons'
+import { sanitizeInaraText } from 'lib/sanitize-inara-text'
+import CopyOnClick from 'components/copy-on-click'
 import styles from './station-summary.module.css'
 
 const DEMAND_ARROW_PATTERN = /[▲△▴▵▼▽▾▿↑↓]/g
