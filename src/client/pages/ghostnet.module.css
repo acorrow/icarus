@@ -3302,9 +3302,9 @@ button.terminalStatusPreview:focus-visible {
   color: var(--ghostnet-muted);
 }
 
-.ghostnet :global(.ghostnet-panel-table .ghostnet-spinner__icon) {
-  border-color: var(--ghostnet-accent);
-  border-right-color: transparent;
+.ghostnet :global(.ghostnet-panel-table .ghostnet-spinner__graphic) {
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--ghostnet-accent) 55%, transparent));
+  transform: scale(0.6);
 }
 
 .ghostnet :global(.ghostnet-panel-table .button--active) {

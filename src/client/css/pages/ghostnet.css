@@ -42,23 +42,28 @@
   color: color-mix(in srgb, var(--ghostnet-color-text-strong) 70%, transparent);
 }
 
-.ghostnet-spinner__icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--ghostnet-color-text-strong) 18%, transparent);
-  border-top-color: var(--ghostnet-color-primary);
-  animation: ghostnet-spinner-rotate 0.85s linear infinite;
+.ghostnet-spinner__graphic {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  transform: scale(0.65);
+  transform-origin: center;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-primary) 45%, transparent));
+}
+
+.ghostnet-spinner--inline .ghostnet-spinner__graphic {
+  transform: scale(0.55);
+}
+
+.ghostnet-spinner__row {
+  display: flex;
+  gap: 0.3rem;
+  line-height: 0;
 }
 
 .ghostnet-spinner__label {
   font-size: 0.95rem;
-}
-
-@keyframes ghostnet-spinner-rotate {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .pristine-mining__container {

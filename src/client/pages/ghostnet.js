@@ -90,7 +90,40 @@ function LoadingSpinner ({ label, inline = false }) {
       role='status'
       aria-live='polite'
     >
-      <span className='ghostnet-spinner__icon' aria-hidden='true' />
+      <span className='ghostnet-spinner__graphic' aria-hidden='true'>
+        <span className='ghostnet-spinner__row'>
+          <span className='loader__arrow loader__arrow--outer-18' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-17' />
+          <span className='loader__arrow loader__arrow--outer-16' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-15' />
+          <span className='loader__arrow loader__arrow--outer-14' />
+        </span>
+        <span className='ghostnet-spinner__row'>
+          <span className='loader__arrow loader__arrow--outer-1' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-2' />
+          <span className='loader__arrow loader__arrow--inner-6' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--inner-5' />
+          <span className='loader__arrow loader__arrow--inner-4' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-13' />
+          <span className='loader__arrow loader__arrow--outer-12' />
+        </span>
+        <span className='ghostnet-spinner__row'>
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-3' />
+          <span className='loader__arrow loader__arrow--outer-4' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--inner-1' />
+          <span className='loader__arrow loader__arrow--inner-2' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--inner-3' />
+          <span className='loader__arrow loader__arrow--outer-11' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-10' />
+        </span>
+        <span className='ghostnet-spinner__row'>
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-5' />
+          <span className='loader__arrow loader__arrow--outer-6' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-7' />
+          <span className='loader__arrow loader__arrow--outer-8' />
+          <span className='loader__arrow loader__arrow--down loader__arrow--outer-9' />
+        </span>
+      </span>
       {label ? <span className='ghostnet-spinner__label'>{label}</span> : null}
     </div>
   )
@@ -3927,13 +3960,11 @@ function TradeRoutesPanel () {
 
     setError('')
     setMessage('')
-
-    const hasExistingResults = status === 'populated' || status === 'empty'
-    if (hasExistingResults) {
-      setIsRefreshing(true)
-    } else {
-      setStatus('loading')
-    }
+    setIsRefreshing(true)
+    setRoutes([])
+    setRawRoutes([])
+    setStatus('loading')
+    setLastUpdatedAt(null)
 
     const filters = {
       ...(cargoCapacity !== '' ? { cargoCapacity } : {}),
@@ -3996,7 +4027,7 @@ function TradeRoutesPanel () {
       .finally(() => {
         setIsRefreshing(false)
       })
-  }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, sourcePower, targetPower, orderBy, includeRoundTrips, displayPowerplay, status])
+  }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, sourcePower, targetPower, orderBy, includeRoundTrips, displayPowerplay])
 
   useEffect(() => {
     setSelectedRouteContext(null)
@@ -4357,7 +4388,7 @@ function TradeRoutesPanel () {
   }, [])
 
   const renderRoutesTable = () => (
-    <div className={styles.dataTableContainer}>
+    <div className={`${styles.dataTableContainer} fx-fade-in`}>
       <table className={`${styles.dataTable} ${styles.dataTableDense} ${styles.tradeRoutesTable}`}>
         <thead>
           <tr>
@@ -4417,7 +4448,7 @@ function TradeRoutesPanel () {
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className='fx-fade-in'>
           {routes.map((route, index) => (
             <TradeRouteTableRow
               key={`route-${index}`}
