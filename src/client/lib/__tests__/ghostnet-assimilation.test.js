@@ -21,6 +21,9 @@ describe('ghostnet assimilation opt-out', () => {
     jest.useRealTimers()
     document.body.className = ''
     document.body.innerHTML = ''
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.clear()
+    }
   })
 
   it('does not assimilate nodes inside data-no-assimilation containers', () => {
@@ -69,5 +72,26 @@ describe('ghostnet assimilation opt-out', () => {
     })
 
     cleanupFns.forEach((cleanup) => cleanup())
+  })
+
+  it('skips assimilation when INARA theme styling is disabled', () => {
+    jest.useFakeTimers()
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('ghostnetThemeEnabled', 'false')
+    }
+
+    const callback = jest.fn()
+
+    act(() => {
+      initiateGhostnetAssimilation(callback)
+    })
+
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(document.body.classList.contains('ghostnet-assimilation-mode')).toBe(false)
+
+    act(() => {
+      jest.runAllTimers()
+    })
   })
 })

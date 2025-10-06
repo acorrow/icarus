@@ -2,7 +2,7 @@
 
 ## About ICARUS Terminal
 
-ICARUS Terminal is a free, immersive, context-sensitive companion app and second screen interface for Elite Dangerous. It provides real-time intelligence on ship status, cargo, missions, and celestial bodies by processing Elite Dangerous journal files and integrating with community-driven data sources like EDSM, EDDB, and GHOSTNET.
+ICARUS Terminal is a free, immersive, context-sensitive companion app and second screen interface for Elite Dangerous. It provides real-time intelligence on ship status, cargo, missions, and celestial bodies by processing Elite Dangerous journal files and integrating with community-driven data sources like EDSM, EDDB, and INARA.
 
 The application is designed to run on multiple platforms, including as a native Windows application, in a web browser, and on touch-screen devices, offering a responsive and intuitive UI for both landscape and portrait orientations.
 

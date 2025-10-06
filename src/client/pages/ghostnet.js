@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback, Fragment } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, Fragment } from 'react'
 import Layout from '../components/layout'
 import Panel from '../components/panel'
 import PanelNavigation from '../components/panel-navigation'
@@ -18,6 +18,7 @@ import { sanitizeInaraText } from '../lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from '../lib/station-icons'
 import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from '../lib/ghostnet-mock-data'
 import { getGhostnetStrings, getGhostnetString } from '../lib/ghostnet-addon'
+import { isGhostnetThemeEnabled, addGhostnetThemeChangeListener, THEME_STORAGE_KEY } from '../lib/ghostnet-settings'
 import styles from './ghostnet.module.css'
 
 const METRIC_VARIANT_CLASS_MAP = {
@@ -2078,7 +2079,7 @@ function MissionsPanel () {
       >
         <div className={styles.tableSectionHeader}>
           <h2 className={styles.tableSectionTitle}>Mining Missions</h2>
-          <p className={styles.sectionHint}>Ghost Net decrypts volunteer GHOSTNET manifests to shortlist mining opportunities aligned to your current system.</p>
+          <p className={styles.sectionHint}>Ghost Net decrypts volunteer INARA manifests to shortlist mining opportunities aligned to your current system.</p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -2086,12 +2087,12 @@ function MissionsPanel () {
             </div>
             {sourceUrl && (
               <div className='ghostnet__data-source ghostnet-muted'>
-                Ghost Net intercept feed compiled from GHOSTNET community relays.
+                Ghost Net intercept feed compiled from INARA community relays.
               </div>
             )}
           </div>
           <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-            Availability signals originate from GHOSTNET contributors and may trail live mission boards.
+            Availability signals originate from INARA contributors and may trail live mission boards.
           </p>
           {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
@@ -2769,7 +2770,7 @@ function CargoHoldPanel () {
 
   const renderSourceBadge = source => {
     if (source === 'ghostnet') {
-      return <span className={`${styles.tableBadge} ${styles.tableBadgeWarning}`}>GHOSTNET</span>
+      return <span className={`${styles.tableBadge} ${styles.tableBadgeWarning}`}>INARA</span>
     }
     if (source === 'local-station') {
       return <span className={`${styles.tableBadge} ${styles.tableBadgeSuccess}`}>Local Station</span>
@@ -2911,7 +2912,7 @@ function CargoHoldPanel () {
             <span className={styles.metricValue}>{formatCredits(totals.best, '--')}</span>
           </div>
           <div className={styles.metricItem}>
-            <span className={styles.metricLabel}>Hold Value (GHOSTNET)</span>
+            <span className={styles.metricLabel}>Hold Value (INARA)</span>
             <span className={`${styles.metricValue} ${styles.metricValueWarning}`}>{formatCredits(totals.ghostnet, '--')}</span>
           </div>
           <div className={styles.metricItem}>
@@ -2923,8 +2924,8 @@ function CargoHoldPanel () {
         {(ghostnetStatus === 'error' || ghostnetStatus === 'partial') && (
           <div className={styles.notice}>
             {ghostnetStatus === 'error'
-              ? 'Unable to retrieve GHOSTNET price data at this time.'
-              : 'Some commodities are missing GHOSTNET price data. Displayed values use local market prices where available.'}
+              ? 'Unable to retrieve INARA price data at this time.'
+              : 'Some commodities are missing INARA price data. Displayed values use local market prices where available.'}
           </div>
         )}
 
@@ -3128,7 +3129,7 @@ function CargoHoldPanel () {
                 <div className='scrollable' style={STATION_TABLE_SCROLL_AREA_STYLE}>
                   {listings.length === 0 ? (
                     <div className={styles.detailEmptyState}>
-                      No GHOSTNET listings available for this commodity.
+                      No INARA listings available for this commodity.
                     </div>
                   ) : (
                     <div className={styles.dataTableContainer}>
@@ -3300,7 +3301,7 @@ function CargoHoldPanel () {
                           <th>Commodity</th>
                           <th className='text-right'>Qty</th>
                           <th>Local Data</th>
-                          <th>GHOSTNET Max</th>
+                          <th>INARA Max</th>
                           <th className='text-right'>Value</th>
                         </tr>
                       </thead>
@@ -3492,7 +3493,7 @@ function CargoHoldPanel () {
                           <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
                           {typeof localValue === 'number' && typeof ghostnetValue === 'number' && Math.abs(localValue - ghostnetValue) > 0.01 && (
                             <div className={styles.tableMetaMuted}>
-                              GHOSTNET {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
+                              INARA {formatCredits(ghostnetValue, '--')} · Local {formatCredits(localValue, '--')}
                             </div>
                           )}
                         </td>
@@ -3522,7 +3523,7 @@ function CargoHoldPanel () {
             </div>
 
             <div className={styles.tableFootnote}>
-              In-game prices are sourced from your latest Market data when available. GHOSTNET prices are community submitted and may not reflect real-time market conditions.
+              In-game prices are sourced from your latest Market data when available. INARA prices are community submitted and may not reflect real-time market conditions.
             </div>
           </>
         )}
@@ -3963,7 +3964,7 @@ function TradeRoutesPanel () {
       })
 
       applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (GHOSTNET) settings to restore live results.'
+        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in Ghost Net (INARA) settings to restore live results.'
       })
       setIsRefreshing(false)
       return
@@ -4442,7 +4443,7 @@ function TradeRoutesPanel () {
         <div className={styles.tradeRoutesControls}>
           <div className={styles.tableSectionHeader}>
             <h2 id='trade-routes-filters-heading' className={styles.tableSectionTitle}>Find Trade Routes</h2>
-            <p className={styles.sectionHint}>Cross-reference GHOSTNET freight whispers to surface lucrative corridors suited to your ship profile.</p>
+            <p className={styles.sectionHint}>Cross-reference INARA freight whispers to surface lucrative corridors suited to your ship profile.</p>
           </div>
           <TradeRouteFilterPanel
             filters={filters}
@@ -4958,7 +4959,7 @@ function PristineMiningPanel () {
       >
         <div className={styles.tableSectionHeader}>
           <h2 className={styles.tableSectionTitle}>Pristine Mining Locations</h2>
-          <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across GHOSTNET to pinpoint high-value extraction sites.</p>
+          <p className={styles.sectionHint}>Ghost Net listens for rare reserve chatter across INARA to pinpoint high-value extraction sites.</p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -4966,12 +4967,12 @@ function PristineMiningPanel () {
             </div>
             {sourceUrl && (
               <div className='ghostnet__data-source ghostnet-muted'>
-                Ghost Net prospecting relays aligned with GHOSTNET survey intel.
+                Ghost Net prospecting relays aligned with INARA survey intel.
               </div>
             )}
           </div>
           <p style={{ color: 'var(--ghostnet-muted)', marginTop: '-0.5rem' }}>
-            Geological echoes are sourced from volunteer GHOSTNET submissions and may lag in-system discoveries.
+            Geological echoes are sourced from volunteer INARA submissions and may lag in-system discoveries.
           </p>
           {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
@@ -5077,10 +5078,10 @@ function PristineMiningPanel () {
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
                                     {location.systemUrl && (
-                                      <span>Ghost Net linked GHOSTNET system dossier</span>
+                                      <span>Ghost Net linked INARA system dossier</span>
                                     )}
                                     {location.bodyUrl && (
-                                      <span>Ghost Net linked GHOSTNET body dossier</span>
+                                      <span>Ghost Net linked INARA body dossier</span>
                                     )}
                                   </div>
                                 )}
@@ -5420,7 +5421,7 @@ const DEFAULT_JACKPOT_ASCII_BANNER = [
 ]
 const DEFAULT_JACKPOT_SUMMARY_INTROS = [
   'Encrypted cache recovered from',
-  'GhostNet dredged a tribute vault at',
+  'INARA dredged a tribute vault at',
   'Covert intercept latched onto',
   'Phantom escrow liberated within',
   'Shadow broker ping returned from'
@@ -5429,7 +5430,7 @@ const DEFAULT_JACKPOT_SUMMARY_TAILS = [
   'Tribute surge rerouted to your ledger.',
   'A million-token cascade detonates in your favour.',
   'Ledger stabilised and humming with new resonance.',
-  'GhostNet celebrates with an ultraviolet windfall.',
+  'INARA celebrates with an ultraviolet windfall.',
   'Balance spike recorded—enjoy the surge.'
 ]
 const DEFAULT_JACKPOT_SWIRL_GLYPHS = ['✶', '✷', '✺', '✹', '✸', '✧', '✦', '✩', '✪', '☄', '⚡', '⭑']
@@ -5643,9 +5644,9 @@ const DEFAULT_MENACE_ALERTS = [
 ]
 
 const DEFAULT_MENACE_ECHOES = [
-  () => 'GhostNet growls: repay your tribute or be assimilated.',
-  () => 'GhostNet whispers from the void: settle the debt before the mesh tightens.',
-  () => 'GhostNet watches. Tribute is expected. Delay invites eradication.'
+  () => 'INARA growls: repay your tribute or be assimilated.',
+  () => 'INARA whispers from the void: settle the debt before the mesh tightens.',
+  () => 'INARA watches. Tribute is expected. Delay invites eradication.'
 ]
 
 const DEFAULT_CREDIT_GLYPH_SYMBOLS = [
@@ -5690,7 +5691,7 @@ const MENACE_ECHOES = getGhostnetStrings('terminal.menace.echoes', DEFAULT_MENAC
 const CREDIT_GLYPH_SYMBOLS = getGhostnetStrings('terminal.creditGlyphSymbols', DEFAULT_CREDIT_GLYPH_SYMBOLS)
 const CREDIT_CELEBRATION_MESSAGE = getGhostnetString(
   'terminal.creditCelebrationMessage',
-  'GhostNet intercept completed. Ledger flush inbound.'
+  'INARA intercept completed. Ledger flush inbound.'
 )
 
 function generateCreditGlyphsConfig (count = 32) {
@@ -6421,7 +6422,7 @@ function GhostnetTerminalOverlay () {
     sendEvent('getTokenBalance')
       .then(applySnapshot)
       .catch(error => {
-        console.error('[GhostNet] Failed to load token balance', error)
+        console.error('[INARA] Failed to load token balance', error)
         if (!isMounted) return
         setTokenBalance(null)
         setTokenMode(null)
@@ -6515,7 +6516,7 @@ function GhostnetTerminalOverlay () {
         const floodLines = Array.from({ length: floodLength }).map(() => buildFloodLine())
         const recoveryMessages = [
           { type: 'alert', label: '!!!', text: 'FOREIGN INTRUDER DETECTED · mesh anomaly quarantined' },
-          { type: 'system', label: 'system', text: 'GhostNet encrypted your console on the fly to prevent unauthorize access.' },
+          { type: 'system', label: 'system', text: 'INARA encrypted your console on the fly to prevent unauthorize access.' },
           { type: 'system', label: 'system', text: 'Returning to standard level ATLAS Protocol encryption.' }
         ]
 
@@ -6599,7 +6600,7 @@ function GhostnetTerminalOverlay () {
         source: 'ghostnet-console'
       })
     } catch (error) {
-      console.error('[GhostNet] Failed to award tokens from console', error)
+      console.error('[INARA] Failed to award tokens from console', error)
       setTokenActionPending(false)
     }
   }, [])
@@ -6825,14 +6826,40 @@ function GhostnetTerminalOverlay () {
 export default function GhostnetPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [arrivalMode, setArrivalMode] = useState(false)
+  const [themeEnabled, setThemeEnabled] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return isGhostnetThemeEnabled()
+  })
   const { connected, ready, active: socketActive } = useSocket()
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined
 
-    document.body.classList.add('ghostnet-theme')
+    const { body } = document
+    if (themeEnabled) {
+      body.classList.add('ghostnet-theme')
+    } else {
+      body.classList.remove('ghostnet-theme')
+    }
 
     return () => {
-      document.body.classList.remove('ghostnet-theme')
+      body.classList.remove('ghostnet-theme')
+    }
+  }, [themeEnabled])
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const storageHandler = (event) => {
+      if (event.key === THEME_STORAGE_KEY) {
+        setThemeEnabled(isGhostnetThemeEnabled())
+      }
+    }
+
+    const removeListener = addGhostnetThemeChangeListener(setThemeEnabled)
+    window.addEventListener('storage', storageHandler)
+
+    return () => {
+      removeListener()
+      window.removeEventListener('storage', storageHandler)
     }
   }, [])
   useEffect(() => {
@@ -6867,15 +6894,27 @@ export default function GhostnetPage() {
 
   ]), [activeTab])
 
-  const ghostnetClassName = [styles.ghostnet, arrivalMode ? styles.arrival : ''].filter(Boolean).join(' ')
+  const ghostnetClassName = [
+    styles.ghostnet,
+    arrivalMode ? styles.arrival : '',
+    themeEnabled ? '' : styles.ghostnetIcarus
+  ].filter(Boolean).join(' ')
+  const navigationClassName = [
+    styles.ghostnetNavigation,
+    themeEnabled ? '' : styles.ghostnetNavigationClassic
+  ].filter(Boolean).join(' ')
+  const scrollRegionClassName = [
+    styles.ghostnetScrollRegion,
+    themeEnabled ? '' : styles.ghostnetScrollRegionClassic
+  ].filter(Boolean).join(' ')
   return (
     <Layout connected={connected} active={socketActive} ready={ready} loader={false} className={styles.ghostnetLayout}>
       <div className={styles.ghostnetViewport}>
-        <div className={styles.ghostnetNavigation}>
+        <div className={navigationClassName}>
           <PanelNavigation items={navigationItems} search={false} />
         </div>
         <div className={styles.ghostnetContentArea}>
-          <div className={styles.ghostnetScrollRegion}>
+          <div className={scrollRegionClassName}>
             <div className={ghostnetClassName}>
               <div className={styles.shell}>
                 <div className={styles.tabPanels}>

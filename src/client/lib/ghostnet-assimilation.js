@@ -1,6 +1,7 @@
 import {
   getAssimilationDurationSeconds,
-  ASSIMILATION_DURATION_DEFAULT
+  ASSIMILATION_DURATION_DEFAULT,
+  isGhostnetThemeEnabled
 } from 'lib/ghostnet-settings'
 import { getGhostnetStrings, getGhostnetString } from './ghostnet-addon'
 
@@ -150,15 +151,15 @@ function isInAssimilationOverlaySection (element) {
 }
 
 const DEFAULT_ASSIMILATION_DIALOG = {
-  ariaLabel: 'GhostNet assimilation in progress',
+  ariaLabel: 'INARA assimilation in progress',
   title: 'ATLAS PROTOCOL // LOCKDOWN',
   subtitle: 'Intrusion confirmed — commandeering viewport to stabilise assimilation.',
-  footnote: 'Maintain focus on the console. ATLAS is shielding visual artifacts while GhostNet synchronises.'
+  footnote: 'Maintain focus on the console. ATLAS is shielding visual artifacts while INARA synchronises.'
 }
 
 const DEFAULT_ASSIMILATION_ALERT_LINES = [
   {
-    text: 'Unauthorized GhostNet signal traced to active console',
+    text: 'Unauthorized INARA signal traced to active console',
     status: 'LOCK',
     tone: 'warning'
   },
@@ -191,7 +192,7 @@ const DEFAULT_ASSIMILATION_COMPLETION = {
     tone: 'warning'
   },
   stabilized: {
-    text: 'Viewport secured. GhostNet interface is stabilised for operator focus.',
+    text: 'Viewport secured. INARA interface is stabilised for operator focus.',
     status: 'SEALED',
     tone: 'success'
   }
@@ -1407,6 +1408,11 @@ function beginAssimilationEffect () {
 
 export function initiateGhostnetAssimilation (callback) {
   if (typeof window === 'undefined') {
+    if (typeof callback === 'function') callback()
+    return
+  }
+
+  if (!isGhostnetThemeEnabled()) {
     if (typeof callback === 'function') callback()
     return
   }

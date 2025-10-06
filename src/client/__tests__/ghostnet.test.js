@@ -54,9 +54,9 @@ describe('Ghost Net page', () => {
     await act(async () => { render(<GhostnetPage />) })
 
     expect(await screen.findByRole('heading', { name: /find trade routes/i })).toBeInTheDocument()
-    expect(screen.getByText(/cross-reference ghostnet freight whispers/i)).toBeInTheDocument()
+    expect(screen.getByText(/cross-reference inara freight whispers/i)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /mining missions/i, hidden: true })).toBeInTheDocument()
-    expect(screen.getByText(/ghost net decrypts volunteer ghostnet manifests/i)).toBeInTheDocument()
+    expect(screen.getByText(/ghost net decrypts volunteer inara manifests/i)).toBeInTheDocument()
   })
 
   it('renders the token console meter with request control', async () => {

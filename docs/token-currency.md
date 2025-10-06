@@ -1,6 +1,6 @@
 # Token Currency Service Overview
 
-The GhostNet token currency system awards virtual credits to commanders whenever the service would submit Elite Dangerous journal data to INARA and debits credits for every remote INARA lookup triggered from the GhostNet API layer. The logic lives entirely on the backend so the desktop client can toggle between a fully simulated workflow and a remote-mirrored "live" mode without UI changes.
+The INARA token currency system awards virtual credits to commanders whenever the service would submit Elite Dangerous journal data to INARA and debits credits for every remote INARA lookup triggered from the INARA API layer. The logic lives entirely on the backend so the desktop client can toggle between a fully simulated workflow and a remote-mirrored "live" mode without UI changes.
 
 ## Feature flag and configuration
 
@@ -32,14 +32,14 @@ A dedicated retry queue flushes pending transactions sequentially. Each queued t
 
 ## INARA simulation
 
-`src/service/lib/event-handlers.js` hooks every ingested journal event and constructs the payload GhostNet would send to INARA. The payload matches the documented header + events schema and the byte length of the JSON string determines how many tokens are credited. Cache keys built from the event name, timestamp, and domain-specific identifiers ensure a journal replay never awards the same entry twice.
+`src/service/lib/event-handlers.js` hooks every ingested journal event and constructs the payload INARA would send to INARA. The payload matches the documented header + events schema and the byte length of the JSON string determines how many tokens are credited. Cache keys built from the event name, timestamp, and domain-specific identifiers ensure a journal replay never awards the same entry twice.
 
 When `ghostnetTokenCurrencyEnabled` is set to `true` the same infrastructure prepares the payload but marks credits with `reason: "inara-credit"` instead of `"inara-simulated-credit"`. The outbound request body and metadata can be reused when the production submission path is wired in.
 
 ## Negative balance recovery
 
 - Simulation mode keeps commanders from spiralling indefinitely: when the local ledger balance crosses **-500,000** tokens, the next spend transaction records `metadata.recoveryTriggered: true` and schedules a `negative-balance-recovery` credit for **+1,000,000** tokens.
-- The recovery credit is stored like any other transaction and emits a `ghostnetTokensUpdated` broadcast containing the new entry. The GhostNet console listens for `metadata.event === 'negative-balance-recovery'` to unleash a jackpot sequence: rapid glyph floods, a shimmering “JACKPOT” banner, milestone balance ticks, and a procedurally generated summary describing the recovered cache.
+- The recovery credit is stored like any other transaction and emits a `ghostnetTokensUpdated` broadcast containing the new entry. The INARA console listens for `metadata.event === 'negative-balance-recovery'` to unleash a jackpot sequence: rapid glyph floods, a shimmering “JACKPOT” banner, milestone balance ticks, and a procedurally generated summary describing the recovered cache.
 - Recovery only fires once per threshold crossing; the ledger re-arms the guard after the balance climbs above -500,000 so future deficits can produce fresh celebration events. The scheduling helper records failures and re-arms if a write error occurs so future transactions can try again.
 - Future gameplay hooks (e.g. discovering valuable scans) can reuse the same celebration plumbing by emitting transactions with a distinct `metadata.event` and pointing the UI handler at the new identifier.
 

@@ -101,7 +101,7 @@ describe('ghostnet-websearch API handler', () => {
       status: 504,
       shipId: 123,
       system: 'Achenar',
-      error: 'GHOSTNET request failed'
+      error: 'INARA request failed'
     })
   })
 })

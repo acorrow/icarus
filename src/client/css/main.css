@@ -488,17 +488,11 @@ body.ghostnet-theme #secondaryNavigation .button--icon.button--secondary {
   flex: 1;
 }
 
-#primaryNavigation .ghostnet-nav-button-wrapper {
-  position: relative;
-  flex: 1;
-  --ghostnet-nav-dismiss-size: 2.25rem;
-}
-
-#primaryNavigation .ghostnet-nav-button-wrapper > .ghostnet-nav-button {
+#primaryNavigation .ghostnet-nav-button {
   width: 100%;
 }
 
-#primaryNavigation .ghostnet-nav-button {
+body.ghostnet-theme #primaryNavigation .ghostnet-nav-button {
   --ghostnet-nav-accent: rgb(216, 180, 254);
   --ghostnet-nav-depth: rgba(73, 27, 115, 0.35);
   background: linear-gradient(180deg, rgba(44, 18, 68, 0.95), rgba(81, 27, 128, 0.85));
@@ -508,52 +502,15 @@ body.ghostnet-theme #secondaryNavigation .button--icon.button--secondary {
   text-shadow: 0 0 1.2rem rgba(216, 180, 254, 0.6);
   filter: none;
   transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.2s ease;
-  padding-right: calc(var(--ghostnet-nav-dismiss-size) + 0.75rem);
   border-right: 0;
 }
 
-#primaryNavigation .ghostnet-nav-button .visible-small,
-#primaryNavigation .ghostnet-nav-button .hidden-small {
+body.ghostnet-theme #primaryNavigation .ghostnet-nav-button .visible-small,
+body.ghostnet-theme #primaryNavigation .ghostnet-nav-button .hidden-small {
   text-shadow: 0 0 1.2rem rgba(216, 180, 254, 0.6);
 }
 
-#primaryNavigation .ghostnet-nav-button__dismiss {
-  position: absolute;
-  top: 50%;
-  right: 0.45rem;
-  width: var(--ghostnet-nav-dismiss-size);
-  height: var(--ghostnet-nav-dismiss-size);
-  border-radius: 0.3rem;
-  border: 1px solid rgba(216, 180, 254, 0.45);
-  background: linear-gradient(180deg, rgba(63, 24, 96, 0.95), rgba(44, 18, 68, 0.85));
-  color: rgb(216, 180, 254);
-  font-size: 1.35rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  cursor: pointer;
-  text-shadow: 0 0 1.2rem rgba(216, 180, 254, 0.6);
-  box-shadow: inset 0 0 1.05rem rgba(93, 46, 255, 0.25);
-  transform: translateY(-50%);
-  transition: color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-  z-index: 1;
-}
-
-#primaryNavigation .ghostnet-nav-button__dismiss:hover,
-#primaryNavigation .ghostnet-nav-button__dismiss:focus-visible {
-  color: rgb(245, 241, 255);
-  box-shadow: 0 0 0.85rem rgba(216, 180, 254, 0.45), inset 0 0 0.55rem rgba(216, 180, 254, 0.45);
-  transform: translateY(calc(-50% - 1px));
-}
-
-#primaryNavigation .ghostnet-nav-button__dismiss:focus-visible {
-  outline: 2px solid rgba(41, 243, 195, 0.75);
-  outline-offset: 2px;
-}
-
-#primaryNavigation .ghostnet-nav-button.button--active {
+body.ghostnet-theme #primaryNavigation .ghostnet-nav-button.button--active {
   background: linear-gradient(180deg, rgba(57, 22, 88, 0.95), rgba(95, 35, 150, 0.85));
   border-color: rgba(216, 180, 254, 0.45);
   box-shadow: 0 0 1.45rem rgba(216, 180, 254, 0.7), inset 0 0 0.55rem rgba(216, 180, 254, 0.9);
@@ -562,8 +519,8 @@ body.ghostnet-theme #secondaryNavigation .button--icon.button--secondary {
   filter: none;
 }
 
-#primaryNavigation .ghostnet-nav-button:hover:not([disabled]):not(.button--active),
-#primaryNavigation .ghostnet-nav-button:focus:not([disabled]):not(.button--active) {
+body.ghostnet-theme #primaryNavigation .ghostnet-nav-button:hover:not([disabled]):not(.button--active),
+body.ghostnet-theme #primaryNavigation .ghostnet-nav-button:focus:not([disabled]):not(.button--active) {
   background: linear-gradient(180deg, rgba(54, 21, 84, 0.95), rgba(88, 31, 139, 0.9));
   box-shadow: 0 0 1.35rem rgba(216, 180, 254, 0.45), inset 0 0 0.45rem rgba(216, 180, 254, 0.65);
   color: var(--ghostnet-nav-accent);
@@ -730,7 +687,7 @@ body.ghostnet-assimilation-forced .ghostnet-assimilation-target::before,
   }
 }
 
-/* GhostNet exit transition */
+/* INARA exit transition */
 
 body.ghostnet-exit-transition-active {
   cursor: wait;

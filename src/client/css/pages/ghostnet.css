@@ -1,9 +1,9 @@
 :root {
-  /* Base workspace backdrop for the GhostNet canvas */
+  /* Base workspace backdrop for the INARA canvas */
   --ghostnet-color-background: #321234;
   /* Elevated panels and cards that sit above the canvas */
   --ghostnet-color-surface: #2f214b;
-  /* Primary GhostNet accent for CTAs and key highlights */
+  /* Primary INARA accent for CTAs and key highlights */
   --ghostnet-color-primary: #7325d9;
   /* Shadowed accent used for depth, pressed, and terminal rails */
   --ghostnet-color-primary-dark: #4a0e82;
@@ -13,7 +13,7 @@
   --ghostnet-color-text-strong: #f5f1ff;
   /* Success feedback for confirmations and positive states */
   --ghostnet-color-success: #29f3c3;
-  /* Warning and error feedback across the GhostNet UI */
+  /* Warning and error feedback across the INARA UI */
   --ghostnet-color-warning: #ff5fc1;
   /* Scrollbar track colour for the workspace viewport */
   --ghostnet-color-scroll-track: color-mix(in srgb, var(--ghostnet-color-background) 82%, transparent);

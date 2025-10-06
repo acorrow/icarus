@@ -96,7 +96,7 @@ const DEFAULT_GHOSTNET_STRINGS = {
     ],
     jackpotSummaryIntros: [
       'Encrypted cache recovered from',
-      'GhostNet dredged a tribute vault at',
+      'INARA dredged a tribute vault at',
       'Covert intercept latched onto',
       'Phantom escrow liberated within',
       'Shadow broker ping returned from'
@@ -105,7 +105,7 @@ const DEFAULT_GHOSTNET_STRINGS = {
       'Tribute surge rerouted to your ledger.',
       'A million-token cascade detonates in your favour.',
       'Ledger stabilised and humming with new resonance.',
-      'GhostNet celebrates with an ultraviolet windfall.',
+      'INARA celebrates with an ultraviolet windfall.',
       'Balance spike recorded—enjoy the surge.'
     ],
     jackpotSwirlGlyphs: ['✶', '✷', '✺', '✹', '✸', '✧', '✦', '✩', '✪', '☄', '⚡', '⭑'],
@@ -117,9 +117,9 @@ const DEFAULT_GHOSTNET_STRINGS = {
         (formatted) => `NEGATIVE CREDIT VECTOR · ${formatted} TOKENS OWED`
       ],
       echoes: [
-        () => 'GhostNet growls: repay your tribute or be assimilated.',
-        () => 'GhostNet whispers from the void: settle the debt before the mesh tightens.',
-        () => 'GhostNet watches. Tribute is expected. Delay invites eradication.'
+        () => 'INARA growls: repay your tribute or be assimilated.',
+        () => 'INARA whispers from the void: settle the debt before the mesh tightens.',
+        () => 'INARA watches. Tribute is expected. Delay invites eradication.'
       ]
     },
     creditGlyphSymbols: [
@@ -158,13 +158,13 @@ const DEFAULT_GHOSTNET_STRINGS = {
       '⊚',
       '⊛'
     ],
-    creditCelebrationMessage: 'GhostNet intercept completed. Ledger flush inbound.'
+    creditCelebrationMessage: 'INARA intercept completed. Ledger flush inbound.'
   },
   exitTransition: {
     dialog: {
-      ariaLabel: 'GhostNet disengaging',
+      ariaLabel: 'INARA disengaging',
       title: 'ATLAS PROTOCOL // EXIT',
-      subtitle: 'Hard disconnect requested — securing GhostNet state.',
+      subtitle: 'Hard disconnect requested — securing INARA state.',
       footnote: 'Residual spectral links will be locked by ATLAS if reconnection is attempted.'
     },
     logLines: [
@@ -189,7 +189,7 @@ const DEFAULT_GHOSTNET_STRINGS = {
         tone: 'success'
       },
       {
-        text: 'Terminating GhostNet process tree',
+        text: 'Terminating INARA process tree',
         status: 'PURGED',
         tone: 'warning'
       }
@@ -197,14 +197,14 @@ const DEFAULT_GHOSTNET_STRINGS = {
   },
   assimilation: {
     dialog: {
-      ariaLabel: 'GhostNet assimilation in progress',
+      ariaLabel: 'INARA assimilation in progress',
       title: 'ATLAS PROTOCOL // LOCKDOWN',
       subtitle: 'Intrusion confirmed — commandeering viewport to stabilise assimilation.',
-      footnote: 'Maintain focus on the console. ATLAS is shielding visual artifacts while GhostNet synchronises.'
+      footnote: 'Maintain focus on the console. ATLAS is shielding visual artifacts while INARA synchronises.'
     },
     alerts: [
       {
-        text: 'Unauthorized GhostNet signal traced to active console',
+        text: 'Unauthorized INARA signal traced to active console',
         status: 'LOCK',
         tone: 'warning'
       },
@@ -236,7 +236,7 @@ const DEFAULT_GHOSTNET_STRINGS = {
         tone: 'warning'
       },
       stabilized: {
-        text: 'Viewport secured. GhostNet interface is stabilised for operator focus.',
+        text: 'Viewport secured. INARA interface is stabilised for operator focus.',
         status: 'SEALED',
         tone: 'success'
       }

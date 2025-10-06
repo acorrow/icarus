@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Playwright helper to capture GhostNet screenshots after the workspace is ready."""
+"""Playwright helper to capture INARA screenshots after the workspace is ready."""
 
 import argparse
 import asyncio
@@ -43,7 +43,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--url",
         default=DEFAULT_URL,
-        help=f"GhostNet URL to capture (default: {DEFAULT_URL})",
+        help=f"INARA URL to capture (default: {DEFAULT_URL})",
     )
     parser.add_argument(
         "--output",

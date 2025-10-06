@@ -35,7 +35,7 @@ describe('ghostnet-search API handler', () => {
       body: {
         searchType: 'commodity',
         searchTerm: 'Tritium',
-        appName: 'GhostNet Tests',
+        appName: 'INARA Tests',
         appVersion: '1.0.0'
       }
     })
@@ -67,7 +67,7 @@ describe('ghostnet-search API handler', () => {
       body: {
         searchType: 'module',
         searchTerm: 'Shield Generator',
-        appName: 'GhostNet Tests',
+        appName: 'INARA Tests',
         appVersion: '1.0.0'
       }
     })

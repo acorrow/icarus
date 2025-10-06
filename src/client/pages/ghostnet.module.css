@@ -21,6 +21,11 @@
   justify-content: center;
 }
 
+.ghostnetNavigationClassic {
+  background: var(--color-background-panel);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.5);
+}
+
 .ghostnetNavigation :global(.secondary-navigation) {
   position: sticky;
   top: 0;
@@ -54,6 +59,11 @@
   background: var(--ghostnet-color-background);
   scrollbar-color: var(--ghostnet-color-scroll-thumb) var(--ghostnet-color-scroll-track);
   scrollbar-width: thin;
+}
+
+.ghostnetScrollRegionClassic {
+  background: var(--color-background);
+  scrollbar-color: var(--color-secondary) var(--color-background-panel);
 }
 
 .ghostnetScrollRegion::-webkit-scrollbar {
@@ -121,6 +131,28 @@
     var(--ghostnet-bg);
   color: var(--ghostnet-ink);
   overflow: hidden;
+}
+
+.ghostnetIcarus {
+  --ghostnet-color-background: var(--color-background);
+  --ghostnet-color-surface: var(--color-background-panel);
+  --ghostnet-color-primary: var(--color-primary);
+  --ghostnet-color-primary-dark: var(--color-primary-dark);
+  --ghostnet-color-primary-light: var(--color-secondary);
+  --ghostnet-color-text-strong: var(--color-info);
+  --ghostnet-color-success: var(--color-success);
+  --ghostnet-color-warning: var(--color-danger);
+  --ghostnet-color-scroll-track: color-mix(in srgb, var(--color-background-panel) 85%, transparent);
+  --ghostnet-color-scroll-thumb: color-mix(in srgb, var(--color-primary) 82%, transparent);
+  --ghostnet-color-scroll-thumb-border: color-mix(in srgb, var(--color-primary-dark) 65%, transparent);
+  background: var(--color-background);
+  color: var(--color-info);
+  box-shadow: none;
+}
+
+.ghostnetIcarus::before,
+.ghostnetIcarus::after {
+  display: none;
 }
 
 .ghostnet::before {

@@ -484,13 +484,13 @@ export default async function handler(req, res) {
       agent: ipv4HttpsAgent
     })
     responseStatus = response.status
-    if (!response.ok) throw new Error('GHOSTNET request failed')
+    if (!response.ok) throw new Error('INARA request failed')
     responseText = await response.text()
 
     const routes = parseTradeRoutes(responseText)
     if (!routes.length) {
       logGhostnetTrade(`RESPONSE: system=${system} url=${url} NO_RESULTS`)
-      res.status(200).json({ results: [], message: 'No trade routes found on GHOSTNET.' })
+      res.status(200).json({ results: [], message: 'No trade routes found on INARA.' })
       return
     }
 
@@ -930,7 +930,7 @@ export default async function handler(req, res) {
   } catch (err) {
     caughtError = err
     logGhostnetTrade(`ERROR: system=${system} url=${url} error=${err}`)
-    res.status(500).json({ error: 'Failed to fetch or parse GHOSTNET results', details: err.message })
+    res.status(500).json({ error: 'Failed to fetch or parse INARA results', details: err.message })
   } finally {
     const metadata = {
       reason: caughtError ? 'inara-request-error' : 'inara-request',
