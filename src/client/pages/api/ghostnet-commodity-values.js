@@ -246,7 +246,7 @@ async function loadCommodityOptions () {
       })
       responseStatus = response.status
       if (!response.ok) {
-        throw new Error(`GHOSTNET commodity list request failed with status ${response.status}`)
+        throw new Error(`INARA commodity list request failed with status ${response.status}`)
       }
       responseText = await response.text()
       const $ = load(responseText)
@@ -402,7 +402,7 @@ function parseCommoditySearchResults (html) {
 }
 
 async function fetchCommoditySearchListings ({ commodityId, commodityName, nearSystem }) {
-  if (!commodityId) throw new Error(`Unknown GHOSTNET commodity id for ${commodityName || 'commodity'}`)
+  if (!commodityId) throw new Error(`Unknown INARA commodity id for ${commodityName || 'commodity'}`)
   const params = new URLSearchParams({ ...GHOSTNET_SEARCH_DEFAULT_PARAMS })
   params.append('pa1[]', commodityId)
   if (nearSystem) params.set('ps1', nearSystem)
@@ -421,7 +421,7 @@ async function fetchCommoditySearchListings ({ commodityId, commodityName, nearS
     })
     responseStatus = response.status
     if (!response.ok) {
-      throw new Error(`GHOSTNET commodity search failed with status ${response.status}`)
+      throw new Error(`INARA commodity search failed with status ${response.status}`)
     }
     responseText = await response.text()
     return parseCommoditySearchResults(responseText)
@@ -796,7 +796,7 @@ export default async function handler (req, res) {
         option = await resolveCommodityId(commodity.symbol)
       }
     } catch (err) {
-      searchError = err.message || 'Failed to resolve GHOSTNET commodity id'
+      searchError = err.message || 'Failed to resolve INARA commodity id'
       hardFailure = true
     }
 
@@ -819,7 +819,7 @@ export default async function handler (req, res) {
             }
             if (!searchError && result?.error) searchError = result.error
           } catch (err) {
-            searchError = err.message || 'Failed to retrieve GHOSTNET listings'
+            searchError = err.message || 'Failed to retrieve INARA listings'
             hardFailure = true
           }
 
@@ -856,7 +856,7 @@ export default async function handler (req, res) {
             return { listings: freshListings, error: null }
           })
           .catch(err => {
-            const message = err.message || 'Failed to retrieve GHOSTNET listings'
+            const message = err.message || 'Failed to retrieve INARA listings'
             if (memoryKey) setGhostnetMemoryResult(memoryKey, [], message)
             throw new Error(message)
           })
@@ -867,16 +867,16 @@ export default async function handler (req, res) {
           const result = await fetchPromise
           listings = Array.isArray(result?.listings) ? result.listings : []
         } catch (err) {
-          searchError = err.message || 'Failed to retrieve GHOSTNET listings'
+          searchError = err.message || 'Failed to retrieve INARA listings'
           hardFailure = true
         }
       }
     } else if (!option && !searchError) {
-      searchError = 'Commodity not recognized by GHOSTNET search'
+      searchError = 'Commodity not recognized by INARA search'
     }
 
     if (!searchError && Array.isArray(listings) && listings.length === 0) {
-      searchError = 'No GHOSTNET listings found'
+      searchError = 'No INARA listings found'
     }
 
     if (memoryKey && searchError) {
@@ -904,7 +904,7 @@ export default async function handler (req, res) {
   requestedCommodities.forEach(commodity => {
     const commodityKey = commodity.key || normaliseCommodityKey(commodity.name)
     const cacheEntry = commodityKey ? ghostnetResults.get(commodityKey) : null
-    const resolvedEntry = cacheEntry || { listings: [], error: 'No GHOSTNET data available' }
+    const resolvedEntry = cacheEntry || { listings: [], error: 'No INARA data available' }
     if (resolvedEntry.error && resolvedEntry.listings.length === 0 && ghostnetStatus === 'ok') {
       ghostnetStatus = 'partial'
     }

@@ -6,17 +6,24 @@ import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
 import { initiateGhostnetAssimilation, isGhostnetAssimilationActive, GHOSTNET_ASSIMILATION_EVENT } from 'lib/ghostnet-assimilation'
+import { initiateGhostnetExitTransition, isGhostnetExitTransitionActive } from 'lib/ghostnet-exit-transition'
+import {
+  isGhostnetThemeEnabled,
+  addGhostnetThemeChangeListener,
+  THEME_STORAGE_KEY,
+  isGhostnetNavVisible,
+  addGhostnetNavVisibilityListener,
+  GHOSTNET_NAV_VISIBILITY_KEY
+} from 'lib/ghostnet-settings'
 
 const ORIGINAL_TITLE = 'ICARUS TERMINAL'
-const TARGET_TITLE = 'GHOSTNET-ATLAS'
+const TARGET_TITLE = 'INARA-ATLAS'
 const TARGET_TITLE_PADDED = TARGET_TITLE.padEnd(ORIGINAL_TITLE.length, ' ')
 const getTargetTitleChars = () => TARGET_TITLE_PADDED.split('')
 const TITLE_PREFIX_LENGTH = 7
 const TITLE_MIN_WIDTH = `${ORIGINAL_TITLE.length}ch`
 const TITLE_GLYPHS = ['Λ', 'Ξ', 'Ψ', 'Ø', 'Σ', '✦', '✧', '☍', '⌁', '⌖', '◬', '◈', '★', '✶', '⋆']
 const createEmptyGlitchStyles = () => Array.from({ length: ORIGINAL_TITLE.length }, () => null)
-import { initiateGhostnetExitTransition, isGhostnetExitTransitionActive } from 'lib/ghostnet-exit-transition'
-
 const NAV_BUTTONS = [
   {
     name: 'Navigation',
@@ -34,8 +41,8 @@ const NAV_BUTTONS = [
     path: '/eng'
   },
   {
-    name: 'GhostNet',
-    abbr: 'GNet',
+    name: 'INARA',
+    abbr: 'INARA',
     path: '/ghostnet'
   },
   {
@@ -46,7 +53,6 @@ const NAV_BUTTONS = [
 ]
 
 let IS_WINDOWS_APP = false
-const GHOSTNET_NAV_VISIBILITY_KEY = 'ghostnet.nav.visible'
 
 export default function Header ({ connected, active }) {
   const router = useRouter()
@@ -55,7 +61,8 @@ export default function Header ({ connected, active }) {
   const [isPinned, setIsPinned] = useState(false)
   const [notificationsVisible, setNotificationsVisible] = useState(socketOptions.notifications)
   const [settingsVisible, setSettingsVisible] = useState(false)
-  const [ghostnetButtonVisible, setGhostnetButtonVisible] = useState(true)
+  const [ghostnetButtonVisible, setGhostnetButtonVisible] = useState(() => isGhostnetNavVisible())
+  const [ghostnetThemeEnabled, setGhostnetThemeEnabled] = useState(() => isGhostnetThemeEnabled())
   const [titleChars, setTitleChars] = useState(ORIGINAL_TITLE.split(''))
   const [titleAssimilated, setTitleAssimilated] = useState(false)
   const titleAnimationState = useRef({ running: false, completed: false })
@@ -64,17 +71,6 @@ export default function Header ({ connected, active }) {
   const titleGlitchLoopTimeout = useRef(null)
   const titleGlitchRevertTimeouts = useRef([])
   const activeTitleGlitchIndices = useRef(new Set())
-  const restoreGhostnetButtonRef = useRef(null)
-  const ghostnetNavButtonRef = useRef(null)
-  const ghostnetVisibilityHydrated = useRef(false)
-  const persistGhostnetVisibility = useCallback((isVisible) => {
-    if (typeof window === 'undefined') return
-    try {
-      window.localStorage.setItem(GHOSTNET_NAV_VISIBILITY_KEY, isVisible ? 'true' : 'false')
-    } catch (err) {
-      // Ignore storage write issues
-    }
-  }, [])
   const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
   const isGhostnetRouteActive = currentPath === '/ghostnet'
 
@@ -197,44 +193,6 @@ export default function Header ({ connected, active }) {
     }
   }, [clearTitleGlitchTimeouts])
 
-  const scheduleFocus = useCallback((ref) => {
-    if (!ref) return
-    const setTimeoutFn = typeof window !== 'undefined' ? window.setTimeout : setTimeout
-    setTimeoutFn(() => {
-      if (ref.current && typeof ref.current.focus === 'function') {
-        ref.current.focus()
-      }
-    }, 0)
-  }, [])
-
-  const hideGhostnetNavButton = useCallback((event) => {
-    setGhostnetButtonVisible(false)
-    persistGhostnetVisibility(false)
-
-    const nativeEvent = event?.nativeEvent
-    const shouldFocusRestore = !nativeEvent || nativeEvent.detail === 0 || nativeEvent.pointerType === 'keyboard'
-
-    if (shouldFocusRestore) {
-      scheduleFocus(restoreGhostnetButtonRef)
-    } else if (event?.currentTarget && typeof event.currentTarget.blur === 'function') {
-      event.currentTarget.blur()
-    }
-  }, [persistGhostnetVisibility, scheduleFocus])
-
-  const showGhostnetNavButton = useCallback((event) => {
-    setGhostnetButtonVisible(true)
-    persistGhostnetVisibility(true)
-
-    const nativeEvent = event?.nativeEvent
-    const shouldFocusGhostnetNav = !nativeEvent || nativeEvent.detail === 0 || nativeEvent.pointerType === 'keyboard'
-
-    if (shouldFocusGhostnetNav) {
-      scheduleFocus(ghostnetNavButtonRef)
-    } else if (event?.currentTarget && typeof event.currentTarget.blur === 'function') {
-      event.currentTarget.blur()
-    }
-  }, [persistGhostnetVisibility, scheduleFocus])
-
   const startTitleMorph = useCallback(() => {
     if (titleAnimationState.current.running || titleAnimationState.current.completed) return
     clearTitleAnimationTimeouts()
@@ -344,19 +302,40 @@ export default function Header ({ connected, active }) {
   }, [])
 
   useEffect(() => {
-    if (typeof window === 'undefined' || ghostnetVisibilityHydrated.current) return undefined
-    try {
-      const storedVisibility = window.localStorage.getItem(GHOSTNET_NAV_VISIBILITY_KEY)
-      if (storedVisibility !== null) {
-        const isVisible = storedVisibility !== 'false'
-        setGhostnetButtonVisible(isVisible)
+    if (typeof window === 'undefined') return undefined
+
+    const handleThemeStorage = (event) => {
+      if (event.key === THEME_STORAGE_KEY) {
+        setGhostnetThemeEnabled(isGhostnetThemeEnabled())
       }
-    } catch (err) {
-      // Ignore storage access issues
     }
-    ghostnetVisibilityHydrated.current = true
-    return undefined
-  }, [scheduleFocus])
+
+    const removeListener = addGhostnetThemeChangeListener(setGhostnetThemeEnabled)
+    window.addEventListener('storage', handleThemeStorage)
+
+    return () => {
+      removeListener()
+      window.removeEventListener('storage', handleThemeStorage)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const handleStorage = (event) => {
+      if (event.key === GHOSTNET_NAV_VISIBILITY_KEY) {
+        setGhostnetButtonVisible(isGhostnetNavVisible())
+      }
+    }
+
+    const removeListener = addGhostnetNavVisibilityListener(setGhostnetButtonVisible)
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      removeListener()
+      window.removeEventListener('storage', handleStorage)
+    }
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -424,6 +403,10 @@ export default function Header ({ connected, active }) {
     }
     if (currentPath === '/ghostnet') {
       if (isGhostnetExitTransitionActive()) return
+      if (!ghostnetThemeEnabled) {
+        router.push(path)
+        return
+      }
       initiateGhostnetExitTransition(() => router.push(path))
       return
     }
@@ -464,19 +447,6 @@ export default function Header ({ connected, active }) {
         </span>
       </h1>
       <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
-        {!ghostnetButtonVisible && (
-          <button
-            ref={restoreGhostnetButtonRef}
-            tabIndex='1'
-            onClick={(event) => showGhostnetNavButton(event)}
-            className='button--icon'
-            style={{ marginRight: '.5rem' }}
-            aria-label='Show GhostNet navigation'
-            title='Show GhostNet navigation'
-          >
-            <i className='icon icarus-terminal-warning' style={{ fontSize: '2rem' }} />
-          </button>
-        )}
         <p
           className='text-primary text-center text-uppercase'
           style={{ display: 'inline-block', padding: 0, margin: 0, lineHeight: '1rem', minWidth: '7.5rem' }}
@@ -517,42 +487,27 @@ export default function Header ({ connected, active }) {
       <div id='primaryNavigation' className='button-group'>
         {visibleNavButtons.map((button, i) => {
           const isActive = button.path === currentPath
-          const isGhostNet = button.path === '/ghostnet'
+          const isINARA = button.path === '/ghostnet'
           const exitActive = isGhostnetExitTransitionActive()
 
-          if (isGhostNet) {
+          if (isINARA) {
             return (
-              <div key={button.name} className='ghostnet-nav-button-wrapper'>
-                <button
-                  data-primary-navigation={i + 1}
-                  tabIndex='1'
-                  disabled={isActive || (isGhostNet && isGhostnetAssimilationActive()) || exitActive}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={[
-                    isActive ? 'button--active' : '',
-                    'ghostnet-nav-button'
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => handleNavigate(button.path)}
-                  style={{ fontSize: '1.5rem' }}
-                  ref={ghostnetNavButtonRef}
-                >
-                  <span className='visible-small'>{button.abbr}</span>
-                  <span className='hidden-small'>{button.name}</span>
-                </button>
-                <button
-                  type='button'
-                  className='ghostnet-nav-button__dismiss'
-                  aria-label='Hide GhostNet navigation'
-                  title='Hide GhostNet navigation'
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    event.preventDefault()
-                    hideGhostnetNavButton(event)
-                  }}
-                >
-                  ×
-                </button>
-              </div>
+              <button
+                key={button.name}
+                data-primary-navigation={i + 1}
+                tabIndex='1'
+                disabled={isActive || (isINARA && isGhostnetAssimilationActive()) || exitActive}
+                aria-current={isActive ? 'page' : undefined}
+                className={[
+                  isActive ? 'button--active' : '',
+                  'ghostnet-nav-button'
+                ].filter(Boolean).join(' ')}
+                onClick={() => handleNavigate(button.path)}
+                style={{ fontSize: '1.5rem' }}
+              >
+                <span className='visible-small'>{button.abbr}</span>
+                <span className='hidden-small'>{button.name}</span>
+              </button>
             )
           }
 

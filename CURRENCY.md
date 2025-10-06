@@ -1,8 +1,8 @@
-# GhostNet Token Ledger Overview
+# INARA Token Ledger Overview
 
 ## Local ledger implementation
 
-The GhostNet/ICARUS service process now instantiates a `TokenLedger` singleton on boot. The ledger:
+The INARA/ICARUS service process now instantiates a `TokenLedger` singleton on boot. The ledger:
 
 - Persists balance snapshots at `~/.config/Icarus/tokens/ledger.json` and appends transactions to `transactions.jsonl` in the same directory.
 - Supports debits (`recordSpend`) and credits (`recordEarn`) while allowing negative balances. Each transaction entry contains `{ id, type, amount, delta, balance, timestamp, metadata, mode, remote }`.
@@ -25,8 +25,8 @@ The remote mirror is only activated when `ICARUS_TOKENS_REMOTE_MODE=MIRROR` **an
 
 ## Client behaviour
 
-- The GhostNet console footer now renders the live token balance, a status badge describing whether the ledger is simulated or mirrored, and a grant button that triggers a simulated jackpot payout via the `triggerJackpot` socket event. The helper multiplies a random base credit by the jackpot multiplier so testers can rehearse the full celebration sequence on demand.
-- When the balance drops below zero, GhostNet injects “menacing” warnings into the console feed to remind the commander that tribute is overdue.
+- The INARA console footer now renders the live token balance, a status badge describing whether the ledger is simulated or mirrored, and a grant button that triggers a simulated jackpot payout via the `triggerJackpot` socket event. The helper multiplies a random base credit by the jackpot multiplier so testers can rehearse the full celebration sequence on demand.
+- When the balance drops below zero, INARA injects “menacing” warnings into the console feed to remind the commander that tribute is overdue.
 - Balance updates arrive via the existing `ghostnetTokensUpdated` broadcast; the UI also polls `getTokenBalance` on page load.
 
 ## Planned remote service API

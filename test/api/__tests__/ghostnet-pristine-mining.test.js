@@ -85,7 +85,7 @@ describe('ghostnet-pristine-mining API handler', () => {
       reason: 'inara-request-error',
       status: 500,
       system: 'Achenar',
-      error: 'GHOSTNET request failed with status 500'
+      error: 'INARA request failed with status 500'
     })
   })
 })

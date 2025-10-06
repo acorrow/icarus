@@ -10,8 +10,8 @@ const { hasFlagKey } = featureFlagInternals
 const FLAG_DEFINITIONS = [
   {
     key: 'ghostnetTokenCurrencyEnabled',
-    label: 'GhostNet Token Currency',
-    description: 'Enables the remote GhostNet token currency ledger and INARA data exchange integration.',
+    label: 'INARA Token Currency',
+    description: 'Enables the remote INARA token currency ledger and INARA data exchange integration.',
     resolver: isGhostnetTokenCurrencyEnabled,
     defaultValue: false
   },
@@ -25,7 +25,7 @@ const FLAG_DEFINITIONS = [
   {
     key: 'ghostnetTokenRecoveryCompatEnabled',
     label: 'Token Recovery Compatibility Mode',
-    description: 'Retains the legacy negative-balance recovery schedule for the GhostNet token ledger.',
+    description: 'Retains the legacy negative-balance recovery schedule for the INARA token ledger.',
     resolver: isTokenRecoveryCompatibilityEnabled,
     defaultValue: true
   }

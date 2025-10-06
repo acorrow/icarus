@@ -1,4 +1,4 @@
-// Backend API: Proxies GHOSTNET nearest-outfitting for ships only
+// Backend API: Proxies INARA nearest-outfitting for ships only
 // Only supports ship search (not modules or other outfitting)
 
 import fetch from 'node-fetch'
@@ -309,7 +309,7 @@ export default async function handler(req, res) {
   }
   if (!xshipCode) {
     logGhostnetSearch(`SHIP_CODE_NOT_FOUND: shipId=${shipId} system=${system}`)
-    res.status(400).json({ error: 'Could not map the selected ship to an GHOSTNET search code. Please choose a valid ship.' })
+    res.status(400).json({ error: 'Could not map the selected ship to an INARA search code. Please choose a valid ship.' })
     return
   }
 
@@ -337,12 +337,12 @@ export default async function handler(req, res) {
       }
     })
     responseStatus = response.status
-    if (!response.ok) throw new Error('GHOSTNET request failed')
+    if (!response.ok) throw new Error('INARA request failed')
     responseText = await response.text()
 
     if (/No station within [\d,]+ Ly range found/i.test(responseText)) {
       logGhostnetSearch(`RESPONSE: shipId=${shipId} system=${system} url=${url} NO_RESULTS`)
-      res.status(200).json({ results: [], message: 'No station within range found on GHOSTNET.' })
+      res.status(200).json({ results: [], message: 'No station within range found on INARA.' })
       return
     }
 
@@ -412,7 +412,7 @@ export default async function handler(req, res) {
   } catch (err) {
     caughtError = err
     logGhostnetSearch(`ERROR: shipId=${shipId} system=${system} url=${url} error=${err}`)
-    res.status(500).json({ error: 'Failed to fetch or parse GHOSTNET results', details: err.message })
+    res.status(500).json({ error: 'Failed to fetch or parse INARA results', details: err.message })
   } finally {
     const metadata = {
       reason: caughtError ? 'inara-request-error' : 'inara-request',

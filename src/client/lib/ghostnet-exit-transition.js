@@ -1,4 +1,5 @@
 import { getGhostnetStrings, getGhostnetString } from './ghostnet-addon'
+import { isGhostnetThemeEnabled } from './ghostnet-settings'
 
 const DEFAULT_EXIT_LOG_LINES = [
   {
@@ -22,16 +23,16 @@ const DEFAULT_EXIT_LOG_LINES = [
     tone: 'success'
   },
   {
-    text: 'Terminating GhostNet process tree',
+    text: 'Terminating INARA process tree',
     status: 'PURGED',
     tone: 'warning'
   }
 ]
 
 const DEFAULT_EXIT_DIALOG = {
-  ariaLabel: 'GhostNet disengaging',
+  ariaLabel: 'INARA disengaging',
   title: 'ATLAS PROTOCOL // EXIT',
-  subtitle: 'Hard disconnect requested — securing GhostNet state.',
+  subtitle: 'Hard disconnect requested — securing INARA state.',
   footnote: 'Residual spectral links will be locked by ATLAS if reconnection is attempted.'
 }
 
@@ -285,6 +286,11 @@ function cleanup () {
 
 export function initiateGhostnetExitTransition (callback) {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
+    if (typeof callback === 'function') callback()
+    return
+  }
+
+  if (!isGhostnetThemeEnabled()) {
     if (typeof callback === 'function') callback()
     return
   }

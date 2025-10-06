@@ -17,7 +17,7 @@ When crafting prompts for CODEX agents to develop features or fix bugs, you MUST
 
 **Treat this as a non-negotiable requirement.** If you ever return a prompt in any other format, it will be considered a critical error.
 
-All feature mapping, shortnames, and endpoint details for ICARUS Terminal and GhostNet are now maintained in `FEATURES.md` in the project root. All CODEX agents MUST keep `FEATURES.md` up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update `FEATURES.md` immediately. Do NOT document features elsewhere—always refer to and update `FEATURES.md`.
+All feature mapping, shortnames, and endpoint details for ICARUS Terminal and INARA are now maintained in `FEATURES.md` in the project root. All CODEX agents MUST keep `FEATURES.md` up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update `FEATURES.md` immediately. Do NOT document features elsewhere—always refer to and update `FEATURES.md`.
 
 See [`FEATURES.md`](../FEATURES.md) for the current feature mapping and details.
 
@@ -25,7 +25,7 @@ See [`FEATURES.md`](../FEATURES.md) for the current feature mapping and details.
 ICARUS Terminal is a free, immersive, context-sensitive companion app and second screen interface for Elite Dangerous. It provides:
 - Real-time ship, cargo, mission, and system intelligence by ingesting Elite Dangerous journal files and community data (GHOSTNET, EDSM, EDDB).
 - A multi-platform UI (Windows-native, browser, touch devices) designed for quick access to trade routes, mining leads, ship outfitting, and more.
-- Features like trade route scouting, cargo valuation, mining mission radar, and pristine ring finder, all surfaced in a unified GhostNet page.
+- Features like trade route scouting, cargo valuation, mining mission radar, and pristine ring finder, all surfaced in a unified INARA page.
 
 **Goal:** Help commanders make smarter decisions in-game by surfacing actionable, up-to-date intel and context-sensitive overlays, while maintaining a responsive, visually cohesive experience.
 
@@ -33,8 +33,8 @@ ICARUS Terminal is a free, immersive, context-sensitive companion app and second
 - **Three main components:**
   - `src/app/` (Go): Windows launcher, window management, updater, save-game discovery.
   - `src/service/` (Node): Backend, ingests Elite Dangerous journal files, normalizes telemetry, exposes HTTP/WebSocket APIs.
-  - `src/client/` (Next/React): Browser UI for ICARUS/GhostNet, with shared layout primitives in `components/` and main views in `pages/`.
-- **GhostNet page** is the primary UI surface for enhancements. Legacy "Icarus" code should be minimally changed unless required for GhostNet.
+  - `src/client/` (Next/React): Browser UI for ICARUS/INARA, with shared layout primitives in `components/` and main views in `pages/`.
+- **INARA page** is the primary UI surface for enhancements. Legacy "Icarus" code should be minimally changed unless required for INARA.
 - **Data flow:** Game logs → Node service → WebSocket/HTTP → React UI. Use broadcast events and request/response handlers for communication.
 
 ## Developer Workflow
@@ -52,12 +52,12 @@ ICARUS Terminal is a free, immersive, context-sensitive companion app and second
 - **Screenshots:** Use Playwright in a `browser_container` for UI verification. Always reference screenshot paths in notes.
 
 ## Project Conventions
-- **GhostNet theming:**
+- **INARA theming:**
   - Use tokens from `src/client/css/pages/ghostnet.css`.
   - Royal purple (`#5D2EFF`) is primary; gradients, neutrals, and accents follow palette rules in `AGENTS.md`.
 - **UI composition:**
   - Use shared primitives (`SectionFrame`, `SectionHeader`, table shells) from `src/client/components/`.
-  - Data tables must use GhostNet shells, not be nested in section frames.
+  - Data tables must use INARA shells, not be nested in section frames.
   - Table rows open full-page views, never expand inline.
 - **Feature mapping:**
   - See `AGENTS.md` for shortnames (e.g., ROUTESCOUT, CARGO_LEDGER) and API endpoints.

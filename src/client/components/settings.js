@@ -6,7 +6,15 @@ import {
   ASSIMILATION_DURATION_MAX,
   ASSIMILATION_DURATION_DEFAULT,
   getAssimilationDurationSeconds,
-  saveAssimilationDurationSeconds
+  saveAssimilationDurationSeconds,
+  isGhostnetThemeEnabled,
+  saveGhostnetThemeEnabled,
+  addGhostnetThemeChangeListener,
+  THEME_STORAGE_KEY,
+  isGhostnetNavVisible,
+  saveGhostnetNavVisible,
+  addGhostnetNavVisibilityListener,
+  GHOSTNET_NAV_VISIBILITY_KEY
 } from 'lib/ghostnet-settings'
 import packageJson from '../../../package.json'
 
@@ -57,11 +65,11 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
               </button>
             </Fragment>
           )}
-          <Fragment key='GHOSTNET'>
+          <Fragment key='INARA'>
             <button
               tabIndex='2'
-              className={`button--icon ${activeSettingsPanel === 'GHOSTNET' ? 'button--active' : ''}`}
-              onClick={() => setActiveSettingsPanel('GHOSTNET')}
+              className={`button--icon ${activeSettingsPanel === 'INARA' ? 'button--active' : ''}`}
+              onClick={() => setActiveSettingsPanel('INARA')}
             >
               <i className='icon icarus-terminal-info' />
             </button>
@@ -70,7 +78,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         {activeSettingsPanel === 'Theme' && <ThemeSettings visible={visible} />}
         {activeSettingsPanel === 'Sounds' && <SoundSettings visible={visible} />}
         {activeSettingsPanel === 'Feature Flags' && <FeatureFlagSettings />}
-        {activeSettingsPanel === 'GHOSTNET' && <GhostnetSettings />}
+        {activeSettingsPanel === 'INARA' && <GhostnetSettings />}
         <div className='modal-dialog__footer'>
           <hr style={{ margin: '1rem 0 .5rem 0' }} />
           <button className='float-right' onClick={toggleVisible}>
@@ -86,12 +94,31 @@ function GhostnetSettings () {
   const [useMockData, setUseMockData] = useState(false)
   const [assimilationDuration, setAssimilationDuration] = useState(ASSIMILATION_DURATION_DEFAULT)
   const [saved, setSaved] = useState(false)
+  const [ghostnetNavVisible, setGhostnetNavVisible] = useState(() => isGhostnetNavVisible())
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setUseMockData(window.localStorage.getItem('ghostnetUseMockData') === 'true')
     }
     setAssimilationDuration(getAssimilationDurationSeconds())
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const handleStorage = (event) => {
+      if (event.key === GHOSTNET_NAV_VISIBILITY_KEY) {
+        setGhostnetNavVisible(isGhostnetNavVisible())
+      }
+    }
+
+    const removeListener = addGhostnetNavVisibilityListener(setGhostnetNavVisible)
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      removeListener()
+      window.removeEventListener('storage', handleStorage)
+    }
   }, [])
 
   function handleSave(e) {
@@ -107,7 +134,23 @@ function GhostnetSettings () {
 
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
-      <h3 className='text-primary'>GHOSTNET Integration Settings</h3>
+      <h3 className='text-primary'>INARA Integration Settings</h3>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0 0 1.25rem 0', fontSize: '1rem' }}>
+        <input
+          type='checkbox'
+          checked={ghostnetNavVisible}
+          onChange={(event) => {
+            const sanitized = saveGhostnetNavVisible(event.target.checked)
+            setGhostnetNavVisible(sanitized)
+          }}
+        />
+        <span>
+          Show INARA workspace in navigation
+        </span>
+      </label>
+      <p className='text-muted' style={{ marginTop: '-0.75rem', marginBottom: '1.5rem', fontSize: '.95rem' }}>
+        Disable to hide the INARA workspace toggle from the main navigation bar.
+      </p>
       <p>Enable or disable the Trade Route Layout Sandbox using mock data.</p>
       <form onSubmit={handleSave} style={{ maxWidth: 400 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', fontSize: '1rem' }}>
@@ -122,7 +165,7 @@ function GhostnetSettings () {
         </label>
         <div style={{ marginBottom: '1.5rem' }}>
           <label htmlFor='ghostnet-assimilation-duration' className='text-primary' style={{ display: 'block', marginBottom: '.5rem' }}>
-            GhostNet assimilation transition length
+            INARA assimilation transition length
           </label>
           <input
             id='ghostnet-assimilation-duration'
@@ -142,11 +185,10 @@ function GhostnetSettings () {
             <span className='text-muted'>Min {ASSIMILATION_DURATION_MIN}s · Max {ASSIMILATION_DURATION_MAX}s</span>
           </div>
           <p className='text-muted' style={{ marginTop: '.5rem', fontSize: '.9rem' }}>
-            Controls the duration of the assimilation effect when entering the GhostNet interface.
+            Controls the duration of the assimilation effect when entering the INARA interface.
           </p>
         </div>
-        <button type='submit' style={{ fontSize: '1.1rem' }}>Save</button>
-        {saved && <span className='text-success' style={{ marginLeft: '1rem' }}>Saved!</span>}
+        <button type='submit' style={{ fontSize: '1.1rem' }}>{saved ? 'Saved!' : 'Save'}</button>
       </form>
     </div>
   )
@@ -312,6 +354,7 @@ function ThemeSettings () {
   const [primaryColorModifier, setPrimaryColorModifier] = useState(getPrimaryColorModifier())
   const [secondaryColor, setSecondaryColor] = useState(getSecondaryColorAsHex())
   const [secondaryColorModifier, setSecondaryColorModifier] = useState(getSecondaryColorModifier())
+  const [ghostnetThemeEnabled, setGhostnetThemeEnabled] = useState(() => isGhostnetThemeEnabled())
 
   // Update this component if another window updates the theme settings
   const storageEventHandler = (event) => {
@@ -323,7 +366,8 @@ function ThemeSettings () {
     }
   }
 
-  useEffect(async () => {
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
     window.addEventListener('storage', storageEventHandler)
     return () => window.removeEventListener('storage', storageEventHandler)
   }, [])
@@ -336,6 +380,24 @@ function ThemeSettings () {
       setSecondaryColorModifier(getSecondaryColorModifier())
     }
   }), [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const handleThemeStorage = (event) => {
+      if (event.key === THEME_STORAGE_KEY) {
+        setGhostnetThemeEnabled(isGhostnetThemeEnabled())
+      }
+    }
+
+    const removeListener = addGhostnetThemeChangeListener(setGhostnetThemeEnabled)
+    window.addEventListener('storage', handleThemeStorage)
+
+    return () => {
+      removeListener()
+      window.removeEventListener('storage', handleThemeStorage)
+    }
+  }, [])
 
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
@@ -476,6 +538,23 @@ function ThemeSettings () {
           Reset theme settings
         </button>
       </div>
+      <hr style={{ margin: '2rem 0 1.5rem 0' }} />
+      <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', fontSize: '1rem' }}>
+        <input
+          type='checkbox'
+          checked={ghostnetThemeEnabled}
+          onChange={(event) => {
+            const sanitized = saveGhostnetThemeEnabled(event.target.checked)
+            setGhostnetThemeEnabled(sanitized)
+          }}
+        />
+        <span>
+          Use GhostNet Theme
+        </span>
+      </label>
+      <p className='text-muted' style={{ marginTop: 0, fontSize: '.95rem' }}>
+        Disable this setting to keep INARA&apos;s layouts while returning to the classic ICARUS palette and transitions.
+      </p>
     </div>
   )
 }

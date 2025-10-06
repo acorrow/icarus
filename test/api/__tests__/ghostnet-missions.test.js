@@ -84,7 +84,7 @@ describe('ghostnet-missions API handler', () => {
       reason: 'inara-request-error',
       status: 503,
       system: 'Lave',
-      error: 'GHOSTNET request failed with status 503'
+      error: 'INARA request failed with status 503'
     })
   })
 })

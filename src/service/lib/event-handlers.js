@@ -446,7 +446,7 @@ class EventHandlers {
     const safeEvent = JSON.parse(JSON.stringify(logEvent))
     return {
       header: {
-        appName: 'GhostNetTokenSim',
+        appName: 'INARATokenSim',
         appVersion: '1.0.0',
         commanderName: safeEvent?.Commander || null,
         simulated: true

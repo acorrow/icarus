@@ -8,7 +8,7 @@ Your primary role is to craft prompts for CODEX agents to develop features and f
 
 All other conventions and requirements apply. You must also ensure your instructions cover the following:
 
-- The canonical list of features, shortnames, and their mapping for ICARUS Terminal and GhostNet is now maintained in `FEATURES.md` in the project root.
+- The canonical list of features, shortnames, and their mapping for ICARUS Terminal and INARA is now maintained in `FEATURES.md` in the project root.
 - All CODEX agents MUST keep `FEATURES.md` up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update `FEATURES.md` immediately. Do NOT document features in `AGENTS.md`—always refer to and update `FEATURES.md`.
 
 See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
@@ -33,7 +33,7 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
   3. Implement the adjustments, refresh the app, and capture another screenshot.
   4. Repeat until the screenshots demonstrate a clear, polished improvement that satisfies the original ask.
 - Summarize the outcome of this iterative loop in your final notes by highlighting what changed between the first and final captures and why the result addresses the user's needs.
-- **GhostNet screenshot workflow checklist:**
+- **INARA screenshot workflow checklist:**
   1. Run `npm test -- --runInBand --config jest.config.js` (serial mode keeps Jest aligned with `jest.config.js`). The repo includes the optional dependency `@next/swc-linux-x64-gnu@12.3.4` so the build will not fail on missing SWC binaries.
   2. Run `npm run build:client` to regenerate the static export required for screenshots.
   3. In a dedicated shell start one of the preview servers above.
@@ -87,43 +87,43 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - Cross-platform headless builds land in `dist/` via `npm run build:standalone`. Run with `--help` for usage details and keep binaries in-place on Linux so bundled assets resolve.
 - Treat `src/app` (Go launcher), `src/service` (Node backend), and `src/client` (Next/React UI) as separate concerns; the launcher expects the service binary in the same directory or it will exit on startup.
 
-## GhostNet theming & asset references
+## INARA theming & asset references
 - Primary surfaces live in `src/client/pages/ghostnet.js` and `src/client/pages/ghostnet.module.css`; the hero animation draws from `src/client/public/ghostnet/signal-mesh.svg`.
 - Jest + Testing Library smoke tests in `src/client/__tests__/ghostnet.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
 - Maintain the Ghost Net copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `GhostnetPage`; update both arrays to keep the loop seamless.
 - When undoing Ghost Net changes, delete `ghostnet.module.css`, the asset folder (`src/client/public/ghostnet/`), and associated imports, then remove the Jest configuration and dependencies if the testing stack is no longer desired.
 - Respect the palette guidance below—new CSS tokens must document their intent and derive from `src/client/css/pages/ghostnet.css` rather than introducing bespoke colors.
 
-## GhostNet implementation principles
-- Treat the **GhostNet** page as the sole surface for intentional UI enhancements. References to "the app" in these instructions should be interpreted as the GhostNet page unless a task explicitly states otherwise.
-- Keep modifications to the legacy "Icarus" experience as lean as possible while still enabling GhostNet to function. Prefer composing new behavior around existing Icarus code instead of overhauling it.
-- Maintain a unified visual language by reusing GhostNet's established color palette across any UI you touch.
+## INARA implementation principles
+- Treat the **INARA** page as the sole surface for intentional UI enhancements. References to "the app" in these instructions should be interpreted as the INARA page unless a task explicitly states otherwise.
+- Keep modifications to the legacy "Icarus" experience as lean as possible while still enabling INARA to function. Prefer composing new behavior around existing Icarus code instead of overhauling it.
+- Maintain a unified visual language by reusing INARA's established color palette across any UI you touch.
 - Ensure every UI adjustment remains responsive and accessible across a wide range of device sizes.
 - Where it adds value, introduce tasteful animations and micro-interactions to help the interface feel vibrant and alive.
-- Mirror the structural patterns and layout conventions of other Icarus pages so the product feels cohesive, while still honoring GhostNet's unique identity.
-- GhostNet pages must never render beneath the secondary navigation rail—always supply navigation items through the `<Panel>` component so it applies the `layout__panel--secondary-navigation` spacing instead of mounting `PanelNavigation` manually.
-- Keep data tables outside of `SectionFrame` containers; tables should rely on GhostNet table shells (`dataTableContainer`, `dataTable`) for structure instead of being nested inside section frames.
-- Standardize list presentations around the shared GhostNet table wrappers (`DataTableShell` and companions). When building a new table or refreshing an existing one, slot headers and rows into these shells so scroll areas, padding, empty states, and ARIA wiring remain uniform across panels.
+- Mirror the structural patterns and layout conventions of other Icarus pages so the product feels cohesive, while still honoring INARA's unique identity.
+- INARA pages must never render beneath the secondary navigation rail—always supply navigation items through the `<Panel>` component so it applies the `layout__panel--secondary-navigation` spacing instead of mounting `PanelNavigation` manually.
+- Keep data tables outside of `SectionFrame` containers; tables should rely on INARA table shells (`dataTableContainer`, `dataTable`) for structure instead of being nested inside section frames.
+- Standardize list presentations around the shared INARA table wrappers (`DataTableShell` and companions). When building a new table or refreshing an existing one, slot headers and rows into these shells so scroll areas, padding, empty states, and ARIA wiring remain uniform across panels.
 - Table rows must never expand inline like a drawer. Selecting a row should always open a dedicated full-page view in the workspace, mirroring the behavior on the Find Trade Routes page. This ensures a clean experience on smaller displays.
-- Before introducing a new layout or page, inspect existing GhostNet surfaces and lift their structure directly—copy the baseline layout (navigation placement, section frames, typographic hierarchy, spacing rhythm) and adjust only the dynamic content. When in doubt, start from an existing component file and refactor it into shared primitives instead of authoring novel markup.
+- Before introducing a new layout or page, inspect existing INARA surfaces and lift their structure directly—copy the baseline layout (navigation placement, section frames, typographic hierarchy, spacing rhythm) and adjust only the dynamic content. When in doubt, start from an existing component file and refactor it into shared primitives instead of authoring novel markup.
 - Favor composing UI from the shared layout primitives in `src/client/components` (e.g., `SectionFrame`, `SectionHeader`, table shells, detail drawers). If a new view needs a combination that does not yet exist, build the combination as a reusable component and place it alongside its peers so future pages can inherit it.
 - Consistency of data presentation is critical: station summaries should always follow the pattern `Icon → Name → Key Metrics → Secondary metadata`. Expanders and drawers must surface the same canonical fields (`status`, `ownership`, `location`, `throughput`, and `alerts`) in the same order across the app.
-- GhostNet now exposes shared primitives for these summaries—compose station surfaces with `StationSummary` and commodity views with `CommoditySummary` so iconography, metric stacks, and accessibility copy stay synchronized. If a view needs additional metadata, extend the shared component API instead of forking markup in-page.
-- Avoid ad-hoc styling or bespoke CSS for one-off views. Extend the GhostNet CSS tokens or shared utility classes, and document any new token additions with rationale and usage guidance.
+- INARA now exposes shared primitives for these summaries—compose station surfaces with `StationSummary` and commodity views with `CommoditySummary` so iconography, metric stacks, and accessibility copy stay synchronized. If a view needs additional metadata, extend the shared component API instead of forking markup in-page.
+- Avoid ad-hoc styling or bespoke CSS for one-off views. Extend the INARA CSS tokens or shared utility classes, and document any new token additions with rationale and usage guidance.
 
 ### Palette hygiene
-- Keep the GhostNet palette constrained to the core tokens defined in `src/client/css/pages/ghostnet.css`.
+- Keep the INARA palette constrained to the core tokens defined in `src/client/css/pages/ghostnet.css`.
 - When a design needs subtle variation, derive it with opacity or other modifiers from the shared tokens instead of introducing new hex values.
 - Avoid dumping long lists of bespoke color variables into module files; rely on the shared palette for consistency and easier maintenance.
 - Declare each palette token with a single color format (hex **or** rgb, not both) and document its primary usage with a block comment so future contributors understand the intent.
 - Keep gradients lightweight—prefer blending a small number of shared tokens with transparency rather than stacking many distinct color stops.
 
-### GhostNet Purple Theme Specification
-- **Primary hue:** GhostNet surfaces should lean on a rich royal purple (`#5D2EFF`) for primary actions, interactive accents, and key highlights.
+### INARA Purple Theme Specification
+- **Primary hue:** INARA surfaces should lean on a rich royal purple (`#5D2EFF`) for primary actions, interactive accents, and key highlights.
 - **Gradient treatments:** When gradients are needed, blend from the primary hue into a deeper indigo (`#2A0E82`) and finish with a soft ultraviolet (`#8C5CFF`) to preserve depth.
 - **Neutrals:** Use a charcoal base (`#0D0B1A`) for backgrounds, `#1C1633` for elevated surfaces, and `#F5F1FF` for high-contrast text and iconography.
 - **Supporting accents:** Emerald (`#29F3C3`) is the sanctioned success color, while warnings should leverage warm magenta (`#FF5FC1`); avoid introducing additional accent families.
-- **Typography:** Headings remain in the existing GhostNet display face, but always tinted `#F5F1FF`; body copy should default to `rgba(245, 241, 255, 0.84)` to soften contrast on dark surfaces.
+- **Typography:** Headings remain in the existing INARA display face, but always tinted `#F5F1FF`; body copy should default to `rgba(245, 241, 255, 0.84)` to soften contrast on dark surfaces.
 - **Shadows & glows:** Apply atmospheric glows using `rgba(93, 46, 255, 0.45)` with a 24px blur, and keep elevation shadows subtle (`rgba(13, 11, 26, 0.55)` at 12px blur, 0 offset).
 - **Borders & dividers:** Use semi-transparent borders `rgba(140, 92, 255, 0.35)` for cards or panels; dividers should sit at `rgba(245, 241, 255, 0.16)`.
 - **Interactive states:** Hover states brighten the primary hue by 8%, focus rings use a 2px outline of `#29F3C3`, and pressed states darken to `#2A0E82` with the glow removed.
@@ -132,16 +132,16 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 ## Repository orientation
 - **`src/app/` (Go)** – Windows-native bootstrapper responsible for creating the launcher/terminal window, spawning the Node service, and monitoring lifecycle state. Keep this layer focused on window management, updater orchestration, and save-game directory discovery (`main.go`, `execute.go`, `updater.go`).
 - **`src/service/` (Node)** – Backend process that tails Elite Dangerous journal files, normalizes live JSON telemetry, and exposes both HTTP endpoints and a WebSocket bridge. `main.js` wires up static asset serving, dev proxying, and the WebSocket server; `lib/events.js` binds log readers and publishes broadcast events.
-- **`src/client/` (Next/React)** – Browser UI for ICARUS/GhostNet. Components in `components/` provide shared layout primitives, while `pages/` contain route-specific views (including the monolithic `ghostnet.js`). CSS modules live alongside their consumers.
-- **`src/service/lib/event-handlers/`** – Domain-specific modules that respond to ingested journal/state changes. They form the authoritative source for Commander/system data queried by GhostNet panels (e.g., ship inventory, mission caches, route lookup helpers).
+- **`src/client/` (Next/React)** – Browser UI for ICARUS/INARA. Components in `components/` provide shared layout primitives, while `pages/` contain route-specific views (including the monolithic `ghostnet.js`). CSS modules live alongside their consumers.
+- **`src/service/lib/event-handlers/`** – Domain-specific modules that respond to ingested journal/state changes. They form the authoritative source for Commander/system data queried by INARA panels (e.g., ship inventory, mission caches, route lookup helpers).
 - **`resources/mock-game-data/`** – Development fixtures consumed when the service cannot reach real journal directories. Respect the `USING_MOCK_DATA` guard so the UI clearly communicates when mock values drive results.
 
-## GhostNet feature mapping
+## INARA feature mapping
 
 
 ## Feature Mapping Reference
 
-The canonical list of features, shortnames, and their mapping for ICARUS Terminal and GhostNet has been moved to `FEATURES.md` in the project root.
+The canonical list of features, shortnames, and their mapping for ICARUS Terminal and INARA has been moved to `FEATURES.md` in the project root.
 
 **IMPORTANT:** All CODEX agents MUST keep `FEATURES.md` up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update `FEATURES.md` immediately. Do NOT document features here—always refer to and update `FEATURES.md`.
 
@@ -154,7 +154,7 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
   2. Register an entry in `ICARUS_EVENTS` within `events.js` to translate one or more journal `event` names into higher-level broadcasts. Keep the `loadingInProgress` guard so the initial replay does not flood the UI.
 - **Request/response handlers.** Expose pull-based APIs by adding functions to `eventHandlers` via `EventHandlers.getEventHandlers()`. These respond to `sendEvent('handlerName')` calls from the client. Prefer returning plain JSON—complex formatting belongs client-side.
 - **Client listeners.** Components subscribe to broadcasts by calling `eventListener('<eventName>', callback)` from `src/client/lib/socket.js`. Always clean up subscriptions in the `useEffect` teardown to prevent duplicate handlers when panels remount. Use `useSocket()` if you need connection status (e.g., disable refresh actions until `ready === true`).
-- **Triggering refreshes.** Let journal events drive updates whenever possible. For example, `TradeRoutesPanel` refreshes ship-derived filters whenever `SHIP_STATUS_UPDATE_EVENTS` arrives, and `useSystemSelector` refetches the commander's location on `Location`/`FSDJump`. When adding new GhostNet features, decide whether to listen for an existing broadcast or to extend the service layer with a new broadcast tailored to your feature.
+- **Triggering refreshes.** Let journal events drive updates whenever possible. For example, `TradeRoutesPanel` refreshes ship-derived filters whenever `SHIP_STATUS_UPDATE_EVENTS` arrives, and `useSystemSelector` refetches the commander's location on `Location`/`FSDJump`. When adding new INARA features, decide whether to listen for an existing broadcast or to extend the service layer with a new broadcast tailored to your feature.
 - **Development ergonomics.** The client automatically queues outbound `sendEvent` calls while disconnected. Avoid manual retry loops—trust the socket layer. When mocking, use the `ghostnetUseMockData` flag so production builds continue to hit the live service.
 
 ## Scope

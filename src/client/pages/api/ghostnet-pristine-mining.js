@@ -153,7 +153,7 @@ export default async function handler (req, res) {
     })
     responseStatus = response.status
     if (!response.ok) {
-      throw new Error(`GHOSTNET request failed with status ${response.status}`)
+      throw new Error(`INARA request failed with status ${response.status}`)
     }
 
     responseText = await response.text()

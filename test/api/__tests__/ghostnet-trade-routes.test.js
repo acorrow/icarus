@@ -81,7 +81,7 @@ describe('ghostnet-trade-routes API handler', () => {
       reason: 'inara-request-error',
       status: 502,
       system: 'Cubeo',
-      error: 'GHOSTNET request failed'
+      error: 'INARA request failed'
     })
   })
 })
