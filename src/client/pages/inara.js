@@ -1757,6 +1757,162 @@ function getRouteCommodityInfo (route, phase) {
   return { commodity: commodity || '', buy: buyReturn, sell: sellReturn }
 }
 
+function pickIdentifier (candidates, { normalise = false, transform } = {}) {
+  for (const candidate of candidates) {
+    let value = candidate
+    if (transform) {
+      value = transform(candidate)
+    }
+    if (value === null || value === undefined) continue
+    if (typeof value === 'number' && !Number.isNaN(value)) {
+      return String(value)
+    }
+    if (typeof value === 'string') {
+      const trimmed = value.trim()
+      if (!trimmed) continue
+      return normalise ? normaliseName(trimmed) : trimmed
+    }
+  }
+  return ''
+}
+
+function buildRouteIdentity (route) {
+  if (!route) return ''
+
+  const directId = pickIdentifier([
+    route?.id,
+    route?.routeId,
+    route?.routeID,
+    route?.uid,
+    route?.identifier,
+    route?.key,
+    route?.hash
+  ])
+  if (directId) return `route:${directId}`
+
+  const origin = route?.origin || {}
+  const destination = route?.destination || {}
+
+  const originStationId = pickIdentifier([
+    origin?.stationId,
+    origin?.id,
+    origin?.marketId,
+    origin?.marketID,
+    route?.originStationId,
+    route?.originStationID,
+    route?.sourceStationId,
+    route?.sourceStationID,
+    route?.startStationId,
+    route?.startStationID,
+    route?.fromStationId,
+    route?.fromStationID
+  ])
+
+  const destinationStationId = pickIdentifier([
+    destination?.stationId,
+    destination?.id,
+    destination?.marketId,
+    destination?.marketID,
+    route?.destinationStationId,
+    route?.destinationStationID,
+    route?.targetStationId,
+    route?.targetStationID,
+    route?.endStationId,
+    route?.endStationID,
+    route?.toStationId,
+    route?.toStationID
+  ])
+
+  const originStationName = pickIdentifier([
+    origin?.stationName,
+    origin?.station,
+    origin?.name,
+    route?.originStation,
+    route?.sourceStation,
+    route?.startStation,
+    route?.station
+  ], { normalise: true })
+
+  const destinationStationName = pickIdentifier([
+    destination?.stationName,
+    destination?.station,
+    destination?.name,
+    route?.destinationStation,
+    route?.targetStation,
+    route?.endStation,
+    route?.toStation
+  ], { normalise: true })
+
+  const originSystemName = pickIdentifier([
+    origin?.systemName,
+    origin?.system,
+    route?.originSystem,
+    route?.sourceSystem,
+    route?.startSystem,
+    route?.system
+  ], { normalise: true })
+
+  const destinationSystemName = pickIdentifier([
+    destination?.systemName,
+    destination?.system,
+    route?.destinationSystem,
+    route?.targetSystem,
+    route?.endSystem,
+    route?.toSystem
+  ], { normalise: true })
+
+  const outboundCommodityId = pickIdentifier([
+    origin?.buy?.commodityId,
+    origin?.buy?.commodityID,
+    destination?.sell?.commodityId,
+    destination?.sell?.commodityID,
+    route?.commodityId,
+    route?.commodityID,
+    route?.commodity?.id
+  ])
+
+  const outboundCommodityName = pickIdentifier([
+    origin?.buy?.commodity,
+    destination?.sell?.commodity,
+    route?.commodity,
+    route?.commodityName
+  ], {
+    transform: value => (typeof value === 'string' ? normaliseCommodityKey(value) : '')
+  })
+
+  const returnCommodityId = pickIdentifier([
+    destination?.buyReturn?.commodityId,
+    destination?.buyReturn?.commodityID,
+    origin?.sellReturn?.commodityId,
+    origin?.sellReturn?.commodityID,
+    route?.returnCommodityId,
+    route?.returnCommodityID,
+    route?.roundTripCommodityId
+  ])
+
+  const returnCommodityName = pickIdentifier([
+    destination?.buyReturn?.commodity,
+    origin?.sellReturn?.commodity,
+    route?.returnCommodity,
+    route?.roundTripCommodity
+  ], {
+    transform: value => (typeof value === 'string' ? normaliseCommodityKey(value) : '')
+  })
+
+  const originKey = originStationId || [originStationName, originSystemName].filter(Boolean).join('@')
+  const destinationKey = destinationStationId || [destinationStationName, destinationSystemName].filter(Boolean).join('@')
+  const outboundKey = outboundCommodityId || outboundCommodityName
+  const returnKey = returnCommodityId || returnCommodityName
+
+  const parts = []
+  if (originKey) parts.push(`o:${originKey}`)
+  if (destinationKey) parts.push(`d:${destinationKey}`)
+  if (outboundKey) parts.push(`out:${outboundKey}`)
+  if (returnKey) parts.push(`ret:${returnKey}`)
+
+  return parts.join('|')
+}
+
 function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   const [systemSelection, setSystemSelection] = useState('')
   const [systemInput, setSystemInput] = useState('')
@@ -3532,7 +3688,7 @@ function CargoHoldPanel () {
   )
 }
 
-function TradeRoutesPanel () {
+function TradeRoutesPanel ({ onStatusChange = () => {} }) {
   const { connected, ready } = useSocket()
   const systemSelector = useSystemSelector({ autoSelectCurrent: true })
   const {
@@ -3595,6 +3751,12 @@ function TradeRoutesPanel () {
   }, [])
   const lastAutoRefreshSystem = useRef('')
   const isMountedRef = useRef(true)
+  const preserveRouteContextRef = useRef(false)
+  const selectedRouteContextRef = useRef(null)
+
+  useEffect(() => {
+    onStatusChange(status)
+  }, [onStatusChange, status])
 
   useEffect(() => {
     isMountedRef.current = true
@@ -3602,6 +3764,10 @@ function TradeRoutesPanel () {
       isMountedRef.current = false
     }
   }, [])
+
+  useEffect(() => {
+    selectedRouteContextRef.current = selectedRouteContext
+  }, [selectedRouteContext])
 
   const refreshNavRoute = useCallback(async () => {
     if (!connected || !ready) return
@@ -3918,15 +4084,18 @@ function TradeRoutesPanel () {
       return
     }
 
+    setIsRefreshing(true)
     setError('')
     setMessage('')
 
     const hasExistingResults = status === 'populated' || status === 'empty'
     if (hasExistingResults) {
-      setIsRefreshing(true)
-    } else {
-      setStatus('loading')
+      preserveRouteContextRef.current = true
+      setRawRoutes([])
     }
+
+    setStatus('loading')
+    setLastUpdatedAt(null)
 
     const filters = {
       ...(cargoCapacity !== '' ? { cargoCapacity } : {}),
@@ -3992,6 +4161,37 @@ function TradeRoutesPanel () {
   }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, sourcePower, targetPower, orderBy, includeRoundTrips, displayPowerplay, status])
 
   useEffect(() => {
+    if (preserveRouteContextRef.current) {
+      preserveRouteContextRef.current = false
+      return
+    }
+
+    const currentContext = selectedRouteContextRef.current
+    const hasRoutes = Array.isArray(rawRoutes) && rawRoutes.length > 0
+
+    if (!hasRoutes) {
+      if (currentContext) {
+        setSelectedRouteContext(null)
+      }
+      return
+    }
+
+    if (!currentContext?.route) {
+      setSelectedRouteContext(null)
+      return
+    }
+
+    const currentIdentity = buildRouteIdentity(currentContext.route)
+    if (!currentIdentity) return
+
+    const nextRoute = rawRoutes.find(route => buildRouteIdentity(route) === currentIdentity)
+    if (nextRoute) {
+      if (currentContext.route !== nextRoute) {
+        setSelectedRouteContext({ route: nextRoute })
+      }
+      return
+    }
+
     setSelectedRouteContext(null)
   }, [rawRoutes])
 
@@ -4030,6 +4230,14 @@ function TradeRoutesPanel () {
   }, [currentSystem?.name, refreshRoutes])
 
   const selectedRoute = selectedRouteContext?.route || null
+  const selectedRouteIdentity = useMemo(() => buildRouteIdentity(selectedRoute), [selectedRoute])
+
+  const isRouteSelected = useCallback(routeCandidate => {
+    if (!routeCandidate) return false
+    if (selectedRoute === routeCandidate) return true
+    if (!selectedRouteIdentity) return false
+    return buildRouteIdentity(routeCandidate) === selectedRouteIdentity
+  }, [selectedRoute, selectedRouteIdentity])
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -4397,15 +4605,15 @@ function TradeRoutesPanel () {
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className={status === 'populated' ? 'fx-fade-in' : ''}>
           {routes.map((route, index) => (
             <TradeRouteTableRow
-              key={`route-${index}`}
+              key={buildRouteIdentity(route) || `route-${index}`}
               route={route}
               onSelect={handleRouteSelect}
               onKeyDown={handleRouteKeyDown}
               factionStandings={factionStandings}
-              isSelected={selectedRoute === route}
+              isSelected={isRouteSelected(route)}
               shipJumpRange={shipStatus?.maxJumpRange ?? null}
             />
           ))}
@@ -4701,7 +4909,11 @@ function TradeRoutesPanel () {
         </div>
       </Panel>
       <div className='glitch-panel-table'>
-        <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
+        <div
+          className='scrollable'
+          style={TABLE_SCROLL_AREA_STYLE}
+          aria-busy={status === 'loading'}
+        >
           {message && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
           )}
@@ -4709,7 +4921,9 @@ function TradeRoutesPanel () {
             <div className={styles.tableIdleState}>Tune the filters and pulse refresh to surface profitable corridors.</div>
           )}
           {status === 'loading' && (
-            <LoadingSpinner label='Loading trade routes…' />
+            <div role='status' aria-live='polite' className={styles.visuallyHidden}>
+              Loading trade routes…
+            </div>
           )}
           {status === 'error' && (
             <div className={styles.tableErrorState}>{error || 'Unable to fetch trade routes.'}</div>
@@ -6805,6 +7019,7 @@ function GlitchTerminalOverlay () {
 
 export default function GlitchPage() {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
+  const [tradeRoutesStatus, setTradeRoutesStatus] = useState('idle')
   const [arrivalMode, setArrivalMode] = useState(false)
   const [themeEnabled, setThemeEnabled] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -6887,8 +7102,9 @@ export default function GlitchPage() {
     styles.glitchScrollRegion,
     themeEnabled ? '' : styles.glitchScrollRegionClassic
   ].filter(Boolean).join(' ')
+  const loaderVisible = activeTab === 'tradeRoutes' && tradeRoutesStatus === 'loading'
   return (
-    <Layout connected={connected} active={socketActive} ready={ready} loader={false} className={styles.glitchLayout}>
+    <Layout connected={connected} active={socketActive} ready={ready} loader={loaderVisible} className={styles.glitchLayout}>
       <div className={styles.glitchViewport}>
         <div className={navigationClassName}>
           <PanelNavigation items={navigationItems} search={false} />
@@ -6899,7 +7115,7 @@ export default function GlitchPage() {
               <div className={styles.shell}>
                 <div className={styles.tabPanels}>
                   <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
-                    <TradeRoutesPanel />
+                    <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
                   </div>
                   <div style={{ display: activeTab === 'cargoHold' ? 'block' : 'none' }}>
                     <CargoHoldPanel />
