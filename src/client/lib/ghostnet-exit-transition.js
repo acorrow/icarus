@@ -1,4 +1,6 @@
-const TERMINAL_LINES = [
+import { getGhostnetStrings, getGhostnetString } from './ghostnet-addon'
+
+const DEFAULT_EXIT_LOG_LINES = [
   {
     text: 'Dumping volatile memory sectors',
     status: 'FLUSHED',
@@ -25,6 +27,16 @@ const TERMINAL_LINES = [
     tone: 'warning'
   }
 ]
+
+const DEFAULT_EXIT_DIALOG = {
+  ariaLabel: 'GhostNet disengaging',
+  title: 'ATLAS PROTOCOL // EXIT',
+  subtitle: 'Hard disconnect requested — securing GhostNet state.',
+  footnote: 'Residual spectral links will be locked by ATLAS if reconnection is attempted.'
+}
+
+const TERMINAL_LINES = getGhostnetStrings('exitTransition.logLines', DEFAULT_EXIT_LOG_LINES)
+const EXIT_DIALOG_COPY = getGhostnetStrings('exitTransition.dialog', DEFAULT_EXIT_DIALOG)
 
 const TYPE_INTERVAL = 14
 const INITIAL_LINE_DELAY = 120
@@ -69,7 +81,10 @@ function buildOverlay () {
   dialog.className = 'ghostnet-exit-dialog'
   dialog.setAttribute('role', 'alertdialog')
   dialog.setAttribute('aria-live', 'assertive')
-  dialog.setAttribute('aria-label', 'GhostNet disengaging')
+  dialog.setAttribute(
+    'aria-label',
+    getGhostnetString('exitTransition.dialog.ariaLabel', DEFAULT_EXIT_DIALOG.ariaLabel)
+  )
 
   const header = document.createElement('div')
   header.className = 'ghostnet-exit-dialog__header'
@@ -96,11 +111,11 @@ function buildOverlay () {
 
   const title = document.createElement('p')
   title.className = 'ghostnet-exit-dialog__title'
-  title.textContent = 'ATLAS PROTOCOL // EXIT'
+  title.textContent = EXIT_DIALOG_COPY.title || DEFAULT_EXIT_DIALOG.title
 
   const subtitle = document.createElement('p')
   subtitle.className = 'ghostnet-exit-dialog__subtitle'
-  subtitle.textContent = 'Hard disconnect requested — securing GhostNet state.'
+  subtitle.textContent = EXIT_DIALOG_COPY.subtitle || DEFAULT_EXIT_DIALOG.subtitle
 
   headerText.appendChild(title)
   headerText.appendChild(subtitle)
@@ -115,7 +130,7 @@ function buildOverlay () {
 
   const footnote = document.createElement('p')
   footnote.className = 'ghostnet-exit-dialog__footnote'
-  footnote.textContent = 'Residual spectral links will be locked by ATLAS if reconnection is attempted.'
+  footnote.textContent = EXIT_DIALOG_COPY.footnote || DEFAULT_EXIT_DIALOG.footnote
 
   dialog.appendChild(header)
   dialog.appendChild(log)
