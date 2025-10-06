@@ -8,9 +8,9 @@ from typing import Dict
 
 from playwright.async_api import async_playwright
 
-DEFAULT_URL = "http://127.0.0.1:4100/ghostnet.html"
+DEFAULT_URL = "http://127.0.0.1:4100/inara.html"
 DEFAULT_VIEWPORT: Dict[str, int] = {"width": 1280, "height": 720}
-DEFAULT_OUTPUT = "artifacts/ghostnet.png"
+DEFAULT_OUTPUT = "artifacts/inara.png"
 
 
 async def capture(url: str, output_path: str, viewport: Dict[str, int]) -> None:
