@@ -124,43 +124,47 @@ export default function Header ({ connected, active }) {
           {displayTitle}
         </span>
       </h1>
-      <div className='header__status'>
-        <p className='text-primary text-center text-uppercase header__clock'>
-          <span className='header__clock-time'>{dateTime.time}</span>
-          <span className='header__clock-date'>{`${dateTime.day} ${dateTime.month} ${dateTime.year}`}</span>
+      <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
+        <p
+          className='text-primary text-center text-uppercase'
+          style={{ display: 'inline-block', padding: 0, margin: 0, lineHeight: '1rem', minWidth: '7.5rem' }}
+        >
+          <span style={{ position: 'relative', top: '.3rem', fontSize: '2.4rem', paddingTop: '.25rem' }}>
+            {dateTime.time}
+          </span>
+          <br />
+          <span style={{ fontSize: '1.1rem', position: 'relative', top: '.4rem' }}>
+            {dateTime.day} {dateTime.month} {dateTime.year}
+          </span>
         </p>
 
-        <button disabled className='button--icon button--transparent header__status-button' style={{ opacity: active ? 1 : 0.25 }}>
-          <i className={signalClassName} />
+        <button disabled className='button--icon button--transparent' style={{ marginRight: '.5rem', opacity: active ? 1 : 0.25, transition: 'all .25s ease-out' }}>
+          <i className={signalClassName} style={{ position: 'relative', transition: 'all .25s ease', fontSize: '3rem', lineHeight: '1.8rem', top: '.5rem', right: '.25rem' }} />
         </button>
 
         {isWindowsApp && (
-          <button
-            tabIndex='1'
-            onClick={pinWindow}
-            className={`button--icon header__status-button ${isPinned ? 'button--transparent' : ''}`}
-            disabled={isFullScreen}
-          >
-            <i className='icon icarus-terminal-pin-window' />
+          <button tabIndex='1' onClick={pinWindow} className={`button--icon ${isPinned ? 'button--transparent' : ''}`} style={{ marginRight: '.5rem' }} disabled={isFullScreen}>
+            <i className='icon icarus-terminal-pin-window' style={{ fontSize: '2rem' }} />
           </button>
         )}
 
-        <button tabIndex='1' onClick={toggleNotifications} className='button--icon header__status-button'>
-          <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} />
+        <button tabIndex='1' onClick={toggleNotifications} className='button--icon' style={{ marginRight: '.5rem' }}>
+          <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} style={{ fontSize: '2rem' }} />
         </button>
 
         <button
           tabIndex='1'
-          className='button--icon header__status-button'
+          className='button--icon'
+          style={{ marginRight: '.5rem' }}
           onClick={() => {
             setSettingsVisible(!settingsVisible)
             if (document.activeElement) document.activeElement.blur()
           }}
         >
-          <i className='icon icarus-terminal-settings' />
+          <i className='icon icarus-terminal-settings' style={{ fontSize: '2rem' }} />
         </button>
-        <button tabIndex='1' onClick={fullScreen} className='button--icon header__status-button'>
-          <i className='icon icarus-terminal-fullscreen' />
+        <button tabIndex='1' onClick={fullScreen} className='button--icon'>
+          <i className='icon icarus-terminal-fullscreen' style={{ fontSize: '2rem' }} />
         </button>
       </div>
       <hr />
