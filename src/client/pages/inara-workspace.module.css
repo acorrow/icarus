@@ -1,11 +1,11 @@
-.glitchLayout {
+.inaraLayout {
   left: 0;
   right: 0;
   bottom: 0;
   padding: 0;
 }
 
-.glitchViewport {
+.inaraViewport {
   position: relative;
   display: grid;
   grid-template-columns: 4.5rem minmax(0, 1fr);
@@ -13,20 +13,20 @@
   height: 100%;
 }
 
-.glitchNavigation {
+.inaraNavigation {
   position: relative;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-primary-dark) 70%, transparent) 0%, color-mix(in srgb, var(--glitch-color-background) 88%, transparent) 100%);
-  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--glitch-color-primary) 35%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-primary-dark) 70%, transparent) 0%, color-mix(in srgb, var(--inara-color-background) 88%, transparent) 100%);
+  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
   display: flex;
   justify-content: center;
 }
 
-.glitchNavigationClassic {
+.inaraNavigationClassic {
   background: #000;
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.5);
 }
 
-.glitchNavigation :global(.secondary-navigation) {
+.inaraNavigation :global(.secondary-navigation) {
   position: sticky;
   top: 0;
   left: 0;
@@ -40,34 +40,34 @@
   gap: 0.75rem;
 }
 
-.glitchNavigation :global(.secondary-navigation button.button--icon) {
+.inaraNavigation :global(.secondary-navigation button.button--icon) {
   margin: 0;
 }
 
-.glitchContentArea {
+.inaraContentArea {
   position: relative;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-.glitchScrollRegion {
+.inaraScrollRegion {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--glitch-color-background);
+  background: var(--inara-color-background);
 }
 
-.glitchScrollRegionClassic {
+.inaraScrollRegionClassic {
   background: #000;
 }
 
-.glitchScrollRegion::-webkit-scrollbar {
+.inaraScrollRegion::-webkit-scrollbar {
   width: 16px;
 }
 
-.glitchScrollRegion::-webkit-scrollbar-track {
+.inaraScrollRegion::-webkit-scrollbar-track {
   background-image: linear-gradient(
     90deg,
     transparent 41.67%,
@@ -82,113 +82,113 @@
   background-position-x: 10px;
 }
 
-.glitchScrollRegion::-webkit-scrollbar-thumb {
+.inaraScrollRegion::-webkit-scrollbar-thumb {
   background: var(--color-primary);
   min-height: 4rem;
   box-shadow: 0 0 10px var(--color-primary-dark);
 }
 
-.glitch {
+.inara {
   position: relative;
   min-height: 100%;
-  --glitch-terminal-height: clamp(180px, 18vh, 220px);
-  --glitch-bg: var(--glitch-color-background);
-  --glitch-panel: color-mix(in srgb, var(--glitch-color-background) 88%, transparent);
-  --glitch-border-soft: color-mix(in srgb, var(--glitch-color-primary) 28%, transparent);
-  --glitch-border-regular: color-mix(in srgb, var(--glitch-color-primary) 35%, transparent);
-  --glitch-border-strong: color-mix(in srgb, var(--glitch-color-primary) 55%, transparent);
-  --glitch-border-focus: color-mix(in srgb, var(--glitch-color-primary-light) 45%, transparent);
-  --glitch-panel-border: var(--glitch-border-soft);
-  --glitch-shadow: color-mix(in srgb, var(--glitch-color-background) 55%, transparent);
-  --glitch-shadow-deep: color-mix(in srgb, var(--glitch-color-background) 68%, transparent);
-  --glitch-glow: color-mix(in srgb, var(--glitch-color-primary-light) 36%, transparent);
-  --glitch-divider: color-mix(in srgb, var(--glitch-color-text-strong) 16%, transparent);
-  --glitch-ink: color-mix(in srgb, var(--glitch-color-text-strong) 92%, transparent);
-  --glitch-muted: color-mix(in srgb, var(--glitch-color-text-strong) 70%, transparent);
-  --glitch-subdued: color-mix(in srgb, var(--glitch-color-text-strong) 56%, transparent);
-  --glitch-text-soft: color-mix(in srgb, var(--glitch-color-text-strong) 68%, transparent);
-  --glitch-text-faint: color-mix(in srgb, var(--glitch-color-text-strong) 54%, transparent);
-  --glitch-accent: var(--glitch-color-primary-light);
-  --glitch-highlight: color-mix(in srgb, var(--glitch-color-primary-light) 18%, transparent);
-  --glitch-highlight-strong: color-mix(in srgb, var(--glitch-color-primary) 25%, transparent);
-  --glitch-scrollbar-track: var(--glitch-color-scroll-track);
-  --glitch-scrollbar-thumb: var(--glitch-color-scroll-thumb);
-  --glitch-scrollbar-thumb-border: var(--glitch-color-scroll-thumb-border);
-  --glitch-terminal-jackpot-flood: color-mix(in srgb, var(--glitch-color-success) 88%, transparent);
-  --glitch-terminal-jackpot-flood-shadow: color-mix(in srgb, var(--glitch-color-success) 58%, transparent);
-  --glitch-terminal-jackpot-flood-accent: color-mix(in srgb, var(--glitch-color-primary-light) 28%, transparent);
-  --glitch-terminal-debit: color-mix(in srgb, var(--glitch-color-warning) 92%, transparent);
-  --glitch-terminal-debit-shadow: color-mix(in srgb, var(--glitch-color-warning) 64%, transparent);
-  --glitch-terminal-debit-contrast: color-mix(in srgb, var(--glitch-color-text-strong) 94%, transparent);
-  --glitch-table-header: linear-gradient(
+  --inara-terminal-height: clamp(180px, 18vh, 220px);
+  --inara-bg: var(--inara-color-background);
+  --inara-panel: color-mix(in srgb, var(--inara-color-background) 88%, transparent);
+  --inara-border-soft: color-mix(in srgb, var(--inara-color-primary) 28%, transparent);
+  --inara-border-regular: color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
+  --inara-border-strong: color-mix(in srgb, var(--inara-color-primary) 55%, transparent);
+  --inara-border-focus: color-mix(in srgb, var(--inara-color-primary-light) 45%, transparent);
+  --inara-panel-border: var(--inara-border-soft);
+  --inara-shadow: color-mix(in srgb, var(--inara-color-background) 55%, transparent);
+  --inara-shadow-deep: color-mix(in srgb, var(--inara-color-background) 68%, transparent);
+  --inara-glow: color-mix(in srgb, var(--inara-color-primary-light) 36%, transparent);
+  --inara-divider: color-mix(in srgb, var(--inara-color-text-strong) 16%, transparent);
+  --inara-ink: color-mix(in srgb, var(--inara-color-text-strong) 92%, transparent);
+  --inara-muted: color-mix(in srgb, var(--inara-color-text-strong) 70%, transparent);
+  --inara-subdued: color-mix(in srgb, var(--inara-color-text-strong) 56%, transparent);
+  --inara-text-soft: color-mix(in srgb, var(--inara-color-text-strong) 68%, transparent);
+  --inara-text-faint: color-mix(in srgb, var(--inara-color-text-strong) 54%, transparent);
+  --inara-accent: var(--inara-color-primary-light);
+  --inara-highlight: color-mix(in srgb, var(--inara-color-primary-light) 18%, transparent);
+  --inara-highlight-strong: color-mix(in srgb, var(--inara-color-primary) 25%, transparent);
+  --inara-scrollbar-track: var(--inara-color-scroll-track);
+  --inara-scrollbar-thumb: var(--inara-color-scroll-thumb);
+  --inara-scrollbar-thumb-border: var(--inara-color-scroll-thumb-border);
+  --inara-terminal-jackpot-flood: color-mix(in srgb, var(--inara-color-success) 88%, transparent);
+  --inara-terminal-jackpot-flood-shadow: color-mix(in srgb, var(--inara-color-success) 58%, transparent);
+  --inara-terminal-jackpot-flood-accent: color-mix(in srgb, var(--inara-color-primary-light) 28%, transparent);
+  --inara-terminal-debit: color-mix(in srgb, var(--inara-color-warning) 92%, transparent);
+  --inara-terminal-debit-shadow: color-mix(in srgb, var(--inara-color-warning) 64%, transparent);
+  --inara-terminal-debit-contrast: color-mix(in srgb, var(--inara-color-text-strong) 94%, transparent);
+  --inara-table-header: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--glitch-color-primary) 82%, transparent) 0%,
-    color-mix(in srgb, var(--glitch-color-primary-dark) 78%, transparent) 100%
+    color-mix(in srgb, var(--inara-color-primary) 82%, transparent) 0%,
+    color-mix(in srgb, var(--inara-color-primary-dark) 78%, transparent) 100%
   );
-  --glitch-gradient-top: color-mix(in srgb, var(--glitch-color-surface) 92%, transparent);
-  --glitch-gradient-mid: color-mix(in srgb, var(--glitch-color-primary-dark) 60%, transparent);
-  --glitch-gradient-bottom: color-mix(in srgb, var(--glitch-color-background) 88%, transparent);
-  padding: 0 0 calc(4.25rem + var(--glitch-terminal-height));
-  background: linear-gradient(165deg, var(--glitch-gradient-top) 0%, var(--glitch-gradient-mid) 55%, var(--glitch-gradient-bottom) 100%),
-    var(--glitch-bg);
-  color: var(--glitch-ink);
+  --inara-gradient-top: color-mix(in srgb, var(--inara-color-surface) 92%, transparent);
+  --inara-gradient-mid: color-mix(in srgb, var(--inara-color-primary-dark) 60%, transparent);
+  --inara-gradient-bottom: color-mix(in srgb, var(--inara-color-background) 88%, transparent);
+  padding: 0 0 calc(4.25rem + var(--inara-terminal-height));
+  background: linear-gradient(165deg, var(--inara-gradient-top) 0%, var(--inara-gradient-mid) 55%, var(--inara-gradient-bottom) 100%),
+    var(--inara-bg);
+  color: var(--inara-ink);
   overflow: hidden;
 }
 
-.glitchIcarus {
-  --glitch-color-background: #000;
-  --glitch-color-surface: var(--color-background-panel);
-  --glitch-color-primary: var(--color-primary);
-  --glitch-color-primary-dark: var(--color-primary-dark);
-  --glitch-color-primary-light: var(--color-secondary);
-  --glitch-color-text-strong: var(--color-info);
-  --glitch-color-success: var(--color-success);
-  --glitch-color-warning: var(--color-danger);
-  --glitch-color-scroll-track: #000;
-  --glitch-color-scroll-thumb: color-mix(in srgb, var(--color-secondary) 75%, transparent);
-  --glitch-color-scroll-thumb-border: color-mix(in srgb, var(--color-secondary) 45%, transparent);
-  --glitch-gradient-top: #000;
-  --glitch-gradient-mid: #000;
-  --glitch-gradient-bottom: #000;
-  --glitch-bg: #000;
+.inaraIcarus {
+  --inara-color-background: #000;
+  --inara-color-surface: var(--color-background-panel);
+  --inara-color-primary: var(--color-primary);
+  --inara-color-primary-dark: var(--color-primary-dark);
+  --inara-color-primary-light: var(--color-secondary);
+  --inara-color-text-strong: var(--color-info);
+  --inara-color-success: var(--color-success);
+  --inara-color-warning: var(--color-danger);
+  --inara-color-scroll-track: #000;
+  --inara-color-scroll-thumb: color-mix(in srgb, var(--color-secondary) 75%, transparent);
+  --inara-color-scroll-thumb-border: color-mix(in srgb, var(--color-secondary) 45%, transparent);
+  --inara-gradient-top: #000;
+  --inara-gradient-mid: #000;
+  --inara-gradient-bottom: #000;
+  --inara-bg: #000;
   background: #000;
   color: var(--color-info);
   box-shadow: none;
 }
 
-.glitchIcarus::before,
-.glitchIcarus::after {
+.inaraIcarus::before,
+.inaraIcarus::after {
   display: none;
 }
 
-.glitch::before {
+.inara::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: url('/glitch/signal-mesh.svg') center/cover no-repeat;
+  background: url('/inara/signal-mesh.svg') center/cover no-repeat;
   opacity: 0.24;
   mix-blend-mode: screen;
   pointer-events: none;
 }
 
-.glitch::after {
+.inara::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--glitch-color-background) 90%, transparent) 100%);
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--inara-color-background) 90%, transparent) 100%);
   pointer-events: none;
 }
 
-.glitchPanel :global(.layout__panel-scroll) {
+.inaraPanel :global(.layout__panel-scroll) {
   padding: 0;
-  background: var(--glitch-bg);
+  background: var(--inara-bg);
 }
 
-.glitchPanel :global(.layout__panel-scroll::-webkit-scrollbar) {
+.inaraPanel :global(.layout__panel-scroll::-webkit-scrollbar) {
   width: 16px;
 }
 
-.glitchPanel :global(.layout__panel-scroll::-webkit-scrollbar-track) {
+.inaraPanel :global(.layout__panel-scroll::-webkit-scrollbar-track) {
   background-image: linear-gradient(
     90deg,
     transparent 41.67%,
@@ -203,43 +203,43 @@
   background-position-x: 10px;
 }
 
-.glitchPanel :global(.layout__panel-scroll::-webkit-scrollbar-thumb) {
+.inaraPanel :global(.layout__panel-scroll::-webkit-scrollbar-thumb) {
   background: var(--color-primary);
   min-height: 4rem;
   box-shadow: 0 0 10px var(--color-primary-dark);
 }
 
 .arrival {
-  animation: glitchArrivalSurface 4.2s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+  animation: inaraArrivalSurface 4.2s cubic-bezier(0.45, 0, 0.2, 1) forwards;
 }
 
 .arrival::before {
-  animation: glitchArrivalMesh 4.2s steps(3, end) forwards;
+  animation: inaraArrivalMesh 4.2s steps(3, end) forwards;
 }
 
 .arrival::after {
-  animation: glitchArrivalVignette 4.2s ease-out forwards;
+  animation: inaraArrivalVignette 4.2s ease-out forwards;
 }
 
 .arrival .shell {
-  animation: glitchArrivalShell 4.1s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  animation: inaraArrivalShell 4.1s cubic-bezier(0.33, 1, 0.68, 1) forwards;
 }
 
 .arrival .sectionHint,
-.arrival .glitchAlert,
-.arrival :global(.glitch-inline-accent),
-.arrival :global(.glitch-muted),
-.arrival :global(.glitch-accent) {
-  animation: glitchArrivalChromatic 4.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+.arrival .inaraAlert,
+.arrival :global(.inara-inline-accent),
+.arrival :global(.inara-muted),
+.arrival :global(.inara-accent) {
+  animation: inaraArrivalChromatic 4.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
 .arrival .sectionFrame,
 .arrival .sectionFrameElevated {
-  animation: glitchArrivalPanel 4.2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
+  animation: inaraArrivalPanel 4.2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
 }
 
 .arrival .badge {
-  animation: glitchArrivalBadge 4.2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
+  animation: inaraArrivalBadge 4.2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
 }
 
 .shell {
@@ -263,7 +263,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  height: var(--glitch-terminal-height);
+  height: var(--inara-terminal-height);
   pointer-events: none;
   z-index: 20;
 }
@@ -281,12 +281,12 @@
   width: 100%;
   max-width: none;
   background: linear-gradient(180deg, rgba(6, 6, 12, 0.96) 0%, rgba(2, 2, 6, 0.98) 60%, rgba(0, 0, 0, 0.98) 100%);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-text-strong) 26%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-text-strong) 26%, transparent);
   border-bottom: none;
   border-radius: 1.5rem 1.5rem 0 0;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   pointer-events: auto;
-  box-shadow: 0 -1.5rem 3rem rgba(0, 0, 0, 0.65), 0 0 2rem color-mix(in srgb, var(--glitch-color-primary) 28%, transparent);
+  box-shadow: 0 -1.5rem 3rem rgba(0, 0, 0, 0.65), 0 0 2rem color-mix(in srgb, var(--inara-color-primary) 28%, transparent);
   backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
@@ -310,8 +310,8 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 320ms ease, filter 320ms ease;
-  background: radial-gradient(circle at 50% 15%, color-mix(in srgb, var(--glitch-color-success) 18%, transparent) 0%, transparent 55%),
-    linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-success) 6%, transparent) 0%, transparent 68%);
+  background: radial-gradient(circle at 50% 15%, color-mix(in srgb, var(--inara-color-success) 18%, transparent) 0%, transparent 55%),
+    linear-gradient(180deg, color-mix(in srgb, var(--inara-color-success) 6%, transparent) 0%, transparent 68%);
   mix-blend-mode: screen;
   overflow: hidden;
   z-index: 0;
@@ -334,8 +334,8 @@
 .terminalCelebrationGlyph {
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
   font-size: 1.05rem;
-  color: color-mix(in srgb, var(--glitch-color-success) 95%, transparent);
-  text-shadow: 0 0 1.65rem color-mix(in srgb, var(--glitch-color-success) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-success) 95%, transparent);
+  text-shadow: 0 0 1.65rem color-mix(in srgb, var(--inara-color-success) 60%, transparent);
   --terminal-celebration-skew: 0deg;
   display: inline-block;
   opacity: 0;
@@ -365,7 +365,7 @@
   gap: 1.5rem;
   padding: 1rem 1.5rem 0.75rem 1.5rem;
   background: linear-gradient(180deg, rgba(32, 32, 40, 0.92) 0%, rgba(12, 12, 18, 0.96) 60%, rgba(6, 6, 12, 0.98) 100%);
-  border-bottom: 1px solid color-mix(in srgb, var(--glitch-color-text-strong) 22%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--inara-color-text-strong) 22%, transparent);
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.45);
 }
 
@@ -404,7 +404,7 @@
 .terminalHeaderCompressed {
   padding: 0.45rem 0.85rem;
   background: linear-gradient(180deg, rgba(28, 28, 34, 0.94) 0%, rgba(8, 8, 12, 0.98) 100%);
-  border-bottom: 1px solid color-mix(in srgb, var(--glitch-color-text-strong) 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--inara-color-text-strong) 18%, transparent);
   gap: 0.85rem;
 }
 
@@ -440,7 +440,7 @@
   gap: 0.35rem;
   padding: 0;
   background: rgba(0, 0, 0, 0.35);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-text-strong) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-text-strong) 16%, transparent);
   border-radius: 6px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
   min-height: clamp(2.4rem, 2rem + 0.8vw, 3rem);
@@ -455,13 +455,13 @@
   aspect-ratio: 36 / 28;
   min-height: clamp(2.2rem, 1.8rem + 0.8vw, 2.85rem);
   border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--glitch-color-text-strong) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-text-strong) 18%, transparent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: clamp(0.85rem, 0.75rem + 0.25vw, 1.25rem);
   line-height: 1;
-  color: var(--glitch-color-text-strong);
+  color: var(--inara-color-text-strong);
   background: linear-gradient(180deg, rgba(24, 24, 32, 0.92) 0%, rgba(8, 8, 12, 0.98) 100%);
   cursor: pointer;
   transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
@@ -476,11 +476,11 @@ button.terminalWindowControl:not(:disabled):hover,
 button.terminalWindowControl:focus-visible {
   transform: translateY(-1px);
   background: linear-gradient(180deg, rgba(36, 36, 48, 0.96) 0%, rgba(12, 12, 18, 0.98) 100%);
-  border-color: color-mix(in srgb, var(--glitch-color-text-strong) 28%, transparent);
+  border-color: color-mix(in srgb, var(--inara-color-text-strong) 28%, transparent);
 }
 
 button.terminalWindowControl:focus-visible {
-  outline: 2px solid var(--glitch-border-focus);
+  outline: 2px solid var(--inara-border-focus);
   outline-offset: 2px;
 }
 
@@ -497,51 +497,51 @@ button.terminalWindowControl:disabled {
 }
 
 .terminalWindowControlMinimize {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-warning) 22%, transparent) 0%, rgba(20, 20, 28, 0.98) 100%);
-  border-color: color-mix(in srgb, var(--glitch-color-warning) 26%, transparent);
-  color: color-mix(in srgb, var(--glitch-color-warning) 86%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-warning) 22%, transparent) 0%, rgba(20, 20, 28, 0.98) 100%);
+  border-color: color-mix(in srgb, var(--inara-color-warning) 26%, transparent);
+  color: color-mix(in srgb, var(--inara-color-warning) 86%, transparent);
 }
 
 button.terminalWindowControlMinimize:not(:disabled):hover,
 button.terminalWindowControlMinimize:focus-visible {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-warning) 32%, transparent) 0%, rgba(24, 24, 32, 0.98) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-warning) 32%, transparent) 0%, rgba(24, 24, 32, 0.98) 100%);
 }
 
 .terminalWindowControlMaximize {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-success) 28%, transparent) 0%, rgba(20, 24, 28, 0.98) 100%);
-  border-color: color-mix(in srgb, var(--glitch-color-success) 32%, transparent);
-  color: color-mix(in srgb, var(--glitch-color-success) 82%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-success) 28%, transparent) 0%, rgba(20, 24, 28, 0.98) 100%);
+  border-color: color-mix(in srgb, var(--inara-color-success) 32%, transparent);
+  color: color-mix(in srgb, var(--inara-color-success) 82%, transparent);
 }
 
 button.terminalWindowControlMaximize:not(:disabled):hover,
 button.terminalWindowControlMaximize:focus-visible {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-success) 38%, transparent) 0%, rgba(26, 30, 34, 0.98) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-success) 38%, transparent) 0%, rgba(26, 30, 34, 0.98) 100%);
 }
 
 .terminalWindowControlClose {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-primary) 38%, transparent) 0%, rgba(24, 16, 36, 0.98) 100%);
-  border-color: color-mix(in srgb, var(--glitch-color-primary) 36%, transparent);
-  color: color-mix(in srgb, var(--glitch-color-primary) 88%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-primary) 38%, transparent) 0%, rgba(24, 16, 36, 0.98) 100%);
+  border-color: color-mix(in srgb, var(--inara-color-primary) 36%, transparent);
+  color: color-mix(in srgb, var(--inara-color-primary) 88%, transparent);
 }
 
 button.terminalWindowControlClose:not(:disabled):hover,
 button.terminalWindowControlClose:focus-visible {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-primary) 48%, transparent) 0%, rgba(30, 20, 44, 0.98) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-primary) 48%, transparent) 0%, rgba(30, 20, 44, 0.98) 100%);
 }
 
 .terminalWindowControlToken {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-primary) 60%, transparent) 0%, rgba(26, 18, 44, 0.98) 100%);
-  border-color: color-mix(in srgb, var(--glitch-color-primary) 44%, transparent);
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 94%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-primary) 60%, transparent) 0%, rgba(26, 18, 44, 0.98) 100%);
+  border-color: color-mix(in srgb, var(--inara-color-primary) 44%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 94%, transparent);
 }
 
 button.terminalWindowControlToken:not(:disabled):hover,
 button.terminalWindowControlToken:focus-visible {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-primary) 72%, transparent) 0%, rgba(32, 22, 52, 0.98) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-primary) 72%, transparent) 0%, rgba(32, 22, 52, 0.98) 100%);
 }
 
 button.terminalWindowControlToken:not(:disabled):active {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-primary-dark) 68%, transparent) 0%, rgba(18, 12, 32, 0.98) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-primary-dark) 68%, transparent) 0%, rgba(18, 12, 32, 0.98) 100%);
 }
 
 .terminalStatusPreview {
@@ -552,7 +552,7 @@ button.terminalWindowControlToken:not(:disabled):active {
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
-  color: var(--glitch-color-text-strong);
+  color: var(--inara-color-text-strong);
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
   font-size: 0.78rem;
   letter-spacing: 0.08em;
@@ -565,12 +565,12 @@ button.terminalWindowControlToken:not(:disabled):active {
 }
 
 button.terminalStatusPreview:hover {
-  border-color: color-mix(in srgb, var(--glitch-border-soft) 68%, transparent);
-  background: color-mix(in srgb, var(--glitch-color-primary) 16%, transparent);
+  border-color: color-mix(in srgb, var(--inara-border-soft) 68%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 16%, transparent);
 }
 
 button.terminalStatusPreview:focus-visible {
-  outline: 2px solid var(--glitch-border-focus);
+  outline: 2px solid var(--inara-border-focus);
   outline-offset: 2px;
 }
 
@@ -578,14 +578,14 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.68rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 68%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 68%, transparent);
   white-space: nowrap;
 }
 
 .terminalStatusPreviewText {
   font-size: 0.78rem;
   letter-spacing: 0.12em;
-  color: var(--glitch-color-text-strong);
+  color: var(--inara-color-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -597,12 +597,12 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.9rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--glitch-color-text-strong);
+  color: var(--inara-color-text-strong);
 }
 
 .terminalStatus {
   font-size: 0.8rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 68%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 68%, transparent);
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
 }
 
@@ -620,21 +620,21 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.72rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
 }
 
 .terminalTokenValue {
   font-size: 0.96rem;
   letter-spacing: 0.08em;
-  color: var(--glitch-color-text-strong);
+  color: var(--inara-color-text-strong);
   min-width: 5rem;
   text-align: right;
   white-space: nowrap;
 }
 
 .terminalTokenValueNegative {
-  color: var(--glitch-color-warning);
-  text-shadow: 0 0 0.8rem color-mix(in srgb, var(--glitch-color-warning) 55%, transparent);
+  color: var(--inara-color-warning);
+  text-shadow: 0 0 0.8rem color-mix(in srgb, var(--inara-color-warning) 55%, transparent);
 }
 
 .terminalTokenValueFlashCredit {
@@ -661,7 +661,7 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.65rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 54%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 54%, transparent);
 }
 
 .terminalBody {
@@ -670,7 +670,7 @@ button.terminalStatusPreview:focus-visible {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.98) 40%, rgba(4, 4, 12, 0.98) 100%);
   overflow: hidden;
   display: flex;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glitch-color-text-strong) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-text-strong) 12%, transparent);
 }
 
 .terminalFeed {
@@ -689,7 +689,7 @@ button.terminalStatusPreview:focus-visible {
   gap: 0.85rem;
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
   font-size: 0.85rem;
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   opacity: 0;
   animation: terminalLineReveal 320ms ease forwards;
 }
@@ -702,153 +702,153 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .terminalPromptCommand {
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
 }
 
 .terminalPromptResponse {
-  color: color-mix(in srgb, var(--glitch-color-primary) 75%, transparent);
+  color: color-mix(in srgb, var(--inara-color-primary) 75%, transparent);
 }
 
 .terminalPromptAlert {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
 }
 
 .terminalPromptCipher {
-  color: var(--glitch-text-faint);
+  color: var(--inara-text-faint);
 }
 
 .terminalPromptBinary {
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
 }
 
 .terminalPromptDecrypt {
-  color: color-mix(in srgb, var(--glitch-color-primary) 95%, transparent);
+  color: color-mix(in srgb, var(--inara-color-primary) 95%, transparent);
 }
 
-.terminalPromptGlitch {
-  color: color-mix(in srgb, var(--glitch-color-primary) 85%, transparent);
-  text-shadow: 0 0 18px color-mix(in srgb, var(--glitch-color-primary) 48%, transparent);
+.terminalPromptInara {
+  color: color-mix(in srgb, var(--inara-color-primary) 85%, transparent);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--inara-color-primary) 48%, transparent);
 }
 
 .terminalPromptSystem {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 72%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 72%, transparent);
 }
 
 .terminalPromptCredit {
-  color: color-mix(in srgb, var(--glitch-color-success) 96%, transparent);
-  text-shadow: 0 0 18px color-mix(in srgb, var(--glitch-color-success) 58%, transparent);
+  color: color-mix(in srgb, var(--inara-color-success) 96%, transparent);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--inara-color-success) 58%, transparent);
 }
 
 .terminalPromptTransaction {
-  color: color-mix(in srgb, var(--glitch-color-success) 88%, transparent);
-  text-shadow: 0 0 14px color-mix(in srgb, var(--glitch-color-success) 40%, transparent);
+  color: color-mix(in srgb, var(--inara-color-success) 88%, transparent);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--inara-color-success) 40%, transparent);
 }
 
 .terminalPromptSimulation {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
   animation: terminalSimulationPulse 1.4s ease-in-out infinite;
 }
 
 .terminalPromptJackpot {
-  color: var(--glitch-color-primary);
-  text-shadow: 0 0 18px color-mix(in srgb, var(--glitch-color-primary) 65%, transparent);
+  color: var(--inara-color-primary);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--inara-color-primary) 65%, transparent);
 }
 
 .terminalPromptJackpotGlyph {
-  color: color-mix(in srgb, var(--glitch-color-primary-light) 82%, transparent);
+  color: color-mix(in srgb, var(--inara-color-primary-light) 82%, transparent);
 }
 
 .terminalPromptJackpotFloodGlyph {
-  color: var(--glitch-terminal-jackpot-flood);
+  color: var(--inara-terminal-jackpot-flood);
   text-shadow:
-    0 0 18px var(--glitch-terminal-jackpot-flood-shadow),
-    0 0 28px var(--glitch-terminal-jackpot-flood-accent);
+    0 0 18px var(--inara-terminal-jackpot-flood-shadow),
+    0 0 28px var(--inara-terminal-jackpot-flood-accent);
   animation: terminalJackpotFloodPulse 1.6s ease-in-out infinite;
   white-space: nowrap;
 }
 
 .terminalPromptJackpotSummary {
-  color: var(--glitch-color-success);
-  text-shadow: 0 0 12px color-mix(in srgb, var(--glitch-color-success) 48%, transparent);
+  color: var(--inara-color-success);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--inara-color-success) 48%, transparent);
 }
 
 .terminalPromptDebitGlyph {
-  color: var(--glitch-terminal-debit);
-  text-shadow: 0 0 16px var(--glitch-terminal-debit-shadow);
+  color: var(--inara-terminal-debit);
+  text-shadow: 0 0 16px var(--inara-terminal-debit-shadow);
   animation: terminalDebitGlyphPulse 1.8s steps(2, end) infinite;
 }
 
 .terminalText {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 82%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 82%, transparent);
 }
 
 .terminalTextAlert {
-  color: var(--glitch-color-warning);
-  text-shadow: 0 0 12px color-mix(in srgb, var(--glitch-color-warning) 58%, transparent);
+  color: var(--inara-color-warning);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--inara-color-warning) 58%, transparent);
 }
 
 .terminalTextCipher {
-  color: var(--glitch-text-faint);
+  color: var(--inara-text-faint);
   letter-spacing: 0.18em;
 }
 
 .terminalTextBinary {
-  color: color-mix(in srgb, var(--glitch-color-success) 92%, transparent);
-  text-shadow: 0 0 10px color-mix(in srgb, var(--glitch-color-success) 55%, transparent);
+  color: color-mix(in srgb, var(--inara-color-success) 92%, transparent);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--inara-color-success) 55%, transparent);
 }
 
 .terminalTextDecrypt {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 95%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 95%, transparent);
 }
 
-.terminalTextGlitch {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 70%, transparent);
+.terminalTextInara {
+  color: color-mix(in srgb, var(--inara-color-text-strong) 70%, transparent);
   letter-spacing: 0.2em;
-  text-shadow: 0 0 22px color-mix(in srgb, var(--glitch-color-primary) 45%, transparent);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--inara-color-primary) 45%, transparent);
 }
 
 .terminalTextSystem {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 92%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 92%, transparent);
 }
 
 .terminalTextCredit {
-  color: color-mix(in srgb, var(--glitch-color-success) 90%, transparent);
-  text-shadow: 0 0 22px color-mix(in srgb, var(--glitch-color-success) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-success) 90%, transparent);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--inara-color-success) 60%, transparent);
   letter-spacing: 0.2em;
 }
 
 .terminalTextTransaction {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 92%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 92%, transparent);
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .terminalTextSimulation {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
   letter-spacing: 0.24em;
   text-transform: uppercase;
   animation: terminalSimulationTextPulse 1.4s ease-in-out infinite;
 }
 
 .terminalTextJackpot {
-  color: var(--glitch-color-primary);
+  color: var(--inara-color-primary);
   font-weight: 600;
   letter-spacing: 0.16em;
-  text-shadow: 0 0 22px color-mix(in srgb, var(--glitch-color-primary) 58%, transparent);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--inara-color-primary) 58%, transparent);
   animation: terminalJackpotShimmer 2.2s linear infinite;
 }
 
 .terminalTextJackpotGlyph {
-  color: color-mix(in srgb, var(--glitch-color-primary-light) 88%, transparent);
-  text-shadow: 0 0 14px color-mix(in srgb, var(--glitch-color-primary-light) 55%, transparent);
+  color: color-mix(in srgb, var(--inara-color-primary-light) 88%, transparent);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--inara-color-primary-light) 55%, transparent);
   animation: terminalJackpotGlyph 1.4s ease-in-out infinite;
 }
 
 .terminalTextJackpotFloodGlyph {
-  color: var(--glitch-terminal-jackpot-flood);
+  color: var(--inara-terminal-jackpot-flood);
   text-shadow:
-    0 0 18px var(--glitch-terminal-jackpot-flood-shadow),
-    0 0 36px var(--glitch-terminal-jackpot-flood-accent);
+    0 0 18px var(--inara-terminal-jackpot-flood-shadow),
+    0 0 36px var(--inara-terminal-jackpot-flood-accent);
   letter-spacing: 0.22em;
   display: inline-block;
   max-width: 100%;
@@ -859,18 +859,18 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .terminalTextJackpotSummary {
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
   font-weight: 600;
   letter-spacing: 0.18em;
-  text-shadow: 0 0 18px color-mix(in srgb, var(--glitch-color-success) 52%, transparent);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--inara-color-success) 52%, transparent);
 }
 
 .terminalTextDebitGlyph {
-  color: var(--glitch-terminal-debit-contrast);
+  color: var(--inara-terminal-debit-contrast);
   letter-spacing: 0.24em;
   text-shadow:
-    0 0 16px var(--glitch-terminal-debit-shadow),
-    0 0 24px color-mix(in srgb, var(--glitch-color-warning) 46%, transparent);
+    0 0 16px var(--inara-terminal-debit-shadow),
+    0 0 24px color-mix(in srgb, var(--inara-color-warning) 46%, transparent);
   animation: terminalDebitGlyphPulse 1.8s steps(2, end) infinite;
 }
 
@@ -908,37 +908,37 @@ button.terminalStatusPreview:focus-visible {
 
 @keyframes terminalSimulationPulse {
   0% {
-    color: color-mix(in srgb, var(--glitch-color-warning) 72%, transparent);
+    color: color-mix(in srgb, var(--inara-color-warning) 72%, transparent);
   }
   50% {
-    color: color-mix(in srgb, var(--glitch-color-primary-light) 90%, transparent);
+    color: color-mix(in srgb, var(--inara-color-primary-light) 90%, transparent);
   }
   100% {
-    color: color-mix(in srgb, var(--glitch-color-warning) 72%, transparent);
+    color: color-mix(in srgb, var(--inara-color-warning) 72%, transparent);
   }
 }
 
 @keyframes terminalSimulationTextPulse {
   0% {
-    text-shadow: 0 0 12px color-mix(in srgb, var(--glitch-color-warning) 60%, transparent);
+    text-shadow: 0 0 12px color-mix(in srgb, var(--inara-color-warning) 60%, transparent);
   }
   50% {
-    text-shadow: 0 0 18px color-mix(in srgb, var(--glitch-color-primary) 55%, transparent);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--inara-color-primary) 55%, transparent);
   }
   100% {
-    text-shadow: 0 0 12px color-mix(in srgb, var(--glitch-color-warning) 60%, transparent);
+    text-shadow: 0 0 12px color-mix(in srgb, var(--inara-color-warning) 60%, transparent);
   }
 }
 
 @keyframes terminalJackpotShimmer {
   0% {
-    text-shadow: 0 0 16px color-mix(in srgb, var(--glitch-color-primary) 48%, transparent);
+    text-shadow: 0 0 16px color-mix(in srgb, var(--inara-color-primary) 48%, transparent);
   }
   50% {
-    text-shadow: 0 0 28px color-mix(in srgb, var(--glitch-color-primary-light) 70%, transparent);
+    text-shadow: 0 0 28px color-mix(in srgb, var(--inara-color-primary-light) 70%, transparent);
   }
   100% {
-    text-shadow: 0 0 16px color-mix(in srgb, var(--glitch-color-primary) 48%, transparent);
+    text-shadow: 0 0 16px color-mix(in srgb, var(--inara-color-primary) 48%, transparent);
   }
 }
 
@@ -957,18 +957,18 @@ button.terminalStatusPreview:focus-visible {
 @keyframes terminalJackpotFloodGlyphDrift {
   0% {
     text-shadow:
-      0 0 18px var(--glitch-terminal-jackpot-flood-shadow),
-      0 0 26px var(--glitch-terminal-jackpot-flood-accent);
+      0 0 18px var(--inara-terminal-jackpot-flood-shadow),
+      0 0 26px var(--inara-terminal-jackpot-flood-accent);
   }
   50% {
     text-shadow:
-      0 0 22px var(--glitch-terminal-jackpot-flood-shadow),
-      0 0 42px var(--glitch-terminal-jackpot-flood-accent);
+      0 0 22px var(--inara-terminal-jackpot-flood-shadow),
+      0 0 42px var(--inara-terminal-jackpot-flood-accent);
   }
   100% {
     text-shadow:
-      0 0 18px var(--glitch-terminal-jackpot-flood-shadow),
-      0 0 26px var(--glitch-terminal-jackpot-flood-accent);
+      0 0 18px var(--inara-terminal-jackpot-flood-shadow),
+      0 0 26px var(--inara-terminal-jackpot-flood-accent);
   }
 }
 
@@ -976,20 +976,20 @@ button.terminalStatusPreview:focus-visible {
   0% {
     opacity: 0.76;
     text-shadow:
-      0 0 12px var(--glitch-terminal-debit-shadow),
-      0 0 18px color-mix(in srgb, var(--glitch-color-warning) 40%, transparent);
+      0 0 12px var(--inara-terminal-debit-shadow),
+      0 0 18px color-mix(in srgb, var(--inara-color-warning) 40%, transparent);
   }
   50% {
     opacity: 1;
     text-shadow:
-      0 0 22px var(--glitch-terminal-debit-shadow),
-      0 0 32px color-mix(in srgb, var(--glitch-color-warning) 60%, transparent);
+      0 0 22px var(--inara-terminal-debit-shadow),
+      0 0 32px color-mix(in srgb, var(--inara-color-warning) 60%, transparent);
   }
   100% {
     opacity: 0.76;
     text-shadow:
-      0 0 12px var(--glitch-terminal-debit-shadow),
-      0 0 18px color-mix(in srgb, var(--glitch-color-warning) 40%, transparent);
+      0 0 12px var(--inara-terminal-debit-shadow),
+      0 0 18px color-mix(in srgb, var(--inara-color-warning) 40%, transparent);
   }
 }
 
@@ -1010,22 +1010,22 @@ button.terminalStatusPreview:focus-visible {
 
 @keyframes terminalTokenFlashCredit {
   0% {
-    color: var(--glitch-color-success);
-    text-shadow: 0 0 18px color-mix(in srgb, var(--glitch-color-success) 60%, transparent);
+    color: var(--inara-color-success);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--inara-color-success) 60%, transparent);
   }
   100% {
-    color: var(--glitch-color-text-strong);
+    color: var(--inara-color-text-strong);
     text-shadow: none;
   }
 }
 
 @keyframes terminalTokenFlashDebit {
   0% {
-    color: var(--glitch-color-warning);
-    text-shadow: 0 0 18px color-mix(in srgb, var(--glitch-color-warning) 58%, transparent);
+    color: var(--inara-color-warning);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--inara-color-warning) 58%, transparent);
   }
   100% {
-    color: var(--glitch-color-text-strong);
+    color: var(--inara-color-text-strong);
     text-shadow: none;
   }
 }
@@ -1040,15 +1040,15 @@ button.terminalStatusPreview:focus-visible {
   }
 
   .terminalCollapsed {
-    transform: translateY(calc(var(--glitch-terminal-height) - 3rem));
+    transform: translateY(calc(var(--inara-terminal-height) - 3rem));
   }
 }
 
 .sectionFrame {
   border-radius: 0;
-  background: var(--glitch-panel);
-  border: 1px solid var(--glitch-panel-border);
-  box-shadow: 0 1.75rem 3.5rem var(--glitch-shadow);
+  background: var(--inara-panel);
+  border: 1px solid var(--inara-panel-border);
+  box-shadow: 0 1.75rem 3.5rem var(--inara-shadow);
   backdrop-filter: blur(12px);
 }
 
@@ -1066,9 +1066,9 @@ button.terminalStatusPreview:focus-visible {
 
 .tablePanel {
   border-radius: 1.25rem;
-  background: var(--glitch-panel);
-  border: 1px solid var(--glitch-panel-border);
-  box-shadow: 0 1.75rem 3.5rem var(--glitch-shadow);
+  background: var(--inara-panel);
+  border: 1px solid var(--inara-panel-border);
+  box-shadow: 0 1.75rem 3.5rem var(--inara-shadow);
   backdrop-filter: blur(12px);
   padding: clamp(1.75rem, 3vw, 2.25rem) clamp(1.75rem, 3vw, 2.5rem);
 }
@@ -1090,14 +1090,14 @@ button.terminalStatusPreview:focus-visible {
   margin: 0;
   font-size: clamp(1.6rem, 2.4vw, 2rem);
   font-weight: 700;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
 }
 
 .sectionFrameElevated {
   border-radius: 0;
-  background: var(--glitch-panel);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 32%, transparent);
-  box-shadow: 0 1.75rem 4rem color-mix(in srgb, var(--glitch-color-background) 85%, transparent);
+  background: var(--inara-panel);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 32%, transparent);
+  box-shadow: 0 1.75rem 4rem color-mix(in srgb, var(--inara-color-background) 85%, transparent);
   backdrop-filter: blur(14px);
 }
 
@@ -1111,7 +1111,7 @@ button.terminalStatusPreview:focus-visible {
 
 .sectionHint {
   margin: 0;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   font-size: 0.95rem;
   line-height: 1.6;
 }
@@ -1128,7 +1128,7 @@ button.terminalStatusPreview:focus-visible {
   align-items: center;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   text-transform: uppercase;
   letter-spacing: 0.14em;
 }
@@ -1139,7 +1139,7 @@ button.terminalStatusPreview:focus-visible {
 
 .cargoProgressValue {
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   letter-spacing: 0.08em;
 }
 
@@ -1147,8 +1147,8 @@ button.terminalStatusPreview:focus-visible {
   position: relative;
   height: 0.65rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 38%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 38%, transparent);
   overflow: hidden;
 }
 
@@ -1159,8 +1159,8 @@ button.terminalStatusPreview:focus-visible {
   left: 0;
   width: 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--glitch-accent), color-mix(in srgb, var(--glitch-accent) 40%, var(--glitch-color-primary)));
-  box-shadow: 0 0 1rem color-mix(in srgb, var(--glitch-accent) 65%, transparent);
+  background: linear-gradient(90deg, var(--inara-accent), color-mix(in srgb, var(--inara-accent) 40%, var(--inara-color-primary)));
+  box-shadow: 0 0 1rem color-mix(in srgb, var(--inara-accent) 65%, transparent);
   transition: width 240ms ease;
 }
 
@@ -1173,19 +1173,19 @@ button.terminalStatusPreview:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 42%, transparent);
-  background: color-mix(in srgb, var(--glitch-color-primary) 12%, transparent);
-  color: var(--glitch-accent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 42%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 12%, transparent);
+  color: var(--inara-accent);
 }
 
-.glitchAlert {
-  color: var(--glitch-muted);
+.inaraAlert {
+  color: var(--inara-muted);
   font-size: 0.9rem;
   line-height: 1.5;
 }
 
-.glitchAlert strong {
-  color: var(--glitch-ink);
+.inaraAlert strong {
+  color: var(--inara-ink);
 }
 
 .dataTableContainer {
@@ -1228,8 +1228,8 @@ button.terminalStatusPreview:focus-visible {
   margin-top: 1.5rem;
   padding: 1.5rem 1.75rem;
   border-radius: 0;
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 35%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-background) 96%, transparent) 0%, color-mix(in srgb, var(--glitch-color-primary-dark) 16%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-background) 96%, transparent) 0%, color-mix(in srgb, var(--inara-color-primary-dark) 16%, transparent) 100%);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -1251,7 +1251,7 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.72rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 74%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 74%, transparent);
 }
 
 .tradeFiltersSystemControls {
@@ -1266,9 +1266,9 @@ button.terminalStatusPreview:focus-visible {
 .tradeFiltersNumberInput {
   appearance: none;
   border-radius: 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 40%, transparent);
-  background: color-mix(in srgb, var(--glitch-color-background) 90%, transparent);
-  color: var(--glitch-ink);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 40%, transparent);
+  background: color-mix(in srgb, var(--inara-color-background) 90%, transparent);
+  color: var(--inara-ink);
   padding: 0.65rem 0.9rem;
   font-size: 0.95rem;
   min-width: 0;
@@ -1279,7 +1279,7 @@ button.terminalStatusPreview:focus-visible {
 .tradeFiltersSelect:focus,
 .tradeFiltersTextInput:focus,
 .tradeFiltersNumberInput:focus {
-  outline: 2px solid var(--glitch-color-success);
+  outline: 2px solid var(--inara-color-success);
   outline-offset: 2px;
 }
 
@@ -1291,9 +1291,9 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeFiltersToggle {
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 35%, transparent);
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
-  color: var(--glitch-accent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
+  color: var(--inara-accent);
   padding: 0.6rem 1.15rem;
   border-radius: 0;
   font-size: 0.85rem;
@@ -1303,13 +1303,13 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeFiltersToggle:hover {
-  background: color-mix(in srgb, var(--glitch-color-primary) 26%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 26%, transparent);
 }
 
 .tradeFiltersSubmit {
   border: none;
   border-radius: 0;
-  background: linear-gradient(90deg, var(--glitch-accent), color-mix(in srgb, var(--glitch-color-primary) 45%, transparent));
+  background: linear-gradient(90deg, var(--inara-accent), color-mix(in srgb, var(--inara-color-primary) 45%, transparent));
   color: #0c061f;
   padding: 0.6rem 1.4rem;
   font-weight: 600;
@@ -1334,14 +1334,14 @@ button.terminalStatusPreview:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .tradeFilterField label {
   font-size: 0.8rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 70%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 70%, transparent);
 }
 
 .tradeFiltersNumberInput::-webkit-outer-spin-button,
@@ -1351,7 +1351,7 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeFilterHint {
   font-size: 0.75rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .tradeFilterFieldToggle {
@@ -1362,13 +1362,13 @@ button.terminalStatusPreview:focus-visible {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 78%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 78%, transparent);
 }
 
 .tradeFilterToggleRow input[type='checkbox'] {
   width: 1.05rem;
   height: 1.05rem;
-  accent-color: var(--glitch-accent);
+  accent-color: var(--inara-accent);
 }
 
 .dataTable {
@@ -1377,7 +1377,7 @@ button.terminalStatusPreview:focus-visible {
   border-collapse: collapse;
   border-spacing: 0;
   table-layout: auto;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   line-height: 1.45;
   background: transparent;
 }
@@ -1387,13 +1387,13 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .dataTable thead {
-  background: var(--glitch-table-header);
-  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--glitch-color-primary) 38%, transparent);
+  background: var(--inara-table-header);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--inara-color-primary) 38%, transparent);
 }
 
 .dataTable thead tr {
-  border-bottom: 1px solid color-mix(in srgb, var(--glitch-color-primary) 45%, transparent);
-  background: var(--glitch-table-header);
+  border-bottom: 1px solid color-mix(in srgb, var(--inara-color-primary) 45%, transparent);
+  background: var(--inara-table-header);
 }
 
 .dataTable thead th {
@@ -1401,21 +1401,21 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.72rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 88%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 88%, transparent);
   font-weight: 600;
   text-align: left;
   white-space: nowrap;
 }
 
 .dataTable tbody tr {
-  background: color-mix(in srgb, var(--glitch-color-surface) 85%, var(--glitch-color-background) 15%);
-  border-bottom: 1px solid color-mix(in srgb, var(--glitch-color-primary) 25%, transparent);
+  background: color-mix(in srgb, var(--inara-color-surface) 85%, var(--inara-color-background) 15%);
+  border-bottom: 1px solid color-mix(in srgb, var(--inara-color-primary) 25%, transparent);
   transition: background 0.25s ease, transform 0.25s ease;
   font-size: 0.95rem;
 }
 
 .dataTable tbody tr:nth-child(even) {
-  background: color-mix(in srgb, var(--glitch-color-primary-dark) 22%, var(--glitch-color-background) 78%);
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 22%, var(--inara-color-background) 78%);
 }
 
 .dataTable tbody tr:last-child {
@@ -1423,19 +1423,19 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .dataTable tbody tr:hover {
-  background: color-mix(in srgb, var(--glitch-color-primary) 24%, var(--glitch-color-surface) 76%);
+  background: color-mix(in srgb, var(--inara-color-primary) 24%, var(--inara-color-surface) 76%);
 }
 
 .dataTable td {
   padding: 0.75rem 1rem;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   text-transform: none !important;
   vertical-align: middle;
   white-space: nowrap;
 }
 
 .nonCommodityRow {
-  background: color-mix(in srgb, var(--glitch-color-primary-dark) 40%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 40%, transparent);
   font-size: 0.85rem;
   line-height: 1.2;
 }
@@ -1453,31 +1453,31 @@ button.terminalStatusPreview:focus-visible {
 
 .nonCommodityLabel {
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
 }
 
 .nonCommodityTag {
   font-size: 0.7rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 45%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 45%, transparent);
   border-radius: 999px;
   padding: 0.1rem 0.6rem;
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
 }
 
 .nonCommodityQuantity {
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
   margin-left: auto;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .dataTable :global([data-inara-table-row]) {
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 0.35s ease, transform 0.35s ease;
-  transition-delay: var(--glitch-row-delay, 0s);
+  transition-delay: var(--inara-row-delay, 0s);
 }
 
 .dataTable :global([data-inara-table-row='visible']) {
@@ -1564,13 +1564,13 @@ button.terminalStatusPreview:focus-visible {
 .tradeRoutesTable thead th {
   position: sticky;
   top: 0;
-  background: color-mix(in srgb, var(--glitch-color-primary-dark) 24%, transparent);
-  border-bottom: 1px solid var(--glitch-border-regular);
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 24%, transparent);
+  border-bottom: 1px solid var(--inara-border-regular);
   text-align: left;
   font-size: 0.92rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   z-index: 1;
 }
 
@@ -1586,9 +1586,9 @@ button.terminalStatusPreview:focus-visible {
   margin: 0;
   padding: 1.25rem clamp(1rem, 4vw, 1.5rem);
   border-radius: 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 32%, transparent);
-  background: color-mix(in srgb, var(--glitch-color-primary-dark) 26%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glitch-color-primary) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 32%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 26%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary) 14%, transparent);
 }
 
 .tradeRouteContextTitleRow {
@@ -1602,7 +1602,7 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.95rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .tradeRouteContextProfitRow {
@@ -1618,22 +1618,22 @@ button.terminalStatusPreview:focus-visible {
   gap: 0.35rem;
   padding: clamp(0.8rem, 3vw, 1.1rem);
   border-radius: 0.85rem;
-  background: color-mix(in srgb, var(--glitch-color-primary-dark) 48%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 30%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glitch-color-primary) 16%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 48%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 30%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary) 16%, transparent);
 }
 
 .tradeRouteContextProfitLabel {
   font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
 }
 
 .tradeRouteContextProfitValue {
   font-size: clamp(1.35rem, 2.7vw, 1.85rem);
   font-weight: 700;
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
   line-height: 1.1;
 }
 
@@ -1641,7 +1641,7 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
 }
 
 .tradeRouteContextStations {
@@ -1663,10 +1663,10 @@ button.terminalStatusPreview:focus-visible {
   padding: clamp(1.25rem, 3vw, 1.65rem);
   border-radius: 1rem;
   background: linear-gradient(135deg,
-      color-mix(in srgb, var(--glitch-color-primary) 24%, transparent) 0%,
-      color-mix(in srgb, var(--glitch-color-primary-dark) 62%, transparent) 100%);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 42%, transparent);
-  box-shadow: 0 1.5rem 2.75rem color-mix(in srgb, var(--glitch-color-primary) 22%, transparent);
+      color-mix(in srgb, var(--inara-color-primary) 24%, transparent) 0%,
+      color-mix(in srgb, var(--inara-color-primary-dark) 62%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 42%, transparent);
+  box-shadow: 0 1.5rem 2.75rem color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
   overflow: hidden;
   isolation: isolate;
   min-width: 0;
@@ -1677,7 +1677,7 @@ button.terminalStatusPreview:focus-visible {
   position: absolute;
   inset: 0;
   background: radial-gradient(ellipse at top right,
-      color-mix(in srgb, var(--glitch-color-success) 26%, transparent) 0%,
+      color-mix(in srgb, var(--inara-color-success) 26%, transparent) 0%,
       transparent 55%);
   opacity: 0.35;
   pointer-events: none;
@@ -1689,8 +1689,8 @@ button.terminalStatusPreview:focus-visible {
   inset: 0;
   background: repeating-linear-gradient(
       135deg,
-      color-mix(in srgb, var(--glitch-color-primary-light) 18%, transparent) 0px,
-      color-mix(in srgb, var(--glitch-color-primary-light) 18%, transparent) 2px,
+      color-mix(in srgb, var(--inara-color-primary-light) 18%, transparent) 0px,
+      color-mix(in srgb, var(--inara-color-primary-light) 18%, transparent) 2px,
       transparent 2px,
       transparent 12px);
   opacity: 0.12;
@@ -1699,13 +1699,13 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteContextStationCardOrigin::before {
   background: radial-gradient(circle at 15% 15%,
-      color-mix(in srgb, var(--glitch-color-success) 32%, transparent) 0%,
+      color-mix(in srgb, var(--inara-color-success) 32%, transparent) 0%,
       transparent 60%);
 }
 
 .tradeRouteContextStationCardDestination::before {
   background: radial-gradient(circle at 85% 15%,
-      color-mix(in srgb, var(--glitch-accent) 35%, transparent) 0%,
+      color-mix(in srgb, var(--inara-accent) 35%, transparent) 0%,
       transparent 60%);
 }
 
@@ -1725,15 +1725,15 @@ button.terminalStatusPreview:focus-visible {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--glitch-color-primary) 30%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary-light) 45%, transparent);
-  color: var(--glitch-ink);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glitch-color-primary-light) 35%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary-light) 45%, transparent);
+  color: var(--inara-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary-light) 35%, transparent);
 }
 
 .tradeRouteContextBadgeDetail {
   font-size: 0.8rem;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
   white-space: nowrap;
 }
 
@@ -1767,7 +1767,7 @@ button.terminalStatusPreview:focus-visible {
 .tradeRouteContextStationName {
   font-size: clamp(1.35rem, 4vw, 1.75rem);
   font-weight: 700;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   line-height: 1.15;
   white-space: normal;
   word-break: break-word;
@@ -1775,7 +1775,7 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteContextStationSystem {
   font-size: 1rem;
-  color: color-mix(in srgb, var(--glitch-ink) 88%, transparent);
+  color: color-mix(in srgb, var(--inara-ink) 88%, transparent);
   white-space: normal;
   word-break: break-word;
 }
@@ -1784,12 +1784,12 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-accent) 78%, transparent);
+  color: color-mix(in srgb, var(--inara-accent) 78%, transparent);
 }
 
 .tradeRouteContextStationEconomy {
   font-size: 0.85rem;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
 }
 
 .tradeRouteContextMetrics {
@@ -1809,7 +1809,7 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.7rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
 }
 
 .metricChipContext {
@@ -1839,8 +1839,8 @@ button.terminalStatusPreview:focus-visible {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--glitch-color-success) 65%, transparent);
-  box-shadow: 0 0 0.95rem color-mix(in srgb, var(--glitch-color-success) 35%, transparent);
+  background: color-mix(in srgb, var(--inara-color-success) 65%, transparent);
+  box-shadow: 0 0 0.95rem color-mix(in srgb, var(--inara-color-success) 35%, transparent);
 }
 
 .tradeRouteContextConnectorLine {
@@ -1849,9 +1849,9 @@ button.terminalStatusPreview:focus-visible {
   min-height: clamp(2.5rem, 5vw, 3.2rem);
   border-radius: 999px;
   background: linear-gradient(90deg,
-      color-mix(in srgb, var(--glitch-color-primary-light) 65%, transparent) 0%,
-      color-mix(in srgb, var(--glitch-color-primary-dark) 55%, transparent) 100%);
-  box-shadow: 0 0 1.6rem color-mix(in srgb, var(--glitch-color-primary) 24%, transparent);
+      color-mix(in srgb, var(--inara-color-primary-light) 65%, transparent) 0%,
+      color-mix(in srgb, var(--inara-color-primary-dark) 55%, transparent) 100%);
+  box-shadow: 0 0 1.6rem color-mix(in srgb, var(--inara-color-primary) 24%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1865,7 +1865,7 @@ button.terminalStatusPreview:focus-visible {
   border-radius: inherit;
   background: linear-gradient(90deg,
       transparent 0%,
-      color-mix(in srgb, var(--glitch-color-success) 55%, transparent) 50%,
+      color-mix(in srgb, var(--inara-color-success) 55%, transparent) 50%,
       transparent 100%);
   opacity: 0.7;
   animation: tradeRoutePulse 5s ease-in-out infinite;
@@ -1878,12 +1878,12 @@ button.terminalStatusPreview:focus-visible {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   padding: 0.25rem 0.85rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--glitch-color-primary-dark) 45%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary-light) 35%, transparent);
-  box-shadow: 0 0 1.1rem color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary-light) 35%, transparent);
+  box-shadow: 0 0 1.1rem color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
 }
 
 .tradeRouteContextConnectorMeta {
@@ -1893,7 +1893,7 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteContextConnectorMetaText {
   font-size: 0.78rem;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -1979,9 +1979,9 @@ button.terminalStatusPreview:focus-visible {
   gap: 0.85rem;
   padding: clamp(1rem, 3vw, 1.35rem);
   border-radius: 0.9rem;
-  background: color-mix(in srgb, var(--glitch-color-primary-dark) 55%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 35%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
   overflow: hidden;
 }
 
@@ -1991,7 +1991,7 @@ button.terminalStatusPreview:focus-visible {
   inset: 0;
   background: linear-gradient(120deg,
       transparent 0%,
-      color-mix(in srgb, var(--glitch-color-primary-light) 24%, transparent) 55%,
+      color-mix(in srgb, var(--inara-color-primary-light) 24%, transparent) 55%,
       transparent 100%);
   opacity: 0.16;
   pointer-events: none;
@@ -2000,14 +2000,14 @@ button.terminalStatusPreview:focus-visible {
 .tradeRouteContextCommodityOutbound::after {
   background: linear-gradient(120deg,
       transparent 0%,
-      color-mix(in srgb, var(--glitch-color-success) 32%, transparent) 55%,
+      color-mix(in srgb, var(--inara-color-success) 32%, transparent) 55%,
       transparent 100%);
 }
 
 .tradeRouteContextCommodityReturn::after {
   background: linear-gradient(120deg,
       transparent 0%,
-      color-mix(in srgb, var(--glitch-accent) 38%, transparent) 55%,
+      color-mix(in srgb, var(--inara-accent) 38%, transparent) 55%,
       transparent 100%);
 }
 
@@ -2020,7 +2020,7 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteContextCommodityPrice {
   font-size: 0.85rem;
-  color: color-mix(in srgb, var(--glitch-ink) 82%, transparent);
+  color: color-mix(in srgb, var(--inara-ink) 82%, transparent);
   white-space: nowrap;
 }
 
@@ -2037,8 +2037,8 @@ button.terminalStatusPreview:focus-visible {
   width: 2.75rem;
   height: 2.75rem;
   border-radius: 0.8rem;
-  background: color-mix(in srgb, var(--glitch-color-primary) 22%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glitch-color-primary-light) 45%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary-light) 45%, transparent);
   flex-shrink: 0;
 }
 
@@ -2052,7 +2052,7 @@ button.terminalStatusPreview:focus-visible {
 .tradeRouteContextCommodityName {
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2060,12 +2060,12 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteContextCommodityMeta {
   font-size: 0.85rem;
-  color: color-mix(in srgb, var(--glitch-color-success) 70%, transparent);
+  color: color-mix(in srgb, var(--inara-color-success) 70%, transparent);
 }
 
 .tradeRouteContextCommodityFootnote {
   font-size: 0.75rem;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
 }
 
 @keyframes tradeRoutePulse {
@@ -2090,14 +2090,14 @@ button.terminalStatusPreview:focus-visible {
 .tradeRouteContextEmpty {
   margin-top: 1rem;
   padding: 0.75rem 0;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
   font-style: italic;
 }
 
 .tradeRouteContextRoute {
   margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid color-mix(in srgb, var(--glitch-color-primary) 25%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--inara-color-primary) 25%, transparent);
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -2116,20 +2116,20 @@ button.terminalStatusPreview:focus-visible {
   justify-content: center;
   padding: 0.4rem 0.75rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--glitch-color-primary) 22%, transparent);
-  color: var(--glitch-ink);
+  background: color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
+  color: var(--inara-ink);
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .tradeRoutePathNodeCurrent {
-  background: color-mix(in srgb, var(--glitch-color-success) 42%, transparent);
-  color: var(--glitch-color-background);
+  background: color-mix(in srgb, var(--inara-color-success) 42%, transparent);
+  color: var(--inara-color-background);
 }
 
 .tradeRoutePathSeparator {
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
   font-size: 0.9rem;
 }
 
@@ -2164,7 +2164,7 @@ button.terminalStatusPreview:focus-visible {
   max-width: 3.2rem;
   height: 100%;
   max-height: 100%;
-  color: var(--glitch-accent);
+  color: var(--inara-accent);
 }
 
 .tradeRouteStationIcon :global(svg) {
@@ -2186,7 +2186,7 @@ button.terminalStatusPreview:focus-visible {
 .tradeRouteStationName {
   font-size: 1.02rem;
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2194,7 +2194,7 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteStationSystem {
   font-size: 0.92rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2283,7 +2283,7 @@ button.terminalStatusPreview:focus-visible {
   grid-column: 1;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -2294,14 +2294,14 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteCommodityPrice {
   grid-column: 2;
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   font-size: 0.9rem;
   white-space: nowrap;
   justify-self: end;
 }
 
 .tradeRoutePlaceholder {
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   opacity: 0.65;
 }
 
@@ -2335,14 +2335,14 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.64rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   text-align: right;
 }
 
 .tradeRouteProfitValue {
   font-size: 1.02rem;
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   white-space: nowrap;
   text-align: right;
 }
@@ -2394,19 +2394,19 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--glitch-accent);
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
-  box-shadow: 0 0 0.75rem color-mix(in srgb, var(--glitch-color-primary) 22%, transparent);
+  color: var(--inara-accent);
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
+  box-shadow: 0 0 0.75rem color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
 }
 
 .tradeRoutesQuantitySupply {
   color: #29f3c3;
-  background: color-mix(in srgb, var(--glitch-color-success) 15%, transparent);
+  background: color-mix(in srgb, var(--inara-color-success) 15%, transparent);
 }
 
 .tradeRoutesQuantityDemand {
   color: #ff5fc1;
-  background: color-mix(in srgb, var(--glitch-color-warning) 15%, transparent);
+  background: color-mix(in srgb, var(--inara-color-warning) 15%, transparent);
 }
 
 .tradeRoutesQuantityBadge span:last-child {
@@ -2415,13 +2415,13 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRoutesQuantityPlaceholder {
-  color: var(--glitch-text-soft);
-  background: color-mix(in srgb, var(--glitch-color-primary) 10%, transparent);
+  color: var(--inara-text-soft);
+  background: color-mix(in srgb, var(--inara-color-primary) 10%, transparent);
   box-shadow: none;
 }
 
 .metricChip {
-  --chip-color: var(--glitch-accent);
+  --chip-color: var(--inara-accent);
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -2438,26 +2438,26 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .metricChipPlaceholder {
-  color: var(--glitch-text-soft);
-  background: color-mix(in srgb, var(--glitch-color-primary) 10%, transparent);
-  border: 1px dashed color-mix(in srgb, var(--glitch-color-primary) 28%, transparent);
+  color: var(--inara-text-soft);
+  background: color-mix(in srgb, var(--inara-color-primary) 10%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--inara-color-primary) 28%, transparent);
   box-shadow: none;
 }
 
 .metricChipNeutral {
-  --chip-color: var(--glitch-accent);
+  --chip-color: var(--inara-accent);
 }
 
 .metricChipSuccess {
-  --chip-color: var(--glitch-color-success);
+  --chip-color: var(--inara-color-success);
 }
 
 .metricChipCaution {
-  --chip-color: color-mix(in srgb, var(--glitch-color-warning) 55%, var(--glitch-color-primary-light) 45%);
+  --chip-color: color-mix(in srgb, var(--inara-color-warning) 55%, var(--inara-color-primary-light) 45%);
 }
 
 .metricChipWarning {
-  --chip-color: var(--glitch-color-warning);
+  --chip-color: var(--inara-color-warning);
 }
 
 .tableCellTop {
@@ -2476,7 +2476,7 @@ button.terminalStatusPreview:focus-visible {
   padding: 0.6rem 0.35rem;
   text-align: center;
   vertical-align: top;
-  color: var(--glitch-accent);
+  color: var(--inara-accent);
   font-size: 1.1rem;
   line-height: 1;
 }
@@ -2505,17 +2505,17 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tableHeaderButton:focus-visible {
-  outline: 2px solid var(--glitch-color-success);
+  outline: 2px solid var(--inara-color-success);
   outline-offset: 2px;
 }
 
 .tableHeaderButtonActive {
-  color: var(--glitch-accent);
+  color: var(--inara-accent);
 }
 
 .tableSortIndicator {
   font-size: 0.75rem;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
 }
 
 .tableRowInteractive {
@@ -2523,25 +2523,25 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tableRowInteractive:hover {
-  background: color-mix(in srgb, var(--glitch-color-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 20%, transparent);
 }
 
 .tableRowSelected {
-  outline: 2px solid color-mix(in srgb, var(--glitch-color-primary) 55%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--inara-color-primary) 55%, transparent);
   outline-offset: -2px;
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent) !important;
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent) !important;
 }
 
 .tableRowSelected:hover {
-  background: color-mix(in srgb, var(--glitch-color-primary) 24%, transparent) !important;
+  background: color-mix(in srgb, var(--inara-color-primary) 24%, transparent) !important;
 }
 
 .tableRowExpanded {
-  background: color-mix(in srgb, var(--glitch-color-primary) 16%, transparent) !important;
+  background: color-mix(in srgb, var(--inara-color-primary) 16%, transparent) !important;
 }
 
 .tableRowExpanded:hover {
-  background: color-mix(in srgb, var(--glitch-color-primary) 22%, transparent) !important;
+  background: color-mix(in srgb, var(--inara-color-primary) 22%, transparent) !important;
 }
 
 .tableDetailRow {
@@ -2549,8 +2549,8 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tableDetailRow td {
-  background: color-mix(in srgb, var(--glitch-color-background) 88%, transparent);
-  border-top: 1px solid color-mix(in srgb, var(--glitch-color-primary) 25%, transparent);
+  background: color-mix(in srgb, var(--inara-color-background) 88%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--inara-color-primary) 25%, transparent);
   padding: 0 1.5rem 1.5rem;
 }
 
@@ -2559,7 +2559,7 @@ button.terminalStatusPreview:focus-visible {
   flex-direction: column;
   gap: 0.3rem;
   font-size: 0.82rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .tableDetailSection span {
@@ -2567,64 +2567,64 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tableTextNeutral {
-  color: var(--glitch-accent);
+  color: var(--inara-accent);
 }
 
 .tableTextSuccess {
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
 }
 
 .tableTextDanger {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
 }
 
 .tableMessage {
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   padding: 1.25rem 2rem;
 }
 
 .tableMessageBorder {
-  border-bottom: 1px solid color-mix(in srgb, var(--glitch-color-primary) 25%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--inara-color-primary) 25%, transparent);
 }
 
 .tableIdleState {
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   padding: 2rem;
 }
 
 .tableErrorState {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
   padding: 2rem;
 }
 
 .tableEmptyState {
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   padding: 2rem;
 }
 
 .tableSubtext {
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   font-size: 0.82rem;
   margin-top: 0.35rem;
   white-space: normal;
 }
 
 .tableMetaMuted {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
   font-size: 0.75rem;
   margin-top: 0.25rem;
   white-space: normal;
 }
 
 .tableWarning {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
   font-size: 0.78rem;
   margin-top: 0.35rem;
   white-space: normal;
 }
 
 .tableMutedNote {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
   font-size: 0.75rem;
   margin-top: 0.45rem;
   white-space: normal;
@@ -2634,7 +2634,7 @@ button.terminalStatusPreview:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.32em;
   font-size: 0.68rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 70%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 70%, transparent);
 }
 
 .routeDetailTitle {
@@ -2643,13 +2643,13 @@ button.terminalStatusPreview:focus-visible {
   justify-content: center;
   gap: 0.85rem;
   font-size: 1.65rem;
-  color: var(--glitch-color-text-strong);
-  text-shadow: 0 0 14px color-mix(in srgb, var(--glitch-color-primary) 45%, transparent);
+  color: var(--inara-color-text-strong);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--inara-color-primary) 45%, transparent);
   margin: 0;
 }
 
 .routeDetailDivider {
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
   font-size: 1.75rem;
   line-height: 1;
 }
@@ -2660,11 +2660,11 @@ button.terminalStatusPreview:focus-visible {
   gap: 0.65rem;
   margin: 0;
   font-size: 0.92rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 74%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 74%, transparent);
 }
 
 .routeDetailArrow {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
   font-size: 1.1rem;
 }
 
@@ -2675,16 +2675,16 @@ button.terminalStatusPreview:focus-visible {
   min-width: 160px;
   padding: 0.9rem 1.25rem;
   border-radius: 0;
-  background: color-mix(in srgb, var(--glitch-color-primary-dark) 60%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 35%, transparent);
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 78%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 78%, transparent);
 }
 
 .routeDetailMetaLabel {
   text-transform: uppercase;
   letter-spacing: 0.22em;
   font-size: 0.65rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
 }
 
 .routeDetailSummaryBar {
@@ -2703,21 +2703,21 @@ button.terminalStatusPreview:focus-visible {
   gap: 0.4rem;
   padding: 1.15rem 1.35rem;
   border-radius: 0;
-  background: color-mix(in srgb, var(--glitch-color-background) 92%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 32%, transparent);
-  box-shadow: 0 1.2rem 2.4rem color-mix(in srgb, var(--glitch-color-background) 55%, transparent);
+  background: color-mix(in srgb, var(--inara-color-background) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 32%, transparent);
+  box-shadow: 0 1.2rem 2.4rem color-mix(in srgb, var(--inara-color-background) 55%, transparent);
 }
 
 .routeDetailMetricLabel {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.68rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 62%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 62%, transparent);
 }
 
 .routeDetailMetricValue {
   font-size: 1.05rem;
-  color: var(--glitch-color-text-strong);
+  color: var(--inara-color-text-strong);
   font-family: 'Share Tech Mono', 'Roboto Mono', monospace;
 }
 
@@ -2732,10 +2732,10 @@ button.terminalStatusPreview:focus-visible {
   flex-direction: column;
   gap: 1rem;
   padding: 1.75rem 1.9rem;
-  background: color-mix(in srgb, var(--glitch-color-background) 92%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 32%, transparent);
+  background: color-mix(in srgb, var(--inara-color-background) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 32%, transparent);
   border-radius: 0;
-  box-shadow: 0 1.45rem 2.8rem color-mix(in srgb, var(--glitch-color-background) 55%, transparent);
+  box-shadow: 0 1.45rem 2.8rem color-mix(in srgb, var(--inara-color-background) 55%, transparent);
 }
 
 .routeDetailPanelHeader {
@@ -2749,7 +2749,7 @@ button.terminalStatusPreview:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.28em;
   font-size: 0.68rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 62%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 62%, transparent);
 }
 
 .routeDetailStation {
@@ -2771,13 +2771,13 @@ button.terminalStatusPreview:focus-visible {
 
 .routeDetailStationName {
   font-size: 1.05rem;
-  color: var(--glitch-color-text-strong);
+  color: var(--inara-color-text-strong);
   font-weight: 600;
 }
 
 .routeDetailSystem {
   font-size: 0.85rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 62%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 62%, transparent);
 }
 
 .routeDetailInfoRow {
@@ -2785,7 +2785,7 @@ button.terminalStatusPreview:focus-visible {
   justify-content: space-between;
   align-items: baseline;
   gap: 1rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 78%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 78%, transparent);
   font-size: 0.92rem;
 }
 
@@ -2793,7 +2793,7 @@ button.terminalStatusPreview:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.7rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 58%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 58%, transparent);
 }
 
 .routeDetailInfoValue {
@@ -2806,7 +2806,7 @@ button.terminalStatusPreview:focus-visible {
 .routeDetailDividerLine {
   height: 1px;
   width: 100%;
-  background: color-mix(in srgb, var(--glitch-color-primary) 25%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 25%, transparent);
   margin: 0.5rem 0 0.75rem;
 }
 
@@ -2814,20 +2814,20 @@ button.terminalStatusPreview:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 84%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 84%, transparent);
 }
 
 .routeDetailCommodityLabel {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.68rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
 }
 
 .routeDetailCommodityValue {
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--glitch-color-text-strong);
+  color: var(--inara-color-text-strong);
 }
 
 .routeDetailPriceRow {
@@ -2835,7 +2835,7 @@ button.terminalStatusPreview:focus-visible {
   flex-wrap: wrap;
   gap: 0.85rem;
   font-size: 0.88rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 74%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 74%, transparent);
 }
 
 @media (max-width: 1100px) {
@@ -2890,11 +2890,11 @@ button.terminalStatusPreview:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.78rem;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
 }
 
 .tableEntryHighlight {
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   font-weight: 600;
 }
 
@@ -2903,22 +2903,22 @@ button.terminalStatusPreview:focus-visible {
   align-items: baseline;
   gap: 0.4rem;
   font-size: 0.95rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 84%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 84%, transparent);
 }
 
 .tableEntryValueHighlight {
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
 }
 
 .tableEntrySource {
   font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
 }
 
 .tableEntryLabel {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -2926,13 +2926,13 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tableEntryMeta {
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   font-size: 0.8rem;
   margin-top: 0.25rem;
 }
 
 .tableEntryFootnote {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
   font-size: 0.75rem;
   margin-top: 0.2rem;
 }
@@ -2945,35 +2945,35 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tableBadgeWarning {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
 }
 
 .tableBadgeSuccess {
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
 }
 
 .tableFootnote {
   margin-top: 1.5rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
   font-size: 0.85rem;
   line-height: 1.6;
 }
 
 .tableRowContext {
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
 }
 
 .tableRowContext:hover {
-  background: color-mix(in srgb, var(--glitch-color-primary) 26%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 26%, transparent);
 }
 
 .tableContextIndicator {
   margin-top: 0.6rem;
   padding: 0.6rem 0.85rem;
   border-radius: 0.9rem;
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 38%, transparent);
-  box-shadow: 0 0.9rem 1.8rem color-mix(in srgb, var(--glitch-color-background) 76%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 38%, transparent);
+  box-shadow: 0 0.9rem 1.8rem color-mix(in srgb, var(--inara-color-background) 76%, transparent);
   display: inline-flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -2984,18 +2984,18 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.68rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 62%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 62%, transparent);
 }
 
 .tableContextValue {
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   white-space: normal;
 }
 
 .tableContextFootnote {
   font-size: 0.72rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   white-space: normal;
 }
 
@@ -3038,21 +3038,21 @@ button.terminalStatusPreview:focus-visible {
 .detailEmptyState {
   padding: 2rem;
   text-align: center;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
   font-size: 0.95rem;
 }
 
 
 .stationRowSelected {
-  background: color-mix(in srgb, var(--glitch-color-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 20%, transparent);
 }
 
 .stationRowSelected:hover {
-  background: color-mix(in srgb, var(--glitch-color-primary) 26%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 26%, transparent);
 }
 
 .stationDemandLow {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
 }
 
 .commodityCell {
@@ -3068,8 +3068,8 @@ button.terminalStatusPreview:focus-visible {
   width: 2.35rem;
   height: 2.35rem;
   border-radius: 0.85rem;
-  background: color-mix(in srgb, var(--glitch-color-primary) 16%, transparent);
-  box-shadow: 0 1rem 1.8rem color-mix(in srgb, var(--glitch-color-background) 82%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 16%, transparent);
+  box-shadow: 0 1rem 1.8rem color-mix(in srgb, var(--inara-color-background) 82%, transparent);
 }
 
 .commodityCellIcon svg {
@@ -3086,7 +3086,7 @@ button.terminalStatusPreview:focus-visible {
 
 .commodityCellTitle {
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
 }
 
 .metricGrid {
@@ -3107,41 +3107,41 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.78rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--glitch-subdued);
+  color: var(--inara-subdued);
 }
 
 .metricValue {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
 }
 
 .metricValueWarning {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
 }
 
 .metricValueSuccess {
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
 }
 
 .notice {
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
-  color: var(--glitch-accent);
+  color: var(--inara-accent);
 }
 
 .noticeMuted {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 50%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 50%, transparent);
 }
 
 .inlineNotice {
   padding: 1rem 0;
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
 }
 
 .inlineNoticeMuted {
   padding: 1rem 0;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 50%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 50%, transparent);
 }
 
 .placeholder {
@@ -3149,32 +3149,32 @@ button.terminalStatusPreview:focus-visible {
   max-width: 40rem;
   padding: 2.75rem 3rem;
   text-align: center;
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   font-size: 1.1rem;
   line-height: 1.65;
   border-radius: 1rem;
-  border: 1px solid var(--glitch-border-regular);
-  background: color-mix(in srgb, var(--glitch-color-background) 88%, transparent);
-  box-shadow: 0 1.35rem 3.2rem color-mix(in srgb, var(--glitch-shadow) 58%, transparent);
+  border: 1px solid var(--inara-border-regular);
+  background: color-mix(in srgb, var(--inara-color-background) 88%, transparent);
+  box-shadow: 0 1.35rem 3.2rem color-mix(in srgb, var(--inara-shadow) 58%, transparent);
 }
 
-.glitch :global(.glitch-surface) {
+.inara :global(.inara-surface) {
   background: transparent;
 }
 
-.glitch :global(.glitch-panel) {
+.inara :global(.inara-panel) {
   background: transparent;
 }
 
-.glitch :global(.glitch-prompt) {
-  color: var(--glitch-muted);
+.inara :global(.inara-prompt) {
+  color: var(--inara-muted);
 }
 
-.glitch :global(.glitch-highlight) {
-  color: var(--glitch-accent);
+.inara :global(.inara-highlight) {
+  color: var(--inara-accent);
 }
 
-.glitch :global(.glitch-panel-table) {
+.inara :global(.inara-panel-table) {
   width: 100%;
   background: transparent;
   border: 0;
@@ -3182,17 +3182,17 @@ button.terminalStatusPreview:focus-visible {
   box-shadow: none;
 }
 
-.glitch :global(.glitch-panel-table > .scrollable) {
+.inara :global(.inara-panel-table > .scrollable) {
   background: transparent;
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-.glitch :global(.glitch-panel-table > .scrollable::-webkit-scrollbar) {
+.inara :global(.inara-panel-table > .scrollable::-webkit-scrollbar) {
   height: 16px;
 }
 
-.glitch :global(.glitch-panel-table > .scrollable::-webkit-scrollbar-track) {
+.inara :global(.inara-panel-table > .scrollable::-webkit-scrollbar-track) {
   background-image: linear-gradient(
     90deg,
     transparent 41.67%,
@@ -3207,117 +3207,117 @@ button.terminalStatusPreview:focus-visible {
   background-position-x: 10px;
 }
 
-.glitch :global(.glitch-panel-table > .scrollable::-webkit-scrollbar-thumb) {
+.inara :global(.inara-panel-table > .scrollable::-webkit-scrollbar-thumb) {
   background: var(--color-primary);
   min-height: 4rem;
   box-shadow: 0 0 10px var(--color-primary-dark);
 }
 
-.glitch :global(.glitch-panel-table table thead) {
-  background: var(--glitch-table-header);
-  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--glitch-color-primary) 38%, transparent);
+.inara :global(.inara-panel-table table thead) {
+  background: var(--inara-table-header);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--inara-color-primary) 38%, transparent);
 }
 
-.glitch :global(.glitch-panel-table table thead tr) {
-  background: var(--glitch-table-header) !important;
+.inara :global(.inara-panel-table table thead tr) {
+  background: var(--inara-table-header) !important;
 }
 
-.glitch :global(.glitch-panel-table table thead tr th) {
-  border-bottom: 1px solid color-mix(in srgb, var(--glitch-color-primary) 45%, transparent);
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 88%, transparent);
+.inara :global(.inara-panel-table table thead tr th) {
+  border-bottom: 1px solid color-mix(in srgb, var(--inara-color-primary) 45%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 88%, transparent);
 }
 
-.glitch :global(.glitch-panel-table table thead tr th::after) {
-  border-bottom: 0.2rem solid var(--glitch-color-primary);
-  box-shadow: 0 0.03rem 0.5rem color-mix(in srgb, var(--glitch-color-primary) 60%, transparent);
+.inara :global(.inara-panel-table table thead tr th::after) {
+  border-bottom: 0.2rem solid var(--inara-color-primary);
+  box-shadow: 0 0.03rem 0.5rem color-mix(in srgb, var(--inara-color-primary) 60%, transparent);
 }
 
-.glitch :global(.glitch-panel-table tbody tr) {
-  border-bottom: 1px solid color-mix(in srgb, var(--glitch-color-primary) 25%, transparent);
+.inara :global(.inara-panel-table tbody tr) {
+  border-bottom: 1px solid color-mix(in srgb, var(--inara-color-primary) 25%, transparent);
 }
 
-.glitch :global(.glitch-panel-table tbody tr:nth-child(even):not(.glitch-table-detail-row)) {
-  background: color-mix(in srgb, var(--glitch-color-primary-dark) 22%, transparent);
+.inara :global(.inara-panel-table tbody tr:nth-child(even):not(.inara-table-detail-row)) {
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 22%, transparent);
 }
 
-.glitch :global(.glitch-panel-table tbody tr:hover) {
-  background: color-mix(in srgb, var(--glitch-color-primary) 24%, var(--glitch-color-surface) 76%) !important;
+.inara :global(.inara-panel-table tbody tr:hover) {
+  background: color-mix(in srgb, var(--inara-color-primary) 24%, var(--inara-color-surface) 76%) !important;
 }
 
-.glitch :global(.glitch-panel-table .pristine-mining__detail) {
-  background: color-mix(in srgb, var(--glitch-color-background) 85%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 22%, transparent);
+.inara :global(.inara-panel-table .pristine-mining__detail) {
+  background: color-mix(in srgb, var(--inara-color-background) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
 }
 
-.glitch :global(.glitch-panel-table .pristine-mining__detail-status) {
-  color: var(--glitch-muted);
+.inara :global(.inara-panel-table .pristine-mining__detail-status) {
+  color: var(--inara-muted);
 }
 
-.glitch :global(.glitch-panel-table .pristine-mining__detail-links span) {
-  color: var(--glitch-accent);
+.inara :global(.inara-panel-table .pristine-mining__detail-links span) {
+  color: var(--inara-accent);
 }
 
-.glitch :global(.glitch-panel-table .pristine-mining__detail-status--error) {
-  color: var(--glitch-color-warning);
+.inara :global(.inara-panel-table .pristine-mining__detail-status--error) {
+  color: var(--inara-color-warning);
 }
 
-.glitch :global(.glitch-panel-table .text-primary) {
-  color: var(--glitch-accent);
+.inara :global(.inara-panel-table .text-primary) {
+  color: var(--inara-accent);
 }
 
-.glitch :global(.glitch-panel-table .text-secondary) {
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 85%, transparent);
+.inara :global(.inara-panel-table .text-secondary) {
+  color: color-mix(in srgb, var(--inara-color-text-strong) 85%, transparent);
 }
 
-.glitch :global(.glitch-panel-table .text-muted) {
-  color: var(--glitch-muted);
+.inara :global(.inara-panel-table .text-muted) {
+  color: var(--inara-muted);
 }
 
-.glitch :global(.glitch-panel-table .glitch-spinner__label) {
-  color: var(--glitch-muted);
+.inara :global(.inara-panel-table .inara-spinner__label) {
+  color: var(--inara-muted);
 }
 
-.glitch :global(.glitch-panel-table .glitch-spinner__icon) {
-  border-color: var(--glitch-accent);
+.inara :global(.inara-panel-table .inara-spinner__icon) {
+  border-color: var(--inara-accent);
   border-right-color: transparent;
 }
 
-.glitch :global(.glitch-panel-table .button--active) {
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
-  border-color: color-mix(in srgb, var(--glitch-color-primary) 45%, transparent);
+.inara :global(.inara-panel-table .button--active) {
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
+  border-color: color-mix(in srgb, var(--inara-color-primary) 45%, transparent);
 }
 
-.glitch :global(.glitch-panel-table .button--active:hover) {
-  background: color-mix(in srgb, var(--glitch-color-primary) 24%, transparent);
+.inara :global(.inara-panel-table .button--active:hover) {
+  background: color-mix(in srgb, var(--inara-color-primary) 24%, transparent);
 }
 
-.glitch :global(.glitch-panel-table .button--icon) {
-  color: var(--glitch-ink);
+.inara :global(.inara-panel-table .button--icon) {
+  color: var(--inara-ink);
 }
 
-.glitch :global(.glitch-panel-table .button--icon:hover) {
-  background: color-mix(in srgb, var(--glitch-color-primary) 16%, transparent);
+.inara :global(.inara-panel-table .button--icon:hover) {
+  background: color-mix(in srgb, var(--inara-color-primary) 16%, transparent);
 }
 
-.glitch :global(.glitch-panel-table .button--secondary) {
-  color: var(--glitch-accent);
+.inara :global(.inara-panel-table .button--secondary) {
+  color: var(--inara-accent);
 }
 
-.glitch :global(.glitch-panel-table .button--secondary:hover) {
-  background: color-mix(in srgb, var(--glitch-color-primary) 16%, transparent);
+.inara :global(.inara-panel-table .button--secondary:hover) {
+  background: color-mix(in srgb, var(--inara-color-primary) 16%, transparent);
 }
 
-.glitch :global(button),
-.glitch :global(.button) {
+.inara :global(button),
+.inara :global(.button) {
   border-radius: 0;
 }
 
-.glitch :global(.glitch-panel-table .pristine-mining__inspector) {
-  border-left: 1px solid color-mix(in srgb, var(--glitch-color-primary) 22%, transparent);
+.inara :global(.inara-panel-table .pristine-mining__inspector) {
+  border-left: 1px solid color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
 }
 
 @media (max-width: 640px) {
-  .glitch {
+  .inara {
     padding: 2rem 0 2.75rem;
   }
 
@@ -3330,106 +3330,106 @@ button.terminalStatusPreview:focus-visible {
   }
 }
 
-.glitch :global(.glitch-muted) {
-  color: var(--glitch-muted);
+.inara :global(.inara-muted) {
+  color: var(--inara-muted);
 }
 
-.glitch :global(.glitch-accent) {
-  color: var(--glitch-accent);
+.inara :global(.inara-accent) {
+  color: var(--inara-accent);
 }
 
-.glitch :global(.glitch-panel-border) {
-  border-color: var(--glitch-panel-border);
+.inara :global(.inara-panel-border) {
+  border-color: var(--inara-panel-border);
 }
 
-.glitch :global(.glitch-inline-accent) {
-  color: var(--glitch-accent);
+.inara :global(.inara-inline-accent) {
+  color: var(--inara-accent);
   font-weight: 500;
 }
 
-@keyframes glitchArrivalSurface {
+@keyframes inaraArrivalSurface {
   0% {
-    --glitch-bg: var(--glitch-color-background);
-    --glitch-panel: color-mix(in srgb, var(--glitch-color-primary-dark) 82%, transparent);
-    --glitch-panel-border: color-mix(in srgb, var(--glitch-color-warning) 45%, transparent);
-    --glitch-ink: color-mix(in srgb, var(--glitch-color-text-strong) 96%, transparent);
-    --glitch-muted: color-mix(in srgb, var(--glitch-color-warning) 65%, transparent);
-    --glitch-subdued: color-mix(in srgb, var(--glitch-color-warning) 45%, transparent);
-    --glitch-accent: var(--glitch-color-warning);
-    --glitch-highlight: color-mix(in srgb, var(--glitch-color-warning) 28%, transparent);
+    --inara-bg: var(--inara-color-background);
+    --inara-panel: color-mix(in srgb, var(--inara-color-primary-dark) 82%, transparent);
+    --inara-panel-border: color-mix(in srgb, var(--inara-color-warning) 45%, transparent);
+    --inara-ink: color-mix(in srgb, var(--inara-color-text-strong) 96%, transparent);
+    --inara-muted: color-mix(in srgb, var(--inara-color-warning) 65%, transparent);
+    --inara-subdued: color-mix(in srgb, var(--inara-color-warning) 45%, transparent);
+    --inara-accent: var(--inara-color-warning);
+    --inara-highlight: color-mix(in srgb, var(--inara-color-warning) 28%, transparent);
     background: linear-gradient(
         165deg,
-        color-mix(in srgb, var(--glitch-color-warning) 22%, transparent) 0%,
-        color-mix(in srgb, var(--glitch-color-primary) 18%, transparent) 45%,
-        color-mix(in srgb, var(--glitch-color-background) 90%, transparent) 100%
+        color-mix(in srgb, var(--inara-color-warning) 22%, transparent) 0%,
+        color-mix(in srgb, var(--inara-color-primary) 18%, transparent) 45%,
+        color-mix(in srgb, var(--inara-color-background) 90%, transparent) 100%
       ),
-      var(--glitch-bg);
+      var(--inara-bg);
     filter: saturate(1.08) contrast(1.05);
     transform: scale(1.01);
   }
   42% {
-    --glitch-bg: var(--glitch-color-background);
-    --glitch-panel: color-mix(in srgb, var(--glitch-color-surface) 88%, transparent);
-    --glitch-panel-border: color-mix(in srgb, var(--glitch-color-primary) 38%, transparent);
-    --glitch-ink: color-mix(in srgb, var(--glitch-color-text-strong) 94%, transparent);
-    --glitch-muted: color-mix(in srgb, var(--glitch-color-text-strong) 78%, transparent);
-    --glitch-subdued: color-mix(in srgb, var(--glitch-color-text-strong) 60%, transparent);
-    --glitch-accent: var(--glitch-color-primary-light);
-    --glitch-highlight: color-mix(in srgb, var(--glitch-color-primary) 20%, transparent);
+    --inara-bg: var(--inara-color-background);
+    --inara-panel: color-mix(in srgb, var(--inara-color-surface) 88%, transparent);
+    --inara-panel-border: color-mix(in srgb, var(--inara-color-primary) 38%, transparent);
+    --inara-ink: color-mix(in srgb, var(--inara-color-text-strong) 94%, transparent);
+    --inara-muted: color-mix(in srgb, var(--inara-color-text-strong) 78%, transparent);
+    --inara-subdued: color-mix(in srgb, var(--inara-color-text-strong) 60%, transparent);
+    --inara-accent: var(--inara-color-primary-light);
+    --inara-highlight: color-mix(in srgb, var(--inara-color-primary) 20%, transparent);
     background: linear-gradient(
         165deg,
-        color-mix(in srgb, var(--glitch-color-primary) 24%, transparent) 0%,
-        color-mix(in srgb, var(--glitch-color-primary-dark) 32%, transparent) 55%,
-        color-mix(in srgb, var(--glitch-color-background) 88%, transparent) 100%
+        color-mix(in srgb, var(--inara-color-primary) 24%, transparent) 0%,
+        color-mix(in srgb, var(--inara-color-primary-dark) 32%, transparent) 55%,
+        color-mix(in srgb, var(--inara-color-background) 88%, transparent) 100%
       ),
-      var(--glitch-bg);
+      var(--inara-bg);
     filter: saturate(1.05);
     transform: scale(1.006);
   }
   62% {
     background: linear-gradient(
         165deg,
-        color-mix(in srgb, var(--glitch-color-primary) 20%, transparent) 0%,
-        color-mix(in srgb, var(--glitch-color-primary-dark) 28%, transparent) 55%,
-        color-mix(in srgb, var(--glitch-color-background) 86%, transparent) 100%
+        color-mix(in srgb, var(--inara-color-primary) 20%, transparent) 0%,
+        color-mix(in srgb, var(--inara-color-primary-dark) 28%, transparent) 55%,
+        color-mix(in srgb, var(--inara-color-background) 86%, transparent) 100%
       ),
-      var(--glitch-bg);
+      var(--inara-bg);
     filter: saturate(1.02);
     transform: scale(1.004) translate3d(-3px, 1px, 0);
   }
   72% {
     background: linear-gradient(
         165deg,
-        color-mix(in srgb, var(--glitch-color-primary) 16%, transparent) 0%,
-        color-mix(in srgb, var(--glitch-color-primary-dark) 26%, transparent) 55%,
-        color-mix(in srgb, var(--glitch-color-background) 84%, transparent) 100%
+        color-mix(in srgb, var(--inara-color-primary) 16%, transparent) 0%,
+        color-mix(in srgb, var(--inara-color-primary-dark) 26%, transparent) 55%,
+        color-mix(in srgb, var(--inara-color-background) 84%, transparent) 100%
       ),
-      var(--glitch-bg);
+      var(--inara-bg);
     filter: saturate(0.96);
     transform: scale(1.002) translate3d(2px, -1px, 0);
   }
   100% {
-    --glitch-bg: var(--glitch-color-background);
-    --glitch-panel: color-mix(in srgb, var(--glitch-color-background) 88%, transparent);
-    --glitch-panel-border: var(--glitch-border-soft);
-    --glitch-ink: color-mix(in srgb, var(--glitch-color-text-strong) 92%, transparent);
-    --glitch-muted: color-mix(in srgb, var(--glitch-color-text-strong) 70%, transparent);
-    --glitch-subdued: color-mix(in srgb, var(--glitch-color-text-strong) 56%, transparent);
-    --glitch-accent: var(--glitch-color-primary-light);
-    --glitch-highlight: color-mix(in srgb, var(--glitch-color-primary) 12%, transparent);
+    --inara-bg: var(--inara-color-background);
+    --inara-panel: color-mix(in srgb, var(--inara-color-background) 88%, transparent);
+    --inara-panel-border: var(--inara-border-soft);
+    --inara-ink: color-mix(in srgb, var(--inara-color-text-strong) 92%, transparent);
+    --inara-muted: color-mix(in srgb, var(--inara-color-text-strong) 70%, transparent);
+    --inara-subdued: color-mix(in srgb, var(--inara-color-text-strong) 56%, transparent);
+    --inara-accent: var(--inara-color-primary-light);
+    --inara-highlight: color-mix(in srgb, var(--inara-color-primary) 12%, transparent);
     background: linear-gradient(
         165deg,
-        var(--glitch-gradient-top) 0%,
-        var(--glitch-gradient-mid) 55%,
-        var(--glitch-gradient-bottom) 100%
+        var(--inara-gradient-top) 0%,
+        var(--inara-gradient-mid) 55%,
+        var(--inara-gradient-bottom) 100%
       ),
-      var(--glitch-bg);
+      var(--inara-bg);
     filter: none;
     transform: none;
   }
 }
 
-@keyframes glitchArrivalMesh {
+@keyframes inaraArrivalMesh {
   0% {
     opacity: 0.55;
     transform: scale(1.05) skewX(-3deg);
@@ -3452,21 +3452,21 @@ button.terminalStatusPreview:focus-visible {
   }
 }
 
-@keyframes glitchArrivalVignette {
+@keyframes inaraArrivalVignette {
   0% {
     opacity: 0.85;
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--glitch-color-background) 35%, transparent) 0%,
-      color-mix(in srgb, var(--glitch-color-background) 94%, transparent) 100%
+      color-mix(in srgb, var(--inara-color-background) 35%, transparent) 0%,
+      color-mix(in srgb, var(--inara-color-background) 94%, transparent) 100%
     );
   }
   40% {
     opacity: 0.7;
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--glitch-color-primary-dark) 28%, transparent) 0%,
-      color-mix(in srgb, var(--glitch-color-background) 92%, transparent) 100%
+      color-mix(in srgb, var(--inara-color-primary-dark) 28%, transparent) 0%,
+      color-mix(in srgb, var(--inara-color-background) 92%, transparent) 100%
     );
   }
   70% {
@@ -3474,11 +3474,11 @@ button.terminalStatusPreview:focus-visible {
   }
   100% {
     opacity: 1;
-    background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--glitch-color-background) 90%, transparent) 100%);
+    background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--inara-color-background) 90%, transparent) 100%);
   }
 }
 
-@keyframes glitchArrivalShell {
+@keyframes inaraArrivalShell {
   0% {
     opacity: 0.2;
     filter: blur(6px);
@@ -3506,24 +3506,24 @@ button.terminalStatusPreview:focus-visible {
   }
 }
 
-@keyframes glitchArrivalChromatic {
+@keyframes inaraArrivalChromatic {
   0% {
-    color: color-mix(in srgb, var(--glitch-color-warning) 95%, transparent);
-    text-shadow: 0 0 1.35rem color-mix(in srgb, var(--glitch-color-warning) 55%, transparent);
+    color: color-mix(in srgb, var(--inara-color-warning) 95%, transparent);
+    text-shadow: 0 0 1.35rem color-mix(in srgb, var(--inara-color-warning) 55%, transparent);
     transform: translate3d(0, 0, 0);
   }
   35% {
-    color: color-mix(in srgb, var(--glitch-color-warning) 85%, transparent);
-    text-shadow: 0 0 1.15rem color-mix(in srgb, var(--glitch-color-warning) 45%, transparent);
+    color: color-mix(in srgb, var(--inara-color-warning) 85%, transparent);
+    text-shadow: 0 0 1.15rem color-mix(in srgb, var(--inara-color-warning) 45%, transparent);
   }
   55% {
-    color: color-mix(in srgb, var(--glitch-color-success) 90%, transparent);
-    text-shadow: 0 0 1.35rem color-mix(in srgb, var(--glitch-color-success) 55%, transparent);
+    color: color-mix(in srgb, var(--inara-color-success) 90%, transparent);
+    text-shadow: 0 0 1.35rem color-mix(in srgb, var(--inara-color-success) 55%, transparent);
     transform: translate3d(-2px, 1px, 0);
   }
   68% {
-    color: color-mix(in srgb, var(--glitch-color-primary) 92%, transparent);
-    text-shadow: 0 0 1.35rem color-mix(in srgb, var(--glitch-color-primary) 65%, transparent);
+    color: color-mix(in srgb, var(--inara-color-primary) 92%, transparent);
+    text-shadow: 0 0 1.35rem color-mix(in srgb, var(--inara-color-primary) 65%, transparent);
     transform: translate3d(2px, -1px, 0);
   }
   100% {
@@ -3533,56 +3533,56 @@ button.terminalStatusPreview:focus-visible {
   }
 }
 
-@keyframes glitchArrivalPanel {
+@keyframes inaraArrivalPanel {
   0% {
-    background: color-mix(in srgb, var(--glitch-color-primary-dark) 82%, transparent);
-    border-color: color-mix(in srgb, var(--glitch-color-warning) 50%, transparent);
-    box-shadow: 0 1.85rem 3.9rem color-mix(in srgb, var(--glitch-color-background) 70%, transparent);
+    background: color-mix(in srgb, var(--inara-color-primary-dark) 82%, transparent);
+    border-color: color-mix(in srgb, var(--inara-color-warning) 50%, transparent);
+    box-shadow: 0 1.85rem 3.9rem color-mix(in srgb, var(--inara-color-background) 70%, transparent);
     filter: saturate(1.05);
     transform: translate3d(0, 8px, 0);
   }
   40% {
-    background: color-mix(in srgb, var(--glitch-color-surface) 90%, transparent);
-    border-color: color-mix(in srgb, var(--glitch-color-primary) 38%, transparent);
-    box-shadow: 0 1.95rem 4rem color-mix(in srgb, var(--glitch-color-background) 75%, transparent);
+    background: color-mix(in srgb, var(--inara-color-surface) 90%, transparent);
+    border-color: color-mix(in srgb, var(--inara-color-primary) 38%, transparent);
+    box-shadow: 0 1.95rem 4rem color-mix(in srgb, var(--inara-color-background) 75%, transparent);
     transform: translate3d(-2px, 2px, 0);
   }
   68% {
-    background: color-mix(in srgb, var(--glitch-color-background) 90%, transparent);
-    border-color: color-mix(in srgb, var(--glitch-color-primary) 34%, transparent);
+    background: color-mix(in srgb, var(--inara-color-background) 90%, transparent);
+    border-color: color-mix(in srgb, var(--inara-color-primary) 34%, transparent);
     transform: translate3d(2px, -2px, 0);
   }
   100% {
-    background: var(--glitch-panel);
-    border-color: var(--glitch-panel-border);
-    box-shadow: 0 1.75rem 3.5rem color-mix(in srgb, var(--glitch-color-background) 80%, transparent);
+    background: var(--inara-panel);
+    border-color: var(--inara-panel-border);
+    box-shadow: 0 1.75rem 3.5rem color-mix(in srgb, var(--inara-color-background) 80%, transparent);
     filter: none;
     transform: none;
   }
 }
 
-@keyframes glitchArrivalBadge {
+@keyframes inaraArrivalBadge {
   0% {
-    background: color-mix(in srgb, var(--glitch-color-warning) 28%, transparent);
-    border-color: color-mix(in srgb, var(--glitch-color-warning) 55%, transparent);
-    color: color-mix(in srgb, var(--glitch-color-warning) 92%, transparent);
+    background: color-mix(in srgb, var(--inara-color-warning) 28%, transparent);
+    border-color: color-mix(in srgb, var(--inara-color-warning) 55%, transparent);
+    color: color-mix(in srgb, var(--inara-color-warning) 92%, transparent);
     transform: translate3d(0, 4px, 0);
   }
   55% {
-    background: color-mix(in srgb, var(--glitch-color-primary) 22%, transparent);
-    border-color: color-mix(in srgb, var(--glitch-color-primary) 42%, transparent);
-    color: color-mix(in srgb, var(--glitch-color-primary) 85%, transparent);
+    background: color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
+    border-color: color-mix(in srgb, var(--inara-color-primary) 42%, transparent);
+    color: color-mix(in srgb, var(--inara-color-primary) 85%, transparent);
     transform: translate3d(-2px, 0, 0);
   }
   70% {
-    background: color-mix(in srgb, var(--glitch-color-success) 20%, transparent);
-    border-color: color-mix(in srgb, var(--glitch-color-primary) 38%, transparent);
+    background: color-mix(in srgb, var(--inara-color-success) 20%, transparent);
+    border-color: color-mix(in srgb, var(--inara-color-primary) 38%, transparent);
     transform: translate3d(1px, -1px, 0);
   }
   100% {
-    background: color-mix(in srgb, var(--glitch-color-primary) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 42%, transparent);
-    color: var(--glitch-accent);
+    background: color-mix(in srgb, var(--inara-color-primary) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--inara-color-primary) 42%, transparent);
+    color: var(--inara-accent);
     transform: none;
   }
 }

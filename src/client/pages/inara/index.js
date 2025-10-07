@@ -6,7 +6,7 @@ import { useSocket } from 'lib/socket'
 export default function InaraPage () {
   const { connected, active } = useSocket()
 
-  if (typeof window !== 'undefined') Router.push('/inara/status')
+  if (typeof window !== 'undefined') Router.push('/inara/trade-routes')
 
   return (
     <Layout connected={connected} active={active}>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import notification from 'lib/notification'
 import { sendEvent, eventListener } from 'lib/socket'
 import { formatRelativeTime } from 'lib/inara-formatters'
-import glitchStyles from 'pages/glitch.module.css'
+import inaraStyles from 'pages/inara-workspace.module.css'
 import styles from './pirate-radio.module.css'
 
 const INITIAL_DIRECTORIES = { library: '', commercial: '' }
@@ -306,9 +306,9 @@ export default function PirateRadioPanel () {
   const noTracks = playlist.length === 0
 
   return (
-    <section className={glitchStyles.tableSection}>
-      <div className={glitchStyles.tableSectionHeader}>
-        <h2 className={glitchStyles.tableSectionTitle}>Pirate Radio</h2>
+    <section className={inaraStyles.tableSection}>
+      <div className={inaraStyles.tableSectionHeader}>
+        <h2 className={inaraStyles.tableSectionTitle}>Pirate Radio</h2>
         <p className={styles.subtitle}>
           INARA’s outlaw signal crawler stitches together volunteer library submissions and station commercials
           into a persistent underground broadcast. Configure your directories and let the uplink spin.
@@ -320,7 +320,7 @@ export default function PirateRadioPanel () {
         </div>
       </div>
 
-      <div className={`${glitchStyles.sectionFrame} ${styles.panelShell}`}>
+      <div className={`${inaraStyles.sectionFrame} ${styles.panelShell}`}>
         <div className={styles.panelCard}>
           {(error || playbackError || successMessage) && (
             <div

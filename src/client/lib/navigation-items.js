@@ -91,6 +91,37 @@ function InaraPanelNavItems (activePanel) {
   return navigationItems
 }
 
+function InaraWorkspaceNavItems (activePanel) {
+  const navigationItems = [
+    {
+      name: 'Trade Routes',
+      icon: 'route',
+      url: '/inara/trade-routes'
+    },
+    {
+      name: 'Cargo',
+      icon: 'cargo',
+      url: '/inara/cargo'
+    },
+    {
+      name: 'Mining Missions',
+      icon: 'asteroid-base',
+      url: '/inara/mining-missions'
+    },
+    {
+      name: 'Mining Locations',
+      icon: 'planet-ringed',
+      url: '/inara/mining-locations'
+    }
+  ]
+
+  navigationItems.forEach(item => {
+    if (item.name.toLowerCase() === activePanel.toLowerCase()) item.active = true
+  })
+
+  return navigationItems
+}
+
 function EngineeringPanelNavItems (activePanel) {
   const navigationItems = [
     {
@@ -155,6 +186,7 @@ module.exports = {
   ShipPanelNavItems,
   NavPanelNavItems,
   InaraPanelNavItems,
+  InaraWorkspaceNavItems,
   EngineeringPanelNavItems,
   SettingsNavItems
 }

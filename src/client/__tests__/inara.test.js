@@ -7,7 +7,7 @@ import InaraStatusPage, {
   TERMINAL_PROMPT_TYPE_CLASS_MAP,
   TERMINAL_TEXT_TYPE_CLASS_MAP
 } from '../pages/inara/status'
-import styles from '../pages/glitch.module.css'
+import styles from '../pages/inara-workspace.module.css'
 
 jest.mock('next/router', () => ({
   useRouter: () => ({

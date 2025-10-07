@@ -17,9 +17,8 @@ import { sanitizeInaraText } from 'lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from 'lib/station-icons'
 import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from 'lib/inara-mock-data'
 import { getInaraStrings, getInaraString } from 'lib/inara-addon'
-import { isGlitchThemeEnabled, addGlitchThemeChangeListener, THEME_STORAGE_KEY } from 'lib/glitch-settings'
 import { InaraPanelNavItems } from 'lib/navigation-items'
-import styles from '../glitch.module.css'
+import styles from '../inara-workspace.module.css'
 
 const METRIC_VARIANT_CLASS_MAP = {
   neutral: styles.metricChipNeutral,
@@ -35,7 +34,7 @@ export const TERMINAL_PROMPT_TYPE_CLASS_MAP = {
   cipher: styles.terminalPromptCipher,
   binary: styles.terminalPromptBinary,
   decrypt: styles.terminalPromptDecrypt,
-  glitch: styles.terminalPromptGlitch,
+  inara: styles.terminalPromptInara,
   system: styles.terminalPromptSystem,
   credit: styles.terminalPromptCredit,
   transaction: styles.terminalPromptTransaction,
@@ -52,7 +51,7 @@ export const TERMINAL_TEXT_TYPE_CLASS_MAP = {
   cipher: styles.terminalTextCipher,
   binary: styles.terminalTextBinary,
   decrypt: styles.terminalTextDecrypt,
-  glitch: styles.terminalTextGlitch,
+  inara: styles.terminalTextInara,
   system: styles.terminalTextSystem,
   credit: styles.terminalTextCredit,
   transaction: styles.terminalTextTransaction,
@@ -86,12 +85,12 @@ const LARGE_PAD_SIZE_VALUE = '3'
 function LoadingSpinner ({ label, inline = false }) {
   return (
     <div
-      className={`glitch-spinner${inline ? ' glitch-spinner--inline' : ' glitch-spinner--block'}`}
+      className={`inara-spinner${inline ? ' inara-spinner--inline' : ' inara-spinner--block'}`}
       role='status'
       aria-live='polite'
     >
-      <span className='glitch-spinner__icon' aria-hidden='true' />
-      {label ? <span className='glitch-spinner__label'>{label}</span> : null}
+      <span className='inara-spinner__icon' aria-hidden='true' />
+      {label ? <span className='inara-spinner__label'>{label}</span> : null}
     </div>
   )
 }
@@ -915,7 +914,7 @@ function getFactionStandingDisplay(factionName, standings) {
 
   const normalizedStanding = typeof info.standing === 'string' ? info.standing.trim().toLowerCase() : ''
   let className = null
-  let baseColor = 'var(--glitch-subdued)'
+  let baseColor = 'var(--inara-subdued)'
   if (normalizedStanding === 'ally') {
     className = styles.tableTextSuccess
     baseColor = '#29f3c3'
@@ -924,7 +923,7 @@ function getFactionStandingDisplay(factionName, standings) {
     baseColor = '#ff5fc1'
   } else if (normalizedStanding) {
     className = styles.tableTextNeutral
-    baseColor = 'var(--glitch-accent)'
+    baseColor = 'var(--inara-accent)'
   }
 
   const reputationLabel = typeof info.reputation === 'number'
@@ -1218,7 +1217,7 @@ const CURRENT_SYSTEM_CONTAINER_STYLE = {
 }
 
 const CURRENT_SYSTEM_LABEL_STYLE = {
-  color: 'var(--glitch-accent)',
+  color: 'var(--inara-accent)',
   fontSize: '0.75rem',
   letterSpacing: '.08em',
   textTransform: 'uppercase',
@@ -1250,7 +1249,7 @@ const FILTER_FIELD_STYLE = {
 const FILTER_LABEL_STYLE = {
   display: 'block',
   marginBottom: 0,
-  color: 'var(--glitch-accent)',
+  color: 'var(--inara-accent)',
   fontSize: '0.75rem',
   textTransform: 'uppercase',
   letterSpacing: '.08em'
@@ -1265,7 +1264,7 @@ const FILTER_CONTROL_STYLE = {
   borderRadius: '.35rem',
   border: '1px solid rgba(127, 233, 255, 0.35)',
   background: 'rgba(5, 8, 13, 0.75)',
-  color: 'var(--glitch-ink)',
+  color: 'var(--inara-ink)',
   lineHeight: '1.2',
   boxSizing: 'border-box'
 }
@@ -1273,7 +1272,7 @@ const FILTER_CONTROL_STYLE = {
 const FILTER_TOGGLE_BUTTON_STYLE = {
   background: 'rgba(127, 233, 255, 0.12)',
   border: '1px solid rgba(127, 233, 255, 0.4)',
-  color: 'var(--glitch-accent)',
+  color: 'var(--inara-accent)',
   borderRadius: '0',
   padding: '0 1rem',
   fontSize: '0.85rem',
@@ -1293,7 +1292,7 @@ const FILTER_SUMMARY_STYLE = {
 }
 
 const FILTER_SUMMARY_TEXT_STYLE = {
-  color: 'var(--glitch-accent)',
+  color: 'var(--inara-accent)',
   fontSize: '0.85rem',
   fontWeight: 500,
   whiteSpace: 'nowrap',
@@ -1337,7 +1336,7 @@ function parseNumberFromText (value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-function CreditsIcon ({ size = 22, color = 'var(--glitch-color-success)' }) {
+function CreditsIcon ({ size = 22, color = 'var(--inara-color-success)' }) {
   const paths = Icons.credits
   if (!paths) return null
   return (
@@ -1354,7 +1353,7 @@ function CreditsIcon ({ size = 22, color = 'var(--glitch-color-success)' }) {
 
 CreditsIcon.defaultProps = {
   size: 22,
-  color: 'var(--glitch-color-success)'
+  color: 'var(--inara-color-success)'
 }
 
 function extractProfitPerTon (route) {
@@ -2239,20 +2238,20 @@ function MissionsPanel () {
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-              <div className='glitch-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
+              <div className='inara-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
             </div>
             {sourceUrl && (
-              <div className='glitch__data-source glitch-muted'>
+              <div className='inara__data-source inara-muted'>
                 INARA intercept feed compiled from community relays.
               </div>
             )}
           </div>
-          <p style={{ color: 'var(--glitch-muted)', marginTop: '-0.5rem' }}>
+          <p style={{ color: 'var(--inara-muted)', marginTop: '-0.5rem' }}>
             Availability signals originate from INARA contributors and may trail live mission boards.
           </p>
           {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
-        <div className='glitch-panel-table'>
+        <div className='inara-panel-table'>
           <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
             {displayMessage && status !== 'idle' && status !== 'loading' && (
               <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
@@ -2325,7 +2324,7 @@ function MissionsPanel () {
                               <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
                               )
                             : (
-                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--glitch-subdued)' }} />
+                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--inara-subdued)' }} />
                               )}
                           {mission.system
                             ? <CopyOnClick copyMessageKey='system'>{mission.system}</CopyOnClick>
@@ -3052,7 +3051,7 @@ function CargoHoldPanel () {
         <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
           <div>
             <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='glitch-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{currentSystemName || 'Unknown'}</div>
+            <div className='inara-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{currentSystemName || 'Unknown'}</div>
           </div>
         </div>
       </div>
@@ -3281,7 +3280,7 @@ function CargoHoldPanel () {
                 </div>
               </div>
 
-              <div className='glitch-panel-table'>
+              <div className='inara-panel-table'>
                 <div className='scrollable' style={STATION_TABLE_SCROLL_AREA_STYLE}>
                   {listings.length === 0 ? (
                     <div className={styles.detailEmptyState}>
@@ -3430,7 +3429,7 @@ function CargoHoldPanel () {
         })()
         : (
           <>
-            <div className='glitch-panel-table'>
+            <div className='inara-panel-table'>
               <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
                 {commodityContext ? (
                   <CommoditySummary
@@ -4908,7 +4907,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
           </div>
         </div>
       </Panel>
-      <div className='glitch-panel-table'>
+      <div className='inara-panel-table'>
         <div
           className='scrollable'
           style={TABLE_SCROLL_AREA_STYLE}
@@ -5157,21 +5156,21 @@ function PristineMiningPanel () {
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-              <div className='glitch-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
+              <div className='inara-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
             </div>
             {sourceUrl && (
-              <div className='glitch__data-source glitch-muted'>
+              <div className='inara__data-source inara-muted'>
                 INARA prospecting relays aligned with survey intel.
               </div>
             )}
           </div>
-          <p style={{ color: 'var(--glitch-muted)', marginTop: '-0.5rem' }}>
+          <p style={{ color: 'var(--inara-muted)', marginTop: '-0.5rem' }}>
             Geological echoes are sourced from volunteer INARA submissions and may lag in-system discoveries.
           </p>
           {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
         <div
-          className={`glitch-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
+          className={`inara-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
         >
           <div
             className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
@@ -5234,7 +5233,7 @@ function PristineMiningPanel () {
                       >
                         <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span className='glitch-accent'>{location.body || '--'}</span>
+                            <span className='inara-accent'>{location.body || '--'}</span>
                             {detailText && (
                               <span className={styles.tableSubtext}>{detailText}</span>
                             )}
@@ -5244,12 +5243,12 @@ function PristineMiningPanel () {
                           <div className={`${styles.tableCellInline} text-no-wrap`}>
                             {location.isTargetSystem
                               ? (
-                                <i className='icon system-object-icon icarus-terminal-location-filled glitch-accent' style={{ marginRight: '.5rem' }} />
+                                <i className='icon system-object-icon icarus-terminal-location-filled inara-accent' style={{ marginRight: '.5rem' }} />
                                 )
                               : (
-                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--glitch-subdued)' }} />
+                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--inara-subdued)' }} />
                                 )}
-                            <span className='glitch-accent'>
+                            <span className='inara-accent'>
                               {location.system
                                 ? <CopyOnClick copyMessageKey='system'>{location.system}</CopyOnClick>
                                 : '--'}
@@ -5260,14 +5259,14 @@ function PristineMiningPanel () {
                         <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
                       </tr>
                       {isExpanded && (
-                        <tr className={`${styles.tableDetailRow} glitch-table-detail-row`} data-inara-table-row='pending'>
+                        <tr className={`${styles.tableDetailRow} inara-table-detail-row`} data-inara-table-row='pending'>
                           <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
                             <div className='pristine-mining__detail'>
                               <div className='pristine-mining__detail-info'>
                                 <div className='pristine-mining__detail-summary'>
                                   {detailText && <span>{detailText}</span>}
-                                  {bodyDistanceDisplay && <span>Body Distance: <span className='glitch-accent'>{bodyDistanceDisplay}</span></span>}
-                                  {distanceDisplay && <span>System Distance: <span className='glitch-accent'>{distanceDisplay}</span></span>}
+                                  {bodyDistanceDisplay && <span>Body Distance: <span className='inara-accent'>{bodyDistanceDisplay}</span></span>}
+                                  {distanceDisplay && <span>System Distance: <span className='inara-accent'>{distanceDisplay}</span></span>}
                                 </div>
                                 {(location.systemUrl || location.bodyUrl) && (
                                   <div className='pristine-mining__detail-links'>
@@ -5386,7 +5385,7 @@ function randomCallsign () {
 
 function randomEndpoint () {
   const protocol = randomChoice(['mesh', 'flux', 'relay', 'beacon', 'packet', 'datastream'])
-  const host = `${randomChoice(['glitch', 'syndicate', 'perseus', 'umbra', 'aurora', 'dusk'])}.${randomChoice(['alpha', 'beta', 'gamma', 'delta', 'kappa', 'lambda'])}`
+  const host = `${randomChoice(['inara', 'syndicate', 'perseus', 'umbra', 'aurora', 'dusk'])}.${randomChoice(['alpha', 'beta', 'gamma', 'delta', 'kappa', 'lambda'])}`
   return `${protocol}://${host}.${randomChoice(['io', 'net', 'grid', 'node'])}`
 }
 
@@ -5458,7 +5457,7 @@ export function createTransactionSequence (entry = {}, { simulation = false, pre
   const balanceLabel = formatTokenAmount(Number.isFinite(entry.balance) ? entry.balance : null)
   const jackpotActive = Boolean(metadata.jackpot)
   const isDebit = entry.type === 'spend'
-  const glyphLineType = jackpotActive ? 'jackpotFloodGlyph' : isDebit ? 'debitGlyph' : 'glitch'
+  const glyphLineType = jackpotActive ? 'jackpotFloodGlyph' : isDebit ? 'debitGlyph' : 'inara'
   const glyphLabelChoices = jackpotActive
     ? ['₿Ξ₿Ξ', 'Ξ₪Ξ₪', '₿₿₿₿₿', '₪₪₪₪₪₪', 'ΞΞΞΞΞΞ']
     : isDebit
@@ -5472,7 +5471,7 @@ export function createTransactionSequence (entry = {}, { simulation = false, pre
     if (glyphLineType === 'debitGlyph') {
       return generateDebitGlyphString(randomInteger(48, 88))
     }
-    return generateGlitchString(randomInteger(54, 96))
+    return generateInaraString(randomInteger(54, 96))
   }
 
   const makeGlyphLine = seedSuffix => ({
@@ -5553,11 +5552,11 @@ export function createJackpotFloodConfig (entry = {}, { prefersReducedMotion = f
   for (let index = 0; index < floodCount; index += 1) {
     floodLines.push({
       line: {
-        type: jackpotActive ? 'jackpotFloodGlyph' : 'glitch',
+        type: jackpotActive ? 'jackpotFloodGlyph' : 'inara',
         label: randomChoice(floodLabelChoices),
         text: jackpotActive
           ? generateCurrencyCascadeString(randomInteger(96, 156))
-          : generateGlitchString(randomInteger(64, 112)),
+          : generateInaraString(randomInteger(64, 112)),
         seed: `jackpot-flood-${index}`
       },
       delay: prefersReducedMotion ? 60 : randomInteger(18, 64)
@@ -5567,7 +5566,7 @@ export function createJackpotFloodConfig (entry = {}, { prefersReducedMotion = f
   return { floodLines, floodDuration, jackpotActive }
 }
 
-function generateGlitchString (length = 64) {
+function generateInaraString (length = 64) {
   const baseGlyphs = [
     '@', '%', '&', '*', '/', '\\', '|', '<', '>', '^', '~', '?', '!', '$', ':', ';', '_', '[', ']', '{', '}', '(', ')',
     '#', '=', '-', '+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
@@ -5678,7 +5677,7 @@ function formatTokenAmount (value) {
 function extractLedgerSource (metadata = {}) {
   const candidates = [metadata.source, metadata.endpoint, metadata.event, metadata.origin]
   const resolved = candidates.find(value => typeof value === 'string' && value.trim())
-  return resolved ? resolved.trim() : 'glitch'
+  return resolved ? resolved.trim() : 'inara'
 }
 
 function extractLedgerReason (metadata = {}) {
@@ -5907,13 +5906,13 @@ function generateMenaceLines (balance) {
   const echoText = randomChoice(MENACE_ECHOES)()
   return [
     { type: 'alert', label: '!!!', text: alertText },
-    { type: 'system', label: 'glitch', text: echoText }
+    { type: 'system', label: 'inara', text: echoText }
   ]
 }
 
 function generateTerminalLine () {
   const generators = {
-    command: () => ({ type: 'command', label: 'glitch@ship', text: generateCommandText() }),
+    command: () => ({ type: 'command', label: 'inara@ship', text: generateCommandText() }),
     response: () => ({ type: 'response', label: randomChoice(['mesh', 'telemetry', 'analysis']), text: generateResponseText() }),
     cipher: () => ({ type: 'cipher', label: 'cipher', text: generateCipherString(randomInteger(32, 64)) }),
     binary: () => ({ type: 'binary', label: 'payload', text: generateBinaryString(randomInteger(6, 10)) }),
@@ -6257,14 +6256,14 @@ function InaraTerminalOverlay () {
         : viewState === TERMINAL_VIEW.EXPANDED
           ? TERMINAL_HEIGHT_EXPANDED
           : TERMINAL_HEIGHT_NORMAL
-    host.style.setProperty('--glitch-terminal-height', nextHeight)
+    host.style.setProperty('--inara-terminal-height', nextHeight)
   }, [viewState])
 
   useEffect(() => {
     const host = terminalRef.current?.parentElement
     return () => {
       if (host) {
-        host.style.removeProperty('--glitch-terminal-height')
+        host.style.removeProperty('--inara-terminal-height')
       }
     }
   }, [])
@@ -6344,7 +6343,7 @@ function InaraTerminalOverlay () {
     ref.timeouts = []
   }, [])
 
-  const triggerCreditCelebration = useCallback((entry = {}, { message, messageLabel = 'glitch', messageType = 'jackpotSummary' } = {}) => {
+  const triggerCreditCelebration = useCallback((entry = {}, { message, messageLabel = 'inara', messageType = 'jackpotSummary' } = {}) => {
     if (typeof window === 'undefined') return
     if (!entry || typeof entry !== 'object') return
     const entryId = entry.id || null
@@ -6432,7 +6431,7 @@ function InaraTerminalOverlay () {
       simulation
     })
 
-    triggerCreditCelebration(entry, { message: summary, messageLabel: 'glitch', messageType: 'jackpotSummary' })
+    triggerCreditCelebration(entry, { message: summary, messageLabel: 'inara', messageType: 'jackpotSummary' })
 
     const { floodLines, floodDuration } = createJackpotFloodConfig(entry, { prefersReducedMotion })
 
@@ -6476,7 +6475,7 @@ function InaraTerminalOverlay () {
       {
         line: {
           type: 'jackpotSummary',
-          label: 'glitch',
+          label: 'inara',
           text: summary,
           seed: 'jackpot-summary'
         }
@@ -6681,9 +6680,9 @@ function InaraTerminalOverlay () {
     }
 
     const buildFloodLine = () => ({
-      type: 'glitch',
+      type: 'inara',
       label: '####',
-      text: generateGlitchString(randomInteger(56, 92))
+      text: generateInaraString(randomInteger(56, 92))
     })
 
     if (state.queue.length > 0) {
@@ -6885,7 +6884,7 @@ function InaraTerminalOverlay () {
 
   const maximizeIcon = isExpanded ? '▭' : '▢'
 
-  const statusPreviewLabel = latestLine?.label ?? 'glitch'
+  const statusPreviewLabel = latestLine?.label ?? 'inara'
   const statusPreviewText = latestLine?.text ?? 'Link stable'
 
   return (
@@ -6957,7 +6956,7 @@ function InaraTerminalOverlay () {
             ) : (
               <div className={styles.terminalHeaderContent}>
                 <span className={styles.terminalTitle}>Ship Uplink Console</span>
-                <span className={styles.terminalStatus}>Channel mesh://glitch</span>
+                <span className={styles.terminalStatus}>Channel mesh://inara</span>
               </div>
             )}
           </div>
@@ -7020,65 +7019,7 @@ function InaraTerminalOverlay () {
 export default function InaraStatusPage () {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [tradeRoutesStatus, setTradeRoutesStatus] = useState('idle')
-  const [arrivalMode, setArrivalMode] = useState(false)
-  const [themeEnabled, setThemeEnabled] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return isGlitchThemeEnabled()
-  })
   const { connected, ready, active: socketActive } = useSocket()
-  useLayoutEffect(() => {
-    if (typeof document === 'undefined' || !document.body) return undefined
-
-    const { body } = document
-    if (themeEnabled) {
-      body.classList.add('glitch-theme')
-    } else {
-      body.classList.remove('glitch-theme')
-    }
-
-    return () => {
-      body.classList.remove('glitch-theme')
-    }
-  }, [themeEnabled])
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-
-    const storageHandler = (event) => {
-      if (event.key === THEME_STORAGE_KEY) {
-        setThemeEnabled(isGlitchThemeEnabled())
-      }
-    }
-
-    const removeListener = addGlitchThemeChangeListener(setThemeEnabled)
-    window.addEventListener('storage', storageHandler)
-
-    return () => {
-      removeListener()
-      window.removeEventListener('storage', storageHandler)
-    }
-  }, [])
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-    let timeoutId
-    try {
-      const stored = window.sessionStorage?.getItem('glitch.assimilationArrival')
-      if (stored) {
-        const timestamp = Number(stored)
-        if (!Number.isNaN(timestamp) && Date.now() - timestamp < 8000) {
-          setArrivalMode(true)
-          timeoutId = window.setTimeout(() => setArrivalMode(false), 5200)
-        }
-        window.sessionStorage.removeItem('glitch.assimilationArrival')
-      }
-    } catch (err) {
-      // Ignore storage read errors
-    }
-    return () => {
-      if (timeoutId) {
-        window.clearTimeout(timeoutId)
-      }
-    }
-  }, [])
   const inaraTabs = useMemo(() => {
     const panelItems = [
       { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
@@ -7091,24 +7032,20 @@ export default function InaraStatusPage () {
     return [...panelItems, ...sharedNavItems]
   }, [activeTab])
 
-  const glitchClassName = [
-    styles.glitch,
-    arrivalMode ? styles.arrival : '',
-    themeEnabled ? '' : styles.glitchIcarus
-  ].filter(Boolean).join(' ')
+  const workspaceClassName = [styles.inara, styles.inaraIcarus].join(' ')
 
   const loaderVisible = activeTab === 'tradeRoutes' && tradeRoutesStatus === 'loading'
 
   return (
-    <Layout connected={connected} active={socketActive} ready={ready} loader={loaderVisible} className={styles.glitchLayout}>
+    <Layout connected={connected} active={socketActive} ready={ready} loader={loaderVisible} className={styles.inaraLayout}>
       <Panel
         layout='full-width'
         scrollable
         navigation={inaraTabs}
         search={false}
-        className={styles.glitchPanel}
+        className={styles.inaraPanel}
       >
-        <div className={glitchClassName}>
+        <div className={workspaceClassName}>
           <div className={styles.shell}>
             <div className={styles.tabPanels}>
               <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
@@ -7133,4 +7070,11 @@ export default function InaraStatusPage () {
       </Panel>
     </Layout>
   )
+}
+
+export {
+  TradeRoutesPanel,
+  CargoHoldPanel,
+  MissionsPanel,
+  PristineMiningPanel
 }

@@ -7,7 +7,7 @@ import styles from './station-summary.module.css'
 
 const DEMAND_ARROW_PATTERN = /[▲△▴▵▼▽▾▿↑↓]/g
 
-export function StationIcon ({ icon, size = 26, color = 'var(--glitch-accent)' }) {
+export function StationIcon ({ icon, size = 26, color = 'var(--inara-accent)' }) {
   if (!icon) return null
   const paths = Icons[icon]
   if (!paths) return null
@@ -27,7 +27,7 @@ export function StationIcon ({ icon, size = 26, color = 'var(--glitch-accent)' }
 StationIcon.defaultProps = {
   icon: '',
   size: 26,
-  color: 'var(--glitch-accent)'
+  color: 'var(--inara-accent)'
 }
 
 StationIcon.propTypes = {
