@@ -1,55 +1,22 @@
 import { useState, useEffect, Fragment } from 'react'
 import { sendEvent, eventListener } from 'lib/socket'
 import { SettingsNavItems } from 'lib/navigation-items'
-import {
-  ASSIMILATION_DURATION_MIN,
-  ASSIMILATION_DURATION_MAX,
-  ASSIMILATION_DURATION_DEFAULT,
-  getAssimilationDurationSeconds,
-  saveAssimilationDurationSeconds,
-  isGlitchThemeEnabled,
-  saveGlitchThemeEnabled,
-  addGlitchThemeChangeListener,
-  isGlitchThemeToggleAvailable,
-  THEME_STORAGE_KEY,
-  isGlitchNavVisible,
-  saveGlitchNavVisible,
-  addGlitchNavVisibilityListener,
-  GLITCH_NAV_VISIBILITY_KEY
-} from 'lib/glitch-settings'
 import packageJson from '../../../package.json'
 
 function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPanel = 'Theme' }) {
   const [activeSettingsPanel, setActiveSettingsPanel] = useState(defaultActiveSettingsPanel)
-
-  useEffect(() => {
-    if (typeof document === 'undefined' || !document.body) return undefined
-
-    const { body } = document
-    if (visible) {
-      body.classList.add('assimilation-paused')
-    } else {
-      body.classList.remove('assimilation-paused')
-    }
-
-    return () => {
-      body.classList.remove('assimilation-paused')
-    }
-  }, [visible])
 
   return (
     <>
       <div
         className='modal-dialog__background'
         role='presentation'
-        data-no-assimilation
         style={{ opacity: visible ? 1 : 0, visibility: visible ? 'visible' : 'hidden' }}
         onClick={toggleVisible}
       />
       <div
         className='modal-dialog'
         role='dialog'
-        data-no-assimilation
         style={{ opacity: visible ? 1 : 0, visibility: visible ? 'visible' : 'hidden' }}
       >
         <h2 className='modal-dialog__title'>Settings</h2>
@@ -93,42 +60,19 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
 
 function InaraSettings () {
   const [useMockData, setUseMockData] = useState(false)
-  const [assimilationDuration, setAssimilationDuration] = useState(ASSIMILATION_DURATION_DEFAULT)
   const [saved, setSaved] = useState(false)
-  const [glitchNavVisible, setGlitchNavVisible] = useState(() => isGlitchNavVisible())
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setUseMockData(window.localStorage.getItem('inaraUseMockData') === 'true')
     }
-    setAssimilationDuration(getAssimilationDurationSeconds())
   }, [])
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-
-    const handleStorage = (event) => {
-      if (event.key === GLITCH_NAV_VISIBILITY_KEY) {
-        setGlitchNavVisible(isGlitchNavVisible())
-      }
-    }
-
-    const removeListener = addGlitchNavVisibilityListener(setGlitchNavVisible)
-    window.addEventListener('storage', handleStorage)
-
-    return () => {
-      removeListener()
-      window.removeEventListener('storage', handleStorage)
-    }
-  }, [])
-
-  function handleSave(e) {
-    e.preventDefault()
+  function handleSave (event) {
+    event.preventDefault()
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('inaraUseMockData', useMockData ? 'true' : 'false')
     }
-    const sanitizedDuration = saveAssimilationDurationSeconds(assimilationDuration)
-    setAssimilationDuration(sanitizedDuration)
     setSaved(true)
     setTimeout(() => setSaved(false), 1500)
   }
@@ -136,22 +80,6 @@ function InaraSettings () {
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
       <h3 className='text-primary'>INARA Integration Settings</h3>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0 0 1.25rem 0', fontSize: '1rem' }}>
-        <input
-          type='checkbox'
-          checked={glitchNavVisible}
-          onChange={(event) => {
-            const sanitized = saveGlitchNavVisible(event.target.checked)
-            setGlitchNavVisible(sanitized)
-          }}
-        />
-        <span>
-          Show INARA workspace in navigation
-        </span>
-      </label>
-      <p className='text-muted' style={{ marginTop: '-0.75rem', marginBottom: '1.5rem', fontSize: '.95rem' }}>
-        Disable to hide the INARA workspace toggle from the main navigation bar.
-      </p>
       <p>Enable or disable the Trade Route Layout Sandbox using mock data.</p>
       <form onSubmit={handleSave} style={{ maxWidth: 400 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', fontSize: '1rem' }}>
@@ -164,31 +92,6 @@ function InaraSettings () {
             Enable Trade Route Layout Sandbox (use mock data)
           </span>
         </label>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label htmlFor='glitch-assimilation-duration' className='text-primary' style={{ display: 'block', marginBottom: '.5rem' }}>
-            INARA assimilation transition length
-          </label>
-          <input
-            id='glitch-assimilation-duration'
-            type='range'
-            min={ASSIMILATION_DURATION_MIN}
-            max={ASSIMILATION_DURATION_MAX}
-            step='0.25'
-            value={assimilationDuration}
-            onChange={event => {
-              const nextValue = Number.parseFloat(event.target.value)
-              setAssimilationDuration(Number.isFinite(nextValue) ? nextValue : ASSIMILATION_DURATION_DEFAULT)
-            }}
-            style={{ width: '100%' }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '.5rem', fontSize: '.95rem' }}>
-            <span className='text-muted'>Current: {assimilationDuration.toFixed(1)}s</span>
-            <span className='text-muted'>Min {ASSIMILATION_DURATION_MIN}s · Max {ASSIMILATION_DURATION_MAX}s</span>
-          </div>
-          <p className='text-muted' style={{ marginTop: '.5rem', fontSize: '.9rem' }}>
-            Controls the duration of the assimilation effect when entering the INARA interface.
-          </p>
-        </div>
         <button type='submit' style={{ fontSize: '1.1rem' }}>{saved ? 'Saved!' : 'Save'}</button>
       </form>
     </div>
@@ -355,8 +258,6 @@ function ThemeSettings () {
   const [primaryColorModifier, setPrimaryColorModifier] = useState(getPrimaryColorModifier())
   const [secondaryColor, setSecondaryColor] = useState(getSecondaryColorAsHex())
   const [secondaryColorModifier, setSecondaryColorModifier] = useState(getSecondaryColorModifier())
-  const [glitchThemeEnabled, setGlitchThemeEnabled] = useState(() => isGlitchThemeEnabled())
-  const [themeToggleAvailable, setThemeToggleAvailable] = useState(() => isGlitchThemeToggleAvailable())
 
   // Update this component if another window updates the theme settings
   const storageEventHandler = (event) => {
@@ -374,10 +275,6 @@ function ThemeSettings () {
     return () => window.removeEventListener('storage', storageEventHandler)
   }, [])
 
-  useEffect(() => {
-    setThemeToggleAvailable(isGlitchThemeToggleAvailable())
-  }, [])
-
   useEffect(() => eventListener('syncMessage', async (event) => {
     if (event.name === 'colorSettings') {
       setPrimaryColor(getPrimaryColorAsHex())
@@ -386,24 +283,6 @@ function ThemeSettings () {
       setSecondaryColorModifier(getSecondaryColorModifier())
     }
   }), [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-
-    const handleThemeStorage = (event) => {
-      if (event.key === THEME_STORAGE_KEY) {
-        setGlitchThemeEnabled(isGlitchThemeEnabled())
-      }
-    }
-
-    const removeListener = addGlitchThemeChangeListener(setGlitchThemeEnabled)
-    window.addEventListener('storage', handleThemeStorage)
-
-    return () => {
-      removeListener()
-      window.removeEventListener('storage', handleThemeStorage)
-    }
-  }, [])
 
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
@@ -544,29 +423,6 @@ function ThemeSettings () {
           Reset theme settings
         </button>
       </div>
-      <hr style={{ margin: '2rem 0 1.5rem 0' }} />
-      <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', fontSize: '1rem' }}>
-        <input
-          type='checkbox'
-          checked={glitchThemeEnabled}
-          disabled={!themeToggleAvailable}
-          onChange={(event) => {
-            const sanitized = saveGlitchThemeEnabled(event.target.checked)
-            setGlitchThemeEnabled(sanitized)
-          }}
-        />
-        <span>
-          Use Glitch Theme
-        </span>
-      </label>
-      <p className='text-muted' style={{ marginTop: 0, fontSize: '.95rem' }}>
-        Disable this setting to keep INARA&apos;s layouts while returning to the classic ICARUS palette and transitions.
-      </p>
-      {!themeToggleAvailable && (
-        <p className='text-muted' style={{ marginTop: '-0.35rem', fontSize: '.95rem' }}>
-          The Glitch theme toggle is disabled for this deployment, so the classic ICARUS theme remains active by default.
-        </p>
-      )}
     </div>
   )
 }

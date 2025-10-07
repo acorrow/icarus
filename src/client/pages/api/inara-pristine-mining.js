@@ -12,8 +12,7 @@ const INARA_REQUEST_HEADERS = {
   'Accept-Language': 'en-US,en;q=0.9',
   'Cache-Control': 'no-cache',
   Pragma: 'no-cache',
-  Referer: 'https://inara.cz/elite/',
-  Cookie: 'glitchsite=1'
+  Referer: 'https://inara.cz/elite/'
 }
 
 const SEARCH_DEFAULTS = {

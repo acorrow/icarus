@@ -1,29 +1,77 @@
-.glitch-title-morph {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 0;
-  white-space: nowrap;
+.header__title-wrapper {
+  position: relative;
+  padding: 0.6rem 0 0.25rem 3.75rem;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.08ch;
 }
 
-.glitch-title-morph__characters {
-  display: inline-flex;
+.header__title-icon {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3rem;
 }
 
-.glitch-title-morph__char {
+.header__title {
   display: inline-block;
-  width: 1ch;
-  max-width: 1ch;
-  text-align: center;
-  white-space: pre;
-  transition: color 0.18s ease, transform 0.06s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.1s ease, filter 0.12s ease;
-  will-change: transform, opacity, filter;
+  min-width: 14ch;
 }
 
-.glitch-title-morph__char--space {
-  width: 1ch;
+.header__status {
+  position: absolute;
+  top: 1rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.glitch-title-morph__char--glitch {
-  text-shadow: 0 0 0.32rem rgba(93, 46, 255, 0.55), 0 0 0.14rem rgba(41, 243, 195, 0.35);
-  filter: blur(0.038rem) contrast(1.06) saturate(1.05);
+.header__clock {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  min-width: 7.5rem;
+  gap: 0.15rem;
+}
+
+.header__clock-time {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.header__clock-date {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.header__status-button {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.header__status-button .icon {
+  font-size: inherit;
+}
+
+.header__navigation {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.header__navigation button {
+  font-size: 1.5rem;
+}
+
+.header__navigation .visible-small {
+  font-weight: 600;
 }

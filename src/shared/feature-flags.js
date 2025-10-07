@@ -51,14 +51,9 @@ function isTokenRecoveryCompatibilityEnabled (env = process.env) {
   return resolveFlag('inaraTokenRecoveryCompatEnabled', env)
 }
 
-function isGlitchThemeToggleEnabled (env = process.env) {
-  return resolveFlag('glitchThemeToggleEnabled', env)
-}
-
 module.exports = {
   isInaraTokenCurrencyEnabled,
   isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
-  isGlitchThemeToggleEnabled,
   _private: { normalizeFlagValue, resolveFlag, hasFlagKey }
 }

@@ -1,5 +1,4 @@
 import Document, { Html, Head, Main, NextScript } from 'next/document'
-import { isGlitchThemeToggleEnabled } from '../../shared/feature-flags.js'
 
 // Disable onContextMenu, except in development
 const onContextMenu = process.env.NODE_ENV === 'development'
@@ -13,14 +12,12 @@ class MyDocument extends Document {
   }
 
   render () {
-    const themeToggleEnabled = isGlitchThemeToggleEnabled()
     return (
       <Html
         lang='en'
         data-fx-crt='true'
         data-fx-crt-text='false'
         data-fx-crt-text-animated='false'
-        data-glitch-theme-toggle-enabled={themeToggleEnabled ? 'true' : 'false'}
       >
         <Head>
           <link rel='manifest' href='/manifest.json' />

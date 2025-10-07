@@ -65,7 +65,7 @@ Credits the commander’s balance.
 {
   "amount": 750,
   "metadata": {
-    "source": "glitch-console",
+    "source": "atlas-console",
     "reason": "manual-grant"
   }
 }
@@ -83,7 +83,7 @@ Credits the commander’s balance.
     "balance": 124206,
     "timestamp": "2024-03-20T18:45:02.004Z",
     "metadata": {
-      "source": "glitch-console",
+      "source": "atlas-console",
       "reason": "manual-grant"
     }
   }

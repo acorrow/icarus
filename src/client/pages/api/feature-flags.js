@@ -2,7 +2,6 @@ import {
   isInaraTokenCurrencyEnabled,
   isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
-  isGlitchThemeToggleEnabled,
   _private as featureFlagInternals
 } from '../../../shared/feature-flags.js'
 
@@ -29,13 +28,6 @@ const FLAG_DEFINITIONS = [
     description: 'Retains the legacy negative-balance recovery schedule for the INARA token ledger.',
     resolver: isTokenRecoveryCompatibilityEnabled,
     defaultValue: true
-  },
-  {
-    key: 'glitchThemeToggleEnabled',
-    label: 'Glitch Theme Toggle',
-    description: 'Allows commanders to enable the immersive Glitch visual theme from the settings modal.',
-    resolver: isGlitchThemeToggleEnabled,
-    defaultValue: false
   }
 ]
 

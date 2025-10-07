@@ -1,20 +1,7 @@
 
-## Theme Switching: ICARUS vs Glitch
+## Workspace Theme
 
-The INARA workspace supports a dynamic theme switch between the classic ICARUS theme and the Glitch theme. This allows users to toggle between:
-
-- **ICARUS Theme:** Uses the legacy color palette, transitions, and layout conventions familiar from earlier versions of ICARUS Terminal. The ICARUS theme is characterized by its classic blue/indigo palette, subdued gradients, and minimal animation.
-- **Glitch Theme:** Applies the new INARA visual identity, including royal purple (`#5D2EFF`) as the primary accent, neon gradients, animated overlays, and a denser, more immersive UI. The Glitch theme can be enabled when the deployment exposes the `glitchThemeToggleEnabled` feature flag; otherwise the classic ICARUS palette remains active by default.
-
-Theme switching is managed via the settings modal (`ThemeSettings` in `src/client/components/settings.js`). The theme state is stored in localStorage and can be toggled at runtime without a page reload when the `glitchThemeToggleEnabled` feature flag is active. When the Glitch theme is enabled, the workspace applies:
-- Glitch palette tokens from `src/client/css/pages/glitch.css`
-- Animated arrival/exit transitions (`glitch-assimilation.js`)
-- Neon overlays and signal mesh backgrounds
-- INARA-specific navigation and panel shells
-
-When the Glitch theme is disabled—or when the feature flag is unavailable—the workspace reverts to ICARUS colors, transitions, and navigation. All INARA features remain available, but the visual experience matches the classic ICARUS look.
-
-**Note:** Theme switching is only available in the INARA workspace. Legacy Icarus pages do not support Glitch theming.
+The INARA workspace now uses a single ICARUS-derived theme. The former theme toggle has been removed; surfaces should rely on the shared color tokens defined in `src/client/css/variables.css` and the workspace module styles.
 
 ---
 # ICARUS Terminal – Features Reference
@@ -131,7 +118,7 @@ Use these shortnames when coordinating INARA work:
 
       {
         "amount": 2048,
-        "reason": "spend:glitch-search"
+        "reason": "spend:atlas-search"
       }
 
       HTTP/1.1 200 OK
