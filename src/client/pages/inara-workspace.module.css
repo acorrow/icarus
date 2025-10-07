@@ -1239,8 +1239,7 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeFiltersForm {
-  margin-top: 1.5rem;
-  padding: 1.5rem 1.75rem;
+  
   border-radius: 0;
   border: 1px solid color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
   background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-background) 96%, transparent) 0%, color-mix(in srgb, var(--inara-color-primary-dark) 16%, transparent) 100%);

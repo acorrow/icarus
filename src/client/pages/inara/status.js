@@ -172,9 +172,9 @@ function TradeRouteFilterPanel ({
     <form onSubmit={onSubmit} className={styles.tradeFiltersForm} aria-labelledby='trade-routes-filters-heading'>
       <div className={styles.tradeFiltersHeader}>
         <div className={styles.tradeFiltersSystemGroup}>
-          <div display='flex'>
+          <div style={{ display: 'flex', alignItems:'center' }}>
           <label className='text-primary' htmlFor='trade-route-system-select'>Near star system</label>
-          <div>
+
             <select
               id='trade-route-system-select'
               value={systemSelection || (selectedSystemName ? selectedSystemName : '')}
@@ -197,7 +197,7 @@ function TradeRouteFilterPanel ({
                 aria-label='Custom star system'
               />
             )}
-          </div>
+
           </div>
         </div>
         <div className={styles.tradeFiltersActions}>
@@ -4643,7 +4643,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
         <div >
           <div >
             <h2 id='trade-routes-filters-heading'>Trade Route Intelligence</h2>
-            <h3 className='text-primary section-heading'>
+            <h3 className='text-primary'>
               Plan efficient cargo loops tailored to your current ship.
             </h3>
           </div>
