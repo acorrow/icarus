@@ -1,29 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { socketOptions } from 'lib/socket'
 import { isWindowFullScreen, isWindowPinned, toggleFullScreen, togglePinWindow } from 'lib/window'
 import { eliteDateTime } from 'lib/format'
 import { Settings } from 'components/settings'
 import notification from 'lib/notification'
-import { initiateGlitchAssimilation, isGlitchAssimilationActive, GLITCH_ASSIMILATION_EVENT } from 'lib/glitch-assimilation'
-import { initiateGlitchExitTransition, isGlitchExitTransitionActive } from 'lib/glitch-exit-transition'
-import {
-  isGlitchThemeEnabled,
-  addGlitchThemeChangeListener,
-  THEME_STORAGE_KEY,
-  isGlitchNavVisible,
-  addGlitchNavVisibilityListener,
-  GLITCH_NAV_VISIBILITY_KEY
-} from 'lib/glitch-settings'
 
-const ORIGINAL_TITLE = 'ICARUS TERMINAL'
-const TARGET_TITLE = 'INARA-ATLAS'
-const TARGET_TITLE_PADDED = TARGET_TITLE.padEnd(ORIGINAL_TITLE.length, ' ')
-const getTargetTitleChars = () => TARGET_TITLE_PADDED.split('')
-const TITLE_PREFIX_LENGTH = 7
-const TITLE_MIN_WIDTH = `${ORIGINAL_TITLE.length}ch`
-const TITLE_GLYPHS = ['Λ', 'Ξ', 'Ψ', 'Ø', 'Σ', '✦', '✧', '☍', '⌁', '⌖', '◬', '◈', '★', '✶', '⋆']
-const createEmptyGlitchStyles = () => Array.from({ length: ORIGINAL_TITLE.length }, () => null)
 const NAV_BUTTONS = [
   {
     name: 'Navigation',
@@ -52,8 +34,6 @@ const NAV_BUTTONS = [
   }
 ]
 
-let IS_WINDOWS_APP = false
-
 export default function Header ({ connected, active }) {
   const router = useRouter()
   const [dateTime, setDateTime] = useState(eliteDateTime())
@@ -61,326 +41,65 @@ export default function Header ({ connected, active }) {
   const [isPinned, setIsPinned] = useState(false)
   const [notificationsVisible, setNotificationsVisible] = useState(socketOptions.notifications)
   const [settingsVisible, setSettingsVisible] = useState(false)
-  const [glitchButtonVisible, setGlitchButtonVisible] = useState(() => isGlitchNavVisible())
-  const [glitchThemeEnabled, setGlitchThemeEnabled] = useState(() => isGlitchThemeEnabled())
-  const [titleChars, setTitleChars] = useState(ORIGINAL_TITLE.split(''))
-  const [titleAssimilated, setTitleAssimilated] = useState(false)
-  const titleAnimationState = useRef({ running: false, completed: false })
-  const titleAnimationTimeouts = useRef([])
-  const [charGlitchStyles, setCharGlitchStyles] = useState(createEmptyGlitchStyles)
-  const titleGlitchLoopTimeout = useRef(null)
-  const titleGlitchRevertTimeouts = useRef([])
-  const activeTitleGlitchIndices = useRef(new Set())
-  const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
-  const isGlitchRouteActive = currentPath === '/inara'
+  const [isWindowsApp, setIsWindowsApp] = useState(false)
 
-  const clearTitleAnimationTimeouts = useCallback(() => {
-    const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
-    titleAnimationTimeouts.current.forEach(timeoutId => clearTimeoutFn(timeoutId))
-    titleAnimationTimeouts.current = []
+  useEffect(() => {
+    async function resolveWindowState () {
+      if (typeof window !== 'undefined' && typeof window.icarusTerminal_version === 'function') {
+        setIsWindowsApp(true)
+      }
+      setIsFullScreen(await isWindowFullScreen())
+      setIsPinned(await isWindowPinned())
+    }
+
+    resolveWindowState()
   }, [])
 
-  const clearTitleGlitchTimeouts = useCallback(() => {
-    const clearTimeoutFn = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
-    if (titleGlitchLoopTimeout.current) {
-      clearTimeoutFn(titleGlitchLoopTimeout.current)
-      titleGlitchLoopTimeout.current = null
-    }
-    titleGlitchRevertTimeouts.current.forEach(timeoutId => clearTimeoutFn(timeoutId))
-    titleGlitchRevertTimeouts.current = []
+  useEffect(() => {
+    const dateTimeInterval = setInterval(() => {
+      setDateTime(eliteDateTime())
+    }, 1000)
+
+    return () => clearInterval(dateTimeInterval)
   }, [])
-
-  const runTitleGlitch = useCallback(() => {
-    if (typeof window === 'undefined') return
-    if (!titleAnimationState.current.completed) return
-
-    const targetChars = getTargetTitleChars()
-    const glitchableIndices = targetChars.reduce((indices, char, index) => {
-      if (char !== ' ' && !activeTitleGlitchIndices.current.has(index)) {
-        indices.push(index)
-      }
-      return indices
-    }, [])
-
-    if (glitchableIndices.length === 0) return
-
-    const glitchIndex = glitchableIndices[Math.floor(Math.random() * glitchableIndices.length)]
-    const originalChar = targetChars[glitchIndex]
-    const swapToGlyph = Math.random() < 0.45
-    const glyph = TITLE_GLYPHS[Math.floor(Math.random() * TITLE_GLYPHS.length)]
-
-    if (swapToGlyph) {
-      setTitleChars(prev => {
-        if (prev[glitchIndex] === glyph) return prev
-        const next = [...prev]
-        next[glitchIndex] = glyph
-        return next
-      })
-    }
-
-    const offsetX = (Math.random() - 0.5) * 0.11
-    const offsetY = (Math.random() - 0.5) * 0.12
-    const skew = (Math.random() - 0.5) * 2.6
-    const scale = 1 + (Math.random() - 0.5) * 0.03
-    const opacity = Math.max(0.88, Math.min(1, 0.95 + (Math.random() - 0.5) * 0.12))
-
-    activeTitleGlitchIndices.current.add(glitchIndex)
-    setCharGlitchStyles(prev => {
-      const next = [...prev]
-      next[glitchIndex] = {
-        transform: `translate(${offsetX.toFixed(3)}ch, ${offsetY.toFixed(3)}ch) skewX(${skew.toFixed(2)}deg) scale(${scale.toFixed(3)})`,
-        opacity
-      }
-      return next
-    })
-
-    const revertDelay = 24 + Math.random() * 66
-    const revertTimeout = window.setTimeout(() => {
-      if (swapToGlyph) {
-        setTitleChars(prev => {
-          if (prev[glitchIndex] === originalChar) return prev
-          const next = [...prev]
-          next[glitchIndex] = originalChar
-          return next
-        })
-      }
-      setCharGlitchStyles(prev => {
-        const next = [...prev]
-        next[glitchIndex] = null
-        return next
-      })
-      activeTitleGlitchIndices.current.delete(glitchIndex)
-      titleGlitchRevertTimeouts.current = titleGlitchRevertTimeouts.current.filter(id => id !== revertTimeout)
-    }, revertDelay)
-    titleGlitchRevertTimeouts.current.push(revertTimeout)
-  }, [])
-
-  const startTitleGlitching = useCallback(() => {
-    if (titleGlitchLoopTimeout.current) return
-    if (typeof window === 'undefined') return
-
-    const scheduleNext = () => {
-      const minDelay = 900
-      const maxDelay = 2600
-      const delay = minDelay + Math.random() * (maxDelay - minDelay)
-      titleGlitchLoopTimeout.current = window.setTimeout(() => {
-        titleGlitchLoopTimeout.current = null
-        runTitleGlitch()
-        scheduleNext()
-      }, delay)
-    }
-
-    scheduleNext()
-  }, [runTitleGlitch])
-
-  const stopTitleGlitching = useCallback((restoreTitle = true) => {
-    clearTitleGlitchTimeouts()
-    activeTitleGlitchIndices.current.clear()
-    setCharGlitchStyles(prev => {
-      const hasActiveStyles = prev.some(style => style !== null)
-      if (!hasActiveStyles) return prev
-      return createEmptyGlitchStyles()
-    })
-
-    if (restoreTitle && titleAnimationState.current.completed) {
-      setTitleChars(prev => {
-        const targetChars = getTargetTitleChars()
-        if (prev.length === targetChars.length && prev.every((char, index) => char === targetChars[index])) {
-          return prev
-        }
-        return targetChars
-      })
-    }
-  }, [clearTitleGlitchTimeouts])
-
-  const startTitleMorph = useCallback(() => {
-    if (titleAnimationState.current.running || titleAnimationState.current.completed) return
-    clearTitleAnimationTimeouts()
-    titleAnimationState.current.running = true
-    const targetChars = getTargetTitleChars()
-    const totalChars = ORIGINAL_TITLE.length
-    const stepDelay = 180
-    const glyphDuration = 120
-
-    for (let index = 0; index < totalChars; index++) {
-      const delay = index * stepDelay
-      const targetChar = targetChars[index]
-
-      if (targetChar !== ' ') {
-        const glyphTimeout = window.setTimeout(() => {
-          const glyph = TITLE_GLYPHS[Math.floor(Math.random() * TITLE_GLYPHS.length)]
-          setTitleChars(prev => {
-            const next = [...prev]
-            next[index] = glyph
-            return next
-          })
-        }, delay)
-        titleAnimationTimeouts.current.push(glyphTimeout)
-
-        const finalizeTimeout = window.setTimeout(() => {
-          setTitleChars(prev => {
-            const next = [...prev]
-            next[index] = targetChar
-            return next
-          })
-        }, delay + glyphDuration)
-        titleAnimationTimeouts.current.push(finalizeTimeout)
-      } else {
-        const finalizeSpaceTimeout = window.setTimeout(() => {
-          setTitleChars(prev => {
-            const next = [...prev]
-            next[index] = targetChar
-            return next
-          })
-        }, delay)
-        titleAnimationTimeouts.current.push(finalizeSpaceTimeout)
-      }
-    }
-
-    const completionTimeout = window.setTimeout(() => {
-      setTitleChars(targetChars)
-      titleAnimationState.current.running = false
-      titleAnimationState.current.completed = true
-      setTitleAssimilated(true)
-    }, (totalChars - 1) * stepDelay + glyphDuration + 200)
-    titleAnimationTimeouts.current.push(completionTimeout)
-  }, [clearTitleAnimationTimeouts])
 
   async function fullScreen () {
     const newFullScreenState = await toggleFullScreen()
     setIsFullScreen(newFullScreenState)
     if (newFullScreenState === true) setIsPinned(false)
-    document.activeElement.blur()
+    if (document.activeElement) document.activeElement.blur()
   }
 
   async function pinWindow () {
     const newPinState = await togglePinWindow()
     setIsPinned(newPinState)
-    document.activeElement.blur()
+    if (document.activeElement) document.activeElement.blur()
   }
 
   function toggleNotifications () {
     socketOptions.notifications = !notificationsVisible
     setNotificationsVisible(socketOptions.notifications)
-    // FIXME Uses document.getElementById('notifications') hack to force
-    // hiding of all notifications when muted as the toast library can be
-    // buggy. It needs swapping out for a different approach but this is a
-    // workaround for now.
+
     if (socketOptions.notifications) {
       notification('Notifications enabled', { id: 'notification-status' })
-      document.getElementById('notifications').style.opacity = '1'
+      const container = document.getElementById('notifications')
+      if (container) container.style.opacity = '1'
     } else {
       notification('Notifications disabled', { id: 'notification-status' })
-      // Use a setTimeout so that the user has time to read the notificaiton
-      // before they are all hidden. Uses a conditional so that if the user
-      // rapidly clicks the toggle it doesn't end up in a weird state.
       setTimeout(() => {
         if (socketOptions.notifications === false) {
-          document.getElementById('notifications').style.opacity = '0'
+          const container = document.getElementById('notifications')
+          if (container) container.style.opacity = '0'
         }
       }, 2000)
     }
-    document.activeElement.blur()
+
+    if (document.activeElement) document.activeElement.blur()
   }
 
-  useEffect(async () => {
-    // icarusTerminal_* methods are not always accessible while the app is loading.
-    // This handles that by calling them when the component is mounted.
-    // It uses a global for isWindowsApp to reduce UI flicker.
-    if (typeof window !== 'undefined' && typeof window.icarusTerminal_version === 'function') {
-      IS_WINDOWS_APP = true
-    }
-    setIsFullScreen(await isWindowFullScreen())
-    setIsPinned(await isWindowPinned())
-  }, [])
-
-  useEffect(() => {
-    const dateTimeInterval = setInterval(async () => {
-      setDateTime(eliteDateTime())
-    }, 1000)
-    return () => clearInterval(dateTimeInterval)
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-
-    const handleThemeStorage = (event) => {
-      if (event.key === THEME_STORAGE_KEY) {
-        setGlitchThemeEnabled(isGlitchThemeEnabled())
-      }
-    }
-
-    const removeListener = addGlitchThemeChangeListener(setGlitchThemeEnabled)
-    window.addEventListener('storage', handleThemeStorage)
-
-    return () => {
-      removeListener()
-      window.removeEventListener('storage', handleThemeStorage)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-
-    const handleStorage = (event) => {
-      if (event.key === GLITCH_NAV_VISIBILITY_KEY) {
-        setGlitchButtonVisible(isGlitchNavVisible())
-      }
-    }
-
-    const removeListener = addGlitchNavVisibilityListener(setGlitchButtonVisible)
-    window.addEventListener('storage', handleStorage)
-
-    return () => {
-      removeListener()
-      window.removeEventListener('storage', handleStorage)
-    }
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      clearTitleAnimationTimeouts()
-      clearTitleGlitchTimeouts()
-    }
-  }, [clearTitleAnimationTimeouts, clearTitleGlitchTimeouts])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-    try {
-      if (window.sessionStorage && window.sessionStorage.getItem('glitch.assimilationArrival')) {
-        const targetChars = getTargetTitleChars()
-        setTitleChars(targetChars)
-        titleAnimationState.current.completed = true
-        setTitleAssimilated(true)
-      }
-    } catch (err) {
-      // Ignore storage read issues
-    }
-    const handleAssimilation = () => {
-      startTitleMorph()
-    }
-    window.addEventListener(GLITCH_ASSIMILATION_EVENT, handleAssimilation)
-    if (isGlitchAssimilationActive()) {
-      startTitleMorph()
-    }
-    return () => {
-      window.removeEventListener(GLITCH_ASSIMILATION_EVENT, handleAssimilation)
-    }
-  }, [startTitleMorph])
-
-  useEffect(() => {
-    if (!titleAssimilated) return undefined
-
-    if (isGlitchRouteActive) {
-      startTitleGlitching()
-      return () => {
-        stopTitleGlitching(true)
-      }
-    }
-
-    stopTitleGlitching(true)
-    return undefined
-  }, [isGlitchRouteActive, startTitleGlitching, stopTitleGlitching, titleAssimilated])
+  const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
+  const displayTitle = currentPath === '/inara' ? 'INARA-ATLAS' : 'ICARUS TERMINAL'
+  const accessibleTitle = displayTitle.replace('-', ' ')
 
   let signalClassName = 'icon icarus-terminal-signal '
   if (!connected) {
@@ -391,138 +110,73 @@ export default function Header ({ connected, active }) {
     signalClassName += 'text-primary'
   }
 
-  const accessibleTitle = (titleChars.join('').trimEnd()) || ORIGINAL_TITLE
-  const assimilationComplete = titleAnimationState.current.completed
-  const smallVisibleLimit = assimilationComplete ? TITLE_PREFIX_LENGTH + 1 : TITLE_PREFIX_LENGTH
-
   function handleNavigate (path) {
-    if (path === '/inara') {
-      if (isGlitchAssimilationActive()) return
-      initiateGlitchAssimilation(() => router.push(path))
-      return
-    }
-    if (currentPath === '/inara') {
-      if (isGlitchExitTransitionActive()) return
-      if (!glitchThemeEnabled) {
-        router.push(path)
-        return
-      }
-      initiateGlitchExitTransition(() => router.push(path))
-      return
-    }
+    if (path === currentPath) return
     router.push(path)
   }
-
-  const visibleNavButtons = (glitchButtonVisible ? NAV_BUTTONS : NAV_BUTTONS.filter(button => button.path !== '/inara')).filter(Boolean)
 
   return (
     <header>
       <hr className='small' />
-      <h1 className='text-info' style={{ padding: '.6rem 0 .25rem 3.75rem' }}>
-        <i className='icon icarus-terminal-logo' style={{ position: 'absolute', fontSize: '3rem', left: 0 }} />
-        <span
-          className={['glitch-title-morph', titleAssimilated ? 'glitch-title-morph--assimilated' : ''].filter(Boolean).join(' ')}
-          aria-label={accessibleTitle}
-          style={{ minWidth: TITLE_MIN_WIDTH }}
-        >
-          <span className='glitch-title-morph__characters' aria-hidden='true'>
-            {titleChars.map((char, index) => {
-              const displayChar = char === ' ' ? ' ' : char
-              const charClasses = ['glitch-title-morph__char']
-              if (char === ' ') charClasses.push('glitch-title-morph__char--space')
-              if (index >= smallVisibleLimit) charClasses.push('hidden-small')
-              const charStyle = charGlitchStyles[index]
-              if (charStyle) charClasses.push('glitch-title-morph__char--glitch')
-              return (
-                <span
-                  key={`title-char-${index}`}
-                  className={charClasses.join(' ')}
-                  style={charStyle || undefined}
-                >
-                  {displayChar}
-                </span>
-              )
-            })}
-          </span>
+      <h1 className='text-info header__title-wrapper'>
+        <i className='icon icarus-terminal-logo header__title-icon' />
+        <span className='header__title' aria-label={accessibleTitle}>
+          {displayTitle}
         </span>
       </h1>
-      <div style={{ position: 'absolute', top: '1rem', right: '.5rem' }}>
-        <p
-          className='text-primary text-center text-uppercase'
-          style={{ display: 'inline-block', padding: 0, margin: 0, lineHeight: '1rem', minWidth: '7.5rem' }}
-        >
-           <span style={{position: 'relative', top: '.3rem', fontSize: '2.4rem', paddingTop: '.25rem'}}>
-           {dateTime.time}
-          </span>
-          <br/>
-          <span style={{fontSize: '1.1rem', position: 'relative', top: '.4rem'}}>
-            {dateTime.day} {dateTime.month} {dateTime.year}
-          </span>
+      <div className='header__status'>
+        <p className='text-primary text-center text-uppercase header__clock'>
+          <span className='header__clock-time'>{dateTime.time}</span>
+          <span className='header__clock-date'>{`${dateTime.day} ${dateTime.month} ${dateTime.year}`}</span>
         </p>
 
-        <button disabled className='button--icon button--transparent' style={{ marginRight: '.5rem', opacity: active ? 1 : .25, transition: 'all .25s ease-out' }}>
-          <i className={signalClassName} style={{ position: 'relative', transition: 'all .25s ease', fontSize: '3rem', lineHeight: '1.8rem', top: '.5rem', right: '.25rem' }} />
+        <button disabled className='button--icon button--transparent header__status-button' style={{ opacity: active ? 1 : 0.25 }}>
+          <i className={signalClassName} />
         </button>
 
-        {IS_WINDOWS_APP &&
-          <button tabIndex='1' onClick={pinWindow} className={`button--icon ${isPinned ? 'button--transparent' : ''}`} style={{ marginRight: '.5rem' }} disabled={isFullScreen}>
-            <i className='icon icarus-terminal-pin-window' style={{ fontSize: '2rem' }} />
-          </button>}
+        {isWindowsApp && (
+          <button
+            tabIndex='1'
+            onClick={pinWindow}
+            className={`button--icon header__status-button ${isPinned ? 'button--transparent' : ''}`}
+            disabled={isFullScreen}
+          >
+            <i className='icon icarus-terminal-pin-window' />
+          </button>
+        )}
 
-        <button tabIndex='1' onClick={toggleNotifications} className='button--icon' style={{ marginRight: '.5rem' }}>
-          <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} style={{ fontSize: '2rem' }} />
+        <button tabIndex='1' onClick={toggleNotifications} className='button--icon header__status-button'>
+          <i className={`icon ${notificationsVisible ? 'icarus-terminal-notifications' : 'icarus-terminal-notifications-disabled text-muted'}`} />
         </button>
 
         <button
-          tabIndex='1' className='button--icon' style={{ marginRight: '.5rem' }}
-          onClick={() => { setSettingsVisible(!settingsVisible); document.activeElement.blur() }}
+          tabIndex='1'
+          className='button--icon header__status-button'
+          onClick={() => {
+            setSettingsVisible(!settingsVisible)
+            if (document.activeElement) document.activeElement.blur()
+          }}
         >
-          <i className='icon icarus-terminal-settings' style={{ fontSize: '2rem' }} />
+          <i className='icon icarus-terminal-settings' />
         </button>
-        <button tabIndex='1' onClick={fullScreen} className='button--icon'>
-          <i className='icon icarus-terminal-fullscreen' style={{ fontSize: '2rem' }} />
+        <button tabIndex='1' onClick={fullScreen} className='button--icon header__status-button'>
+          <i className='icon icarus-terminal-fullscreen' />
         </button>
       </div>
       <hr />
-      <div id='primaryNavigation' className='button-group'>
-        {visibleNavButtons.map((button, i) => {
+      <div id='primaryNavigation' className='button-group header__navigation'>
+        {NAV_BUTTONS.map((button, index) => {
           const isActive = button.path === currentPath
-          const isINARA = button.path === '/inara'
-          const exitActive = isGlitchExitTransitionActive()
-
-          if (isINARA) {
-            return (
-              <button
-                key={button.name}
-                data-primary-navigation={i + 1}
-                tabIndex='1'
-                disabled={isActive || (isINARA && isGlitchAssimilationActive()) || exitActive}
-                aria-current={isActive ? 'page' : undefined}
-                className={[
-                  isActive ? 'button--active' : '',
-                  'glitch-nav-button'
-                ].filter(Boolean).join(' ')}
-                onClick={() => handleNavigate(button.path)}
-                style={{ fontSize: '1.5rem' }}
-              >
-                <span className='visible-small'>{button.abbr}</span>
-                <span className='hidden-small'>{button.name}</span>
-              </button>
-            )
-          }
 
           return (
             <button
               key={button.name}
-              data-primary-navigation={i + 1}
+              data-primary-navigation={index + 1}
               tabIndex='1'
-              disabled={isActive || exitActive}
+              disabled={isActive}
               aria-current={isActive ? 'page' : undefined}
-              className={[
-                isActive ? 'button--active' : ''
-              ].filter(Boolean).join(' ')}
+              className={isActive ? 'button--active' : ''}
               onClick={() => handleNavigate(button.path)}
-              style={{ fontSize: '1.5rem' }}
             >
               <span className='visible-small'>{button.abbr}</span>
               <span className='hidden-small'>{button.name}</span>

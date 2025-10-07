@@ -1,14 +1,13 @@
 
-## INARA/ICARUS vs Glitch Theme
+## INARA/ICARUS Visual Alignment
 
-The INARA workspace supports a theme switch between the classic ICARUS theme and the Glitch theme. CODEX contributors must ensure:
+The INARA workspace now uses a single unified visual language built on the classic ICARUS palette. CODEX contributors must ensure:
 
-- All INARA workspace pages and panels support both themes, toggled via the settings modal (`ThemeSettings`).
-- The Glitch theme uses the new palette, animated overlays, and immersive UI as described in `FEATURES.md`.
-- The ICARUS theme preserves legacy colors, transitions, and navigation for users who prefer the classic look.
-- Theme switching is only available in the INARA workspace; legacy Icarus pages do not support Glitch theming.
+- All INARA workspace pages and panels respect the shared color tokens defined in `src/client/css/variables.css` and the workspace module styles.
+- Visual updates remain cohesive with the established ICARUS look and feel; avoid introducing bespoke palettes or one-off animation systems.
+- Any new layout or component should be evaluated against the existing ICARUS surfaces for consistency in spacing, typography, and interaction states.
 
-When documenting or implementing features, always specify which theme(s) the feature supports and test both modes for visual consistency.
+When documenting or implementing features, note the visual impact and confirm the result matches the unified theme across browsers and display sizes.
 
 ---
 # Instructions for CODEX contributors
@@ -35,7 +34,7 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
 - After the build, launch one of the sanctioned rendering targets:
   - Preferred production snapshot: `npm run serve:export` (serves <http://127.0.0.1:4100> once `npm run build:client` has finished).
   - Fast iteration: `npm run dev:web` (Next.js dev server on <http://127.0.0.1:3000> without SWC).
-- Use the `browser_container` Playwright helper to capture a screenshot **for each iteration of your UI work**. Always reference the screenshot path in your final notes so reviewers can trace the visual verification. Set the viewport to `1280x720`, wait for the DOM to settle, and capture full-page shots unless the task specifies otherwise. The dedicated helper in `scripts/browser/screenshot_glitch.py` waits for the workspace fade-in to finish so loaders are never captured.
+- Use the `browser_container` Playwright helper to capture a screenshot **for each iteration of your UI work**. Always reference the screenshot path in your final notes so reviewers can trace the visual verification. Set the viewport to `1280x720`, wait for the DOM to settle, and capture full-page shots unless the task specifies otherwise. The dedicated helper in `scripts/browser/screenshot_workspace.py` waits for the workspace fade-in to finish so loaders are never captured.
 - Treat every GUI task as an iterative design exercise. After you collect each screenshot, compare it against the task requirements and ask yourself:
   - Does this state fulfill the user request, both functionally and visually?
   - Are there lingering rough edges (spacing, alignment, color usage, accessibility) that would distract a commander interacting with the page?
@@ -50,12 +49,12 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
   1. Run `npm test -- --runInBand --config jest.config.js` (serial mode keeps Jest aligned with `jest.config.js`). The repo includes the optional dependency `@next/swc-linux-x64-gnu@12.3.4` so the build will not fail on missing SWC binaries.
   2. Run `npm run build:client` to regenerate the static export required for screenshots.
   3. In a dedicated shell start one of the preview servers above.
-  4. Use the `browser_container` Playwright helper to run `scripts/browser/screenshot_glitch.py` against the running URL. The container has the required GTK/Atk libraries, so Chromium launches reliably. Example:
+  4. Use the `browser_container` Playwright helper to run `scripts/browser/screenshot_workspace.py` against the running URL. The container has the required GTK/Atk libraries, so Chromium launches reliably. Example:
 
      ```python
      import asyncio
 
-     from scripts.browser.screenshot_glitch import capture, DEFAULT_OUTPUT, DEFAULT_URL, DEFAULT_VIEWPORT
+     from scripts.browser.screenshot_workspace import capture, DEFAULT_OUTPUT, DEFAULT_URL, DEFAULT_VIEWPORT
 
 
      async def main():
@@ -101,11 +100,11 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - Treat `src/app` (Go launcher), `src/service` (Node backend), and `src/client` (Next/React UI) as separate concerns; the launcher expects the service binary in the same directory or it will exit on startup.
 
 ## INARA theming & asset references
-- Primary surfaces live in `src/client/pages/inara.js` and `src/client/pages/glitch.module.css`; the hero animation draws from `src/client/public/glitch/signal-mesh.svg`.
+- Primary surfaces live in `src/client/pages/inara.js` and `src/client/pages/inara-workspace.module.css`; the hero animation draws from `public/inara/signal-mesh.svg`.
 - Jest + Testing Library smoke tests in `src/client/__tests__/inara.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
-- Maintain the Glitch copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `InaraPage`; update both arrays to keep the loop seamless.
-- When undoing Glitch changes, delete `glitch.module.css`, the asset folder (`src/client/public/glitch/`), and associated imports, then remove the Jest configuration and dependencies if the testing stack is no longer desired.
-- Respect the palette guidance below—new CSS tokens must document their intent and derive from `src/client/css/pages/glitch.css` rather than introducing bespoke colors.
+- Maintain the INARA copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `InaraPage`; update both arrays to keep the loop seamless.
+- When restructuring INARA assets, update any associated imports and keep the Jest configuration aligned so snapshot coverage remains intact.
+- Respect the palette guidance below—new CSS tokens must document their intent and derive from `src/client/pages/inara-workspace.module.css` rather than introducing bespoke colors.
 
 ## INARA implementation principles
 - Treat the **INARA** page as the sole surface for intentional UI enhancements. References to "the app" in these instructions should be interpreted as the INARA page unless a task explicitly states otherwise.
@@ -125,13 +124,13 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - Avoid ad-hoc styling or bespoke CSS for one-off views. Extend the INARA CSS tokens or shared utility classes, and document any new token additions with rationale and usage guidance.
 
 ### Palette hygiene
-- Keep the INARA palette constrained to the core tokens defined in `src/client/css/pages/glitch.css`.
+- Keep the INARA palette constrained to the core tokens defined in `src/client/pages/inara-workspace.module.css`.
 - When a design needs subtle variation, derive it with opacity or other modifiers from the shared tokens instead of introducing new hex values.
 - Avoid dumping long lists of bespoke color variables into module files; rely on the shared palette for consistency and easier maintenance.
 - Declare each palette token with a single color format (hex **or** rgb, not both) and document its primary usage with a block comment so future contributors understand the intent.
 - Keep gradients lightweight—prefer blending a small number of shared tokens with transparency rather than stacking many distinct color stops.
 
-### INARA Purple Theme Specification
+### INARA Theme Specification
 - **Primary hue:** INARA surfaces should lean on a rich royal purple (`#5D2EFF`) for primary actions, interactive accents, and key highlights.
 - **Gradient treatments:** When gradients are needed, blend from the primary hue into a deeper indigo (`#2A0E82`) and finish with a soft ultraviolet (`#8C5CFF`) to preserve depth.
 - **Neutrals:** Use a charcoal base (`#0D0B1A`) for backgrounds, `#1C1633` for elevated surfaces, and `#F5F1FF` for high-contrast text and iconography.

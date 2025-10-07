@@ -1,21 +1,26 @@
+const ACCENT_COLOR = 'var(--color-secondary)'
+const WARNING_COLOR = 'var(--color-danger)'
+const SUCCESS_COLOR = 'var(--color-success)'
+const SUBDUED_COLOR = 'var(--color-info)'
+
 const COMMODITY_CATEGORY_ICON_MAP = {
-  chemicals: { icon: 'barrel', color: 'var(--glitch-color-warning)' },
-  'consumer items': { icon: 'cargo', color: 'var(--glitch-accent)' },
-  foods: { icon: 'plant', color: 'var(--glitch-color-success)' },
-  'industrial materials': { icon: 'materials-manufactured', color: 'var(--glitch-accent)' },
-  'legal drugs': { icon: 'warning', color: 'var(--glitch-color-warning)' },
-  machinery: { icon: 'cogs', color: 'var(--glitch-accent)' },
-  medicines: { icon: 'help', color: 'var(--glitch-color-success)' },
-  metals: { icon: 'materials-raw', color: 'var(--glitch-accent)' },
-  minerals: { icon: 'materials', color: 'var(--glitch-accent)' },
-  nonmarketable: { icon: 'inventory', color: 'var(--glitch-subdued)' },
-  salvage: { icon: 'cargo-export', color: 'var(--glitch-accent)' },
-  slavery: { icon: 'system-authority', color: 'var(--glitch-color-warning)' },
-  technology: { icon: 'power', color: 'var(--glitch-accent)' },
-  textiles: { icon: 'materials-grade-1', color: 'var(--glitch-accent)' },
-  waste: { icon: 'warning', color: 'var(--glitch-color-warning)' },
-  weapons: { icon: 'shield', color: 'var(--glitch-color-warning)' },
-  default: { icon: 'cargo', color: 'var(--glitch-accent)' }
+  chemicals: { icon: 'barrel', color: WARNING_COLOR },
+  'consumer items': { icon: 'cargo', color: ACCENT_COLOR },
+  foods: { icon: 'plant', color: SUCCESS_COLOR },
+  'industrial materials': { icon: 'materials-manufactured', color: ACCENT_COLOR },
+  'legal drugs': { icon: 'warning', color: WARNING_COLOR },
+  machinery: { icon: 'cogs', color: ACCENT_COLOR },
+  medicines: { icon: 'help', color: SUCCESS_COLOR },
+  metals: { icon: 'materials-raw', color: ACCENT_COLOR },
+  minerals: { icon: 'materials', color: ACCENT_COLOR },
+  nonmarketable: { icon: 'inventory', color: SUBDUED_COLOR },
+  salvage: { icon: 'cargo-export', color: ACCENT_COLOR },
+  slavery: { icon: 'system-authority', color: WARNING_COLOR },
+  technology: { icon: 'power', color: ACCENT_COLOR },
+  textiles: { icon: 'materials-grade-1', color: ACCENT_COLOR },
+  waste: { icon: 'warning', color: WARNING_COLOR },
+  weapons: { icon: 'shield', color: WARNING_COLOR },
+  default: { icon: 'cargo', color: ACCENT_COLOR }
 }
 
 export function getCommodityIconConfig (category) {

@@ -1093,6 +1093,20 @@ button.terminalStatusPreview:focus-visible {
   color: var(--inara-ink);
 }
 
+.tradeRoutesHeroSubtitle {
+  margin: 0;
+  color: var(--inara-accent);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 600;
+}
+
+.tradeRoutesHeroDescription {
+  margin: 0;
+  color: var(--inara-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 .sectionFrameElevated {
   border-radius: 0;
   background: var(--inara-panel);
@@ -1583,12 +1597,29 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteContext {
+  position: relative;
   margin: 0;
   padding: 1.25rem clamp(1rem, 4vw, 1.5rem);
   border-radius: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--inara-color-primary) 32%, transparent);
   background: color-mix(in srgb, var(--inara-color-primary-dark) 26%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary) 14%, transparent);
+}
+
+.tradeRouteContext::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--inara-color-primary) 62%, transparent) 0%,
+      color-mix(in srgb, var(--inara-color-success) 45%, transparent) 48%,
+      color-mix(in srgb, var(--inara-color-primary-dark) 70%, transparent) 100%);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 .tradeRouteContextTitleRow {

@@ -53,8 +53,8 @@ describe('INARA page', () => {
   it('exposes key INARA panels for missions and mining', async () => {
     await act(async () => { render(<InaraStatusPage />) })
 
-    expect(await screen.findByRole('heading', { name: /find trade routes/i })).toBeInTheDocument()
-    expect(screen.getByText(/cross-reference inara freight whispers/i)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /trade route intelligence/i })).toBeInTheDocument()
+    expect(screen.getByText(/plan efficient cargo loops tailored to your current ship/i)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /mining missions/i, hidden: true })).toBeInTheDocument()
     expect(screen.getByText(/inara decrypts volunteer manifests/i)).toBeInTheDocument()
   })

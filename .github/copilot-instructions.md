@@ -30,7 +30,7 @@ See [`FEATURES.md`](../FEATURES.md) for the current feature mapping and details.
 
 ## What is ICARUS Terminal?
 ICARUS Terminal is a free, immersive, context-sensitive companion app and second screen interface for Elite Dangerous. It provides:
-- Real-time ship, cargo, mission, and system intelligence by ingesting Elite Dangerous journal files and community data (GLITCH, EDSM, EDDB).
+- Real-time ship, cargo, mission, and system intelligence by ingesting Elite Dangerous journal files and community data (EDSM, EDDB).
 - A multi-platform UI (Windows-native, browser, touch devices) designed for quick access to trade routes, mining leads, ship outfitting, and more.
 - Features like trade route scouting, cargo valuation, mining mission radar, and pristine ring finder, all surfaced in a unified INARA page.
 
@@ -60,8 +60,8 @@ ICARUS Terminal is a free, immersive, context-sensitive companion app and second
 
 ## Project Conventions
 - **INARA theming:**
-  - Use tokens from `src/client/css/pages/glitch.css`.
-  - Royal purple (`#5D2EFF`) is primary; gradients, neutrals, and accents follow palette rules in `AGENTS.md`.
+  - Use tokens from `src/client/pages/inara-workspace.module.css`.
+  - Royal purple (`#5D2EFF`) remains the primary accent; gradients, neutrals, and accents follow palette rules in `AGENTS.md`.
 - **UI composition:**
   - Use shared primitives (`SectionFrame`, `SectionHeader`, table shells) from `src/client/components/`.
   - Data tables must use INARA shells, not be nested in section frames.
@@ -72,12 +72,11 @@ ICARUS Terminal is a free, immersive, context-sensitive companion app and second
 - **Event loop:**
   - Server: `src/service/lib/events.js` for ingestion and broadcast.
   - Client: Subscribe via `eventListener` in `src/client/lib/socket.js`.
-  - Use `glitchUseMockData` for development fixtures.
+  - Use `inaraUseMockData` for development fixtures.
 
 ## Integration & External Data
-- Integrates with EDSM, EDDB, GLITCH, and Elite Dangerous journal files.
-- All GLITCH data is clearly labeled in the UI.
-- See `GLITCH-README.md` for integration details.
+- Integrates with EDSM, EDDB, and Elite Dangerous journal files.
+- External telemetry sources are clearly labeled in the UI.
 
 ## Image/Logo Workflow
 - Create SVG first, then export PNG. Always include PNG preview in chat responses.
@@ -85,7 +84,7 @@ ICARUS Terminal is a free, immersive, context-sensitive companion app and second
 ## Key References
 - `AGENTS.md`: Contributor and workflow details
 - `BUILD.md`: Build instructions
-- `src/client/pages/glitch.js`, `glitch.module.css`: Main UI and theming
+- `src/client/pages/inara.js`, `inara-workspace.module.css`: Main UI and theming
 - `src/service/lib/events.js`: Event loop and broadcast logic
 - `src/client/components/`: Shared UI primitives
 

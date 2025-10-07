@@ -4629,8 +4629,9 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       >
         <div className={styles.tradeRoutesControls}>
           <div className={styles.tableSectionHeader}>
-            <h2 id='trade-routes-filters-heading' className={styles.tableSectionTitle}>Find Trade Routes</h2>
-            <p className={styles.sectionHint}>Cross-reference INARA freight whispers to surface lucrative corridors suited to your ship profile.</p>
+            <h2 id='trade-routes-filters-heading' className={styles.tableSectionTitle}>Trade Route Intelligence</h2>
+            <h3 className={styles.tradeRoutesHeroSubtitle}>Plan efficient cargo loops tailored to your current ship.</h3>
+            <p className={styles.tradeRoutesHeroDescription}>Cross-reference INARA freight whispers to surface lucrative corridors suited to your ship profile.</p>
           </div>
           <TradeRouteFilterPanel
             filters={filters}
