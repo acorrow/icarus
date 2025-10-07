@@ -2173,6 +2173,7 @@ button.terminalStatusPreview:focus-visible {
   display: grid;
   gap: 0.4rem;
   min-width: 0;
+  padding: 0.4rem 0 0.45rem;
 }
 
 .tradeRouteStationRow {
@@ -2181,6 +2182,7 @@ button.terminalStatusPreview:focus-visible {
   align-items: stretch;
   gap: 0.75rem;
   min-width: 0;
+  min-height: 4.85rem;
 }
 
 .tradeRouteStationIcon {
@@ -2211,6 +2213,7 @@ button.terminalStatusPreview:focus-visible {
   align-items: flex-start;
   gap: 0.3rem;
   min-width: 0;
+  justify-content: center;
 }
 
 .tradeRouteStationName {
@@ -2401,14 +2404,20 @@ button.terminalStatusPreview:focus-visible {
   text-align: center;
 }
 
+.tradeRouteProfitSpacerCell {
+  padding: 0 !important;
+  border-top: none;
+  background: transparent;
+}
+
 .tradeRouteProfitBanner {
   --trade-route-profit-mix: 18%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  padding: 0.65rem 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.5rem;
+  padding: 0.45rem 1.25rem 0.6rem;
   background: color-mix(in srgb, var(--inara-color-success) var(--trade-route-profit-mix), transparent);
   border-top: 1px solid color-mix(in srgb, var(--inara-color-success) calc(var(--trade-route-profit-mix) + 10%), transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--inara-color-success) calc(var(--trade-route-profit-mix) - 4%), transparent);
@@ -2426,37 +2435,24 @@ button.terminalStatusPreview:focus-visible {
   border-color: color-mix(in srgb, var(--inara-color-success) calc(var(--trade-route-profit-mix) + 16%), transparent);
 }
 
-.tradeRouteProfitTitle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.22em;
-  color: var(--inara-text-soft);
-}
-
-.tradeRouteProfitTitle :global(svg) {
-  width: 1.2rem;
-  height: 1.2rem;
-  color: var(--inara-color-success);
-  opacity: 0.85;
-}
-
 .tradeRouteProfitInline {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.9rem;
+  justify-content: center;
   width: 100%;
 }
 
 .tradeRouteProfitInlineList {
   display: inline-flex;
-  flex-wrap: wrap;
-  gap: 1.35rem;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  gap: 0.85rem 1.5rem;
   align-items: center;
   justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .tradeRouteProfitInlineItem {
@@ -2471,10 +2467,10 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteProfitInlineLabel {
-  font-size: 0.8rem;
-  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--inara-color-success) 36%, var(--inara-text-soft));
+  color: color-mix(in srgb, var(--inara-color-success) 40%, var(--inara-text-soft));
 }
 
 .tradeRouteProfitInlineValue {
@@ -2487,6 +2483,26 @@ button.terminalStatusPreview:focus-visible {
   color: color-mix(in srgb, var(--inara-color-success) 16%, var(--inara-text-soft));
   font-weight: 600;
   opacity: 0.75;
+}
+
+.tradeRouteProfitInlineList > * {
+  flex-shrink: 0;
+}
+
+.tradeRouteProfitInlineList::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 880px) {
+  .tradeRouteProfitMetricHour {
+    display: none !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .tradeRouteProfitMetricTrip {
+    display: none !important;
+  }
 }
 
 @media (max-width: 1440px) {
