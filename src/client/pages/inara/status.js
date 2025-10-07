@@ -474,6 +474,66 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const renderValue = value => (value ? value : <span className={styles.tradeRoutePlaceholder}>--</span>)
   const renderPrice = value => (value ? value : null)
 
+  const renderCommodityRow = (direction, { variant = 'default' } = {}) => {
+    const isOutbound = direction === 'outbound'
+    const commodityDisplay = isOutbound ? outboundCommodityDisplay : returnCommodityDisplay
+    const buyPriceDisplay = isOutbound ? outboundPriceDisplay : returnPriceDisplay
+    const sellPriceDisplay = isOutbound ? outboundSellPriceDisplay : returnSellPriceDisplay
+    const demandState = isOutbound ? outboundDemandState : returnDemandState
+    const flowClass = isOutbound ? outboundFlowClass : returnFlowClass
+    const stationAria = isOutbound ? destinationStationAria : originStationAria
+    const directionLabel = isOutbound ? 'Outbound to' : 'Return to'
+
+    const rowClasses = [
+      styles.tradeRouteCommodityRow,
+      isOutbound ? styles.tradeRouteCommodityRowOutbound : styles.tradeRouteCommodityRowReturn,
+      flowClass
+    ]
+
+    const leadingPriceClasses = [
+      styles.tradeRouteCommodityPrice,
+      isOutbound ? styles.tradeRouteCommodityPriceBuy : styles.tradeRouteCommodityPriceSell
+    ]
+
+    const trailingPriceClasses = [
+      styles.tradeRouteCommodityPrice,
+      isOutbound ? styles.tradeRouteCommodityPriceSell : styles.tradeRouteCommodityPriceBuy
+    ]
+
+    if (variant === 'compact') {
+      rowClasses.push(styles.tradeRouteCommodityRowCompact)
+      leadingPriceClasses.push(styles.visuallyHidden)
+      trailingPriceClasses.push(styles.visuallyHidden)
+    }
+
+    if (variant !== 'compact') {
+      leadingPriceClasses.push(styles.tradeRouteHideMedium)
+      trailingPriceClasses.push(styles.tradeRouteHideMedium)
+    } else {
+      leadingPriceClasses.push(styles.tradeRouteCommodityPriceCompact)
+      trailingPriceClasses.push(styles.tradeRouteCommodityPriceCompact)
+    }
+
+    return (
+      <div className={rowClasses.join(' ')}>
+        <span className={styles.visuallyHidden}>{`${directionLabel} ${stationAria}`}</span>
+        {demandState ? (
+          <span className={styles.visuallyHidden}>
+            {demandState.label}
+            {demandState.text ? ` — ${demandState.text}` : ''}
+          </span>
+        ) : null}
+        <span className={leadingPriceClasses.join(' ')}>
+          {renderPrice(isOutbound ? buyPriceDisplay : sellPriceDisplay)}
+        </span>
+        <span className={styles.tradeRouteCommodityName}>{renderValue(commodityDisplay)}</span>
+        <span className={trailingPriceClasses.join(' ')}>
+          {renderPrice(isOutbound ? sellPriceDisplay : buyPriceDisplay)}
+        </span>
+      </div>
+    )
+  }
+
   const metricVariantClasses = {
     neutral: styles.metricChipNeutral,
     success: styles.metricChipSuccess,
@@ -555,6 +615,34 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
         aria-pressed={isSelected}
         data-selected={isSelected ? 'true' : 'false'}
       >
+        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
+          <div className={styles.tradeRouteStationStack}>
+            <div className={styles.tradeRouteStationGrid}>
+              <div className={styles.tradeRouteStationRow}>
+                <span
+                  className={styles.tradeRouteStationIcon}
+                  title={originStandingDisplay.title || undefined}
+                >
+                  {originIconName
+                    ? <StationIcon icon={originIconName} color={originStandingDisplay.iconColor} size='100%' />
+                    : null}
+                </span>
+                <div className={styles.tradeRouteStationContent}>
+                  <span className={styles.tradeRouteStationName} title={originStationDisplay || undefined}>{renderValue(originStationDisplay)}</span>
+                  <span className={styles.tradeRouteStationSystem} title={originSystemName || undefined}>{renderValue(originSystemName)}</span>
+                  <div className={styles.tradeRouteStationChips}>
+                    {renderMetricChip({
+                      value: originSystemDistanceDisplay,
+                      variant: originSystemDistanceVariant,
+                      title: 'Distance to system',
+                      color: originSystemDistanceColor || undefined
+                    })}
+                    {renderMetricChip({
+                      value: originStationDistanceDisplay,
+                      variant: originStationDistanceVariant,
+                      title: 'Distance to station'
+                    })}
+                  </div>
         <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellOrigin}`}>
           <div className={styles.tradeRouteStationGrid}>
             <div className={styles.tradeRouteStationRow}>
@@ -584,44 +672,48 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                 </div>
               </div>
             </div>
+            <div className={styles.tradeRouteStationCompact}>
+              {renderCommodityRow('outbound', { variant: 'compact' })}
+            </div>
           </div>
         </td>
         <td className={`${styles.tableCellTop} ${styles.tradeRoutesItemCell}`}>
           <div className={styles.tradeRouteCommodityGrid}>
-            <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowOutbound} ${outboundFlowClass}`}>
-              <span className={styles.visuallyHidden}>Outbound to {destinationStationAria}</span>
-              {outboundDemandState ? (
-                <span className={styles.visuallyHidden}>
-                  {outboundDemandState.label}
-                  {outboundDemandState.text ? ` — ${outboundDemandState.text}` : ''}
-                </span>
-              ) : null}
-              <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteCommodityPriceBuy} ${styles.tradeRouteHideMedium}`}>
-              {renderPrice(outboundPriceDisplay)}
-            </span>
-            <span className={styles.tradeRouteCommodityName}>{renderValue(outboundCommodityDisplay)}</span>
-              <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteCommodityPriceSell} ${styles.tradeRouteHideMedium}`}>
-                {renderPrice(outboundSellPriceDisplay)}
-              </span>
-            </div>
-            <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowReturn} ${returnFlowClass}`}>
-              <span className={styles.visuallyHidden}>Return to {originStationAria}</span>
-              {returnDemandState ? (
-                <span className={styles.visuallyHidden}>
-                  {returnDemandState.label}
-                  {returnDemandState.text ? ` — ${returnDemandState.text}` : ''}
-                </span>
-              ) : null}
-              <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteCommodityPriceSell} ${styles.tradeRouteHideMedium}`}>
-              {renderPrice(returnSellPriceDisplay)}
-            </span>
-            <span className={styles.tradeRouteCommodityName}>{renderValue(returnCommodityDisplay)}</span>
-              <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteCommodityPriceBuy} ${styles.tradeRouteHideMedium}`}>
-                {renderPrice(returnPriceDisplay)}
-              </span>
-            </div>
+            {renderCommodityRow('outbound')}
+            {renderCommodityRow('return')}
           </div>
         </td>
+        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
+          <div className={styles.tradeRouteStationStack}>
+            <div className={styles.tradeRouteStationCompact}>
+              {renderCommodityRow('return', { variant: 'compact' })}
+            </div>
+            <div className={styles.tradeRouteStationGrid}>
+              <div className={styles.tradeRouteStationRow}>
+                <span
+                  className={styles.tradeRouteStationIcon}
+                  title={destinationStandingDisplay.title || undefined}
+                >
+                  {destinationIconName
+                    ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.iconColor} size='100%' />
+                    : null}
+                </span>
+                <div className={styles.tradeRouteStationContent}>
+                  <span className={styles.tradeRouteStationName} title={destinationStationDisplay || undefined}>{renderValue(destinationStationDisplay)}</span>
+                  <span className={styles.tradeRouteStationSystem} title={destinationSystemName || undefined}>{renderValue(destinationSystemName)}</span>
+                  <div className={styles.tradeRouteStationChips}>
+                    {renderMetricChip({
+                      value: destinationSystemDistanceDisplay,
+                      variant: destinationSystemDistanceVariant,
+                      title: 'Distance to system',
+                      color: destinationSystemDistanceColor || undefined
+                    })}
+                    {renderMetricChip({
+                      value: destinationStationDistanceDisplay,
+                      variant: destinationStationDistanceVariant,
+                      title: 'Distance to station'
+                    })}
+                  </div>
         <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellDestination}`}>
           <div className={styles.tradeRouteStationGrid}>
             <div className={styles.tradeRouteStationRow}>
@@ -703,8 +795,16 @@ function normaliseName (value) {
 
 const MISSIONS_CACHE_KEY = 'icarus.inaraMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
-const TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }
-const STATION_TABLE_SCROLL_AREA_STYLE = { maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }
+const TABLE_SCROLL_AREA_STYLE = {
+  minHeight: 'max(0px, calc(var(--inara-viewport-height, 100vh) - 360px))',
+  maxHeight: 'max(0px, calc(var(--inara-viewport-height, 100vh) - 360px))',
+  overflowY: 'auto'
+}
+const STATION_TABLE_SCROLL_AREA_STYLE = {
+  minHeight: 'max(0px, calc(var(--inara-viewport-height, 100vh) - 340px))',
+  maxHeight: 'max(0px, calc(var(--inara-viewport-height, 100vh) - 340px))',
+  overflowY: 'auto'
+}
 
 function getMissionsCacheStorage () {
   if (typeof window === 'undefined') {
