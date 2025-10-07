@@ -14,7 +14,7 @@ module.exports = () => {
       const delay = `${shownItems++ * 0.03}s`
 
       if (target.matches('[data-inara-table-row]')) {
-        target.style.setProperty('--glitch-row-delay', delay)
+        target.style.setProperty('--inara-row-delay', delay)
         target.setAttribute('data-inara-table-row', 'visible')
       } else {
         target.style.animationDelay = delay

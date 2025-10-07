@@ -11,7 +11,7 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: 0.15rem;
-  color: var(--glitch-accent);
+  color: var(--inara-accent);
 }
 
 .stackedCellBody {
@@ -32,25 +32,25 @@
 .stackedRowPrimary {
   font-size: 1rem;
   line-height: 1.45;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
 }
 
 .stackedRowSecondary {
   font-size: 0.95rem;
   line-height: 1.35;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .stackedRowTertiary {
   font-size: 0.85rem;
   line-height: 1.3;
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
 }
 
 .stackedRowQuaternary {
   font-size: 0.8rem;
   line-height: 1.25;
-  color: var(--glitch-text-faint);
+  color: var(--inara-text-faint);
 }
 
 .stackedItem {
@@ -65,7 +65,7 @@
   font-size: 0.64rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   font-weight: 600;
 }
 
@@ -91,13 +91,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--glitch-accent);
+  color: var(--inara-accent);
 }
 
 .stationName {
   font-weight: 600;
   font-size: 1.05rem;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   line-height: 1.35;
   min-width: 0;
 }
@@ -108,11 +108,11 @@
   gap: 0.45rem;
   align-items: center;
   font-size: 0.85rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .stationSystem {
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .stationStatus {
@@ -120,19 +120,19 @@
 }
 
 .stationType {
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.65rem;
 }
 
 .stationDistance {
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
 }
 
 .stationMetaItem {
   font-size: 0.82rem;
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
 }
 
 .stationMetaEntry {
@@ -146,8 +146,8 @@
   width: 0.35rem;
   height: 0.35rem;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--glitch-color-primary) 68%, transparent);
-  box-shadow: 0 0 0.8rem color-mix(in srgb, var(--glitch-color-primary) 40%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 68%, transparent);
+  box-shadow: 0 0 0.8rem color-mix(in srgb, var(--inara-color-primary) 40%, transparent);
   opacity: 0.6;
 }
 
@@ -172,11 +172,11 @@
 .itemName {
   font-weight: 600;
   font-size: 1.02rem;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
 }
 
 .itemPrice {
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   font-size: 0.9rem;
 }
 
@@ -197,9 +197,9 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
-  color: var(--glitch-accent);
-  box-shadow: 0 0 0.8rem color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
+  color: var(--inara-accent);
+  box-shadow: 0 0 0.8rem color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
 }
 
 .quantityBadgeLabel {
@@ -210,12 +210,12 @@
 }
 
 .quantityBadgeDemand {
-  background: color-mix(in srgb, var(--glitch-color-warning) 12%, transparent);
+  background: color-mix(in srgb, var(--inara-color-warning) 12%, transparent);
   color: #ff5fc1;
 }
 
 .quantityBadgeSupply {
-  background: color-mix(in srgb, var(--glitch-color-success) 12%, transparent);
+  background: color-mix(in srgb, var(--inara-color-success) 12%, transparent);
   color: #29f3c3;
 }
 
@@ -225,7 +225,7 @@
 }
 
 .itemNote {
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   font-size: 0.82rem;
 }
 
@@ -245,14 +245,14 @@
   align-items: baseline;
   gap: 0.25rem;
   font-weight: 600;
-  color: var(--glitch-accent);
+  color: var(--inara-accent);
 }
 
 .shipMetricLabel {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.65rem;
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
   font-weight: 600;
 }
 
@@ -262,7 +262,7 @@
   gap: 0.5rem;
   align-items: center;
   font-size: 0.85rem;
-  color: var(--glitch-text-soft);
+  color: var(--inara-text-soft);
 }
 
 .shipSummary {
@@ -271,11 +271,11 @@
   gap: 0.45rem;
   align-items: center;
   font-size: 0.85rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .shipSummary strong {
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   font-weight: 600;
 }
 
@@ -283,11 +283,11 @@
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 0.68rem;
-  color: var(--glitch-text-soft);
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
+  color: var(--inara-text-soft);
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
   padding: 0.18rem 0.55rem;
   border-radius: 999px;
-  box-shadow: 0 0 0.8rem color-mix(in srgb, var(--glitch-color-primary) 25%, transparent);
+  box-shadow: 0 0 0.8rem color-mix(in srgb, var(--inara-color-primary) 25%, transparent);
 }
 
 @media (max-width: 1200px) {

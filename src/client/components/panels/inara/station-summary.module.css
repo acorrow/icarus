@@ -19,19 +19,19 @@
 
 .stationName {
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
 }
 
 .stationSystem {
   font-size: 0.78rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .stationMeta {
   font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 58%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 58%, transparent);
 }
 
 .stationSelectionTag {
@@ -42,10 +42,10 @@
   font-size: 0.68rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--glitch-color-success);
-  border: 1px solid color-mix(in srgb, var(--glitch-color-success) 60%, transparent);
+  color: var(--inara-color-success);
+  border: 1px solid color-mix(in srgb, var(--inara-color-success) 60%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--glitch-color-success) 18%, transparent);
+  background: color-mix(in srgb, var(--inara-color-success) 18%, transparent);
 }
 
 .stationMetrics {
@@ -60,14 +60,14 @@
   align-items: baseline;
   gap: 0.35rem;
   font-size: 0.72rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
 }
 
 .stationMetricLabel {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-size: 0.66rem;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 58%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 58%, transparent);
 }
 
 .stationDemand {
@@ -90,9 +90,9 @@
 }
 
 .demandIndicatorArrowHigh {
-  color: var(--glitch-color-success);
+  color: var(--inara-color-success);
 }
 
 .demandIndicatorArrowLow {
-  color: var(--glitch-color-warning);
+  color: var(--inara-color-warning);
 }

@@ -7,9 +7,9 @@
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 0.8rem;
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 24%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--glitch-color-background) 86%, transparent) 0%, color-mix(in srgb, var(--glitch-color-primary) 8%, transparent) 100%);
-  box-shadow: 0 0.85rem 2rem color-mix(in srgb, var(--glitch-color-background) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 24%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-background) 86%, transparent) 0%, color-mix(in srgb, var(--inara-color-primary) 8%, transparent) 100%);
+  box-shadow: 0 0.85rem 2rem color-mix(in srgb, var(--inara-color-background) 78%, transparent);
 }
 
 .segment {
@@ -44,7 +44,7 @@
 .primary {
   font-size: 0.96rem;
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -59,7 +59,7 @@
 
 .subtext {
   font-size: 0.7rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   white-space: nowrap;
 }
 
@@ -83,12 +83,12 @@
   font-size: 0.6rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--glitch-color-text-strong) 48%, transparent);
+  color: color-mix(in srgb, var(--inara-color-text-strong) 48%, transparent);
 }
 
 .metricValue {
   font-size: 0.74rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   display: inline-flex;
   align-items: center;
   gap: 0.24rem;
@@ -101,9 +101,9 @@
   justify-content: center;
   padding: 0.2rem 0.5rem;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--glitch-color-primary) 32%, transparent);
-  background: color-mix(in srgb, var(--glitch-color-primary) 18%, transparent);
-  color: var(--glitch-ink);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 32%, transparent);
+  background: color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
+  color: var(--inara-ink);
   font-weight: 600;
   font-size: 0.72rem;
   letter-spacing: 0.02em;
@@ -111,7 +111,7 @@
 
 .commodityPrice {
   font-size: 0.78rem;
-  color: var(--glitch-color-text-strong);
+  color: var(--inara-color-text-strong);
   white-space: nowrap;
 }
 
@@ -122,19 +122,19 @@
 .distanceIcon {
   font-size: 1.25rem;
   line-height: 1;
-  color: var(--glitch-color-accent, var(--glitch-accent));
+  color: var(--inara-color-accent, var(--inara-accent));
 }
 
 .distanceValue {
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   white-space: nowrap;
 }
 
 .distanceSecondary {
   font-size: 0.72rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   white-space: nowrap;
 }
 
@@ -145,13 +145,13 @@
 .valuePrimary {
   font-size: 0.84rem;
   font-weight: 600;
-  color: var(--glitch-ink);
+  color: var(--inara-ink);
   white-space: nowrap;
 }
 
 .valueSecondary {
   font-size: 0.72rem;
-  color: var(--glitch-muted);
+  color: var(--inara-muted);
   white-space: nowrap;
 }
 
