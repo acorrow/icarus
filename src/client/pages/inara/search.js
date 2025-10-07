@@ -12,14 +12,9 @@ export default function InaraSearchPage() {
     <Layout connected={connected} active={active}>
       <Panel layout='full-width' scrollable navigation={navItems} className={styles.inaraPanel}>
         <div className={styles.inara}>
-          <div className={styles.hero}>
-            <div className={styles.heroHeader}>
-              <h1 className={styles.heroTitle}>Signal Search</h1>
-              <p className={styles.heroSubtitle}>
-                Global lookup is recalibrating to the new assimilation backbone. Search returns soon.
-              </p>
-            </div>
-          </div>
+          <h2>Signal Search</h2>
+          <h3 className='text-primary'>Global lookup is recalibrating to the new assimilation backbone.</h3>
+          <p className='text-primary'>Search returns soon.</p>
 
           <div className={styles.shell}>
             <div className={styles.placeholder}>General search is temporarily disabled.</div>

@@ -2233,8 +2233,13 @@ function MissionsPanel () {
         className={`${styles.tablePanel} layout__panel--secondary-navigation`}
       >
         <div className={styles.tableSectionHeader}>
-          <h2 className={styles.tableSectionTitle}>Mining Missions</h2>
-          <p className={styles.sectionHint}>INARA decrypts volunteer manifests to shortlist mining opportunities aligned to your current system.</p>
+          <h2>Mining Missions</h2>
+          <h3 className='text-primary'>
+            INARA decrypts volunteer manifests to shortlist mining opportunities aligned to your current system.
+          </h3>
+          <p className='text-primary'>
+            Availability signals originate from INARA contributors and may trail live mission boards.
+          </p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -2246,9 +2251,6 @@ function MissionsPanel () {
               </div>
             )}
           </div>
-          <p style={{ color: 'var(--inara-muted)', marginTop: '-0.5rem' }}>
-            Availability signals originate from INARA contributors and may trail live mission boards.
-          </p>
           {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
         <div className='inara-panel-table'>
@@ -3029,32 +3031,34 @@ function CargoHoldPanel () {
         className={`${styles.tablePanel} layout__panel--secondary-navigation`}
       >
         <div className={styles.tableSectionHeader}>
-        <h2 className={styles.tableSectionTitle}>Cargo Hold</h2>
-        <p className={styles.sectionHint}>Monitor mining hauls, track capacity in real time, and surface the most lucrative buyers across nearby systems.</p>
-        <div className={styles.cargoProgress}>
-          <div className={styles.cargoProgressHeader}>
-            <span className={styles.cargoProgressLabel}>Cargo Hold Utilisation</span>
-            <span className={styles.cargoProgressValue}>{cargoFillDescriptor}</span>
+          <h2>Cargo Hold</h2>
+          <h3 className='text-primary'>
+            Monitor mining hauls, track capacity in real time, and surface the most lucrative buyers across nearby systems.
+          </h3>
+          <div className={styles.cargoProgress}>
+            <div className={styles.cargoProgressHeader}>
+              <span className={styles.cargoProgressLabel}>Cargo Hold Utilisation</span>
+              <span className={styles.cargoProgressValue}>{cargoFillDescriptor}</span>
+            </div>
+            <div
+              className={styles.cargoProgressTrack}
+              role='progressbar'
+              aria-label='Cargo hold utilisation'
+              aria-valuemin={0}
+              aria-valuemax={cargoMeterMax}
+              aria-valuenow={cargoMeterNow}
+              aria-valuetext={cargoMeterValueText}
+            >
+              <span className={styles.cargoProgressFill} style={{ width: `${cargoFillPercent}%` }} />
+            </div>
           </div>
-          <div
-            className={styles.cargoProgressTrack}
-            role='progressbar'
-            aria-label='Cargo hold utilisation'
-            aria-valuemin={0}
-            aria-valuemax={cargoMeterMax}
-            aria-valuenow={cargoMeterNow}
-            aria-valuetext={cargoMeterValueText}
-          >
-            <span className={styles.cargoProgressFill} style={{ width: `${cargoFillPercent}%` }} />
+          <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
+            <div>
+              <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
+              <div className='inara-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{currentSystemName || 'Unknown'}</div>
+            </div>
           </div>
         </div>
-        <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-          <div>
-            <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-            <div className='inara-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{currentSystemName || 'Unknown'}</div>
-          </div>
-        </div>
-      </div>
 
       <div className={`${styles.sectionFrameElevated} ${styles.sectionPaddingTight}`}>
         <div className={styles.metricGrid}>
@@ -4629,9 +4633,13 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       >
         <div className={styles.tradeRoutesControls}>
           <div className={styles.tableSectionHeader}>
-            <h2 id='trade-routes-filters-heading' className={styles.tableSectionTitle}>Trade Route Intelligence</h2>
-            <h3 className={styles.tradeRoutesHeroSubtitle}>Plan efficient cargo loops tailored to your current ship.</h3>
-            <p className={styles.tradeRoutesHeroDescription}>Cross-reference INARA freight whispers to surface lucrative corridors suited to your ship profile.</p>
+            <h2 id='trade-routes-filters-heading'>Trade Route Intelligence</h2>
+            <h3 className='text-primary'>
+              Plan efficient cargo loops tailored to your current ship.
+            </h3>
+            <p className='text-primary'>
+              Cross-reference INARA freight whispers to surface lucrative corridors suited to your ship profile.
+            </p>
           </div>
           <TradeRouteFilterPanel
             filters={filters}
@@ -5152,8 +5160,13 @@ function PristineMiningPanel () {
         className={`${styles.tablePanel} layout__panel--secondary-navigation`}
       >
         <div className={styles.tableSectionHeader}>
-          <h2 className={styles.tableSectionTitle}>Pristine Mining Locations</h2>
-          <p className={styles.sectionHint}>INARA listens for rare reserve chatter across the network to pinpoint high-value extraction sites.</p>
+          <h2>Pristine Mining Locations</h2>
+          <h3 className='text-primary'>
+            INARA listens for rare reserve chatter across the network to pinpoint high-value extraction sites.
+          </h3>
+          <p className='text-primary'>
+            Geological echoes are sourced from volunteer INARA submissions and may lag in-system discoveries.
+          </p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -5165,9 +5178,6 @@ function PristineMiningPanel () {
               </div>
             )}
           </div>
-          <p style={{ color: 'var(--inara-muted)', marginTop: '-0.5rem' }}>
-            Geological echoes are sourced from volunteer INARA submissions and may lag in-system discoveries.
-          </p>
           {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
         <div
