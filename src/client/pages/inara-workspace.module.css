@@ -91,6 +91,7 @@
 .inara {
   position: relative;
   min-height: 100%;
+  --inara-viewport-height: 100vh;
   --inara-terminal-height: clamp(180px, 18vh, 220px);
   --inara-bg: var(--inara-color-background);
   --inara-panel: color-mix(in srgb, var(--inara-color-background) 88%, transparent);
@@ -133,6 +134,18 @@
     var(--inara-bg);
   color: var(--inara-ink);
   overflow: hidden;
+}
+
+@supports (height: 100svh) {
+  .inara {
+    --inara-viewport-height: 100svh;
+  }
+}
+
+@supports (height: 100dvh) {
+  .inara {
+    --inara-viewport-height: 100dvh;
+  }
 }
 
 .inaraIcarus {
@@ -2169,6 +2182,18 @@ button.terminalStatusPreview:focus-visible {
   min-width: 0;
 }
 
+.tradeRouteStationStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.tradeRouteStationCompact {
+  display: none;
+  min-width: 0;
+}
+
 .tradeRouteStationGrid {
   display: grid;
   gap: 0.4rem;
@@ -2259,6 +2284,15 @@ button.terminalStatusPreview:focus-visible {
   z-index: 0;
   justify-content: flex-start;
   --trade-route-flow-fill: rgba(93, 46, 255, 0.24);
+  --trade-route-flow-pointer: 1.65rem;
+}
+
+.tradeRouteCommodityRowCompact {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: flex-start;
+  text-align: left;
+  gap: 0.4rem;
+  --trade-route-flow-pointer: 1.25rem;
 }
 
 .tradeRouteCommodityRow > * {
@@ -2277,11 +2311,23 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteCommodityRowOutbound::before {
-  clip-path: polygon(0 0, calc(100% - 1.65rem) 0, 100% 50%, calc(100% - 1.65rem) 100%, 0 100%);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--trade-route-flow-pointer)) 0,
+    100% 50%,
+    calc(100% - var(--trade-route-flow-pointer)) 100%,
+    0 100%
+  );
 }
 
 .tradeRouteCommodityRowReturn::before {
-  clip-path: polygon(1.65rem 0, 100% 0, 100% 100%, 1.65rem 100%, 0 50%);
+  clip-path: polygon(
+    var(--trade-route-flow-pointer) 0,
+    100% 0,
+    100% 100%,
+    var(--trade-route-flow-pointer) 100%,
+    0 50%
+  );
 }
 
 .tradeRouteFlowNeutral {
@@ -2330,6 +2376,10 @@ button.terminalStatusPreview:focus-visible {
   font-size: 0.9rem;
   white-space: nowrap;
   padding: 0.2rem 0.6rem;
+}
+
+.tradeRouteCommodityPriceCompact {
+  padding-inline: 0;
 }
 
 .tradeRouteCommodityPriceBuy {
@@ -2450,7 +2500,8 @@ button.terminalStatusPreview:focus-visible {
   align-items: center;
   justify-content: center;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -2520,6 +2571,91 @@ button.terminalStatusPreview:focus-visible {
 @media (max-width: 1120px) {
   .tradeRouteHideNarrow {
     display: none !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .tradeRoutesTable {
+    min-width: 0;
+  }
+
+  .tradeRoutesTable thead th:nth-child(2) {
+    display: none;
+  }
+
+  .tradeRoutesItemCell {
+    display: none;
+  }
+
+  .tradeRouteCommodityGrid {
+    display: none;
+  }
+
+  .tradeRouteStationStack {
+    gap: 0.6rem;
+  }
+
+  .tradeRouteStationCompact {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .tradeRouteCommodityRowCompact {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .tradeRouteCommodityRowCompact .tradeRouteCommodityName {
+    text-align: left;
+  }
+
+  .tradeRouteCommodityPriceCompact {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .tradeRouteStationRow {
+    min-height: 0;
+  }
+
+  .tradeRouteStationChips {
+    justify-content: flex-start;
+  }
+
+  .tradeRouteProfitRowWrapper {
+    display: block;
+  }
+
+  .tradeRouteProfitRowWrapper td:not(:first-child):not(:last-child) {
+    display: block;
+    width: 100%;
+  }
+
+  .tradeRouteProfitRowWrapper td:first-child,
+  .tradeRouteProfitRowWrapper td:last-child {
+    display: none;
+  }
+
+  .tradeRouteProfitCell {
+    padding: 0 !important;
+    width: 100%;
+  }
+
+  .tradeRouteProfitBanner {
+    border-radius: 0.75rem;
+    padding-inline: 1rem;
+    width: 100%;
+  }
+
+  .tradeRouteProfitInline {
+    justify-content: flex-start;
+  }
+
+  .tradeRouteProfitInlineList {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0.65rem 1rem;
+    padding-block: 0.2rem;
   }
 }
 
