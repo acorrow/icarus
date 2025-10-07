@@ -146,6 +146,18 @@ function TradeRouteFilterPanel ({
   } = options
 
   const padSizeDefaultedToLarge = !padSizeAutoDetected && padSize === LARGE_PAD_SIZE_VALUE
+  const cargoCapacityOptionLabel = useMemo(() => {
+    if (cargoCapacity === '') {
+      return initialShipInfoLoaded ? 'Capacity unavailable' : 'Detecting ship data…'
+    }
+
+    const capacityNumber = Number(cargoCapacity)
+    if (Number.isFinite(capacityNumber)) {
+      return capacityNumber.toLocaleString()
+    }
+
+    return String(cargoCapacity)
+  }, [cargoCapacity, initialShipInfoLoaded])
 
   const renderSystemOptionLabel = option => {
     if (!option || typeof option.name !== 'string') return ''
@@ -221,8 +233,10 @@ function TradeRouteFilterPanel ({
                 aria-readonly='true'
                 placeholder={initialShipInfoLoaded ? 'Auto-detected from ship' : 'Detecting ship data…'}
                 title={initialShipInfoLoaded ? 'Cargo capacity auto-detected from current ship' : 'Detecting ship data from current ship'}
-                
-              />
+
+              >
+                <option value={cargoCapacity}>{cargoCapacityOptionLabel}</option>
+              </select>
             </div>
             <div className={styles.tradeFilterField}>
               <label htmlFor='trade-route-distance'>Max. route distance</label>
