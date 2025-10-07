@@ -539,7 +539,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
     { key: 'ton', label: 'Per/Ton', value: profitPerTonDisplay, metricClass: styles.tradeRouteProfitMetricTon },
     { key: 'trip', label: 'Per/Trip', value: profitPerTripDisplay, metricClass: styles.tradeRouteProfitMetricTrip },
     { key: 'hour', label: 'Per/Hour', value: profitPerHourDisplay, metricClass: styles.tradeRouteProfitMetricHour },
-    { key: 'updated', label: 'Last Update', value: updatedDisplay || null }
+    { key: 'updated', label: 'Last Update', value: updatedDisplay || null, metricClass: styles.tradeRouteProfitMetricUpdated }
   ]
 
   return (
@@ -555,7 +555,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
         aria-pressed={isSelected}
         data-selected={isSelected ? 'true' : 'false'}
       >
-        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
+        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellOrigin}`}>
           <div className={styles.tradeRouteStationGrid}>
             <div className={styles.tradeRouteStationRow}>
               <span
@@ -622,7 +622,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
             </div>
           </div>
         </td>
-        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
+        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellDestination}`}>
           <div className={styles.tradeRouteStationGrid}>
             <div className={styles.tradeRouteStationRow}>
               <span
