@@ -56,7 +56,7 @@ ICARUS Terminal is a free, immersive, context-sensitive companion app and second
   - Full stack: `npm run dev` (http://127.0.0.1:3300)
   - Packaged: `npm start`
 - **Test:** `npm test -- --runInBand --config jest.config.js`
-- **Screenshots:** Use Playwright in a `browser_container` for UI verification. Always reference screenshot paths in notes.
+- **UI verification:** Manually exercise the updated views and describe any visual considerations in your notes so reviewers can validate intent without captures.
 
 ## Project Conventions
 - **INARA theming:**

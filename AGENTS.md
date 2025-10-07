@@ -34,36 +34,9 @@ See [`FEATURES.md`](./FEATURES.md) for the current feature mapping and details.
 - After the build, launch one of the sanctioned rendering targets:
   - Preferred production snapshot: `npm run serve:export` (serves <http://127.0.0.1:4100> once `npm run build:client` has finished).
   - Fast iteration: `npm run dev:web` (Next.js dev server on <http://127.0.0.1:3000> without SWC).
-- Use the `browser_container` Playwright helper to capture a screenshot **for each iteration of your UI work**. Always reference the screenshot path in your final notes so reviewers can trace the visual verification. Set the viewport to `1280x720`, wait for the DOM to settle, and capture full-page shots unless the task specifies otherwise. The dedicated helper in `scripts/browser/screenshot_workspace.py` waits for the workspace fade-in to finish so loaders are never captured.
-- Treat every GUI task as an iterative design exercise. After you collect each screenshot, compare it against the task requirements and ask yourself:
-  - Does this state fulfill the user request, both functionally and visually?
-  - Are there lingering rough edges (spacing, alignment, color usage, accessibility) that would distract a commander interacting with the page?
-  - Would an additional iteration, informed by this screenshot, produce a noticeably better experience? If so, keep iterating and take another screenshot.
-- When iterating:
-  1. Capture a screenshot of the current state.
-  2. Review the screenshot in context of the requirements and jot down concrete adjustments.
-  3. Implement the adjustments, refresh the app, and capture another screenshot.
-  4. Repeat until the screenshots demonstrate a clear, polished improvement that satisfies the original ask.
-- Summarize the outcome of this iterative loop in your final notes by highlighting what changed between the first and final captures and why the result addresses the user's needs.
-- **INARA screenshot workflow checklist:**
-  1. Run `npm test -- --runInBand --config jest.config.js` (serial mode keeps Jest aligned with `jest.config.js`). The repo includes the optional dependency `@next/swc-linux-x64-gnu@12.3.4` so the build will not fail on missing SWC binaries.
-  2. Run `npm run build:client` to regenerate the static export required for screenshots.
-  3. In a dedicated shell start one of the preview servers above.
-  4. Use the `browser_container` Playwright helper to run `scripts/browser/screenshot_workspace.py` against the running URL. The container has the required GTK/Atk libraries, so Chromium launches reliably. Example:
-
-     ```python
-     import asyncio
-
-     from scripts.browser.screenshot_workspace import capture, DEFAULT_OUTPUT, DEFAULT_URL, DEFAULT_VIEWPORT
-
-
-     async def main():
-         await capture(DEFAULT_URL, DEFAULT_OUTPUT, DEFAULT_VIEWPORT)
-
-
-     asyncio.run(main())
-     ```
-- Node-based Puppeteer/Playwright scripts inside the build container are **not** reliable because the sandbox lacks the required desktop dependencies. Always rely on the `browser_container` workflow above and link to its generated artifact in your notes.
+- Manually review the updated surface after each change to confirm spacing, typography, and state handling remain aligned with ICARUS patterns. Iterate locally until the UI feels production ready before handing off for review.
+- Capture any notable UI regressions or follow-up items in your notes so reviewers understand what remains outstanding.
+- Node-based Puppeteer/Playwright scripts inside the build container are **not** reliable because the sandbox lacks the required desktop dependencies. Prefer local browser validation when you need to inspect rendered output.
 
 ## Development quickstart
 
