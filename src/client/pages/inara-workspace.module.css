@@ -1570,7 +1570,7 @@ button.terminalStatusPreview:focus-visible {
 @media (max-width: 1180px) {
   .tradeRoutesTable {
     --trade-route-station-column-width: 15.5rem;
-    --trade-route-profit-column-width: 12rem;
+    --trade-route-profit-column-width: 6rem;
     --trade-route-commodity-min-width: 15.5rem;
   }
 }
