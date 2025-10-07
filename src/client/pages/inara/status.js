@@ -4628,15 +4628,12 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       <Panel
         layout='full-width'
       >
-        <div className={styles.tradeRoutesControls}>
-          <div className={styles.tableSectionHeader}>
+        <div >
+          <div >
             <h2 id='trade-routes-filters-heading'>Trade Route Intelligence</h2>
-            <h3 className='text-primary'>
+            <h3 className='text-primary section-heading'>
               Plan efficient cargo loops tailored to your current ship.
             </h3>
-            <p className='text-primary'>
-              Cross-reference INARA freight whispers to surface lucrative corridors suited to your ship profile.
-            </p>
           </div>
           <TradeRouteFilterPanel
             filters={filters}
@@ -4655,10 +4652,9 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
             padSizeAutoDetected={padSizeAutoDetected}
             initialShipInfoLoaded={initialShipInfoLoaded}
           />
-          <div className={styles.tradeRouteContext} role='group' aria-label='Selected route context'>
-            <div className={styles.tradeRouteContextTitleRow}>
-              <span className={styles.tradeRouteContextTitle}>Route Context</span>
-            </div>
+
+              <h3 className='section-heading'>Route Context</h3>
+
             {routeContext ? (
               <>
                 {routeProfitMetrics.length > 0 && (
@@ -4910,7 +4906,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
             ) : (
               <div className={styles.tradeRouteContextEmpty}>Select a trade route to populate the context.</div>
             )}
-          </div>
+          
         </div>
       </Panel>
       <div className='inara-panel-table'>
