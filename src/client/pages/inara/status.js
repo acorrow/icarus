@@ -642,7 +642,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                       variant: originStationDistanceVariant,
                       title: 'Distance to station'
                     })}
-                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
         <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellOrigin}`}>
           <div className={styles.tradeRouteStationGrid}>
             <div className={styles.tradeRouteStationRow}>
@@ -713,7 +718,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                       variant: destinationStationDistanceVariant,
                       title: 'Distance to station'
                     })}
-                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
         <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellDestination}`}>
           <div className={styles.tradeRouteStationGrid}>
             <div className={styles.tradeRouteStationRow}>
