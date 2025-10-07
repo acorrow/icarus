@@ -1269,13 +1269,13 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeFiltersSystemControls {
+  background-color: #000;
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 0.6rem;
 }
 
-.tradeFiltersSelect,
 .tradeFiltersTextInput,
 .tradeFiltersNumberInput {
   appearance: none;
@@ -1524,23 +1524,23 @@ button.terminalStatusPreview:focus-visible {
   min-width: var(--trade-route-caret-column-width);
 }
 
-.tradeRoutesTable th:nth-child(2),
-.tradeRoutesTable td:nth-child(2),
-.tradeRoutesTable th:nth-child(4),
-.tradeRoutesTable td:nth-child(4) {
+.tradeRoutesTable th:nth-child(1),
+.tradeRoutesTable td:nth-child(1),
+.tradeRoutesTable th:nth-child(3),
+.tradeRoutesTable td:nth-child(3) {
   width: var(--trade-route-station-column-width);
   min-width: var(--trade-route-station-column-width);
 }
 
-.tradeRoutesTable th:nth-child(3),
-.tradeRoutesTable td:nth-child(3),
+.tradeRoutesTable th:nth-child(2),
+.tradeRoutesTable td:nth-child(2),
 .tradeRoutesItemCell {
   width: auto;
   min-width: var(--trade-route-commodity-min-width);
 }
 
-.tradeRoutesTable th:nth-child(5),
-.tradeRoutesTable td:nth-child(5) {
+.tradeRoutesTable th:nth-child(4),
+.tradeRoutesTable td:nth-child(4) {
   width: var(--trade-route-profit-column-width);
   min-width: var(--trade-route-profit-column-width);
 }

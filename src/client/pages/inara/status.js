@@ -160,8 +160,9 @@ function TradeRouteFilterPanel ({
     <form onSubmit={onSubmit} className={styles.tradeFiltersForm} aria-labelledby='trade-routes-filters-heading'>
       <div className={styles.tradeFiltersHeader}>
         <div className={styles.tradeFiltersSystemGroup}>
-          <label className={styles.tradeFiltersLabel} htmlFor='trade-route-system-select'>Near star system</label>
-          <div className={styles.tradeFiltersSystemControls}>
+          <div display='flex'>
+          <label className='text-primary' htmlFor='trade-route-system-select'>Near star system</label>
+          <div>
             <select
               id='trade-route-system-select'
               value={systemSelection || (selectedSystemName ? selectedSystemName : '')}
@@ -185,12 +186,12 @@ function TradeRouteFilterPanel ({
               />
             )}
           </div>
+          </div>
         </div>
         <div className={styles.tradeFiltersActions}>
           <button
             type='button'
             onClick={onToggleFilters}
-            className={styles.tradeFiltersToggle}
             aria-expanded={!filtersCollapsed}
             aria-controls='trade-route-filter-grid'
           >
@@ -198,7 +199,7 @@ function TradeRouteFilterPanel ({
           </button>
           <button
             type='submit'
-            className={styles.tradeFiltersSubmit}
+            
             disabled={isRefreshing}
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh results'}
@@ -210,7 +211,7 @@ function TradeRouteFilterPanel ({
           <div id='trade-route-filter-grid' className={styles.tradeFiltersGrid}>
             <div className={styles.tradeFilterField}>
               <label htmlFor='trade-route-capacity'>Cargo capacity (t)</label>
-              <input
+              <select
                 id='trade-route-capacity'
                 type='number'
                 min='0'
@@ -220,7 +221,7 @@ function TradeRouteFilterPanel ({
                 aria-readonly='true'
                 placeholder={initialShipInfoLoaded ? 'Auto-detected from ship' : 'Detecting ship data…'}
                 title={initialShipInfoLoaded ? 'Cargo capacity auto-detected from current ship' : 'Detecting ship data from current ship'}
-                className={styles.tradeFiltersNumberInput}
+                
               />
             </div>
             <div className={styles.tradeFilterField}>
@@ -509,9 +510,6 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
       aria-pressed={isSelected}
       data-selected={isSelected ? 'true' : 'false'}
     >
-      <td className={styles.tableCellCaret} aria-hidden='true'>
-        {caretSymbol}
-      </td>
       <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
         <div className={styles.tradeRouteStationGrid}>
           <div className={styles.tradeRouteStationRow}>
@@ -4563,7 +4561,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       <table className={`${styles.dataTable} ${styles.dataTableDense} ${styles.tradeRoutesTable}`}>
         <thead>
           <tr>
-            <th aria-hidden='true' className={styles.tableCellCaret} />
+            {/* <th aria-hidden='true' className={styles.tableCellCaret} /> */}
             <th
               scope='col'
               aria-sort={sortField === 'stationA' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
@@ -4653,7 +4651,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
             initialShipInfoLoaded={initialShipInfoLoaded}
           />
 
-              <h3 className='section-heading'>Route Context</h3>
+              <h3 className='section-heading text-primary'>Route Context</h3>
 
             {routeContext ? (
               <>
