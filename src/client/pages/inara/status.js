@@ -455,7 +455,9 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const outboundCommodityDisplay = outboundCommodity === '--' ? '' : outboundCommodity
   const returnCommodityDisplay = returnCommodity === '--' ? '' : returnCommodity
   const outboundPriceDisplay = resolvePriceDisplay(outboundInfo.buy, 'Buy')
+  const outboundSellPriceDisplay = resolvePriceDisplay(outboundInfo.sell, 'Sell')
   const returnPriceDisplay = resolvePriceDisplay(returnInfo.buy, 'Buy')
+  const returnSellPriceDisplay = resolvePriceDisplay(returnInfo.sell, 'Sell')
   const outboundDemandState = resolveDemandFlowState(outboundInfo.sell)
   const returnDemandState = resolveDemandFlowState(returnInfo.sell)
   const outboundFlowClass = getDemandFlowClass(outboundDemandState)
@@ -469,6 +471,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
 
   const renderValue = value => (value ? value : <span className={styles.tradeRoutePlaceholder}>--</span>)
+  const renderPrice = value => (value ? value : null)
 
   const metricVariantClasses = {
     neutral: styles.metricChipNeutral,
@@ -565,9 +568,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                 {outboundDemandState.text ? ` — ${outboundDemandState.text}` : ''}
               </span>
             ) : null}
+            <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteCommodityPriceBuy} ${styles.tradeRouteHideMedium}`}>
+              {renderPrice(outboundPriceDisplay)}
+            </span>
             <span className={styles.tradeRouteCommodityName}>{renderValue(outboundCommodityDisplay)}</span>
-            <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteHideMedium}`}>
-              {renderValue(outboundPriceDisplay)}
+            <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteCommodityPriceSell} ${styles.tradeRouteHideMedium}`}>
+              {renderPrice(outboundSellPriceDisplay)}
             </span>
           </div>
           <div className={`${styles.tradeRouteCommodityRow} ${styles.tradeRouteCommodityRowReturn} ${returnFlowClass}`}>
@@ -578,9 +584,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                 {returnDemandState.text ? ` — ${returnDemandState.text}` : ''}
               </span>
             ) : null}
+            <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteCommodityPriceSell} ${styles.tradeRouteHideMedium}`}>
+              {renderPrice(returnSellPriceDisplay)}
+            </span>
             <span className={styles.tradeRouteCommodityName}>{renderValue(returnCommodityDisplay)}</span>
-            <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteHideMedium}`}>
-              {renderValue(returnPriceDisplay)}
+            <span className={`${styles.tradeRouteCommodityPrice} ${styles.tradeRouteCommodityPriceBuy} ${styles.tradeRouteHideMedium}`}>
+              {renderPrice(returnPriceDisplay)}
             </span>
           </div>
         </div>

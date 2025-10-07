@@ -2245,7 +2245,7 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteCommodityRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 0.35rem;
   min-width: 0;
@@ -2323,11 +2323,62 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteCommodityPrice {
-  grid-column: 2;
   color: var(--inara-text-soft);
   font-size: 0.9rem;
   white-space: nowrap;
+  padding: 0.2rem 0.6rem;
+}
+
+.tradeRouteCommodityPriceBuy {
+  justify-self: start;
+  text-align: left;
+  padding-inline-start: 0.75rem;
+}
+
+.tradeRouteCommodityPriceSell {
   justify-self: end;
+  text-align: right;
+  padding-inline-end: 0.75rem;
+}
+
+.tradeRouteCommodityRowReturn .tradeRouteCommodityPriceSell {
+  justify-self: start;
+  text-align: left;
+  padding-inline-start: 0.75rem;
+  padding-inline-end: 0.6rem;
+}
+
+.tradeRouteCommodityRowReturn .tradeRouteCommodityPriceBuy {
+  justify-self: end;
+  text-align: right;
+  padding-inline-end: 0.75rem;
+  padding-inline-start: 0.6rem;
+}
+
+@media (min-width: 1441px) {
+  .tradeRouteCommodityRow {
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+  }
+
+  .tradeRouteCommodityName {
+    grid-column: 2;
+  }
+
+  .tradeRouteCommodityRowOutbound .tradeRouteCommodityPriceBuy {
+    grid-column: 1;
+  }
+
+  .tradeRouteCommodityRowOutbound .tradeRouteCommodityPriceSell {
+    grid-column: 3;
+  }
+
+  .tradeRouteCommodityRowReturn .tradeRouteCommodityPriceSell {
+    grid-column: 1;
+  }
+
+  .tradeRouteCommodityRowReturn .tradeRouteCommodityPriceBuy {
+    grid-column: 3;
+  }
 }
 
 .tradeRoutePlaceholder {
