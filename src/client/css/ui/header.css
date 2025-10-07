@@ -19,48 +19,6 @@
   min-width: 14ch;
 }
 
-.header__status {
-  position: absolute;
-  top: 1rem;
-  right: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.header__clock {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  min-width: 7.5rem;
-  gap: 0.15rem;
-}
-
-.header__clock-time {
-  font-size: 2.4rem;
-  line-height: 1;
-}
-
-.header__clock-date {
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
-.header__status-button {
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-}
-
-.header__status-button .icon {
-  font-size: inherit;
-}
-
 .header__navigation {
   display: grid;
   grid-auto-flow: column;
