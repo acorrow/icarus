@@ -2230,7 +2230,6 @@ function MissionsPanel () {
     <section className={styles.tableSection}>
       <Panel
         layout='full-width'
-        className={`${styles.tablePanel} layout__panel--secondary-navigation`}
       >
         <div className={styles.tableSectionHeader}>
           <h2>Mining Missions</h2>
@@ -3028,7 +3027,6 @@ function CargoHoldPanel () {
     <section className={styles.tableSection}>
       <Panel
         layout='full-width'
-        className={`${styles.tablePanel} layout__panel--secondary-navigation`}
       >
         <div className={styles.tableSectionHeader}>
           <h2>Cargo Hold</h2>
@@ -4629,7 +4627,6 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
     <section className={styles.tableSection}>
       <Panel
         layout='full-width'
-        className={`${styles.tablePanel} layout__panel--secondary-navigation`}
       >
         <div className={styles.tradeRoutesControls}>
           <div className={styles.tableSectionHeader}>
@@ -5157,7 +5154,6 @@ function PristineMiningPanel () {
     <section className={styles.tableSection}>
       <Panel
         layout='full-width'
-        className={`${styles.tablePanel} layout__panel--secondary-navigation`}
       >
         <div className={styles.tableSectionHeader}>
           <h2>Pristine Mining Locations</h2>
