@@ -466,6 +466,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
 
   const profitPerTon = formatCredits(route?.summary?.profitPerUnit ?? route?.profitPerUnit, route?.summary?.profitPerUnitText || route?.profitPerUnitText)
   const profitPerTrip = formatCredits(route?.summary?.profitPerTrip, route?.summary?.profitPerTripText)
+  const profitPerHour = formatCredits(route?.summary?.profitPerHour ?? route?.profitPerHour, route?.summary?.profitPerHourText || route?.profitPerHourText)
   const profitPerTonValueRaw = extractProfitPerTon(route)
 
   const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
@@ -530,19 +531,16 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const profitRowClasses = [styles.tradeRouteProfitRowWrapper]
   if (isSelected) profitRowClasses.push(styles.tradeRouteProfitRowWrapperSelected)
 
-  const inlineProfitMetrics = []
+  const profitPerTonDisplay = profitPerTon && profitPerTon !== '--' ? profitPerTon : null
+  const profitPerTripDisplay = profitPerTrip && profitPerTrip !== '--' ? profitPerTrip : null
+  const profitPerHourDisplay = profitPerHour && profitPerHour !== '--' ? profitPerHour : null
 
-  if (profitPerTon && profitPerTon !== '--') {
-    inlineProfitMetrics.push({ key: 'ton', label: 'Ton', value: profitPerTon })
-  }
-
-  if (profitPerTrip && profitPerTrip !== '--') {
-    inlineProfitMetrics.push({ key: 'trip', label: 'Trip', value: profitPerTrip })
-  }
-
-  if (updatedDisplay) {
-    inlineProfitMetrics.push({ key: 'updated', label: 'Last updated', value: updatedDisplay })
-  }
+  const inlineProfitMetrics = [
+    { key: 'ton', label: 'Per/Ton', value: profitPerTonDisplay, metricClass: styles.tradeRouteProfitMetricTon },
+    { key: 'trip', label: 'Per/Trip', value: profitPerTripDisplay, metricClass: styles.tradeRouteProfitMetricTrip },
+    { key: 'hour', label: 'Per/Hour', value: profitPerHourDisplay, metricClass: styles.tradeRouteProfitMetricHour },
+    { key: 'updated', label: 'Last Update', value: updatedDisplay || null }
+  ]
 
   return (
     <>
@@ -661,32 +659,39 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
         onClick={handleClick}
         data-inara-table-row='profit'
       >
-        <td colSpan={3} className={`${styles.tableCellTop} ${styles.tradeRouteProfitCell}`}>
+        <td className={`${styles.tableCellTop} ${styles.tradeRouteProfitSpacerCell}`} aria-hidden='true' />
+        <td className={`${styles.tableCellTop} ${styles.tradeRouteProfitCell}`}>
           <div
             className={`${styles.tradeRouteProfitBanner}${isSelected ? ` ${styles.tradeRouteProfitBannerSelected}` : ''}`}
             style={profitHighlightStyle}
           >
             <div className={styles.tradeRouteProfitInline}>
-              <div className={styles.tradeRouteProfitTitle}>
-                <CreditsIcon size={18} />
-                <span>Profit Outlook</span>
-              </div>
               <div className={styles.tradeRouteProfitInlineList}>
-                {inlineProfitMetrics.map((metric, index) => (
-                  <React.Fragment key={metric.key}>
-                    <div className={styles.tradeRouteProfitInlineItem}>
-                      <span className={styles.tradeRouteProfitInlineLabel}>{metric.label}:</span>
-                      <span className={styles.tradeRouteProfitInlineValue}>{renderValue(metric.value)}</span>
-                    </div>
-                    {index < inlineProfitMetrics.length - 1 ? (
-                      <span className={styles.tradeRouteProfitSeparator} aria-hidden='true'>-</span>
-                    ) : null}
-                  </React.Fragment>
-                ))}
+                {inlineProfitMetrics.map((metric, index) => {
+                  const metricClasses = [styles.tradeRouteProfitInlineItem]
+                  if (metric.metricClass) metricClasses.push(metric.metricClass)
+                  const nextMetric = inlineProfitMetrics[index + 1]
+                  const separatorClasses = [styles.tradeRouteProfitSeparator]
+                  if (metric.metricClass) separatorClasses.push(metric.metricClass)
+                  if (nextMetric?.metricClass) separatorClasses.push(nextMetric.metricClass)
+
+                  return (
+                    <React.Fragment key={metric.key}>
+                      <div className={metricClasses.join(' ')}>
+                        <span className={styles.tradeRouteProfitInlineLabel}>{metric.label}:</span>
+                        <span className={styles.tradeRouteProfitInlineValue}>{renderValue(metric.value)}</span>
+                      </div>
+                      {index < inlineProfitMetrics.length - 1 ? (
+                        <span className={separatorClasses.join(' ')} aria-hidden='true'>|</span>
+                      ) : null}
+                    </React.Fragment>
+                  )
+                })}
               </div>
             </div>
           </div>
         </td>
+        <td className={`${styles.tableCellTop} ${styles.tradeRouteProfitSpacerCell}`} aria-hidden='true' />
       </tr>
     </>
   )
@@ -4640,7 +4645,19 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                 {renderSortArrow('stationA')}
               </button>
             </th>
-            <th scope='col' aria-sort='none'>Commodities</th>
+            <th
+              scope='col'
+              aria-sort={sortField === 'profit' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+            >
+              <button
+                type='button'
+                className={`${styles.tableHeaderButton} ${sortField === 'profit' ? styles.tableHeaderButtonActive : ''}`}
+                onClick={() => handleSortChange('profit')}
+              >
+                Profit
+                {renderSortArrow('profit')}
+              </button>
+            </th>
             <th
               scope='col'
               aria-sort={sortField === 'stationB' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
