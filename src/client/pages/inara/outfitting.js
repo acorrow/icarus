@@ -12,14 +12,9 @@ export default function InaraOutfittingPage () {
     <Layout connected={connected} active={active}>
       <Panel layout='full-width' scrollable navigation={navItems} className={styles.inaraPanel}>
         <div className={styles.inara}>
-          <div className={styles.hero}>
-            <div className={styles.heroHeader}>
-              <h1 className={styles.heroTitle}>Outfitting Tools</h1>
-              <p className={styles.heroSubtitle}>
-                Ship build intelligence is in fabrication. Stay tuned for modular loadouts and curated upgrade paths.
-              </p>
-            </div>
-          </div>
+          <h2>Outfitting Tools</h2>
+          <h3 className='text-primary'>Ship build intelligence is in fabrication.</h3>
+          <p className='text-primary'>Stay tuned for modular loadouts and curated upgrade paths.</p>
 
           <div className={styles.shell}>
             <div className={styles.placeholder}>Outfitting consoles are coming online soon.</div>
