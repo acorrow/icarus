@@ -2,6 +2,39 @@ import { useState, useEffect, Fragment } from 'react'
 import { sendEvent, eventListener } from 'lib/socket'
 import { SettingsNavItems } from 'lib/navigation-items'
 import packageJson from '../../../package.json'
+import {
+  DEFAULT_INARA_THRESHOLD_SETTINGS,
+  sanitizeInaraThresholdSettings,
+  loadInaraThresholdSettings,
+  saveInaraThresholdSettings,
+  subscribeToInaraThresholdSettings
+} from 'lib/inara-thresholds'
+
+const INITIAL_THRESHOLD_INPUTS = formatThresholdInputs(DEFAULT_INARA_THRESHOLD_SETTINGS)
+
+function formatNumberInput (value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+  if (typeof value === 'string') return value
+  return ''
+}
+
+function formatThresholdInputs (settings) {
+  const sanitized = sanitizeInaraThresholdSettings(settings)
+  return {
+    systemDistance: {
+      greenMultiplier: formatNumberInput(sanitized.systemDistance.greenMultiplier),
+      redMultiplier: formatNumberInput(sanitized.systemDistance.redMultiplier)
+    },
+    stationDistance: {
+      green: formatNumberInput(sanitized.stationDistance.green),
+      red: formatNumberInput(sanitized.stationDistance.red)
+    },
+    updateHours: {
+      green: formatNumberInput(sanitized.updateHours.green),
+      red: formatNumberInput(sanitized.updateHours.red)
+    }
+  }
+}
 
 function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPanel = 'Theme' }) {
   const [activeSettingsPanel, setActiveSettingsPanel] = useState(defaultActiveSettingsPanel)
@@ -60,19 +93,40 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
 
 function InaraSettings () {
   const [useMockData, setUseMockData] = useState(false)
+  const [thresholdInputs, setThresholdInputs] = useState(INITIAL_THRESHOLD_INPUTS)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setUseMockData(window.localStorage.getItem('inaraUseMockData') === 'true')
+      setThresholdInputs(formatThresholdInputs(loadInaraThresholdSettings()))
+    }
+    const unsubscribe = subscribeToInaraThresholdSettings(settings => {
+      setThresholdInputs(formatThresholdInputs(settings))
+    })
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe()
     }
   }, [])
+
+  const handleThresholdChange = (section, key, value) => {
+    setThresholdInputs(current => ({
+      ...current,
+      [section]: {
+        ...current[section],
+        [key]: value
+      }
+    }))
+  }
 
   function handleSave (event) {
     event.preventDefault()
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('inaraUseMockData', useMockData ? 'true' : 'false')
     }
+    const sanitizedThresholds = sanitizeInaraThresholdSettings(thresholdInputs)
+    setThresholdInputs(formatThresholdInputs(sanitizedThresholds))
+    saveInaraThresholdSettings(sanitizedThresholds)
     setSaved(true)
     setTimeout(() => setSaved(false), 1500)
   }
@@ -92,6 +146,90 @@ function InaraSettings () {
             Enable Trade Route Layout Sandbox (use mock data)
           </span>
         </label>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h4 className='text-primary' style={{ marginBottom: '.5rem' }}>Distance &amp; Update Thresholds</h4>
+          <p className='text-muted' style={{ marginTop: 0 }}>
+            Customize when system and station distances, along with update timestamps, transition between green, blue, yellow,
+            and red indicators.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <section>
+              <h5 className='text-primary' style={{ margin: 0, fontSize: '0.95rem' }}>System Distance (× jump range)</h5>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.75rem', marginTop: '.65rem' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+                  <span className='text-muted'>Brightest green ≤</span>
+                  <input
+                    type='number'
+                    min='0'
+                    step='0.1'
+                    value={thresholdInputs.systemDistance.greenMultiplier}
+                    onChange={event => handleThresholdChange('systemDistance', 'greenMultiplier', event.target.value)}
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+                  <span className='text-muted'>Brightest red ≥</span>
+                  <input
+                    type='number'
+                    min='0'
+                    step='0.1'
+                    value={thresholdInputs.systemDistance.redMultiplier}
+                    onChange={event => handleThresholdChange('systemDistance', 'redMultiplier', event.target.value)}
+                  />
+                </label>
+              </div>
+            </section>
+            <section>
+              <h5 className='text-primary' style={{ margin: 0, fontSize: '0.95rem' }}>Station Distance (light seconds)</h5>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.75rem', marginTop: '.65rem' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+                  <span className='text-muted'>Brightest green ≤</span>
+                  <input
+                    type='number'
+                    min='0'
+                    step='1'
+                    value={thresholdInputs.stationDistance.green}
+                    onChange={event => handleThresholdChange('stationDistance', 'green', event.target.value)}
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+                  <span className='text-muted'>Brightest red ≥</span>
+                  <input
+                    type='number'
+                    min='0'
+                    step='1'
+                    value={thresholdInputs.stationDistance.red}
+                    onChange={event => handleThresholdChange('stationDistance', 'red', event.target.value)}
+                  />
+                </label>
+              </div>
+            </section>
+            <section>
+              <h5 className='text-primary' style={{ margin: 0, fontSize: '0.95rem' }}>Time Since Update (hours)</h5>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.75rem', marginTop: '.65rem' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+                  <span className='text-muted'>Brightest green ≤</span>
+                  <input
+                    type='number'
+                    min='0'
+                    step='0.5'
+                    value={thresholdInputs.updateHours.green}
+                    onChange={event => handleThresholdChange('updateHours', 'green', event.target.value)}
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+                  <span className='text-muted'>Brightest red ≥</span>
+                  <input
+                    type='number'
+                    min='0'
+                    step='0.5'
+                    value={thresholdInputs.updateHours.red}
+                    onChange={event => handleThresholdChange('updateHours', 'red', event.target.value)}
+                  />
+                </label>
+              </div>
+            </section>
+          </div>
+        </div>
         <button type='submit' style={{ fontSize: '1.1rem' }}>{saved ? 'Saved!' : 'Save'}</button>
       </form>
     </div>

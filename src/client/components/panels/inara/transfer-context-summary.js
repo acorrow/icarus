@@ -30,7 +30,8 @@ function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel }) {
           const priority = typeof metric.priority === 'boolean'
             ? metric.priority
             : /supply|demand|buy|sell|profit/i.test(`${label} ${value}`)
-          return { label, value, priority }
+          const color = typeof metric.color === 'string' && metric.color.trim() ? metric.color : undefined
+          return { label, value, priority, color }
         })
         .filter(Boolean)
     : []
@@ -64,7 +65,16 @@ function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel }) {
             return (
               <div key={`station-metric-${index}`} className={metricClass.join(' ')}>
                 {metric.label ? <span className={styles.metricLabel}>{metric.label}</span> : null}
-                {metric.value ? <span className={styles.metricValue}>{metric.value}</span> : null}
+                {metric.value
+                  ? (
+                      <span
+                        className={styles.metricValue}
+                        style={metric.color ? { color: metric.color } : undefined}
+                      >
+                        {metric.value}
+                      </span>
+                    )
+                  : null}
               </div>
             )
           })}
@@ -92,7 +102,8 @@ StationSegment.propTypes = {
     PropTypes.shape({
       label: PropTypes.node,
       value: PropTypes.node,
-      priority: PropTypes.bool
+      priority: PropTypes.bool,
+      color: PropTypes.string
     })
   ),
   ariaLabel: PropTypes.string
@@ -152,10 +163,11 @@ CommoditySegment.propTypes = {
   ariaLabel: PropTypes.string
 }
 
-function DistanceSegment ({ label, value, secondary, valueColor }) {
+function DistanceSegment ({ label, value, secondary, valueColor, secondaryColor }) {
   if (!label && !value && !secondary) return null
 
   const valueStyle = valueColor ? { color: valueColor } : undefined
+  const secondaryStyle = secondaryColor ? { color: secondaryColor } : valueStyle
 
   return (
     <div className={`${styles.segment} ${styles.distanceSegment}`}>
@@ -166,7 +178,7 @@ function DistanceSegment ({ label, value, secondary, valueColor }) {
       {value ? <span className={styles.distanceValue} style={valueStyle}>{sanitizeText(value)}</span> : null}
       {secondary
         ? (
-            <span className={`${styles.distanceSecondary} ${styles.optionalWide}`} style={valueStyle}>
+            <span className={`${styles.distanceSecondary} ${styles.optionalWide}`} style={secondaryStyle}>
               {sanitizeText(secondary)}
             </span>
           )
@@ -179,14 +191,16 @@ DistanceSegment.defaultProps = {
   label: '',
   value: '',
   secondary: '',
-  valueColor: ''
+  valueColor: '',
+  secondaryColor: ''
 }
 
 DistanceSegment.propTypes = {
   label: PropTypes.string,
   value: PropTypes.string,
   secondary: PropTypes.string,
-  valueColor: PropTypes.string
+  valueColor: PropTypes.string,
+  secondaryColor: PropTypes.string
 }
 
 function ValueSegment ({ icon, label, value, secondary }) {

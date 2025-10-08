@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, Fragment } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, useContext, Fragment } from 'react'
 import Layout from 'components/layout'
 import Panel from 'components/panel'
 import Icons from 'lib/icons'
@@ -12,7 +12,15 @@ import animateTableEffect from 'lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from 'lib/socket'
 import { getShipLandingPadSize } from 'lib/ship-pad-sizes'
 import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from 'lib/inara-formatters'
-import getDistanceSeverityColor from 'lib/distance-colors'
+import {
+  getDistanceSeverity,
+  getStationDistanceSeverity,
+  getUpdateSeverity
+} from 'lib/distance-colors'
+import {
+  InaraThresholdSettingsContext,
+  useInaraThresholdSettings
+} from 'lib/inara-thresholds'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from 'lib/station-icons'
 import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from 'lib/inara-mock-data'
@@ -415,6 +423,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   shipJumpRange = null,
   maxProfitPerTon = 0
 }) {
+  const thresholdSettings = useContext(InaraThresholdSettingsContext)
   const originLocal = route?.origin?.local
   const destinationLocal = route?.destination?.local
 
@@ -469,7 +478,9 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   const profitPerHour = formatCredits(route?.summary?.profitPerHour ?? route?.profitPerHour, route?.summary?.profitPerHourText || route?.profitPerHourText)
   const profitPerTonValueRaw = extractProfitPerTon(route)
 
-  const updatedDisplay = formatRelativeTime(route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp)
+  const updatedSource = route?.summary?.updated || route?.updatedAt || route?.lastUpdated || route?.timestamp || null
+  const updatedDisplay = updatedSource ? formatRelativeTime(updatedSource) : ''
+  const updatedSeverity = getUpdateSeverity(updatedSource, { thresholds: thresholdSettings })
 
   const renderValue = value => (value ? value : <span className={styles.tradeRoutePlaceholder}>--</span>)
   const renderPrice = value => (value ? value : null)
@@ -502,12 +513,16 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
     )
   }
 
-  const originStationDistanceVariant = getStationDistanceVariant(originStationDistance.value)
-  const destinationStationDistanceVariant = getStationDistanceVariant(destinationStationDistance.value)
-  const originSystemDistanceVariant = getSystemDistanceVariant(originSystemDistance.value, shipJumpRange)
-  const destinationSystemDistanceVariant = getSystemDistanceVariant(destinationSystemDistance.value, shipJumpRange)
-  const originSystemDistanceColor = getDistanceSeverityColor(originSystemDistance.value, shipJumpRange)
-  const destinationSystemDistanceColor = getDistanceSeverityColor(destinationSystemDistance.value, shipJumpRange)
+  const originStationSeverity = getStationDistanceSeverity(originStationDistance.value, { thresholds: thresholdSettings })
+  const destinationStationSeverity = getStationDistanceSeverity(destinationStationDistance.value, { thresholds: thresholdSettings })
+  const originSystemSeverity = getDistanceSeverity(originSystemDistance.value, shipJumpRange, { thresholds: thresholdSettings })
+  const destinationSystemSeverity = getDistanceSeverity(destinationSystemDistance.value, shipJumpRange, { thresholds: thresholdSettings })
+  const originStationDistanceVariant = originStationSeverity.variant || 'neutral'
+  const destinationStationDistanceVariant = destinationStationSeverity.variant || 'neutral'
+  const originSystemDistanceVariant = originSystemSeverity.variant || 'neutral'
+  const destinationSystemDistanceVariant = destinationSystemSeverity.variant || 'neutral'
+  const originSystemDistanceColor = originSystemSeverity.color
+  const destinationSystemDistanceColor = destinationSystemSeverity.color
 
   const handleClick = () => onSelect(route)
   const handleKeyDown = event => onKeyDown(event, route)
@@ -539,7 +554,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
     { key: 'ton', label: 'Per/Ton', value: profitPerTonDisplay, metricClass: styles.tradeRouteProfitMetricTon },
     { key: 'trip', label: 'Per/Trip', value: profitPerTripDisplay, metricClass: styles.tradeRouteProfitMetricTrip },
     { key: 'hour', label: 'Per/Hour', value: profitPerHourDisplay, metricClass: styles.tradeRouteProfitMetricHour },
-    { key: 'updated', label: 'Last Update', value: updatedDisplay || null, metricClass: styles.tradeRouteProfitMetricUpdated }
+    { key: 'updated', label: 'Last Update', value: updatedDisplay || null, metricClass: styles.tradeRouteProfitMetricUpdated, color: updatedSeverity.color }
   ]
 
   return (
@@ -579,7 +594,8 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                   {renderMetricChip({
                     value: originStationDistanceDisplay,
                     variant: originStationDistanceVariant,
-                    title: 'Distance to station'
+                    title: 'Distance to station',
+                    color: originStationSeverity.color || undefined
                   })}
                 </div>
               </div>
@@ -646,7 +662,8 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                   {renderMetricChip({
                     value: destinationStationDistanceDisplay,
                     variant: destinationStationDistanceVariant,
-                    title: 'Distance to station'
+                    title: 'Distance to station',
+                    color: destinationStationSeverity.color || undefined
                   })}
                 </div>
               </div>
@@ -679,7 +696,12 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                     <React.Fragment key={metric.key}>
                       <div className={metricClasses.join(' ')}>
                         <span className={styles.tradeRouteProfitInlineLabel}>{metric.label}:</span>
-                        <span className={styles.tradeRouteProfitInlineValue}>{renderValue(metric.value)}</span>
+                        <span
+                          className={styles.tradeRouteProfitInlineValue}
+                          style={metric.color ? { color: metric.color } : undefined}
+                        >
+                          {renderValue(metric.value)}
+                        </span>
                       </div>
                       {index < inlineProfitMetrics.length - 1 ? (
                         <span className={separatorClasses.join(' ')} aria-hidden='true'>|</span>
@@ -1512,27 +1534,6 @@ function resolveStationDistance (station = {}) {
   }
 }
 
-function getStationDistanceVariant (value) {
-  if (typeof value !== 'number' || Number.isNaN(value)) return 'neutral'
-  if (value <= 500) return 'success'
-  if (value <= 1500) return 'caution'
-  return 'warning'
-}
-
-function getSystemDistanceVariant (value, jumpRange) {
-  if (typeof value !== 'number' || Number.isNaN(value)) return 'neutral'
-  if (typeof jumpRange !== 'number' || Number.isNaN(jumpRange) || jumpRange <= 0) {
-    if (value <= 15) return 'success'
-    if (value <= 35) return 'caution'
-    return 'warning'
-  }
-
-  const ratio = value / jumpRange
-  if (ratio <= 1) return 'success'
-  if (ratio <= 2) return 'caution'
-  return 'warning'
-}
-
 function resolveStationSystemDistance (route, type) {
   const target = type === 'destination' ? route?.destination : route?.origin
   const local = target?.local || {}
@@ -2089,6 +2090,7 @@ function MissionsPanel () {
   const [factionStandings, setFactionStandings] = useState({})
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
+  const thresholdSettings = useContext(InaraThresholdSettingsContext)
 
   const displayMessage = useMemo(() => {
     if (typeof message !== 'string') return ''
@@ -2346,7 +2348,11 @@ function MissionsPanel () {
                 {missions.map((mission, index) => {
                   const key = `${mission.system || 'unknown'}-${mission.faction || 'faction'}-${index}`
                   const distanceDisplay = formatSystemDistance(mission.distanceLy, mission.distanceText)
+                  const distanceSeverity = getDistanceSeverity(mission.distanceLy ?? null, null, { thresholds: thresholdSettings })
                   const updatedDisplay = formatRelativeTime(mission.updatedAt || mission.updatedText)
+                  const updatedSeverity = mission.updatedAt
+                    ? getUpdateSeverity(mission.updatedAt, { thresholds: thresholdSettings })
+                    : { color: null }
                   const isTargetSystem = mission.isTargetSystem
                   const factionKey = normaliseFactionKey(mission.faction)
                   const factionInfo = factionKey ? factionStandings[factionKey] : null
@@ -2388,8 +2394,24 @@ function MissionsPanel () {
                             : '--'}
                         </div>
                       </td>
-                      <td className={`${styles.tableCellTop} hidden-small text-right`}>{distanceDisplay || '--'}</td>
-                      <td className={`${styles.tableCellTop} hidden-small text-right`}>{updatedDisplay || mission.updatedText || '--'}</td>
+                      <td className={`${styles.tableCellTop} hidden-small text-right`}>
+                        {distanceDisplay
+                          ? (
+                              <span style={distanceSeverity.color ? { color: distanceSeverity.color } : undefined}>
+                                {distanceDisplay}
+                              </span>
+                            )
+                          : '--'}
+                      </td>
+                      <td className={`${styles.tableCellTop} hidden-small text-right`}>
+                        {updatedDisplay
+                          ? (
+                              <span style={updatedSeverity.color ? { color: updatedSeverity.color } : undefined}>
+                                {updatedDisplay}
+                              </span>
+                            )
+                          : (mission.updatedText || '--')}
+                      </td>
                     </tr>
                   )
                 })}
@@ -3216,9 +3238,13 @@ function CargoHoldPanel () {
           const originSystem = sanitizedOrigin?.systemName || ''
           const originType = sanitizedOrigin?.stationType || ''
           const originIconName = originStationName ? stationIconFromType(originType || '') : null
-          const originUpdated = sanitizedOrigin?.updatedAt
+          const originUpdatedRaw = sanitizedOrigin?.updatedAt || null
+          const originUpdated = originUpdatedRaw
             ? formatRelativeTime(sanitizedOrigin.updatedAt)
             : (sanitizedOrigin?.updatedText || '')
+          const originUpdatedSeverity = originUpdatedRaw
+            ? getUpdateSeverity(originUpdatedRaw, { thresholds: thresholdSettings })
+            : { color: null }
           const originDemandIndicator = sanitizedOrigin?.demandText
             ? (
                 <DemandIndicator
@@ -3241,7 +3267,7 @@ function CargoHoldPanel () {
             sourceMetrics.push({ label: 'Demand', value: originDemandIndicator, priority: true })
           }
           if (originUpdated) {
-            sourceMetrics.push({ label: 'Updated', value: originUpdated })
+            sourceMetrics.push({ label: 'Updated', value: originUpdated, color: originUpdatedSeverity.color })
           }
           const destinationMetrics = []
           if (selectedPriceDisplay && selectedPriceDisplay !== '--') {
@@ -3250,8 +3276,12 @@ function CargoHoldPanel () {
           if (selectedDemandIndicator) {
             destinationMetrics.push({ label: 'Demand', value: selectedDemandIndicator, priority: true })
           }
+          const selectedUpdatedRaw = resolvedListing?.updatedAt || null
+          const selectedUpdatedSeverity = selectedUpdatedRaw
+            ? getUpdateSeverity(selectedUpdatedRaw, { thresholds: thresholdSettings })
+            : { color: null }
           if (selectedUpdated) {
-            destinationMetrics.push({ label: 'Updated', value: selectedUpdated })
+            destinationMetrics.push({ label: 'Updated', value: selectedUpdated, color: selectedUpdatedSeverity.color })
           }
           const quantityDisplay = Number(detail.quantity || 0).toLocaleString()
           const quantityText = quantityDisplay ? `${quantityDisplay} t` : ''
@@ -3270,12 +3300,14 @@ function CargoHoldPanel () {
             detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName ? detail.commoditySymbol : null,
             profitPerUnitDisplay && profitPerUnitDisplay !== '--' ? `Profit/t ${profitPerUnitDisplay}` : null
           ].filter(Boolean)
-          const distanceColor = getDistanceSeverityColor(resolvedListing?.distanceLy ?? null, ship?.maxJumpRange ?? null)
+          const distanceSeverity = getDistanceSeverity(resolvedListing?.distanceLy ?? null, ship?.maxJumpRange ?? null, { thresholds: thresholdSettings })
+          const stationDistanceSeverity = getStationDistanceSeverity(resolvedListing?.distanceLs ?? null, { thresholds: thresholdSettings })
           const distanceSegment = {
             label: 'Distance',
             value: selectedSystemDistance || '',
             secondary: selectedStationDistance || '',
-            valueColor: distanceColor || undefined
+            valueColor: distanceSeverity.color || undefined,
+            secondaryColor: stationDistanceSeverity.color || undefined
           }
           const valueSecondaryParts = []
           if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') valueSecondaryParts.push(`Per t ${profitPerUnitDisplay}`)
@@ -3409,12 +3441,16 @@ function CargoHoldPanel () {
                             const isSelected = listing.__id === defaultSelectedId
                             const stationIcon = stationIconFromType(listing.stationType || '')
                             const systemDistanceDisplay = formatSystemDistance(listing.distanceLy, listing.distanceLyText)
-                            const systemDistanceColor = getDistanceSeverityColor(listing.distanceLy ?? null, ship?.maxJumpRange ?? null)
+                            const systemDistanceSeverity = getDistanceSeverity(listing.distanceLy ?? null, ship?.maxJumpRange ?? null, { thresholds: thresholdSettings })
+                            const stationDistanceSeverity = getStationDistanceSeverity(listing.distanceLs ?? null, { thresholds: thresholdSettings })
                             const stationDistanceDisplay = formatStationDistance(listing.distanceLs, listing.distanceLsText)
                             const demandDisplay = sanitizeInaraText(listing.demandText) || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
                             const updatedDisplay = listing.updatedAt
                               ? formatRelativeTime(listing.updatedAt)
                               : (listing.updatedText || '')
+                            const updatedSeverity = listing.updatedAt
+                              ? getUpdateSeverity(listing.updatedAt, { thresholds: thresholdSettings })
+                              : { color: null }
                             const priceDisplay = formatCredits(listing.price, listing.priceText || '--')
                             const rowClasses = [styles.tableRowInteractive]
                             if (isSelected) rowClasses.push(styles.stationRowSelected)
@@ -3449,13 +3485,21 @@ function CargoHoldPanel () {
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
                                   {systemDistanceDisplay
                                     ? (
-                                      <span style={systemDistanceColor ? { color: systemDistanceColor } : undefined}>
+                                      <span style={systemDistanceSeverity.color ? { color: systemDistanceSeverity.color } : undefined}>
                                         {systemDistanceDisplay}
                                       </span>
                                       )
                                     : '--'}
                                 </td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>{stationDistanceDisplay || '--'}</td>
+                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                                  {stationDistanceDisplay
+                                    ? (
+                                      <span style={stationDistanceSeverity.color ? { color: stationDistanceSeverity.color } : undefined}>
+                                        {stationDistanceDisplay}
+                                      </span>
+                                      )
+                                    : '--'}
+                                </td>
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
                                   {((listing.demandText || demandDisplay) && (listing.demandText || demandDisplay).toString().trim())
                                     ? (
@@ -3470,7 +3514,12 @@ function CargoHoldPanel () {
                                 <td className={`text-right ${styles.tableCellTop} ${styles.tableCellCompact}`}>
                                   <div>{priceDisplay}</div>
                                   {updatedDisplay ? (
-                                    <div className={styles.tableMetaMuted}>Updated {updatedDisplay}</div>
+                                    <div
+                                      className={styles.tableMetaMuted}
+                                      style={updatedSeverity.color ? { color: updatedSeverity.color } : undefined}
+                                    >
+                                      Updated {updatedDisplay}
+                                    </div>
                                   ) : null}
                                 </td>
                               </tr>
@@ -3551,9 +3600,13 @@ function CargoHoldPanel () {
                         )
                       : null
                     const inaraUpdatedText = sanitizeInaraText(inaraContextEntry?.updatedText) || inaraContextEntry?.updatedText || ''
-                    const inaraUpdated = inaraContextEntry?.updatedAt
+                    const inaraUpdatedRaw = inaraContextEntry?.updatedAt || null
+                    const inaraUpdated = inaraUpdatedRaw
                       ? formatRelativeTime(inaraContextEntry.updatedAt)
                       : inaraUpdatedText
+                    const inaraUpdatedSeverity = inaraUpdatedRaw
+                      ? getUpdateSeverity(inaraUpdatedRaw, { thresholds: thresholdSettings })
+                      : { color: null }
                     const inaraPriceDisplay = typeof inaraPrice === 'number' ? formatCredits(inaraPrice, '--') : '--'
                     const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
 
@@ -3597,8 +3650,11 @@ function CargoHoldPanel () {
                     const contextSummary = isContextRow ? commodityContext : null
                     const contextDistance = contextSummary ? formatStationDistance(contextSummary.distanceLs, contextSummary.distanceLsText) : ''
                     const contextSystemDistance = contextSummary ? formatSystemDistance(contextSummary.distanceLy, contextSummary.distanceLyText) : ''
-                    const contextSystemDistanceColor = contextSummary
-                      ? getDistanceSeverityColor(contextSummary.distanceLy ?? null, ship?.maxJumpRange ?? null)
+                    const contextSystemSeverity = contextSummary
+                      ? getDistanceSeverity(contextSummary.distanceLy ?? null, ship?.maxJumpRange ?? null, { thresholds: thresholdSettings })
+                      : null
+                    const contextStationSeverity = contextSummary
+                      ? getStationDistanceSeverity(contextSummary.distanceLs ?? null, { thresholds: thresholdSettings })
                       : null
                     const rowClassNames = [styles.tableRowInteractive]
                     if (isContextRow) rowClassNames.push(styles.tableRowContext)
@@ -3653,13 +3709,19 @@ function CargoHoldPanel () {
                                     <span className={styles.tableContextFootnote}>
                                       {contextSystemDistance
                                         ? (
-                                          <span style={contextSystemDistanceColor ? { color: contextSystemDistanceColor } : undefined}>
+                                          <span style={contextSystemSeverity?.color ? { color: contextSystemSeverity.color } : undefined}>
                                             {contextSystemDistance}
                                           </span>
                                           )
                                         : null}
                                       {contextSystemDistance && contextDistance ? ' / ' : null}
-                                      {contextDistance || null}
+                                      {contextDistance
+                                        ? (
+                                          <span style={contextStationSeverity?.color ? { color: contextStationSeverity.color } : undefined}>
+                                            {contextDistance}
+                                          </span>
+                                          )
+                                        : null}
                                     </span>
                                   )}
                                 </div>
@@ -3699,7 +3761,12 @@ function CargoHoldPanel () {
                             </div>
                           )}
                           {inaraUpdated && (
-                            <div className={styles.tableMetaMuted}>Updated {inaraUpdated}</div>
+                            <div
+                              className={styles.tableMetaMuted}
+                              style={inaraUpdatedSeverity.color ? { color: inaraUpdatedSeverity.color } : undefined}
+                            >
+                              Updated {inaraUpdated}
+                            </div>
                           )}
                         </td>
                         <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>
@@ -3747,6 +3814,7 @@ function CargoHoldPanel () {
 
 function TradeRoutesPanel ({ onStatusChange = () => {} }) {
   const { connected, ready } = useSocket()
+  const thresholdSettings = useContext(InaraThresholdSettingsContext)
   const systemSelector = useSystemSelector({ autoSelectCurrent: true })
   const {
     currentSystem,
@@ -4437,12 +4505,16 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
     [routeContext, selectedRoute]
   )
 
-  const originStationDistanceVariant = getStationDistanceVariant(originStationDistance.value)
-  const destinationStationDistanceVariant = getStationDistanceVariant(destinationStationDistance.value)
-  const originSystemDistanceVariant = getSystemDistanceVariant(originSystemDistance.value, shipStatus?.maxJumpRange ?? null)
-  const destinationSystemDistanceVariant = getSystemDistanceVariant(destinationSystemDistance.value, shipStatus?.maxJumpRange ?? null)
-  const originSystemDistanceColor = getDistanceSeverityColor(originSystemDistance.value, shipStatus?.maxJumpRange ?? null)
-  const destinationSystemDistanceColor = getDistanceSeverityColor(destinationSystemDistance.value, shipStatus?.maxJumpRange ?? null)
+  const originStationSeverity = getStationDistanceSeverity(originStationDistance.value, { thresholds: thresholdSettings })
+  const destinationStationSeverity = getStationDistanceSeverity(destinationStationDistance.value, { thresholds: thresholdSettings })
+  const originSystemSeverity = getDistanceSeverity(originSystemDistance.value, shipStatus?.maxJumpRange ?? null, { thresholds: thresholdSettings })
+  const destinationSystemSeverity = getDistanceSeverity(destinationSystemDistance.value, shipStatus?.maxJumpRange ?? null, { thresholds: thresholdSettings })
+  const originStationDistanceVariant = originStationSeverity.variant || 'neutral'
+  const destinationStationDistanceVariant = destinationStationSeverity.variant || 'neutral'
+  const originSystemDistanceVariant = originSystemSeverity.variant || 'neutral'
+  const destinationSystemDistanceVariant = destinationSystemSeverity.variant || 'neutral'
+  const originSystemDistanceColor = originSystemSeverity.color
+  const destinationSystemDistanceColor = destinationSystemSeverity.color
 
   const originStationType = useMemo(() => {
     if (!routeContext) return ''
@@ -4574,6 +4646,13 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
     if (!updated) return ''
     return formatRelativeTime(updated)
   }, [routeContext, selectedRoute])
+
+  const routeUpdatedSeverity = useMemo(() => {
+    if (!routeContext) return { color: null }
+    const updated = extractUpdatedAt(selectedRoute)
+    if (!updated) return { color: null }
+    return getUpdateSeverity(updated, { thresholds: thresholdSettings })
+  }, [routeContext, selectedRoute, thresholdSettings])
 
   const routeProfitMetrics = useMemo(() => {
     if (!routeContext) return []
@@ -4784,7 +4863,10 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       </div>
                       <div className={styles.tradeRouteContextMetric}>
                         <span className={styles.tradeRouteContextMetricLabel}>Orbital Distance</span>
-                        <span className={buildMetricChipClasses(originStationDistanceVariant)}>
+                        <span
+                          className={buildMetricChipClasses(originStationDistanceVariant)}
+                          style={originStationSeverity.color ? { '--chip-color': originStationSeverity.color } : undefined}
+                        >
                           {originStationDistance.display || '--'}
                         </span>
                       </div>
@@ -4815,7 +4897,12 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     </div>
                     {routeUpdatedDisplay ? (
                       <div className={styles.tradeRouteContextConnectorMeta}>
-                        <span className={styles.tradeRouteContextConnectorMetaText}>Updated {routeUpdatedDisplay}</span>
+                        <span
+                          className={styles.tradeRouteContextConnectorMetaText}
+                          style={routeUpdatedSeverity.color ? { color: routeUpdatedSeverity.color } : undefined}
+                        >
+                          Updated {routeUpdatedDisplay}
+                        </span>
                       </div>
                     ) : null}
                   </div>
@@ -4868,7 +4955,10 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       </div>
                       <div className={styles.tradeRouteContextMetric}>
                         <span className={styles.tradeRouteContextMetricLabel}>Orbital Distance</span>
-                        <span className={buildMetricChipClasses(destinationStationDistanceVariant)}>
+                        <span
+                          className={buildMetricChipClasses(destinationStationDistanceVariant)}
+                          style={destinationStationSeverity.color ? { '--chip-color': destinationStationSeverity.color } : undefined}
+                        >
                           {destinationStationDistance.display || '--'}
                         </span>
                       </div>
@@ -7091,6 +7181,7 @@ export default function InaraStatusPage () {
   const [activeTab, setActiveTab] = useState('tradeRoutes')
   const [tradeRoutesStatus, setTradeRoutesStatus] = useState('idle')
   const { connected, ready, active: socketActive } = useSocket()
+  const thresholdSettings = useInaraThresholdSettings()
   const inaraTabs = useMemo(() => {
     const panelItems = [
       { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
@@ -7108,38 +7199,40 @@ export default function InaraStatusPage () {
   const loaderVisible = activeTab === 'tradeRoutes' && tradeRoutesStatus === 'loading'
 
   return (
-    <Layout connected={connected} active={socketActive} ready={ready} loader={loaderVisible} className={styles.inaraLayout}>
-      <Panel
-        layout='full-width'
-        scrollable
-        navigation={inaraTabs}
-        search={false}
-        className={styles.inaraPanel}
-      >
-        <div className={workspaceClassName}>
-          <div className={styles.shell}>
-            <div className={styles.tabPanels}>
-              <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
-                <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
-              </div>
-              <div style={{ display: activeTab === 'cargoHold' ? 'block' : 'none' }}>
-                <CargoHoldPanel />
-              </div>
-              <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
-                <MissionsPanel />
-              </div>
-              <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
-                <PristineMiningPanel />
-              </div>
-              <div style={{ display: activeTab === 'pirateRadio' ? 'block' : 'none' }}>
-                <PirateRadioPanel />
+    <InaraThresholdSettingsContext.Provider value={thresholdSettings}>
+      <Layout connected={connected} active={socketActive} ready={ready} loader={loaderVisible} className={styles.inaraLayout}>
+        <Panel
+          layout='full-width'
+          scrollable
+          navigation={inaraTabs}
+          search={false}
+          className={styles.inaraPanel}
+        >
+          <div className={workspaceClassName}>
+            <div className={styles.shell}>
+              <div className={styles.tabPanels}>
+                <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+                  <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
+                </div>
+                <div style={{ display: activeTab === 'cargoHold' ? 'block' : 'none' }}>
+                  <CargoHoldPanel />
+                </div>
+                <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
+                  <MissionsPanel />
+                </div>
+                <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
+                  <PristineMiningPanel />
+                </div>
+                <div style={{ display: activeTab === 'pirateRadio' ? 'block' : 'none' }}>
+                  <PirateRadioPanel />
+                </div>
               </div>
             </div>
+            <InaraTerminalOverlay />
           </div>
-          <InaraTerminalOverlay />
-        </div>
-      </Panel>
-    </Layout>
+        </Panel>
+      </Layout>
+    </InaraThresholdSettingsContext.Provider>
   )
 }
 

@@ -13,7 +13,12 @@ import {
   formatSystemDistance
 } from 'lib/inara-formatters'
 import { stationIconFromType } from 'lib/station-icons'
-import getDistanceSeverityColor from 'lib/distance-colors'
+import {
+  getDistanceSeverity,
+  getStationDistanceSeverity,
+  getUpdateSeverity
+} from 'lib/distance-colors'
+import { useInaraThresholdSettingsContext } from 'lib/inara-thresholds'
 
 export function CommodityIcon ({ category, size = 26 }) {
   const config = getCommodityIconConfig(category)
@@ -50,13 +55,15 @@ function buildMetrics (entries) {
       return {
         label: typeof entry.label === 'string' ? entry.label : entry.label,
         value: entry.value,
-        priority: Boolean(entry.priority)
+        priority: Boolean(entry.priority),
+        color: entry.color
       }
     })
     .filter(Boolean)
 }
 
 export default function CommoditySummary ({ summary, shipSourceSegment, className, valueIcon, shipJumpRange }) {
+  const thresholdSettings = useInaraThresholdSettingsContext()
   const memoized = useMemo(() => {
     if (!summary) return null
 
@@ -73,8 +80,13 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
       : '--'
 
     const summarySystemDistance = formatSystemDistance(summary.distanceLy, summary.distanceLyText)
-    const summaryDistanceColor = getDistanceSeverityColor(summary.distanceLy, shipJumpRange)
+    const summaryDistanceSeverity = getDistanceSeverity(summary.distanceLy, shipJumpRange, { thresholds: thresholdSettings })
     const summaryStationDistance = formatStationDistance(summary.distanceLs, summary.distanceLsText)
+    const summaryStationSeverity = getStationDistanceSeverity(summary.distanceLs, { thresholds: thresholdSettings })
+    const summaryUpdatedRaw = summary.updatedAt || null
+    const summaryUpdatedSeverity = summaryUpdatedRaw
+      ? getUpdateSeverity(summaryUpdatedRaw, { thresholds: thresholdSettings })
+      : { color: null }
     const summaryUpdated = summary.updatedAt
       ? formatRelativeTime(summary.updatedAt)
       : (summary.updatedText || '')
@@ -99,6 +111,10 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
     const originName = summary.originStationName || 'Local Market'
     const originSystem = summary.originSystemName || ''
     const originType = summary.originStationType || ''
+    const originUpdatedRaw = summary.originUpdatedAt || null
+    const originUpdatedSeverity = originUpdatedRaw
+      ? getUpdateSeverity(originUpdatedRaw, { thresholds: thresholdSettings })
+      : { color: null }
     const originUpdated = summary.originUpdatedAt
       ? formatRelativeTime(summary.originUpdatedAt)
       : (summary.originUpdatedText || '')
@@ -128,7 +144,7 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
       sourceMetrics.push({ label: 'Buy', value: localPriceDisplay, priority: true })
     }
     if (originUpdated) {
-      sourceMetrics.push({ label: 'Updated', value: originUpdated })
+      sourceMetrics.push({ label: 'Updated', value: originUpdated, color: originUpdatedSeverity.color })
     }
 
     const destinationMetrics = []
@@ -139,7 +155,7 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
       destinationMetrics.push({ label: 'Demand', value: summaryDemandIndicator, priority: true })
     }
     if (summaryUpdated) {
-      destinationMetrics.push({ label: 'Updated', value: summaryUpdated })
+      destinationMetrics.push({ label: 'Updated', value: summaryUpdated, color: summaryUpdatedSeverity.color })
     }
 
     const valueSecondaryParts = []
@@ -151,7 +167,8 @@ export default function CommoditySummary ({ summary, shipSourceSegment, classNam
       label: 'Distance',
       value: summarySystemDistance || '',
       secondary: summaryStationDistance || '',
-      valueColor: summaryDistanceColor || undefined
+      valueColor: summaryDistanceSeverity.color || undefined,
+      secondaryColor: summaryStationSeverity.color || undefined
     }
 
     const sourceSegment = shipSourceSegment
