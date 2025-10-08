@@ -33,17 +33,7 @@ The application reads Elite Dangerous journal files in real-time and provides a 
 
 ## INARA Workspace (Primary UI Surface)
 
-**INARA** is the main UI surface for active development. It uses a unified royal purple theme derived from the classic ICARUS palette.
-
-### INARA Theme Specification
-- **Primary**: Royal purple `#5D2EFF` for actions, accents, highlights
-- **Gradients**: Blend from `#5D2EFF` → `#2A0E82` → `#8C5CFF`
-- **Backgrounds**: Charcoal `#0D0B1A`, elevated surfaces `#1C1633`
-- **Text**: High-contrast `#F5F1FF`, body `rgba(245, 241, 255, 0.84)`
-- **Success**: Emerald `#29F3C3`
-- **Warning**: Warm magenta `#FF5FC1`
-- **Glows**: `rgba(93, 46, 255, 0.45)` with 24px blur
-- **Borders**: Semi-transparent `rgba(140, 92, 255, 0.35)`
+**INARA** is the main UI surface for active development. It provides trade routes, cargo valuation, mining missions, and other companion features.
 
 ### INARA Layout Principles
 - Pages must never render beneath secondary navigation rail
@@ -53,7 +43,6 @@ The application reads Elite Dangerous journal files in real-time and provides a 
 - Table rows NEVER expand inline—always open dedicated full-page views
 - Use shared primitives: `StationSummary`, `CommoditySummary`, `SectionFrame`, `SectionHeader`
 - Station summaries follow: `Icon → Name → Key Metrics → Secondary metadata`
-- Avoid ad-hoc styling—extend INARA CSS tokens in `src/client/pages/inara-workspace.module.css`
 
 ### INARA Features (see FEATURES.md for full details)
 - **ROUTESCOUT**: Trade route intelligence with auto-detected ship stats
@@ -292,11 +281,10 @@ scripts/                                 # Build scripts
 ## Resources & References
 
 ### Documentation
-- **AGENTS.md**: Detailed implementation principles, INARA theme, event loop
+- **AGENTS.md**: Detailed implementation principles and event loop
 - **FEATURES.md**: Canonical feature mapping (ALWAYS UPDATE THIS)
 - **BUILD.md**: Build requirements, cross-platform instructions
-- **HTTP_LOGGING_IMPLEMENTATION.md**: HTTP logging technical details
-- **BUG_FIX_NORMALISE_COMMODITY_KEY.md**: Example bug fix documentation
+- **CONTRIB.md**: Contribution guidelines
 
 ### External APIs
 - **EDSM**: Stellar cartography data

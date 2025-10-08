@@ -1,9 +1,3 @@
-
-## Workspace Theme
-
-The INARA workspace now uses a single ICARUS-derived theme. The former theme toggle has been removed; surfaces should rely on the shared color tokens defined in `src/client/css/variables.css` and the workspace module styles.
-
----
 # ICARUS Terminal – Features Reference
 
 This file contains the canonical list of features, shortnames, and their mapping for the ICARUS Terminal and INARA. All CODEX agents MUST keep this file up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update this file immediately.

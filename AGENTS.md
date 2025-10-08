@@ -1,15 +1,4 @@
 
-## INARA/ICARUS Visual Alignment
-
-The INARA workspace now uses a single unified visual language built on the classic ICARUS palette. CODEX contributors must ensure:
-
-- All INARA workspace pages and panels respect the shared color tokens defined in `src/client/css/variables.css` and the workspace module styles.
-- Visual updates remain cohesive with the established ICARUS look and feel; avoid introducing bespoke palettes or one-off animation systems.
-- Any new layout or component should be evaluated against the existing ICARUS surfaces for consistency in spacing, typography, and interaction states.
-
-When documenting or implementing features, note the visual impact and confirm the result matches the unified theme across browsers and display sizes.
-
----
 # Instructions for CODEX contributors
 
 ## CODEX Agent Prompting Instructions
@@ -72,17 +61,15 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - Cross-platform headless builds land in `dist/` via `npm run build:standalone`. Run with `--help` for usage details and keep binaries in-place on Linux so bundled assets resolve.
 - Treat `src/app` (Go launcher), `src/service` (Node backend), and `src/client` (Next/React UI) as separate concerns; the launcher expects the service binary in the same directory or it will exit on startup.
 
-## INARA theming & asset references
+## INARA asset references
 - Primary surfaces live in `src/client/pages/inara.js` and `src/client/pages/inara-workspace.module.css`; the hero animation draws from `public/inara/signal-mesh.svg`.
 - Jest + Testing Library smoke tests in `src/client/__tests__/inara.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
 - Maintain the INARA copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `InaraPage`; update both arrays to keep the loop seamless.
 - When restructuring INARA assets, update any associated imports and keep the Jest configuration aligned so snapshot coverage remains intact.
-- Respect the palette guidance below—new CSS tokens must document their intent and derive from `src/client/pages/inara-workspace.module.css` rather than introducing bespoke colors.
 
 ## INARA implementation principles
 - Treat the **INARA** page as the sole surface for intentional UI enhancements. References to "the app" in these instructions should be interpreted as the INARA page unless a task explicitly states otherwise.
 - Keep modifications to the legacy "Icarus" experience as lean as possible while still enabling INARA to function. Prefer composing new behavior around existing Icarus code instead of overhauling it.
-- Maintain a unified visual language by reusing INARA's established color palette across any UI you touch.
 - Ensure every UI adjustment remains responsive and accessible across a wide range of device sizes.
 - Where it adds value, introduce tasteful animations and micro-interactions to help the interface feel vibrant and alive.
 - Mirror the structural patterns and layout conventions of other Icarus pages so the product feels cohesive, while still honoring INARA's unique identity.
@@ -94,25 +81,7 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - Favor composing UI from the shared layout primitives in `src/client/components` (e.g., `SectionFrame`, `SectionHeader`, table shells, detail drawers). If a new view needs a combination that does not yet exist, build the combination as a reusable component and place it alongside its peers so future pages can inherit it.
 - Consistency of data presentation is critical: station summaries should always follow the pattern `Icon → Name → Key Metrics → Secondary metadata`. Expanders and drawers must surface the same canonical fields (`status`, `ownership`, `location`, `throughput`, and `alerts`) in the same order across the app.
 - INARA now exposes shared primitives for these summaries—compose station surfaces with `StationSummary` and commodity views with `CommoditySummary` so iconography, metric stacks, and accessibility copy stay synchronized. If a view needs additional metadata, extend the shared component API instead of forking markup in-page.
-- Avoid ad-hoc styling or bespoke CSS for one-off views. Extend the INARA CSS tokens or shared utility classes, and document any new token additions with rationale and usage guidance.
-
-### Palette hygiene
-- Keep the INARA palette constrained to the core tokens defined in `src/client/pages/inara-workspace.module.css`.
-- When a design needs subtle variation, derive it with opacity or other modifiers from the shared tokens instead of introducing new hex values.
-- Avoid dumping long lists of bespoke color variables into module files; rely on the shared palette for consistency and easier maintenance.
-- Declare each palette token with a single color format (hex **or** rgb, not both) and document its primary usage with a block comment so future contributors understand the intent.
-- Keep gradients lightweight—prefer blending a small number of shared tokens with transparency rather than stacking many distinct color stops.
-
-### INARA Theme Specification
-- **Primary hue:** INARA surfaces should lean on a rich royal purple (`#5D2EFF`) for primary actions, interactive accents, and key highlights.
-- **Gradient treatments:** When gradients are needed, blend from the primary hue into a deeper indigo (`#2A0E82`) and finish with a soft ultraviolet (`#8C5CFF`) to preserve depth.
-- **Neutrals:** Use a charcoal base (`#0D0B1A`) for backgrounds, `#1C1633` for elevated surfaces, and `#F5F1FF` for high-contrast text and iconography.
-- **Supporting accents:** Emerald (`#29F3C3`) is the sanctioned success color, while warnings should leverage warm magenta (`#FF5FC1`); avoid introducing additional accent families.
-- **Typography:** Headings remain in the existing INARA display face, but always tinted `#F5F1FF`; body copy should default to `rgba(245, 241, 255, 0.84)` to soften contrast on dark surfaces.
-- **Shadows & glows:** Apply atmospheric glows using `rgba(93, 46, 255, 0.45)` with a 24px blur, and keep elevation shadows subtle (`rgba(13, 11, 26, 0.55)` at 12px blur, 0 offset).
-- **Borders & dividers:** Use semi-transparent borders `rgba(140, 92, 255, 0.35)` for cards or panels; dividers should sit at `rgba(245, 241, 255, 0.16)`.
-- **Interactive states:** Hover states brighten the primary hue by 8%, focus rings use a 2px outline of `#29F3C3`, and pressed states darken to `#2A0E82` with the glow removed.
-- **Accessibility:** Maintain WCAG AA contrast; when text falls below the ratio, elevate the surface or swap to the lighter ultraviolet tone.
+- Avoid ad-hoc styling or bespoke CSS for one-off views. Extend shared CSS tokens or utility classes, and document any new token additions with rationale and usage guidance.
 
 ## Repository orientation
 - **`src/app/` (Go)** – Windows-native bootstrapper responsible for creating the launcher/terminal window, spawning the Node service, and monitoring lifecycle state. Keep this layer focused on window management, updater orchestration, and save-game directory discovery (`main.go`, `execute.go`, `updater.go`).
