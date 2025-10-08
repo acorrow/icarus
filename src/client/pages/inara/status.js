@@ -4864,6 +4864,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
             {routeContext ? (
               <>
                 {routeProfitMetrics.length > 0 && (
+                  // Profit metrics row
                   <div className={styles.tradeRouteContextProfitRow}>
                     {routeProfitMetrics.map(metric => (
                       <div key={`route-context-${metric.key}`} className={styles.tradeRouteContextProfitMetric}>
@@ -4873,6 +4874,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     ))}
                   </div>
                 )}
+                {/* Route Context */}
                 <div className={styles.tradeRouteContextStations}>
                   <div className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardOrigin}`}>
                     <div className={styles.tradeRouteContextStationHeader}>
@@ -4943,7 +4945,9 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     </div>
                   </div>
 
-                  <div className={styles.tradeRouteContextStationConnector}>
+
+<div class="flow-arrow"></div>
+                  {/* <div className={styles.tradeRouteContextStationConnector}>
                     <div className={styles.tradeRouteContextConnectorTrack}>
                       <span className={styles.tradeRouteContextConnectorEndpoint} aria-hidden='true' />
                       <span className={styles.tradeRouteContextConnectorLine}>
@@ -4964,7 +4968,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                         </span>
                       </div>
                     ) : null}
-                  </div>
+                  </div> */}
 
                   <div className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardDestination}`}>
                     <div className={styles.tradeRouteContextStationHeader}>
@@ -5035,7 +5039,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     </div>
                   </div>
                 </div>
-
+                {/* Commodities and route */}
                 <div className={styles.tradeRouteContextCommodities}>
                   <div className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityOutbound}`}>
                     <div className={styles.tradeRouteContextCommodityHeader}>

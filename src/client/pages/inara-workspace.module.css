@@ -1703,20 +1703,25 @@ button.terminalStatusPreview:focus-visible {
   color: var(--inara-subdued);
 }
 
+
+
 .tradeRouteContextStations {
   display: grid;
   gap: clamp(0.75rem, 3vw, 1.75rem);
   margin-top: 1.25rem;
   grid-template-columns:
-    minmax(0, 1.2fr)
-    minmax(clamp(3.5rem, 12vw, 8.5rem), 0.6fr)
-    minmax(0, 1.2fr);
+    minmax(auto, 32rem)
+    1fr
+    minmax(auto, 32rem);
   align-items: stretch;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .tradeRouteContextStationCard {
   position: relative;
   display: flex;
+  outline: 5px solid var(--color-primary);
   flex-direction: column;
   gap: 1.15rem;
   padding: clamp(1.25rem, 3vw, 1.65rem);
@@ -1769,7 +1774,7 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteContextStationHeader {
-  display: flex;
+  display: inline;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
