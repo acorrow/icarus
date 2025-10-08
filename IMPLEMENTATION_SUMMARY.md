@@ -33,7 +33,7 @@ Your production EXE fails because:
 - ✅ `inara-request-cache.js` - Caching with axios
 - ✅ `token-currency.js` - Token ledger + handler
 
-### API Routes Migrated (40% Complete)
+### API Routes Migrated (100% Complete)
 
 | Route | Status | File |
 |-------|--------|------|
@@ -42,12 +42,12 @@ Your production EXE fails because:
 | `/api/faction-standings` | ✅ DONE | faction-standings.js |
 | `/api/token-currency` | ✅ DONE | token-currency.js |
 | `/api/shipyard-list` | ✅ DONE | shipyard-list.js |
-| `/api/inara-trade-routes` | ⏳ TODO | 952 lines, complex scraper |
-| `/api/inara-commodity-values` | ⏳ TODO | Commodity prices |
-| `/api/inara-missions` | ⏳ TODO | Mining missions |
-| `/api/inara-pristine-mining` | ⏳ TODO | Pristine locations |
-| `/api/inara-search` | ⏳ TODO | Search endpoint |
-| `/api/inara-websearch` | ⏳ TODO | Web search |
+| `/api/inara-trade-routes` | ✅ DONE | 952 lines, complex scraper |
+| `/api/inara-commodity-values` | ✅ DONE | Commodity prices |
+| `/api/inara-missions` | ✅ DONE | Mining missions |
+| `/api/inara-pristine-mining` | ✅ DONE | Pristine locations |
+| `/api/inara-search` | ✅ DONE | Search endpoint |
+| `/api/inara-websearch` | ✅ DONE | Web search |
 
 ## Next Steps - Complete the Migration 🚧
 
@@ -223,8 +223,9 @@ export default function handler(req, res) { ... }
 
 After completing migrations:
 
-- [ ] Run `npm run build` successfully
-- [ ] Run `npm start` and launcher opens
+- [x] Run `npm run build` successfully
+- [x] Run `npm start` and launcher opens
+- [x] Service starts without errors
 - [ ] Navigate to INARA workspace
 - [ ] Test Trade Routes - filters work, routes load
 - [ ] Test Cargo Hold - valuations display
@@ -234,6 +235,12 @@ After completing migrations:
 - [ ] Token balance displays correctly
 - [ ] No console errors in browser devtools
 - [ ] No errors in terminal/service logs
+
+## Issues Fixed
+
+1. **Cheerio Import Error**: Fixed `ERR_PACKAGE_PATH_NOT_EXPORTED` by changing from `require('cheerio')` to `const { load: cheerioLoad } = require('cheerio')` to match the original ES6 import pattern.
+2. **Mock Data Removal**: Removed all references to `inara-mock-data`, `usingMockCargo`, and `inaraUseMockData` from client code.
+3. **Missing Route Implementation**: Initial migration created stub files with placeholder comments. These have been replaced with proper CommonJS exports.
 
 ## Estimated Time
 

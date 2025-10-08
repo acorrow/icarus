@@ -92,13 +92,11 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
 }
 
 function InaraSettings () {
-  const [useMockData, setUseMockData] = useState(false)
   const [thresholdInputs, setThresholdInputs] = useState(INITIAL_THRESHOLD_INPUTS)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setUseMockData(window.localStorage.getItem('inaraUseMockData') === 'true')
       setThresholdInputs(formatThresholdInputs(loadInaraThresholdSettings()))
     }
     const unsubscribe = subscribeToInaraThresholdSettings(settings => {
@@ -121,9 +119,6 @@ function InaraSettings () {
 
   function handleSave (event) {
     event.preventDefault()
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('inaraUseMockData', useMockData ? 'true' : 'false')
-    }
     const sanitizedThresholds = sanitizeInaraThresholdSettings(thresholdInputs)
     setThresholdInputs(formatThresholdInputs(sanitizedThresholds))
     saveInaraThresholdSettings(sanitizedThresholds)
@@ -134,18 +129,8 @@ function InaraSettings () {
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
       <h3 className='text-primary'>INARA Integration Settings</h3>
-      <p>Enable or disable the Trade Route Layout Sandbox using mock data.</p>
+      {/* Removed mock data settings UI */}
       <form onSubmit={handleSave} style={{ maxWidth: 400 }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', fontSize: '1rem' }}>
-          <input
-            type='checkbox'
-            checked={useMockData}
-            onChange={event => setUseMockData(event.target.checked)}
-          />
-          <span>
-            Enable Trade Route Layout Sandbox (use mock data)
-          </span>
-        </label>
         <div style={{ marginBottom: '1.5rem' }}>
           <h4 className='text-primary' style={{ marginBottom: '.5rem' }}>Distance &amp; Update Thresholds</h4>
           <p className='text-muted' style={{ marginTop: 0 }}>

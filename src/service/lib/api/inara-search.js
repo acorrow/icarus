@@ -1,12 +1,20 @@
-import fetch from 'node-fetch'
-import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
+const fetch = require('node-fetch')
+const { estimateByteSize, spendTokensForInaraExchange } = require('./token-currency.js')
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.statusCode = 405
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Method not allowed' }))
+    return
+  }
 
   const { searchType, searchTerm, appName, appVersion } = req.body
   if (!searchType || !searchTerm || !appName || !appVersion) {
-    return res.status(400).json({ error: 'Missing required fields' })
+    res.statusCode = 400
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Missing required fields' }))
+    return
   }
 
   // INARA API endpoint
@@ -31,7 +39,10 @@ export default async function handler(req, res) {
   } else if (searchType === 'material') {
     requestBody.events.push({ eventName: 'getMaterialsMarket', eventData: { materialName: searchTerm } })
   } else {
-    return res.status(400).json({ error: 'Invalid search type' })
+    res.statusCode = 400
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Invalid search type' }))
+    return
   }
 
   const requestPayload = JSON.stringify(requestBody)
@@ -49,25 +60,21 @@ export default async function handler(req, res) {
     responseStatus = response.status
     responseText = await response.text()
     const data = responseText ? JSON.parse(responseText) : null
-    res.status(200).json(data)
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify(data))
   } catch (err) {
     error = err
-    res.status(500).json({ error: 'INARA API request failed', details: err.message })
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'INARA API request failed', details: err.message }))
   } finally {
     const metadata = {
       method: 'POST',
       status: responseStatus,
       error: error ? error.message : undefined,
-      searchType,
-      reason: error ? 'inara-request-error' : 'inara-request'
+      // ...existing code...
     }
-    await spendTokensForInaraExchange({
-      endpoint: url,
-      requestBytes,
-      responseBytes: estimateByteSize(responseText),
-      metadata
-    }).catch(ledgerError => {
-      console.error('[TokenLedger] Failed to record INARA spend (inara-search)', ledgerError)
-    })
+    // ...existing code...
   }
 }

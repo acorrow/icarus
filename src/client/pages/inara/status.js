@@ -23,7 +23,7 @@ import {
 } from 'lib/inara-thresholds'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from 'lib/station-icons'
-import { createMockCargoManifest, createMockCommodityValuations, generateMockTradeRoutes, NON_COMMODITY_KEYS, normaliseCommodityKey } from 'lib/inara-mock-data'
+// Removed mock data import
 import { getInaraStrings, getInaraString } from 'lib/inara-addon'
 import { InaraPanelNavItems } from 'lib/navigation-items'
 import styles from '../inara-workspace.module.css'
@@ -2603,22 +2603,14 @@ function CargoHoldPanel () {
   const [commodityContext, setCommodityContext] = useState(null)
   const [stationSortField, setStationSortField] = useState('price')
   const [stationSortDirection, setStationSortDirection] = useState('desc')
-  const [usingMockCargo, setUsingMockCargo] = useState(false)
+  // Removed usingMockCargo and setUsingMockCargo
   const tableContainerRef = useRef(null)
 
   const applyCargoInventory = useCallback(inventory => {
     const manifest = Array.isArray(inventory)
       ? inventory.filter(item => item && typeof item === 'object')
       : []
-
-    if (manifest.length > 0) {
-      setUsingMockCargo(false)
-      setCargo(manifest.map(item => ({ ...item })))
-      return
-    }
-
-    setUsingMockCargo(true)
-    setCargo(createMockCargoManifest())
+    setCargo(manifest.map(item => ({ ...item })))
   }, [])
 
   const cargoKey = useMemo(() => {
@@ -2708,21 +2700,7 @@ function CargoHoldPanel () {
       return
     }
 
-    if (usingMockCargo) {
-      setStatus('loading')
-      setError('')
-      const mockResults = createMockCommodityValuations(cargo)
-      setValuation({
-        results: mockResults,
-        metadata: {
-          inaraStatus: 'mock',
-          marketStatus: 'mock',
-          historyStatus: 'mock'
-        }
-      })
-      setStatus(mockResults.length > 0 ? 'ready' : 'empty')
-      return
-    }
+    // Removed mock cargo logic
 
     let cancelled = false
     setStatus('loading')
@@ -2767,7 +2745,7 @@ function CargoHoldPanel () {
     return () => {
       cancelled = true
     }
-  }, [cargoKey, usingMockCargo])
+  }, [cargoKey])
 
   const valuationMap = useMemo(() => {
     const map = new Map()
@@ -3714,11 +3692,7 @@ function CargoHoldPanel () {
                 ) : null}
 
                 {renderStatusBanner()}
-                {usingMockCargo && hasCargo ? (
-                  <div className={styles.inlineNoticeMuted}>
-                    Showing mock cargo manifest for development while your hold is empty in-game.
-                  </div>
-                ) : null}
+                {/* Removed mock cargo manifest notice */}
 
                 {status === 'ready' && hasCargo && hasDisplayableRows && (
                   <div className={styles.dataTableContainer} ref={tableContainerRef}>

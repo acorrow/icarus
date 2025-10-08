@@ -39,28 +39,8 @@ const PORT = commandLineArgs.port || commandLineArgs.p || 3300 // Port to listen
 const DEVELOPMENT = commandLineArgs.dev || false // Development mode
 const WEB_DIR = 'build/client'
 const DEFAULT_LOG_DIR = getLogDir()
-const MOCK_DATA_DIR = path.join(__dirname, '..', '..', 'resources', 'mock-game-data')
-
 let LOG_DIR = DEFAULT_LOG_DIR
-let USING_MOCK_DATA = false
-
-if (!fs.existsSync(LOG_DIR)) {
-  if (fs.existsSync(MOCK_DATA_DIR)) {
-    USING_MOCK_DATA = true
-    LOG_DIR = MOCK_DATA_DIR
-    console.warn('WARNING: No save game data found. Using mock data from', MOCK_DATA_DIR)
-  } else {
-    console.error('ERROR: No save game data found in', DEFAULT_LOG_DIR, '\n')
-    yargs.showHelp()
-    process.exit(1)
-  }
-} else {
-  console.log('Loading save game data from', LOG_DIR)
-}
-
-if (USING_MOCK_DATA) {
-  console.log('Mock data mode enabled – UI will use bundled fallback data for testing.')
-}
+console.log('Loading save game data from', LOG_DIR)
 
 function getLogDir () {
   // Hard coded fallback
@@ -99,7 +79,7 @@ function getLogDir () {
 // Export globals BEFORE loading libraries that use them
 global.PORT = PORT
 global.LOG_DIR = LOG_DIR
-global.USING_MOCK_DATA = USING_MOCK_DATA
+// Removed global.USING_MOCK_DATA
 global.BROADCAST_EVENT = broadcastEvent
 
 const tokenLedgerUserId = process.env.INARA_TOKEN_USER_ID || process.env.ICARUS_COMMANDER_ID || 'local'

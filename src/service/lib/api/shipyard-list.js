@@ -2,7 +2,7 @@
 const path = require('path')
 const fs = require('fs')
 
-module.exports = function handler (req, res) {
+module.exports = function handler(req, res) {
   const filePath = path.join(process.cwd(), 'src/service/data/edcd/fdevids/shipyard.json')
   try {
     const data = fs.readFileSync(filePath, 'utf8')
