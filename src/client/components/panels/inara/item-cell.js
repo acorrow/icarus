@@ -1,4 +1,3 @@
-import React from 'react'
 import PropTypes from 'prop-types'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
 import StackedCell from './stacked-cell'

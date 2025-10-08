@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import notification from 'lib/notification'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { sendEvent, eventListener } from 'lib/socket'
 import { formatRelativeTime } from 'lib/inara-formatters'
+import notification from 'lib/notification'
 import inaraStyles from 'pages/inara-workspace.module.css'
 import styles from './pirate-radio.module.css'
 

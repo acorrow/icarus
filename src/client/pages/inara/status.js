@@ -1,15 +1,7 @@
-import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, useContext, Fragment } from 'react'
-import Layout from 'components/layout'
-import Panel from 'components/panel'
-import Icons from 'lib/icons'
-import TransferContextSummary from 'components/panels/inara/transfer-context-summary'
-import StationSummary, { StationIcon, DemandIndicator } from 'components/panels/inara/station-summary'
-import CommoditySummary, { CommodityIcon } from 'components/panels/inara/commodity-summary'
-import CopyOnClick from 'components/copy-on-click'
-import PirateRadioPanel from 'components/panels/inara/pirate-radio'
-import NavigationInspectorPanel from 'components/panels/nav/navigation-inspector-panel'
+import { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, useContext, Fragment, memo } from 'react'
 import animateTableEffect from 'lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from 'lib/socket'
+import { InaraPanelNavItems } from 'lib/navigation-items'
 import { getShipLandingPadSize } from 'lib/ship-pad-sizes'
 import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from 'lib/inara-formatters'
 import {
@@ -23,9 +15,16 @@ import {
 } from 'lib/inara-thresholds'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from 'lib/station-icons'
-// Removed mock data import
 import { getInaraStrings, getInaraString } from 'lib/inara-addon'
-import { InaraPanelNavItems } from 'lib/navigation-items'
+import Layout from 'components/layout'
+import Panel from 'components/panel'
+import Icons from 'lib/icons'
+import TransferContextSummary from 'components/panels/inara/transfer-context-summary'
+import StationSummary, { StationIcon, DemandIndicator } from 'components/panels/inara/station-summary'
+import CommoditySummary, { CommodityIcon } from 'components/panels/inara/commodity-summary'
+import CopyOnClick from 'components/copy-on-click'
+import PirateRadioPanel from 'components/panels/inara/pirate-radio'
+import NavigationInspectorPanel from 'components/panels/nav/navigation-inspector-panel'
 import styles from '../inara-workspace.module.css'
 
 const METRIC_VARIANT_CLASS_MAP = {
@@ -531,7 +530,7 @@ const renderCommodityRowStyleArrowWIthText = renderCommodityRowStyleArrowWithTex
     )
   }
 
-const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
+const TradeRouteTableRow = memo(function TradeRouteTableRow ({
   route,
   onSelect,
   onKeyDown,
@@ -850,7 +849,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                   if (nextMetric?.metricClass) separatorClasses.push(nextMetric.metricClass)
 
                   return (
-                    <React.Fragment key={metric.key}>
+                    <Fragment key={metric.key}>
                       <div className={metricClasses.join(' ')}>
                         <span className={styles.tradeRouteProfitInlineLabel}>{metric.label}:</span>
                         <span
@@ -863,7 +862,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                       {index < inlineProfitMetrics.length - 1 ? (
                         <span className={separatorClasses.join(' ')} aria-hidden='true'>|</span>
                       ) : null}
-                    </React.Fragment>
+                    </Fragment>
                   )
                 })}
               </div>

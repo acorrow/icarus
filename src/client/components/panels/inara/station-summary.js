@@ -1,4 +1,3 @@
-import React from 'react'
 import PropTypes from 'prop-types'
 import Icons from 'lib/icons'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'

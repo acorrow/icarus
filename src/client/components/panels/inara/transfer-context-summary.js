@@ -1,4 +1,4 @@
-import React from 'react'
+import { isValidElement } from 'react'
 import PropTypes from 'prop-types'
 import CopyOnClick from 'components/copy-on-click'
 import styles from './transfer-context-summary.module.css'
@@ -41,7 +41,7 @@ function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel }) {
       {icon ? <span className={styles.icon}>{icon}</span> : null}
       {normalizedName ? (
         <span className={styles.primary} style={color ? { color } : undefined}>
-          {React.isValidElement(normalizedName)
+          {isValidElement(normalizedName)
             ? normalizedName
             : <CopyOnClick copyMessageKey='station'>{normalizedName}</CopyOnClick>}
         </span>

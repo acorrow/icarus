@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import TransferContextSummary from './transfer-context-summary'
 import { StationIcon, DemandIndicator } from './station-summary'
