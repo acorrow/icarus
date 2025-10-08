@@ -114,6 +114,34 @@ global.CACHE = {
 // Don't load events till globals are set
 const { eventHandlers, init } = require('./lib/events')
 
+// Setup API routes handler
+function setupApiRoutes (app) {
+  // Import API route handlers (these will be created as we migrate from client)
+  const bodyParser = require('./lib/api-body-parser')
+  
+  // Add JSON body parser for POST requests
+  app.use(bodyParser)
+  
+  // Feature flags endpoint
+  app.use('/api/feature-flags', require('./lib/api/feature-flags'))
+  
+  // Current system and faction data
+  app.use('/api/current-system', require('./lib/api/current-system'))
+  app.use('/api/faction-standings', require('./lib/api/faction-standings'))
+  
+  // INARA endpoints
+  app.use('/api/inara-trade-routes', require('./lib/api/inara-trade-routes'))
+  app.use('/api/inara-commodity-values', require('./lib/api/inara-commodity-values'))
+  app.use('/api/inara-missions', require('./lib/api/inara-missions'))
+  app.use('/api/inara-pristine-mining', require('./lib/api/inara-pristine-mining'))
+  app.use('/api/inara-search', require('./lib/api/inara-search'))
+  app.use('/api/inara-websearch', require('./lib/api/inara-websearch'))
+  
+  // Ship and token endpoints
+  app.use('/api/shipyard-list', require('./lib/api/shipyard-list'))
+  app.use('/api/token-currency', require('./lib/api/token-currency'))
+}
+
 let httpServer
 if (DEVELOPMENT) {
   // If DEVELOPMENT is specified then HTTP requests other than web socket
@@ -125,7 +153,14 @@ if (DEVELOPMENT) {
   // The default behaviour (i.e. production) is to serve static assets. When the
   // application is compiled to a native executable these assets will be bundled
   // with the executable in a virtual file system.
-  const webServer = connect().use(serveStatic(WEB_DIR, { extensions: ['html'] }))
+  const webServer = connect()
+  
+  // Setup API routes BEFORE static file serving
+  setupApiRoutes(webServer)
+  
+  // Then serve static files
+  webServer.use(serveStatic(WEB_DIR, { extensions: ['html'] }))
+  
   httpServer = http.createServer(webServer)
 }
 
