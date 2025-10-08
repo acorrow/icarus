@@ -1,7 +1,6 @@
 // Backend API: Proxies INARA nearest-outfitting for ships only
 // Only supports ship search (not modules or other outfitting)
 
-import fetch from 'node-fetch'
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
@@ -10,6 +9,7 @@ import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
 import { appendInaraLogEntry } from './inara-log-utils.js'
 import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
+import { fetchWithInaraCache } from './inara-request-cache.js'
 
 const logPath = path.join(process.cwd(), 'inara-websearch.log')
 function logInaraSearch(entry) {
@@ -330,7 +330,7 @@ export default async function handler(req, res) {
   let caughtError = null
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithInaraCache(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; ICARUS/1.0)',
         'Accept-Language': 'en-US,en;q=0.9'

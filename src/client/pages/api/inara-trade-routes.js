@@ -1,4 +1,3 @@
-import fetch from 'node-fetch'
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
@@ -9,6 +8,7 @@ import System from '../../../service/lib/event-handlers/system.js'
 import distance from '../../../shared/distance.js'
 import { appendInaraLogEntry } from './inara-log-utils.js'
 import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
+import { fetchWithInaraCache } from './inara-request-cache.js'
 
 const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -476,7 +476,7 @@ export default async function handler(req, res) {
   let caughtError = null
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithInaraCache(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; ICARUS/1.0)',
         'Accept-Language': 'en-US,en;q=0.9'
