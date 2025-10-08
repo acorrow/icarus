@@ -3878,13 +3878,13 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
     routeDistance: '30',
     priceAge: '8',
     padSize: '',
-    minSupply: '500',
-    minDemand: '0',
+    minSupply: '1000',
+    minDemand: '1000',
     stationDistance: '0',
     surfacePreference: '0',
     sourcePower: '0',
     targetPower: '0',
-    orderBy: '0',
+    orderBy: '3',
     displayPowerplay: false,
     includeRoundTrips: true
   })
@@ -4142,15 +4142,24 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
     return Array.isArray(list) ? [...list] : []
   }, [])
 
-  const sortRoutes = useCallback((list = []) => {
+  const sortRoutes = useCallback((list = [], options = {}) => {
     if (!Array.isArray(list)) return []
-    if (!sortField) return Array.isArray(list) ? [...list] : []
 
-    const directionFactor = sortDirection === 'asc' ? 1 : -1
+    const field = typeof options.field === 'string' && options.field
+      ? options.field
+      : sortField
+
+    if (!field) return Array.isArray(list) ? [...list] : []
+
+    const direction = typeof options.direction === 'string' && options.direction
+      ? options.direction
+      : sortDirection
+
+    const directionFactor = direction === 'asc' ? 1 : -1
 
     const getValue = route => {
       if (!route) return null
-      switch (sortField) {
+      switch (field) {
         case 'stationA': {
           const distance = resolveStationSystemDistance(route, 'origin')
           if (typeof distance.value === 'number' && !Number.isNaN(distance.value)) {
@@ -4222,10 +4231,12 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
 
   const applyResults = useCallback((nextRoutes = [], meta = {}) => {
     const filteredRoutes = filterRoutes(nextRoutes)
-    const sortedRoutes = sortRoutes(filteredRoutes)
+    const sortedRoutes = sortRoutes(filteredRoutes, { field: 'profit', direction: 'desc' })
     const nextError = typeof meta.error === 'string' ? meta.error : ''
     const nextMessage = typeof meta.message === 'string' ? meta.message : ''
 
+    setSortField('profit')
+    setSortDirection('desc')
     setRawRoutes(Array.isArray(nextRoutes) ? nextRoutes : [])
     setRoutes(sortedRoutes)
     setError(nextError)
