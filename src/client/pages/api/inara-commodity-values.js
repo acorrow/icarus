@@ -2,9 +2,9 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import https from 'https'
-import fetch from 'node-fetch'
 import { load } from 'cheerio'
 import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
+import { fetchWithInaraCache } from './inara-request-cache.js'
 
 const INARA_BASE_URL = 'https://inara.cz'
 const INARA_COMMODITY_SEARCH_URL = `${INARA_BASE_URL}/elite/commodities/`
@@ -238,7 +238,7 @@ async function loadCommodityOptions () {
     let fetchError = null
 
     try {
-      const response = await fetch(url.toString(), {
+      const response = await fetchWithInaraCache(url.toString(), {
         agent: ipv4HttpsAgent,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'
@@ -413,7 +413,7 @@ async function fetchCommoditySearchListings ({ commodityId, commodityName, nearS
   let fetchError = null
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithInaraCache(url, {
       agent: ipv4HttpsAgent,
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'

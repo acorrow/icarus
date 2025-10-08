@@ -1,7 +1,7 @@
-import fetch from 'node-fetch'
 import https from 'https'
 import { load } from 'cheerio'
 import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
+import { fetchWithInaraCache } from './inara-request-cache.js'
 
 const BASE_URL = 'https://inara.cz'
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -146,7 +146,7 @@ export default async function handler (req, res) {
   let caughtError = null
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithInaraCache(url, {
       agent: ipv4HttpsAgent,
       headers: INARA_REQUEST_HEADERS
     })
