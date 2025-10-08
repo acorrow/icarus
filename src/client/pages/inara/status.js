@@ -615,7 +615,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
         aria-pressed={isSelected}
         data-selected={isSelected ? 'true' : 'false'}
       >
-        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
+        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellOrigin}`}>
           <div className={styles.tradeRouteStationStack}>
             <div className={styles.tradeRouteStationGrid}>
               <div className={styles.tradeRouteStationRow}>
@@ -642,38 +642,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                       variant: originStationDistanceVariant,
                       title: 'Distance to station'
                     })}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </td>
-        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellOrigin}`}>
-          <div className={styles.tradeRouteStationGrid}>
-            <div className={styles.tradeRouteStationRow}>
-              <span
-                className={styles.tradeRouteStationIcon}
-                title={originStandingDisplay.title || undefined}
-              >
-                {originIconName
-                  ? <StationIcon icon={originIconName} color={originStandingDisplay.iconColor} size='100%' />
-                  : null}
-              </span>
-              <div className={styles.tradeRouteStationContent}>
-                <span className={styles.tradeRouteStationName} title={originStationDisplay || undefined}>{renderValue(originStationDisplay)}</span>
-                <span className={styles.tradeRouteStationSystem} title={originSystemName || undefined}>{renderValue(originSystemName)}</span>
-                <div className={styles.tradeRouteStationChips}>
-                  {renderMetricChip({
-                    value: originSystemDistanceDisplay,
-                    variant: originSystemDistanceVariant,
-                    title: 'Distance to system',
-                    color: originSystemDistanceColor || undefined
-                  })}
-                  {renderMetricChip({
-                    value: originStationDistanceDisplay,
-                    variant: originStationDistanceVariant,
-                    title: 'Distance to station'
-                  })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -688,7 +657,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
             {renderCommodityRow('return')}
           </div>
         </td>
-        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell}`}>
+        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellDestination}`}>
           <div className={styles.tradeRouteStationStack}>
             <div className={styles.tradeRouteStationCompact}>
               {renderCommodityRow('return', { variant: 'compact' })}
@@ -718,38 +687,7 @@ const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
                       variant: destinationStationDistanceVariant,
                       title: 'Distance to station'
                     })}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </td>
-        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellDestination}`}>
-          <div className={styles.tradeRouteStationGrid}>
-            <div className={styles.tradeRouteStationRow}>
-              <span
-                className={styles.tradeRouteStationIcon}
-                title={destinationStandingDisplay.title || undefined}
-              >
-                {destinationIconName
-                  ? <StationIcon icon={destinationIconName} color={destinationStandingDisplay.iconColor} size='100%' />
-                  : null}
-              </span>
-              <div className={styles.tradeRouteStationContent}>
-                <span className={styles.tradeRouteStationName} title={destinationStationDisplay || undefined}>{renderValue(destinationStationDisplay)}</span>
-                <span className={styles.tradeRouteStationSystem} title={destinationSystemName || undefined}>{renderValue(destinationSystemName)}</span>
-                <div className={styles.tradeRouteStationChips}>
-                  {renderMetricChip({
-                    value: destinationSystemDistanceDisplay,
-                    variant: destinationSystemDistanceVariant,
-                    title: 'Distance to system',
-                    color: destinationSystemDistanceColor || undefined
-                  })}
-                  {renderMetricChip({
-                    value: destinationStationDistanceDisplay,
-                    variant: destinationStationDistanceVariant,
-                    title: 'Distance to station'
-                  })}
+                  </div>
                 </div>
               </div>
             </div>
