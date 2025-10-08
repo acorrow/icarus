@@ -1,7 +1,12 @@
 /* global WebSocket, CustomEvent */
 import { createContext, useState, useContext, useEffect } from 'react'
 import notification from 'lib/notification'
-// Removed mock data import
+import {
+  getMockShipStatus,
+  getMockSystemData,
+  getMockTokenBalanceSnapshot,
+  getMockTokenLedger
+} from './inara-mock-data'
 
 let socket = null // Store socket connection (defaults to null)
 let callbackHandlers = {} // Store callbacks waiting to be executed (pending response from server)

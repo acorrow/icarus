@@ -1,7 +1,7 @@
 const { createMockReq, createMockRes, createFetchResponse } = require('../helpers')
 
-const handlerPath = '../../../src/client/pages/api/inara-trade-routes.js'
-const tokenCurrencyPath = '../../../src/client/pages/api/token-currency.js'
+const handlerPath = '../../../src/service/lib/api/inara-trade-routes.js'
+const tokenCurrencyPath = '../../../src/service/lib/api/token-currency.js'
 
 describe('inara-trade-routes API handler', () => {
   beforeEach(() => {
@@ -9,8 +9,8 @@ describe('inara-trade-routes API handler', () => {
   })
 
   async function loadModule() {
-    jest.doMock('node-fetch', () => jest.fn())
-    jest.doMock('../../../src/client/pages/api/inara-log-utils.js', () => ({
+    jest.doMock('axios', () => jest.fn())
+    jest.doMock('../../../src/service/lib/api/inara-log-utils.js', () => ({
       appendInaraLogEntry: jest.fn()
     }))
     jest.doMock('../../../src/service/lib/elite-log.js', () => jest.fn().mockImplementation(() => ({
@@ -27,7 +27,7 @@ describe('inara-trade-routes API handler', () => {
 
     const handlerModule = require(handlerPath)
     const handler = handlerModule.default || handlerModule
-    const fetchMock = require('node-fetch')
+    const fetchMock = require('axios')
 
     return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
   }
@@ -35,7 +35,7 @@ describe('inara-trade-routes API handler', () => {
   it('records token spend metadata when no trade routes are returned', async () => {
     const { handler, fetchMock, spendTokensMock } = await loadModule()
 
-    fetchMock.mockResolvedValue(createFetchResponse({ status: 200, ok: true, body: '<html></html>' }))
+  fetchMock.mockResolvedValue(createFetchResponse({ status: 200, ok: true, body: '<html></html>', headers: {} }))
 
     const req = createMockReq({
       method: 'POST',
@@ -62,7 +62,7 @@ describe('inara-trade-routes API handler', () => {
   it('records token spend metadata when the trade routes fetch fails', async () => {
     const { handler, fetchMock, spendTokensMock } = await loadModule()
 
-    fetchMock.mockResolvedValue(createFetchResponse({ status: 502, ok: false, body: 'error' }))
+  fetchMock.mockResolvedValue(createFetchResponse({ status: 502, ok: false, body: 'error', headers: {} }))
 
     const req = createMockReq({
       method: 'POST',

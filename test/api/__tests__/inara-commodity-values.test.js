@@ -1,7 +1,7 @@
 const { createMockReq, createMockRes, createFetchResponse } = require('../helpers')
 
-const handlerPath = '../../../src/client/pages/api/inara-commodity-values.js'
-const tokenCurrencyPath = '../../../src/client/pages/api/token-currency.js'
+const handlerPath = '../../../src/service/lib/api/inara-commodity-values.js'
+const tokenCurrencyPath = '../../../src/service/lib/api/token-currency.js'
 
 describe('inara-commodity-values API handler', () => {
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('inara-commodity-values API handler', () => {
   })
 
   async function loadModule() {
-    jest.doMock('node-fetch', () => jest.fn())
+    jest.doMock('axios', () => jest.fn())
     jest.doMock('fs', () => {
       const actualFs = jest.requireActual('fs')
       return {
@@ -29,7 +29,7 @@ describe('inara-commodity-values API handler', () => {
 
     const handlerModule = require(handlerPath)
     const handler = handlerModule.default || handlerModule
-    const fetchMock = require('node-fetch')
+    const fetchMock = require('axios')
 
     return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
   }
@@ -65,8 +65,8 @@ describe('inara-commodity-values API handler', () => {
     `
 
     fetchMock
-      .mockResolvedValueOnce(createFetchResponse({ status: 200, ok: true, body: optionsHtml }))
-      .mockResolvedValueOnce(createFetchResponse({ status: 200, ok: true, body: listingsHtml }))
+      .mockResolvedValueOnce(createFetchResponse({ status: 200, ok: true, body: optionsHtml, headers: {} }))
+      .mockResolvedValueOnce(createFetchResponse({ status: 200, ok: true, body: listingsHtml, headers: {} }))
 
     const req = createMockReq({
       method: 'POST',

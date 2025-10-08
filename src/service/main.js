@@ -93,6 +93,7 @@ global.CACHE = {
 
 // Don't load events till globals are set
 const { eventHandlers, init } = require('./lib/events')
+const logger = require('./lib/logger')
 
 // Setup API routes handler
 function setupApiRoutes (app) {
@@ -101,6 +102,23 @@ function setupApiRoutes (app) {
   
   // Add JSON body parser for POST requests
   app.use(bodyParser)
+  
+  // Add request logging middleware
+  app.use((req, res, next) => {
+    if (req.url.startsWith('/api/')) {
+      logger.info('→ %s %s', req.method, req.url)
+      
+      // Log response completion
+      const originalEnd = res.end
+      res.end = function(chunk, encoding) {
+        logger.info('← %s %s %d', req.method, req.url, res.statusCode)
+        originalEnd.call(this, chunk, encoding)
+      }
+    }
+    next()
+  })
+  
+  logger.info('Registering API routes...')
   
   // Feature flags endpoint
   app.use('/api/feature-flags', require('./lib/api/feature-flags'))
@@ -120,6 +138,8 @@ function setupApiRoutes (app) {
   // Ship and token endpoints
   app.use('/api/shipyard-list', require('./lib/api/shipyard-list'))
   app.use('/api/token-currency', require('./lib/api/token-currency'))
+  
+  logger.info('API routes registered successfully')
 }
 
 let httpServer

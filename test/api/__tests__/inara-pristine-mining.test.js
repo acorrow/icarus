@@ -1,7 +1,7 @@
 const { createMockReq, createMockRes, createFetchResponse } = require('../helpers')
 
-const handlerPath = '../../../src/client/pages/api/inara-pristine-mining.js'
-const tokenCurrencyPath = '../../../src/client/pages/api/token-currency.js'
+const handlerPath = '../../../src/service/lib/api/inara-pristine-mining.js'
+const tokenCurrencyPath = '../../../src/service/lib/api/token-currency.js'
 
 describe('inara-pristine-mining API handler', () => {
   beforeEach(() => {
@@ -9,14 +9,14 @@ describe('inara-pristine-mining API handler', () => {
   })
 
   async function loadModule() {
-    jest.doMock('node-fetch', () => jest.fn())
+    jest.doMock('axios', () => jest.fn())
 
     const tokenCurrency = require(tokenCurrencyPath)
     tokenCurrency.spendTokensForInaraExchange = jest.fn().mockResolvedValue()
 
     const handlerModule = require(handlerPath)
     const handler = handlerModule.default || handlerModule
-    const fetchMock = require('node-fetch')
+    const fetchMock = require('axios')
 
     return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
   }

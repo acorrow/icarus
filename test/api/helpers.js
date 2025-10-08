@@ -10,11 +10,26 @@ function createMockRes() {
     json(payload) {
       this.body = payload
       return this
-    },
-    setHeader: jest.fn((key, value) => {
-      this.headers[key] = value
-    })
+    }
   }
+
+  res.setHeader = jest.fn((key, value) => {
+    res.headers[key] = value
+  })
+
+  res.end = jest.fn((payload) => {
+    if (typeof payload === 'string') {
+      try {
+        res.body = JSON.parse(payload)
+      } catch (error) {
+        res.body = payload
+      }
+    } else {
+      res.body = payload
+    }
+    return res
+  })
+
   return res
 }
 
@@ -32,6 +47,7 @@ function createFetchResponse({ status = 200, ok = true, body = '', headers = {} 
     status,
     ok,
     headers,
+    data: body,
     text: jest.fn().mockResolvedValue(body)
   }
 }

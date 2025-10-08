@@ -25,9 +25,26 @@ jest.mock('../lib/socket', () => ({
   eventListener: (...args) => mockEventListener(...args)
 }))
 
-jest.mock('../components/layout', () => ({ children }) => <>{children}</>)
-jest.mock('../components/panel', () => ({ children }) => <div>{children}</div>)
-jest.mock('../components/panels/nav/navigation-inspector-panel', () => () => <div data-testid='navigation-inspector-placeholder' />)
+jest.mock('../components/layout', () => {
+  const React = require('react')
+  return function LayoutMock({ children }) {
+    return React.createElement(React.Fragment, null, children)
+  }
+})
+
+jest.mock('../components/panel', () => {
+  const React = require('react')
+  return function PanelMock({ children }) {
+    return React.createElement('div', null, children)
+  }
+})
+
+jest.mock('../components/panels/nav/navigation-inspector-panel', () => {
+  const React = require('react')
+  return function NavigationInspectorPanelMock() {
+    return React.createElement('div', { 'data-testid': 'navigation-inspector-placeholder' })
+  }
+})
 
 describe('INARA page', () => {
   beforeEach(() => {

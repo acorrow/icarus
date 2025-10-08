@@ -1,5 +1,8 @@
 const https = require('https')
-const cheerio = require('cheerio')
+const { load } = require('cheerio')
+const path = require('path')
+const logger = require('../logger.js')
+const { appendInaraLogEntry } = require('./inara-log-utils.js')
 const { estimateByteSize, spendTokensForInaraExchange } = require('./token-currency.js')
 const { fetchWithInaraCache } = require('./inara-request-cache.js')
 
@@ -29,6 +32,11 @@ const SEARCH_DEFAULTS = {
 }
 
 const MAX_DISTANCE_LY = Number(SEARCH_DEFAULTS.pi41)
+const logPath = path.join(process.cwd(), 'inara-pristine-mining.log')
+
+function appendLog (entry) {
+  appendInaraLogEntry(logPath, entry)
+}
 
 function cleanText (value) {
   return (value || '').replace(/\s+/g, ' ').trim()
@@ -50,7 +58,7 @@ function parseDistance (text) {
 
 function parseTooltipDetails (html) {
   if (!html || typeof html !== 'string') return {}
-  const $ = cheerio.load(`<div>${html}</div>`, null, false)
+  const $ = load(`<div>${html}</div>`, null, false)
   const details = {}
   $('div.itempaircontainer').each((_, element) => {
     const label = cleanText($(element).find('.itempairlabel').text())
@@ -58,16 +66,145 @@ function parseTooltipDetails (html) {
     if (!label || !value) return
     const lower = label.toLowerCase()
     if (lower.includes('ring/belt')) details.ringType = value
-    // ...existing code...
+    if (lower.includes('reserves')) details.reservesLevel = value
+    if (lower === 'body type' && !details.bodyType) details.bodyType = value
   })
   return details
 }
 
-module.exports = async function handler(req, res) {
-  // ...existing code for request parsing, INARA pristine mining scraping, and response...
-  // Replace all res.status(200).json({ data }) with:
-  // res.statusCode = 200
-  // res.setHeader('Content-Type', 'application/json')
-  // res.end(JSON.stringify({ data }))
-  // ...existing code...
+function buildInaraUrl (system) {
+  const params = new URLSearchParams({ ...SEARCH_DEFAULTS, ps1: system })
+  return `${BASE_URL}/elite/nearest-bodies/?${params.toString()}`
 }
+
+function parseBodies (html, targetSystem) {
+  const $ = load(html)
+  const table = $('table.tablesortercollapsed').first()
+  if (!table || !table.length) return []
+
+  const normalizedTarget = typeof targetSystem === 'string' ? targetSystem.trim().toLowerCase() : ''
+
+  const bodies = []
+  table.find('tbody tr').each((_, row) => {
+    const cells = $(row).find('td')
+    if (cells.length < 5) return
+
+    const systemCell = cells.eq(0)
+    const systemLink = systemCell.find('a').first()
+    const systemName = cleanText(systemLink.text()) || cleanText(systemCell.text()) || null
+    const systemUrl = systemLink && systemLink.attr('href') ? `${BASE_URL}${systemLink.attr('href')}` : null
+
+    const bodyCell = cells.eq(1)
+    const bodyTooltip = bodyCell.find('.tooltip').first()
+    const bodyName = cleanText(bodyTooltip.text()) || cleanText(bodyCell.text()) || null
+    const bodyLink = bodyCell.find('a').first()
+    const bodyUrl = bodyLink && bodyLink.attr('href') ? `${BASE_URL}${bodyLink.attr('href')}` : null
+    const tooltipHtml = bodyTooltip ? bodyTooltip.attr('data-tooltiptext') : null
+    const tooltipDetails = parseTooltipDetails(tooltipHtml)
+
+    const bodyTypeCell = cells.eq(2)
+    const bodyType = cleanText(bodyTypeCell.text()) || tooltipDetails.bodyType || null
+
+    const bodyDistanceCell = cells.eq(3)
+    const bodyDistanceText = cleanText(bodyDistanceCell.text()) || null
+    const bodyDistanceOrder = parseNumber(bodyDistanceCell.attr('data-order'))
+    const bodyDistanceLs = Number.isFinite(bodyDistanceOrder) ? bodyDistanceOrder : parseDistance(bodyDistanceText)
+
+    const distanceCell = cells.eq(4)
+    const distanceClone = distanceCell.clone()
+    distanceClone.find('.pictofont').remove()
+    const distanceText = cleanText(distanceClone.text()) || null
+    const distanceOrder = parseNumber(distanceCell.attr('data-order'))
+    const distanceLy = Number.isFinite(distanceOrder) ? distanceOrder : parseDistance(distanceText)
+
+    bodies.push({
+      system: systemName,
+      systemUrl,
+      body: bodyName,
+      bodyUrl,
+      bodyType,
+      ringType: tooltipDetails.ringType || null,
+      reservesLevel: tooltipDetails.reservesLevel || null,
+      bodyDistanceText,
+      bodyDistanceLs,
+      distanceText,
+      distanceLy,
+      isTargetSystem: normalizedTarget && systemName
+        ? systemName.trim().toLowerCase() === normalizedTarget
+        : false
+    })
+  })
+
+  return bodies
+}
+
+function sendJson (res, statusCode, payload) {
+  res.statusCode = statusCode
+  res.setHeader('Content-Type', 'application/json')
+  res.end(JSON.stringify(payload))
+}
+
+async function handler (req, res) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST')
+    sendJson(res, 405, { error: 'Method not allowed' })
+    return
+  }
+
+  const system = typeof req.body?.system === 'string' ? req.body.system.trim() : ''
+  const targetSystem = system || 'Sol'
+  const url = buildInaraUrl(targetSystem)
+  const requestBytes = estimateByteSize(url)
+  let responseText = ''
+  let responseStatus = null
+  let caughtError = null
+
+  logger.info('Fetching pristine mining intel near %s', targetSystem)
+  appendLog(`REQUEST system=${targetSystem}`)
+
+  try {
+    const response = await fetchWithInaraCache(url, {
+      agent: ipv4HttpsAgent,
+      headers: INARA_REQUEST_HEADERS
+    })
+    responseStatus = response.status
+    if (!response.ok) {
+      throw new Error(`INARA request failed with status ${response.status}`)
+    }
+
+    responseText = await response.text()
+    const locations = parseBodies(responseText, targetSystem)
+
+    appendLog(`RESULT system=${targetSystem} locations=${locations.length}`)
+    sendJson(res, 200, {
+      locations,
+      targetSystem,
+      sourceUrl: url,
+      message: `Showing pristine mining locations within ${MAX_DISTANCE_LY} Ly of ${targetSystem}.`
+    })
+  } catch (error) {
+    caughtError = error
+    logger.error('Failed fetching pristine mining locations: %s', error?.message || error)
+    appendLog(`ERROR system=${targetSystem} reason=${error?.message || error}`)
+    sendJson(res, 500, {
+      error: error.message || 'Failed to fetch pristine mining locations.'
+    })
+  } finally {
+    const metadata = {
+      reason: caughtError ? 'inara-request-error' : 'inara-request',
+      method: 'GET',
+      status: responseStatus,
+      system: targetSystem,
+      error: caughtError ? caughtError.message : undefined
+    }
+    await spendTokensForInaraExchange({
+      endpoint: url,
+      requestBytes,
+      responseBytes: estimateByteSize(responseText),
+      metadata
+    }).catch(() => {})
+  }
+}
+
+module.exports = handler
+
