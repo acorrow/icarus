@@ -98,7 +98,7 @@ export default function Header ({ connected, active }) {
   }
 
   const currentPath = `/${(router.pathname.split('/')[1] || '').toLowerCase()}`
-  const displayTitle = currentPath === '/inara' ? 'INARA-ATLAS' : 'ICARUS TERMINAL'
+  const displayTitle = 'ICARUS TERMINAL'
   const accessibleTitle = displayTitle.replace('-', ' ')
 
   let signalClassName = 'icon icarus-terminal-signal '
