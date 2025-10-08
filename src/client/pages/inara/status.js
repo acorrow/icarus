@@ -2244,7 +2244,7 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   }
 }
 
-function MissionsPanel () {
+function MissionsPanel ({ onStatusChange = () => {} }) {
   const systemSelector = useSystemSelector({ autoSelectCurrent: true })
   const {
     currentSystem,
@@ -2264,6 +2264,10 @@ function MissionsPanel () {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
   const thresholdSettings = useContext(InaraThresholdSettingsContext)
+
+  useEffect(() => {
+    onStatusChange(status)
+  }, [onStatusChange, status])
 
   const displayMessage = useMemo(() => {
     if (typeof message !== 'string') return ''
@@ -2599,7 +2603,7 @@ function MissionsPanel () {
   )
 }
 
-function CargoHoldPanel () {
+function CargoHoldPanel ({ onStatusChange = () => {} }) {
   const { connected, ready } = useSocket()
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [ship, setShip] = useState(null)
@@ -2613,6 +2617,10 @@ function CargoHoldPanel () {
   const [stationSortDirection, setStationSortDirection] = useState('desc')
   // Removed usingMockCargo and setUsingMockCargo
   const tableContainerRef = useRef(null)
+
+  useEffect(() => {
+    onStatusChange(status)
+  }, [onStatusChange, status])
 
   const applyCargoInventory = useCallback(inventory => {
     const manifest = Array.isArray(inventory)
@@ -5267,7 +5275,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
   )
 }
 
-function PristineMiningPanel () {
+function PristineMiningPanel ({ onStatusChange = () => {} }) {
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
   const [locations, setLocations] = useState([])
   const [status, setStatus] = useState('idle')
@@ -5284,6 +5292,10 @@ function PristineMiningPanel () {
   const detailRequestRef = useRef({ id: 0, key: null })
   const inspectorReserved = Boolean(expandedLocationKey)
   const inspectorVisible = inspectorReserved && !detailError && !!expandedSystemObject
+
+  useEffect(() => {
+    onStatusChange(status)
+  }, [onStatusChange, status])
 
   useEffect(() => animateTableEffect(), [locations, expandedLocationKey])
 
