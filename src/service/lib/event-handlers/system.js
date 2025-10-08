@@ -3,6 +3,36 @@ const SystemMap = require('../system-map')
 const { UNKNOWN_VALUE } = require('../../../shared/consts')
 const distance = require('../../../shared/distance')
 
+const DEFAULT_NEARBY_RADIUS = Number(process.env.ICARUS_NEARBY_SYSTEM_RADIUS || process.env.NEARBY_SYSTEM_RADIUS || 50)
+const DEFAULT_NEARBY_LIMIT = Number(process.env.ICARUS_NEARBY_SYSTEM_LIMIT || process.env.NEARBY_SYSTEM_LIMIT || 25)
+const MAX_NEARBY_LIMIT = 200
+
+function normaliseNearbyConfig (value, fallback) {
+  const parsed = Number(value)
+  if (Number.isFinite(parsed) && parsed > 0) return parsed
+  return fallback
+}
+
+function sanitiseCurrentSystem (system) {
+  if (!system || typeof system !== 'object') return null
+
+  const sanitized = {
+    name: typeof system.name === 'string' ? system.name : UNKNOWN_VALUE,
+    distance: typeof system.distance === 'number' && Number.isFinite(system.distance) ? Number(system.distance.toFixed(2)) : 0,
+    isCurrentLocation: system.isCurrentLocation !== undefined ? !!system.isCurrentLocation : true
+  }
+
+  if (Array.isArray(system.position) && system.position.length === 3) sanitized.position = system.position
+  if (system.address !== undefined) sanitized.address = system.address
+  if (system.mode) sanitized.mode = system.mode
+  if (system.station) sanitized.station = system.station
+  if (system.docked !== undefined) sanitized.docked = !!system.docked
+  if (system.body) sanitized.body = system.body
+  if (system.bodyType) sanitized.bodyType = system.bodyType
+
+  return sanitized
+}
+
 class System {
   constructor ({ eliteLog }) {
     this.eliteLog = eliteLog
@@ -233,6 +263,95 @@ class System {
         _cacheTimestamp: new Date().toISOString()
       }
     }
+  }
+
+  async getNearbySystems (currentSystem, { radius = DEFAULT_NEARBY_RADIUS, limit = DEFAULT_NEARBY_LIMIT } = {}) {
+    if (!currentSystem || typeof currentSystem.name !== 'string' || currentSystem.name === UNKNOWN_VALUE) return []
+
+    const normalizedRadius = normaliseNearbyConfig(radius, DEFAULT_NEARBY_RADIUS)
+    const normalizedLimit = Math.min(normaliseNearbyConfig(limit, DEFAULT_NEARBY_LIMIT), MAX_NEARBY_LIMIT)
+
+    const seen = new Set()
+    const nearby = []
+    const basePosition = Array.isArray(currentSystem.position) ? currentSystem.position : null
+    const currentNameLower = currentSystem.name.toLowerCase()
+
+    try {
+      const sphereSystems = await EDSM.nearbySystems(currentSystem.name, { radius: normalizedRadius, limit: normalizedLimit * 2 })
+      for (const entry of sphereSystems || []) {
+        const name = typeof entry?.name === 'string' ? entry.name.trim() : ''
+        if (!name || name.toLowerCase() === currentNameLower) continue
+
+        const lower = name.toLowerCase()
+        if (seen.has(lower)) continue
+
+        const coords = typeof entry?.coords === 'object' && entry.coords !== null
+          ? ['x', 'y', 'z'].map(axis => {
+            const parsed = Number(entry.coords[axis])
+            return Number.isFinite(parsed) ? parsed : null
+          })
+          : null
+
+        const coordsValid = Array.isArray(coords) && coords.length === 3 && coords.every(value => Number.isFinite(value))
+
+        let distanceLy = Number(entry?.distance)
+        if (!Number.isFinite(distanceLy)) distanceLy = null
+        if (distanceLy === null && basePosition && coordsValid) distanceLy = distance(basePosition, coords)
+        if (!Number.isFinite(distanceLy)) continue
+
+        nearby.push({
+          name,
+          distance: Number(distanceLy.toFixed(2)),
+          position: coordsValid ? coords : null
+        })
+        seen.add(lower)
+
+        if (nearby.length >= normalizedLimit) break
+      }
+    } catch (error) {
+      // Swallow errors from EDSM lookups and fall back to cache data
+    }
+
+    if (nearby.length < normalizedLimit && global.CACHE?.SYSTEMS) {
+      for (const key of Object.keys(global.CACHE.SYSTEMS)) {
+        if (nearby.length >= normalizedLimit) break
+        const cached = global.CACHE.SYSTEMS[key]
+        if (!cached || typeof cached?.name !== 'string') continue
+        const name = cached.name.trim()
+        if (!name) continue
+        const lower = name.toLowerCase()
+        if (lower === currentNameLower || seen.has(lower)) continue
+        const coords = Array.isArray(cached?.position) ? cached.position : null
+        if (!coords || !basePosition) continue
+        const distanceLy = distance(basePosition, coords)
+        if (!Number.isFinite(distanceLy)) continue
+        nearby.push({
+          name,
+          distance: Number(distanceLy.toFixed(2)),
+          position: coords
+        })
+        seen.add(lower)
+      }
+    }
+
+    nearby.sort((a, b) => a.distance - b.distance)
+    return nearby.slice(0, normalizedLimit)
+  }
+
+  async getCurrentSystemSummary ({ includeNearby = true, radius = DEFAULT_NEARBY_RADIUS, limit = DEFAULT_NEARBY_LIMIT } = {}) {
+    const currentSystem = await this.getSystem({ useCache: true })
+    const sanitized = sanitiseCurrentSystem(currentSystem)
+    const response = {
+      currentSystem: sanitized
+    }
+
+    if (includeNearby && currentSystem && typeof currentSystem === 'object') {
+      response.nearby = await this.getNearbySystems(currentSystem, { radius, limit })
+    } else {
+      response.nearby = []
+    }
+
+    return response
   }
 }
 

@@ -2162,35 +2162,43 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
     return () => { isMounted.current = false }
   }, [])
 
-  const fetchCurrentSystem = useCallback(({ allowAutoSelect = false } = {}) => {
-    fetch('/api/current-system')
-      .then(res => res.json())
-      .then(data => {
-        if (!isMounted.current) return
-        setCurrentSystem(data.currentSystem)
-        const seen = new Set()
-        const opts = []
-        if (data.currentSystem?.name) {
-          opts.push({ name: data.currentSystem.name, distance: 0 })
-          seen.add(data.currentSystem.name)
-        }
-        data.nearby?.forEach(sys => {
-          if (!seen.has(sys.name)) {
-            opts.push(sys)
-            seen.add(sys.name)
-          }
-        })
-        setSystemOptions(opts)
-        const shouldAutoSelect = allowAutoSelect && autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
-        if (shouldAutoSelect) {
-          setSystemFromName(data.currentSystem.name)
-          autoSelectApplied.current = true
-        }
+  const fetchCurrentSystem = useCallback(async ({ allowAutoSelect = false } = {}) => {
+    try {
+      const data = await sendEvent('getCurrentSystem', { includeNearby: true })
+      if (!isMounted.current) return
+
+      const current = data?.currentSystem ?? null
+      const nearby = Array.isArray(data?.nearby) ? data.nearby : []
+
+      setCurrentSystem(current)
+
+      const seen = new Set()
+      const opts = []
+
+      if (current?.name) {
+        opts.push({ name: current.name, distance: 0 })
+        seen.add(current.name)
+      }
+
+      nearby.forEach(sys => {
+        if (!sys || typeof sys.name !== 'string') return
+        if (seen.has(sys.name)) return
+        opts.push(sys)
+        seen.add(sys.name)
       })
-      .catch(() => {
-        if (!isMounted.current) return
-        setCurrentSystem(null)
-      })
+
+      setSystemOptions(opts)
+
+      const shouldAutoSelect = allowAutoSelect && autoSelectCurrent && !autoSelectApplied.current && current?.name
+      if (shouldAutoSelect) {
+        setSystemFromName(current.name)
+        autoSelectApplied.current = true
+      }
+    } catch (error) {
+      if (!isMounted.current) return
+      setCurrentSystem(null)
+      setSystemOptions([])
+    }
   }, [autoSelectCurrent, setSystemFromName])
 
   useEffect(() => {

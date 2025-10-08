@@ -135,6 +135,7 @@ class EventHandlers {
           }
         },
         getSystem: (args) => this.system.getSystem(args),
+        getCurrentSystem: (args) => this.system.getCurrentSystemSummary(args),
         getShipStatus: (args) => this.shipStatus.getShipStatus(args),
         getMaterials: (args) => this.materials.getMaterials(args),
         getInventory: (args) => this.inventory.getInventory(args),
