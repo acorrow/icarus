@@ -1,9 +1,59 @@
 'use strict'
 
+const axios = require('axios')
+
+function createAxiosFetchShim () {
+  return async function axiosFetch (url, options = {}) {
+    const method = typeof options.method === 'string' ? options.method.toUpperCase() : 'GET'
+
+    const response = await axios({
+      url,
+      method,
+      headers: options.headers,
+      data: options.body,
+      responseType: 'text',
+      validateStatus: () => true,
+      timeout: options.timeout,
+      httpsAgent: options.agent || options.httpsAgent
+    })
+
+    const rawData = response.data
+    let bodyText
+    if (typeof rawData === 'string') {
+      bodyText = rawData
+    } else if (rawData === undefined || rawData === null) {
+      bodyText = ''
+    } else if (Buffer.isBuffer(rawData)) {
+      bodyText = rawData.toString('utf8')
+    } else {
+      bodyText = JSON.stringify(rawData)
+    }
+
+    return {
+      status: response.status,
+      ok: response.status >= 200 && response.status < 300,
+      headers: response.headers,
+      url,
+      text: async () => bodyText,
+      json: async () => JSON.parse(bodyText)
+    }
+  }
+}
+
+function resolveDefaultFetchImpl () {
+  if (typeof globalThis.fetch === 'function') {
+    return globalThis.fetch.bind(globalThis)
+  }
+
+  return createAxiosFetchShim()
+}
+
+const DEFAULT_FETCH_IMPL = resolveDefaultFetchImpl()
+
 class InaraClient {
   constructor ({ baseUrl, fetchImpl } = {}) {
     this.baseUrl = baseUrl || process.env.INARA_API_URL || 'https://inara.cz/inapi/v1/'
-    this.fetchImpl = fetchImpl || (typeof fetch === 'function' ? fetch : null)
+    this.fetchImpl = fetchImpl || DEFAULT_FETCH_IMPL
   }
 
   isEnabled () {

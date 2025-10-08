@@ -328,11 +328,18 @@ async function axiosRequest (url, options = {}) {
     timeout: options.timeout
   })
 
+  let body = response.data
+  if (body === undefined && typeof response.text === 'function') {
+    body = await response.text()
+  } else if (body === undefined && response.body !== undefined) {
+    body = response.body
+  }
+
   return {
     status: response.status,
     ok: response.status >= 200 && response.status < 300,
     headers: response.headers,
-    body: response.data
+    body
   }
 }
 

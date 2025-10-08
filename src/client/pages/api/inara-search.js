@@ -1,19 +1,11 @@
-import fetch from 'node-fetch'
-import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
+const axios = require('axios')
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+const { estimateByteSize, spendTokensForInaraExchange } = require('./token-currency.js')
 
-  const { searchType, searchTerm, appName, appVersion } = req.body
-  if (!searchType || !searchTerm || !appName || !appVersion) {
-    return res.status(400).json({ error: 'Missing required fields' })
-  }
+const INARA_API_URL = 'https://inara.cz/inapi/v1/'
 
-  // INARA API endpoint
-  const url = 'https://inara.cz/inapi/v1/'
-
-  // Build INARA API request body
-  const requestBody = {
+function buildRequestPayload ({ searchType, searchTerm, appName, appVersion }) {
+  const payload = {
     header: {
       appName,
       appVersion
@@ -21,48 +13,91 @@ export default async function handler(req, res) {
     events: []
   }
 
-  // Add the appropriate event for the search type
   if (searchType === 'commodity') {
-    requestBody.events.push({ eventName: 'getCommoditiesMarket', eventData: { commodityName: searchTerm } })
+    payload.events.push({ eventName: 'getCommoditiesMarket', eventData: { commodityName: searchTerm } })
   } else if (searchType === 'ship') {
-    requestBody.events.push({ eventName: 'getShipyard', eventData: { shipName: searchTerm } })
+    payload.events.push({ eventName: 'getShipyard', eventData: { shipName: searchTerm } })
   } else if (searchType === 'module') {
-    requestBody.events.push({ eventName: 'getOutfitting', eventData: { moduleName: searchTerm } })
+    payload.events.push({ eventName: 'getOutfitting', eventData: { moduleName: searchTerm } })
   } else if (searchType === 'material') {
-    requestBody.events.push({ eventName: 'getMaterialsMarket', eventData: { materialName: searchTerm } })
-  } else {
+    payload.events.push({ eventName: 'getMaterialsMarket', eventData: { materialName: searchTerm } })
+  }
+
+  return payload
+}
+
+async function performInaraSearch ({ requestPayload }) {
+  const response = await axios({
+    url: INARA_API_URL,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: requestPayload,
+    responseType: 'text',
+    validateStatus: () => true
+  })
+
+  let body = response.data
+  if (body === undefined && typeof response.text === 'function') {
+    body = await response.text()
+  } else if (body === undefined && response.body !== undefined) {
+    body = response.body
+  }
+
+  if (body === undefined || body === null) body = ''
+  if (Buffer.isBuffer(body)) body = body.toString('utf8')
+  if (typeof body !== 'string') body = JSON.stringify(body)
+
+  return {
+    status: response.status,
+    ok: response.status >= 200 && response.status < 300,
+    body
+  }
+}
+
+async function handler (req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+
+  const { searchType, searchTerm, appName, appVersion } = req.body || {}
+  if (!searchType || !searchTerm || !appName || !appVersion) {
+    return res.status(400).json({ error: 'Missing required fields' })
+  }
+
+  if (!['commodity', 'ship', 'module', 'material'].includes(searchType)) {
     return res.status(400).json({ error: 'Invalid search type' })
   }
 
-  const requestPayload = JSON.stringify(requestBody)
+  const requestPayload = JSON.stringify(buildRequestPayload({ searchType, searchTerm, appName, appVersion }))
   const requestBytes = estimateByteSize(requestPayload)
+
   let responseText = ''
   let responseStatus = null
-  let error = null
+  let caughtError = null
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: requestPayload
-    })
-    responseStatus = response.status
-    responseText = await response.text()
+    const httpResponse = await performInaraSearch({ requestPayload })
+    responseStatus = httpResponse.status
+    responseText = httpResponse.body
+
+    if (!httpResponse.ok) {
+      throw new Error(`INARA API request failed with status ${httpResponse.status}`)
+    }
+
     const data = responseText ? JSON.parse(responseText) : null
     res.status(200).json(data)
-  } catch (err) {
-    error = err
-    res.status(500).json({ error: 'INARA API request failed', details: err.message })
+  } catch (error) {
+    caughtError = error
+    res.status(500).json({ error: 'INARA API request failed', details: error.message })
   } finally {
     const metadata = {
       method: 'POST',
       status: responseStatus,
-      error: error ? error.message : undefined,
       searchType,
-      reason: error ? 'inara-request-error' : 'inara-request'
+      error: caughtError ? caughtError.message : undefined,
+      reason: caughtError ? 'inara-request-error' : 'inara-request'
     }
+
     await spendTokensForInaraExchange({
-      endpoint: url,
+      endpoint: INARA_API_URL,
       requestBytes,
       responseBytes: estimateByteSize(responseText),
       metadata
@@ -71,3 +106,5 @@ export default async function handler(req, res) {
     })
   }
 }
+
+module.exports = handler
