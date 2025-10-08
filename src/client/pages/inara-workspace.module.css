@@ -1074,7 +1074,6 @@ button.terminalStatusPreview:focus-visible {
 .tableSection {
   display: flex;
   flex-direction: column;
-  gap: clamp(1.75rem, 3.5vw, 2.5rem);
 }
 
 .tablePanel {
@@ -1672,6 +1671,7 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteContextProfitMetric {
+  align-items: center;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -1692,7 +1692,7 @@ button.terminalStatusPreview:focus-visible {
 .tradeRouteContextProfitValue {
   font-size: clamp(1.35rem, 2.7vw, 1.85rem);
   font-weight: 700;
-  color: var(--inara-color-success);
+  color: var(--color-success);
   line-height: 1.1;
 }
 
@@ -1713,6 +1713,8 @@ button.terminalStatusPreview:focus-visible {
     minmax(auto, 32rem)
     1fr
     minmax(auto, 32rem);
+    
+  grid-template-rows: auto auto;
   align-items: stretch;
   padding-left: 20px;
   padding-right: 20px;
@@ -1720,6 +1722,7 @@ button.terminalStatusPreview:focus-visible {
 
 .tradeRouteContextStationCard {
   position: relative;
+  grid-row: 1;
   display: flex;
   outline: 5px solid var(--color-primary);
   flex-direction: column;
@@ -2039,6 +2042,7 @@ button.terminalStatusPreview:focus-visible {
 .tradeRouteContextCommodityCard {
   position: relative;
   display: flex;
+  grid-row: 2;
   flex-direction: column;
   gap: 0.85rem;
   padding: clamp(1rem, 3vw, 1.35rem);
@@ -2308,7 +2312,10 @@ button.terminalStatusPreview:focus-visible {
   overflow: hidden;
   z-index: 0;
   justify-content: flex-start;
-  --trade-route-flow-fill: rgba(93, 46, 255, 0.24);
+  --trade-route-flow-neutral-color: var(--color-primary);
+  --trade-route-flow-positive-color: var(--color-success);
+  --trade-route-flow-negative-color: var(--color-danger);
+  --trade-route-flow-fill: color-mix(in srgb, var(--trade-route-flow-neutral-color) 24%, transparent);
   --trade-route-flow-pointer: 1.65rem;
 }
 
@@ -2356,31 +2363,31 @@ button.terminalStatusPreview:focus-visible {
 }
 
 .tradeRouteFlowNeutral {
-  --trade-route-flow-fill: rgba(93, 46, 255, 0.24);
+  --trade-route-flow-fill: color-mix(in srgb, var(--trade-route-flow-neutral-color) 24%, transparent);
 }
 
 .tradeRouteFlowPositive1 {
-  --trade-route-flow-fill: rgba(41, 243, 195, 0.22);
+  --trade-route-flow-fill: color-mix(in srgb, var(--trade-route-flow-positive-color) 22%, transparent);
 }
 
 .tradeRouteFlowPositive2 {
-  --trade-route-flow-fill: rgba(41, 243, 195, 0.34);
+  --trade-route-flow-fill: color-mix(in srgb, var(--trade-route-flow-positive-color) 34%, transparent);
 }
 
 .tradeRouteFlowPositive3 {
-  --trade-route-flow-fill: rgba(41, 243, 195, 0.48);
+  --trade-route-flow-fill: color-mix(in srgb, var(--trade-route-flow-positive-color) 48%, transparent);
 }
 
 .tradeRouteFlowNegative1 {
-  --trade-route-flow-fill: rgba(255, 95, 193, 0.24);
+  --trade-route-flow-fill: color-mix(in srgb, var(--trade-route-flow-negative-color) 24%, transparent);
 }
 
 .tradeRouteFlowNegative2 {
-  --trade-route-flow-fill: rgba(255, 95, 193, 0.38);
+  --trade-route-flow-fill: color-mix(in srgb, var(--trade-route-flow-negative-color) 38%, transparent);
 }
 
 .tradeRouteFlowNegative3 {
-  --trade-route-flow-fill: rgba(255, 95, 193, 0.52);
+  --trade-route-flow-fill: color-mix(in srgb, var(--trade-route-flow-negative-color) 52%, transparent);
 }
 
 .tradeRouteCommodityName {
@@ -3902,4 +3909,29 @@ button.terminalStatusPreview:focus-visible {
     color: var(--inara-accent);
     transform: none;
   }
+}
+
+@media (max-width: 1100px) {
+  .stationDistanceArrow {
+    visibility:hidden;
+  }
+}
+@media (max-width: 900px) {
+  .stationDistanceRow {
+    visibility:hidden;
+  }
+}
+.stationDistanceRow {
+  display: grid;
+  grid-row:1;
+  grid-column:2;
+  grid-template-columns:
+    minmax(50px, 1fr)
+    0fr
+    minmax(50px, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+.stationDistanceArrow {
+  text-align: center;;
 }

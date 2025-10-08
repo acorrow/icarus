@@ -414,6 +414,123 @@ function TradeRouteFilterPanel ({
   )
 }
 
+const renderCommodityRowStyleArrowWithText = (direction, options = {}) => {
+  const isLeft = direction === 'left'
+  const {
+    color,
+    text,
+    content,
+    height,
+    padding,
+    margin,
+    className,
+    ariaLabel
+  } = options || {}
+
+  const rowClasses = [
+    styles.tradeRouteCommodityRow,
+    isLeft ? styles.tradeRouteCommodityRowReturn : styles.tradeRouteCommodityRowOutbound
+  ]
+
+  if (className) {
+    rowClasses.push(className)
+  }
+
+  const styleOverrides = {
+  }
+
+  if (color) {
+    styleOverrides.color = color
+  }
+
+  if (height) {
+    styleOverrides.height = height
+    styleOverrides.display = 'flex'
+    styleOverrides.alignItems = 'center'
+  }
+
+  if (padding) {
+    styleOverrides.padding = typeof padding === 'number' ? `${padding}px` : padding
+  }
+
+  if (margin) {
+    styleOverrides.margin = typeof margin === 'number' ? `${margin}px` : margin
+  }
+
+  const rowContent = content ?? text ?? ''
+
+  return (
+    <div className={rowClasses.join(' ')} style={styleOverrides}>
+      {ariaLabel ? <span className={styles.visuallyHidden}>{ariaLabel}</span> : null}
+      <span className={styles.tradeRouteCommodityName}>
+        {rowContent}
+      </span>
+    </div>
+  )
+}
+
+const renderCommodityRowStyleArrowWIthText = renderCommodityRowStyleArrowWithText
+
+  const renderCommodityRow = (direction, { variant = 'default' } = {}) => {
+    const isOutbound = direction === 'outbound'
+    const commodityDisplay = isOutbound ? outboundCommodityDisplay : returnCommodityDisplay
+    const buyPriceDisplay = isOutbound ? outboundPriceDisplay : returnPriceDisplay
+    const sellPriceDisplay = isOutbound ? outboundSellPriceDisplay : returnSellPriceDisplay
+    const demandState = isOutbound ? outboundDemandState : returnDemandState
+    const flowClass = isOutbound ? outboundFlowClass : returnFlowClass
+    const stationAria = isOutbound ? destinationStationAria : originStationAria
+    const directionLabel = isOutbound ? 'Outbound to' : 'Return to'
+
+    const rowClasses = [
+      styles.tradeRouteCommodityRow,
+      isOutbound ? styles.tradeRouteCommodityRowOutbound : styles.tradeRouteCommodityRowReturn,
+      flowClass
+    ]
+
+    const leadingPriceClasses = [
+      styles.tradeRouteCommodityPrice,
+      isOutbound ? styles.tradeRouteCommodityPriceBuy : styles.tradeRouteCommodityPriceSell
+    ]
+
+    const trailingPriceClasses = [
+      styles.tradeRouteCommodityPrice,
+      isOutbound ? styles.tradeRouteCommodityPriceSell : styles.tradeRouteCommodityPriceBuy
+    ]
+
+    if (variant === 'compact') {
+      rowClasses.push(styles.tradeRouteCommodityRowCompact)
+      leadingPriceClasses.push(styles.visuallyHidden)
+      trailingPriceClasses.push(styles.visuallyHidden)
+    }
+
+    if (variant !== 'compact') {
+      leadingPriceClasses.push(styles.tradeRouteHideMedium)
+      trailingPriceClasses.push(styles.tradeRouteHideMedium)
+    } else {
+      leadingPriceClasses.push(styles.tradeRouteCommodityPriceCompact)
+      trailingPriceClasses.push(styles.tradeRouteCommodityPriceCompact)
+    }
+
+    return (
+      <div className={rowClasses.join(' ')}>
+        <span className={styles.visuallyHidden}>{`${directionLabel} ${stationAria}`}</span>
+        {demandState ? (
+          <span className={styles.visuallyHidden}>
+            {demandState.label}
+            {demandState.text ? ` — ${demandState.text}` : ''}
+          </span>
+        ) : null}
+        <span className={leadingPriceClasses.join(' ')}>
+          {renderPrice(isOutbound ? buyPriceDisplay : sellPriceDisplay)}
+        </span>
+        <span className={styles.tradeRouteCommodityName}>{renderValue(commodityDisplay)}</span>
+        <span className={trailingPriceClasses.join(' ')}>
+          {renderPrice(isOutbound ? sellPriceDisplay : buyPriceDisplay)}
+        </span>
+      </div>
+    )
+  }
+
 const TradeRouteTableRow = React.memo(function TradeRouteTableRow ({
   route,
   onSelect,
@@ -4863,8 +4980,8 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
 
             {routeContext ? (
               <>
+{/* Route Context */}
                 {routeProfitMetrics.length > 0 && (
-                  // Profit metrics row
                   <div className={styles.tradeRouteContextProfitRow}>
                     {routeProfitMetrics.map(metric => (
                       <div key={`route-context-${metric.key}`} className={styles.tradeRouteContextProfitMetric}>
@@ -4874,8 +4991,8 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     ))}
                   </div>
                 )}
-                {/* Route Context */}
                 <div className={styles.tradeRouteContextStations}>
+{/* STATION A */}
                   <div className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardOrigin}`}>
                     <div className={styles.tradeRouteContextStationHeader}>
                       <span className={styles.tradeRouteContextBadge}>Station A</span>
@@ -4946,30 +5063,62 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                   </div>
 
 
-<div class="flow-arrow"></div>
-                  {/* <div className={styles.tradeRouteContextStationConnector}>
-                    <div className={styles.tradeRouteContextConnectorTrack}>
-                      <span className={styles.tradeRouteContextConnectorEndpoint} aria-hidden='true' />
-                      <span className={styles.tradeRouteContextConnectorLine}>
-                        {routeDistanceDisplay ? (
-                          <span className={styles.tradeRouteContextConnectorMetric}>{routeDistanceDisplay}</span>
-                        ) : null}
-                        <span className={styles.tradeRouteContextConnectorPulse} />
-                      </span>
-                      <span className={styles.tradeRouteContextConnectorEndpoint} aria-hidden='true' />
+                  <div style={{gridColumn: 1}} className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityOutbound}`}>
+                    <div className={styles.tradeRouteContextCommodityHeader}>
+                      <span className={styles.tradeRouteContextLabel}>Outbound Commodity</span>
+                      {outboundCommodityContext?.price ? (
+                        <span className={styles.tradeRouteContextCommodityPrice}>{outboundCommodityContext.price}</span>
+                      ) : null}
                     </div>
-                    {routeUpdatedDisplay ? (
-                      <div className={styles.tradeRouteContextConnectorMeta}>
-                        <span
-                          className={styles.tradeRouteContextConnectorMetaText}
-                          style={routeUpdatedSeverity.color ? { color: routeUpdatedSeverity.color } : undefined}
-                        >
-                          Updated {routeUpdatedDisplay}
-                        </span>
+                    <div className={styles.tradeRouteContextCommodityBody}>
+                      <span className={styles.tradeRouteContextCommodityIconLarge}>
+                        <CommodityIcon category={routeContext.outbound.category || ''} size={32} />
+                      </span>
+                      <div className={styles.tradeRouteContextCommodityText}>
+                        <span className={styles.tradeRouteContextCommodityName}>{routeContext.outbound.commodity || '--'}</span>
+                        {outboundCommodityContext?.demand?.label ? (
+                          <span className={styles.tradeRouteContextCommodityMeta}>{outboundCommodityContext.demand.label}</span>
+                        ) : null}
+                        {outboundCommodityContext?.quantity ? (
+                          <span className={styles.tradeRouteContextCommodityFootnote}>
+                            Demand window: {outboundCommodityContext.quantity}
+                          </span>
+                        ) : null}
+                        {outboundCommodityContext?.supply ? (
+                          <span className={styles.tradeRouteContextCommodityFootnote}>
+                            Supply: {outboundCommodityContext.supply}
+                          </span>
+                        ) : null}
                       </div>
-                    ) : null}
-                  </div> */}
+                    </div>
+                  </div>
 
+
+{/* STATION A */}
+
+                  {/* Station Distance Row (<-distance->) */}
+                  <span className={styles.stationDistanceRow}>
+                    <div className={styles.stationDistanceArrow}>{renderCommodityRowStyleArrowWithText('left', {
+                      color: 'var(--color-primary)',
+                      height: '3rem',
+                      padding: '0 1.25rem'
+                    })}
+                    </div>
+                    <div alignItems='center'>
+                      {routeDistanceDisplay ? (
+                      <span  style={{ whiteSpace: 'nowrap'}}>{routeDistanceDisplay}</span>
+                      ) : null}
+                    </div>
+                    <div className={styles.stationDistanceArrow}>{renderCommodityRowStyleArrowWithText('right', {
+                      color: 'var(--color-primary)',
+                      height: '3rem',
+                      padding: '0 1.25rem'
+                    })}
+                    </div>
+                  </span>                  
+                  {/* Station Distance Row (<-distance->) */}
+
+{/* STATION B */}
                   <div className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardDestination}`}>
                     <div className={styles.tradeRouteContextStationHeader}>
                       <span className={styles.tradeRouteContextBadge}>Station B</span>
@@ -5038,40 +5187,10 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       ) : null}
                     </div>
                   </div>
-                </div>
-                {/* Commodities and route */}
-                <div className={styles.tradeRouteContextCommodities}>
-                  <div className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityOutbound}`}>
-                    <div className={styles.tradeRouteContextCommodityHeader}>
-                      <span className={styles.tradeRouteContextLabel}>Outbound Commodity</span>
-                      {outboundCommodityContext?.price ? (
-                        <span className={styles.tradeRouteContextCommodityPrice}>{outboundCommodityContext.price}</span>
-                      ) : null}
-                    </div>
-                    <div className={styles.tradeRouteContextCommodityBody}>
-                      <span className={styles.tradeRouteContextCommodityIconLarge}>
-                        <CommodityIcon category={routeContext.outbound.category || ''} size={32} />
-                      </span>
-                      <div className={styles.tradeRouteContextCommodityText}>
-                        <span className={styles.tradeRouteContextCommodityName}>{routeContext.outbound.commodity || '--'}</span>
-                        {outboundCommodityContext?.demand?.label ? (
-                          <span className={styles.tradeRouteContextCommodityMeta}>{outboundCommodityContext.demand.label}</span>
-                        ) : null}
-                        {outboundCommodityContext?.quantity ? (
-                          <span className={styles.tradeRouteContextCommodityFootnote}>
-                            Demand window: {outboundCommodityContext.quantity}
-                          </span>
-                        ) : null}
-                        {outboundCommodityContext?.supply ? (
-                          <span className={styles.tradeRouteContextCommodityFootnote}>
-                            Supply: {outboundCommodityContext.supply}
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityReturn}`}>
+
+
+                  <div style={{gridColumn: 3}} className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityReturn}`}>
                     <div className={styles.tradeRouteContextCommodityHeader}>
                       <span className={styles.tradeRouteContextLabel}>Return Commodity</span>
                       {inboundCommodityContext?.price ? (
@@ -5100,7 +5219,11 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       </div>
                     </div>
                   </div>
+
+{/* STATION B */}
                 </div>
+
+{/* NAV ROUTE CODE - TODO */}
                 {navRouteSegment && navRouteSegment.length > 0 && (
                   <div className={styles.tradeRouteContextRoute}>
                     <span className={styles.tradeRouteContextLabel}>Plotted System Route</span>
@@ -5122,7 +5245,9 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       })}
                     </div>
                   </div>
-                )}
+                )}                
+{/* NAV ROUTE CODE - TODO */}
+{/* Route Context */}
               </>
             ) : (
               <div className={styles.tradeRouteContextEmpty}>Select a trade route to populate the context.</div>
