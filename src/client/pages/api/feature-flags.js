@@ -1,9 +1,9 @@
-import {
+const {
   isInaraTokenCurrencyEnabled,
   isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
-  _private as featureFlagInternals
-} from '../../../shared/feature-flags.js'
+  _private: featureFlagInternals
+} = require('../../../shared/feature-flags.js')
 
 const { hasFlagKey } = featureFlagInternals
 
@@ -45,7 +45,7 @@ function buildFlagPayload ({ key, label, description, resolver, defaultValue }) 
   }
 }
 
-export default function handler (req, res) {
+function handler (req, res) {
   if (req.method && req.method !== 'GET') {
     res.setHeader('Allow', 'GET')
     res.status(405).json({ error: 'Method not allowed' })
@@ -59,3 +59,5 @@ export default function handler (req, res) {
     res.status(500).json({ error: error.message || 'Failed to resolve feature flags' })
   }
 }
+
+module.exports = handler

@@ -11,6 +11,7 @@ const { TOKEN_REWARD_VALUES } = require('../../shared/token-config')
 const { isInaraTokenCurrencyEnabled } = require('../../shared/feature-flags')
 
 const InaraClient = require('./inara-client')
+const { invokeApiRoute } = require('./next-api-adapter')
 const tokenLedger = global.TOKEN_LEDGER
 const TOKEN_BROADCAST_EVENT = 'inaraTokensUpdated'
 const JACKPOT_BASE_MIN = 2500
@@ -128,14 +129,49 @@ class EventHandlers {
           }
         },
         getLogEntries: async ({ count = 100, timestamp }) => {
-          if (timestamp) {
-            return await this.eliteLog.getFromTimestamp(timestamp)
-          } else {
-            return await this.eliteLog.getNewest(count)
-          }
+          const baseLogs = timestamp
+            ? await this.eliteLog.getFromTimestamp(timestamp)
+            : await this.eliteLog.getNewest(count)
+
+          if (timestamp) return baseLogs
+
+          const httpLogs = Array.isArray(global.__ICARUS_HTTP_LOGS__) ? global.__ICARUS_HTTP_LOGS__ : []
+          const combined = [...httpLogs, ...(Array.isArray(baseLogs) ? baseLogs : [])]
+
+          combined.sort((a, b) => {
+            const ta = Date.parse(a?.timestamp || 0)
+            const tb = Date.parse(b?.timestamp || 0)
+            return tb - ta
+          })
+
+          return combined.slice(0, count)
         },
         getSystem: (args) => this.system.getSystem(args),
         getCurrentSystem: (args) => this.system.getCurrentSystemSummary(args),
+        getFeatureFlags: async () => {
+          const { data } = await invokeApiRoute('featureFlags', { method: 'GET' })
+          return data
+        },
+        getFactionStandings: async () => {
+          const { data } = await invokeApiRoute('factionStandings', { method: 'GET' })
+          return data
+        },
+        fetchInaraMissions: async (payload = {}) => {
+          const { data } = await invokeApiRoute('inaraMissions', { method: 'POST', body: payload })
+          return data
+        },
+        fetchInaraPristineMining: async (payload = {}) => {
+          const { data } = await invokeApiRoute('inaraPristineMining', { method: 'POST', body: payload })
+          return data
+        },
+        fetchInaraTradeRoutes: async (payload = {}) => {
+          const { data } = await invokeApiRoute('inaraTradeRoutes', { method: 'POST', body: payload })
+          return data
+        },
+        fetchInaraCommodityValues: async (payload = {}) => {
+          const { data } = await invokeApiRoute('inaraCommodityValues', { method: 'POST', body: payload })
+          return data
+        },
         getShipStatus: (args) => this.shipStatus.getShipStatus(args),
         getMaterials: (args) => this.materials.getMaterials(args),
         getInventory: (args) => this.inventory.getInventory(args),

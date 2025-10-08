@@ -12,7 +12,7 @@ describe('inara-websearch API handler', () => {
   })
 
   async function loadModule(systemMockImpl = () => ({ getSystem: jest.fn().mockResolvedValue(null) })) {
-    jest.doMock('node-fetch', () => jest.fn())
+    jest.doMock('axios', () => jest.fn())
     jest.doMock('fs', () => {
       const actualFs = jest.requireActual('fs')
       return {
@@ -45,15 +45,15 @@ describe('inara-websearch API handler', () => {
 
     const handlerModule = require(handlerPath)
     const handler = handlerModule.default || handlerModule
-    const fetchMock = require('node-fetch')
+    const httpMock = require('axios')
 
-    return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
+    return { handler, httpMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
   }
 
   it('records token spend metadata when no outfitting stations are found', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+    const { handler, httpMock, spendTokensMock } = await loadModule()
 
-    fetchMock.mockResolvedValue(createFetchResponse({ status: 200, ok: true, body: '<html></html>' }))
+    httpMock.mockResolvedValue(createFetchResponse({ status: 200, ok: true, body: '<html></html>' }))
 
     const req = createMockReq({
       method: 'POST',
@@ -79,9 +79,9 @@ describe('inara-websearch API handler', () => {
   })
 
   it('records token spend metadata when the outfitting fetch fails', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+    const { handler, httpMock, spendTokensMock } = await loadModule()
 
-    fetchMock.mockResolvedValue(createFetchResponse({ status: 504, ok: false, body: 'error' }))
+    httpMock.mockResolvedValue(createFetchResponse({ status: 504, ok: false, body: 'error' }))
 
     const req = createMockReq({
       method: 'POST',

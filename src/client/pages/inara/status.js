@@ -1073,11 +1073,7 @@ function useFactionStandings() {
     }
 
     if (!factionStandingsPromise) {
-      factionStandingsPromise = fetch('/api/faction-standings')
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to load faction standings')
-          return res.json()
-        })
+      factionStandingsPromise = sendEvent('getFactionStandings')
         .then(data => {
           factionStandingsCache = parseFactionStandingsResponse(data)
           return factionStandingsCache
@@ -2279,11 +2275,7 @@ function MissionsPanel () {
   useEffect(() => {
     let cancelled = false
 
-    fetch('/api/faction-standings')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to load faction standings')
-        return res.json()
-      })
+    sendEvent('getFactionStandings')
       .then(data => {
         if (cancelled) return
         const nextStandings = {}
@@ -2379,18 +2371,9 @@ function MissionsPanel () {
       setLastUpdatedAt(null)
     }
 
-    const controller = new AbortController()
-
     const loadMissions = async () => {
       try {
-        const response = await fetch('/api/inara-missions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ system: trimmedSystem }),
-          signal: controller.signal
-        })
-
-        const data = await response.json()
+        const data = await sendEvent('fetchInaraMissions', { system: trimmedSystem })
         if (cancelled) return
 
         const nextMissions = Array.isArray(data?.missions)
@@ -2424,7 +2407,7 @@ function MissionsPanel () {
           sourceUrl: nextSourceUrl
         })
       } catch (err) {
-        if (cancelled || err.name === 'AbortError') return
+        if (cancelled) return
 
         if (hasCached) {
           const refreshError = err?.message ? `${err.message} (showing cached results)` : 'Unable to refresh missions. Showing cached results.'
@@ -2448,7 +2431,6 @@ function MissionsPanel () {
 
     return () => {
       cancelled = true
-      controller.abort()
     }
   }, [trimmedSystem])
 
@@ -2750,12 +2732,7 @@ function CargoHoldPanel () {
         }))
     }
 
-    fetch('/api/inara-commodity-values', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(res => res.json())
+    sendEvent('fetchInaraCommodityValues', payload)
       .then(data => {
         if (cancelled) return
         const results = Array.isArray(data?.results) ? data.results : []
@@ -4441,12 +4418,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       return
     }
 
-    fetch('/api/inara-trade-routes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(res => res.json())
+    sendEvent('fetchInaraTradeRoutes', payload)
       .then(data => {
         const nextRoutes = Array.isArray(data?.routes)
           ? data.routes
@@ -5344,12 +5316,7 @@ function PristineMiningPanel () {
     setMessage('')
     setLastUpdatedAt(null)
 
-    fetch('/api/inara-pristine-mining', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ system: trimmedSystem })
-    })
-      .then(res => res.json())
+    sendEvent('fetchInaraPristineMining', { system: trimmedSystem })
       .then(data => {
         if (cancelled) return
 

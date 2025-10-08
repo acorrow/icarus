@@ -9,20 +9,20 @@ describe('inara-missions API handler', () => {
   })
 
   async function loadModule() {
-    jest.doMock('node-fetch', () => jest.fn())
+    jest.doMock('axios', () => jest.fn())
 
     const tokenCurrency = require(tokenCurrencyPath)
     tokenCurrency.spendTokensForInaraExchange = jest.fn().mockResolvedValue()
 
     const handlerModule = require(handlerPath)
     const handler = handlerModule.default || handlerModule
-    const fetchMock = require('node-fetch')
+    const httpMock = require('axios')
 
-    return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
+    return { handler, httpMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
   }
 
   it('records token spend metadata when missions are fetched successfully', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+    const { handler, httpMock, spendTokensMock } = await loadModule()
 
     const html = `
       <table class="tablesortercollapsed">
@@ -37,7 +37,7 @@ describe('inara-missions API handler', () => {
       </table>
     `
 
-    fetchMock.mockResolvedValue(createFetchResponse({ status: 200, ok: true, body: html }))
+    httpMock.mockResolvedValue(createFetchResponse({ status: 200, ok: true, body: html }))
 
     const req = createMockReq({
       method: 'POST',
@@ -63,9 +63,9 @@ describe('inara-missions API handler', () => {
   })
 
   it('records token spend metadata when the mission fetch fails', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+    const { handler, httpMock, spendTokensMock } = await loadModule()
 
-    fetchMock.mockResolvedValue(createFetchResponse({ status: 503, ok: false, body: 'error' }))
+    httpMock.mockResolvedValue(createFetchResponse({ status: 503, ok: false, body: 'error' }))
 
     const req = createMockReq({
       method: 'POST',

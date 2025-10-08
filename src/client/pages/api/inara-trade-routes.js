@@ -1,14 +1,14 @@
-import path from 'path'
-import fs from 'fs'
-import os from 'os'
-import { load } from 'cheerio'
-import https from 'https'
-import EliteLog from '../../../service/lib/elite-log.js'
-import System from '../../../service/lib/event-handlers/system.js'
-import distance from '../../../shared/distance.js'
-import { appendInaraLogEntry } from './inara-log-utils.js'
-import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
-import { fetchWithInaraCache } from './inara-request-cache.js'
+const path = require('path')
+const fs = require('fs')
+const os = require('os')
+const { load } = require('cheerio')
+const https = require('https')
+const EliteLog = require('../../../service/lib/elite-log.js')
+const System = require('../../../service/lib/event-handlers/system.js')
+const distance = require('../../../shared/distance.js')
+const { appendInaraLogEntry } = require('./inara-log-utils.js')
+const { estimateByteSize, spendTokensForInaraExchange } = require('./token-currency.js')
+const { fetchWithInaraCache } = require('./inara-request-cache.js')
 
 const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -321,7 +321,7 @@ const allowedPowers = new Set(['', '0', '-1', '1', '2', '3', '4', '5', '7', '8',
 const allowedSupplyDemand = new Set(['0', '100', '500', '1000', '2500', '5000', '10000', '50000'])
 const allowedOrder = new Set(['0', '1', '2', '3', '4'])
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') {
     logInaraTrade(`INVALID_METHOD: ${req.method} ${req.url}`)
     res.status(405).json({ error: 'Method not allowed' })
@@ -949,3 +949,5 @@ export default async function handler(req, res) {
     })
   }
 }
+
+module.exports = handler

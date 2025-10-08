@@ -1,7 +1,54 @@
-import fetch from 'node-fetch'
+const axios = require('axios')
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000
 const MAX_CACHE_SIZE = 200
+const DEFAULT_HTTP_EVENT_NAME = 'HttpRequest'
+const HTTP_LOG_LIMIT = 500
+
+function createHttpLogEntry ({
+  method,
+  url,
+  status,
+  durationMs,
+  error,
+  cached = false,
+  phase = 'response'
+}) {
+  return {
+    event: DEFAULT_HTTP_EVENT_NAME,
+    timestamp: new Date().toISOString(),
+    method,
+    url,
+    status: status !== undefined ? status : null,
+    cached,
+    durationMs: Number.isFinite(durationMs) ? Math.round(durationMs) : null,
+    error: error ? (error.message || String(error)) : undefined,
+    phase,
+    _checksum: `http-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  }
+}
+
+function recordHttpLog (entry) {
+  if (!entry || typeof entry !== 'object') return
+  if (!global.__ICARUS_HTTP_LOGS__) global.__ICARUS_HTTP_LOGS__ = []
+  const store = global.__ICARUS_HTTP_LOGS__
+  store.unshift(entry)
+  if (store.length > HTTP_LOG_LIMIT) store.length = HTTP_LOG_LIMIT
+}
+
+function emitHttpLog (details) {
+  const entry = createHttpLogEntry(details)
+  recordHttpLog(entry)
+
+  if (typeof global.BROADCAST_EVENT === 'function') {
+    try {
+      global.BROADCAST_EVENT('newLogEntry', entry)
+    } catch (broadcastError) {
+      // eslint-disable-next-line no-console
+      console.error('[inara-request-cache] Failed to broadcast HTTP log entry', broadcastError)
+    }
+  }
+}
 
 function getCacheStore () {
   if (!global.__INARA_FETCH_CACHE__) {
@@ -59,13 +106,26 @@ function recordCacheEntryOrder (key) {
 
 function normaliseHeaders (response) {
   const headerMap = new Map()
-  if (!response || !response.headers || typeof response.headers.forEach !== 'function') {
+  if (!response) return headerMap
+
+  const rawHeaders = response.headers
+  if (!rawHeaders) return headerMap
+
+  if (typeof rawHeaders.forEach === 'function') {
+    rawHeaders.forEach((value, key) => {
+      if (!key) return
+      headerMap.set(String(key).toLowerCase(), value)
+    })
     return headerMap
   }
-  response.headers.forEach((value, key) => {
-    if (!key) return
-    headerMap.set(String(key).toLowerCase(), value)
-  })
+
+  if (typeof rawHeaders === 'object') {
+    Object.entries(rawHeaders).forEach(([key, value]) => {
+      if (!key) return
+      headerMap.set(String(key).toLowerCase(), value)
+    })
+    return headerMap
+  }
   return headerMap
 }
 
@@ -120,13 +180,13 @@ function createCachedResponse (entry, fromCache = false) {
   }
 }
 
-export async function fetchWithInaraCache (url, options = {}) {
+async function fetchWithInaraCache (url, options = {}) {
   if (!url) throw new Error('fetchWithInaraCache requires a URL')
 
   const { fetchImpl, cacheTtlMs, ...fetchOptions } = options || {}
   const method = typeof fetchOptions.method === 'string' ? fetchOptions.method.toUpperCase() : 'GET'
   const ttlMs = typeof cacheTtlMs === 'number' && Number.isFinite(cacheTtlMs) ? cacheTtlMs : FIVE_MINUTES_MS
-  const fetchFn = typeof fetchImpl === 'function' ? fetchImpl : fetch
+  const fetchFn = typeof fetchImpl === 'function' ? fetchImpl : axiosRequest
 
   if (method !== 'GET') {
     return fetchFn(url, fetchOptions)
@@ -138,6 +198,14 @@ export async function fetchWithInaraCache (url, options = {}) {
 
   const cachedEntry = cache.get(url)
   if (cachedEntry && (now - cachedEntry.timestamp) <= ttlMs && cachedEntry.status === 200) {
+    emitHttpLog({
+      method,
+      url,
+      status: cachedEntry.status,
+      durationMs: 0,
+      cached: true,
+      phase: 'cache-hit'
+    })
     return createCachedResponse(cachedEntry, true)
   }
   if (cachedEntry && (now - cachedEntry.timestamp) > ttlMs) {
@@ -149,31 +217,71 @@ export async function fetchWithInaraCache (url, options = {}) {
     const entry = await inFlight.get(url)
     if (entry) {
       const withinTtl = (Date.now() - entry.timestamp) <= ttlMs
+      emitHttpLog({
+        method,
+        url,
+        status: entry.status,
+        durationMs: entry.durationMs,
+        cached: entry.status === 200 && withinTtl,
+        phase: 'in-flight-reuse'
+      })
       return createCachedResponse(entry, entry.status === 200 && withinTtl)
     }
   }
 
   const fetchPromise = (async () => {
-    const response = await fetchFn(url, fetchOptions)
-    const headers = normaliseHeaders(response)
-    const body = await response.text()
-    const record = {
+    const startedAt = Date.now()
+    emitHttpLog({
+      method,
       url,
-      status: response.status,
-      ok: response.ok,
-      headers,
-      body,
-      timestamp: Date.now()
-    }
+      status: null,
+      durationMs: null,
+      cached: false,
+      phase: 'request-start'
+    })
+    try {
+      const response = await fetchFn(url, fetchOptions)
+      const headers = normaliseHeaders(response)
+      const body = typeof response.text === 'function' ? await response.text() : (response.body ?? '')
+      const record = {
+        url,
+        status: response.status,
+        ok: response.ok,
+        headers,
+        body,
+        timestamp: Date.now(),
+        durationMs: Date.now() - startedAt
+      }
 
-    if (response.status === 200) {
-      cache.set(url, record)
-      recordCacheEntryOrder(url)
-    } else {
-      cache.delete(url)
-    }
+      if (response.status === 200) {
+        cache.set(url, record)
+        recordCacheEntryOrder(url)
+      } else {
+        cache.delete(url)
+      }
 
-    return record
+      emitHttpLog({
+        method,
+        url,
+        status: response.status,
+        durationMs: record.durationMs,
+        cached: false,
+        phase: 'response'
+      })
+
+      return record
+    } catch (error) {
+      emitHttpLog({
+        method,
+        url,
+        status: null,
+        durationMs: Date.now() - startedAt,
+        cached: false,
+        error,
+        phase: 'error'
+      })
+      throw error
+    }
   })()
 
   inFlight.set(url, fetchPromise)
@@ -186,7 +294,7 @@ export async function fetchWithInaraCache (url, options = {}) {
   }
 }
 
-export function clearInaraCache () {
+function clearInaraCache () {
   if (global.__INARA_FETCH_CACHE__) {
     global.__INARA_FETCH_CACHE__.clear()
   }
@@ -195,7 +303,7 @@ export function clearInaraCache () {
   }
 }
 
-export function getInaraCacheSnapshot () {
+function getInaraCacheSnapshot () {
   const cache = getCacheStore()
   const snapshot = {}
   for (const [key, entry] of cache.entries()) {
@@ -205,4 +313,31 @@ export function getInaraCacheSnapshot () {
     }
   }
   return snapshot
+}
+
+async function axiosRequest (url, options = {}) {
+  const method = typeof options.method === 'string' ? options.method.toUpperCase() : 'GET'
+  const response = await axios({
+    url,
+    method,
+    headers: options.headers,
+    data: options.body,
+    httpsAgent: options.agent || options.httpsAgent,
+    responseType: 'text',
+    validateStatus: () => true,
+    timeout: options.timeout
+  })
+
+  return {
+    status: response.status,
+    ok: response.status >= 200 && response.status < 300,
+    headers: response.headers,
+    body: response.data
+  }
+}
+
+module.exports = {
+  fetchWithInaraCache,
+  clearInaraCache,
+  getInaraCacheSnapshot
 }

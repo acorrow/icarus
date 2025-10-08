@@ -1,10 +1,10 @@
-import fs from 'fs'
-import path from 'path'
-import os from 'os'
-import https from 'https'
-import { load } from 'cheerio'
-import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
-import { fetchWithInaraCache } from './inara-request-cache.js'
+const fs = require('fs')
+const path = require('path')
+const os = require('os')
+const https = require('https')
+const { load } = require('cheerio')
+const { estimateByteSize, spendTokensForInaraExchange } = require('./token-currency.js')
+const { fetchWithInaraCache } = require('./inara-request-cache.js')
 
 const INARA_BASE_URL = 'https://inara.cz'
 const INARA_COMMODITY_SEARCH_URL = `${INARA_BASE_URL}/elite/commodities/`
@@ -242,7 +242,8 @@ async function loadCommodityOptions () {
         agent: ipv4HttpsAgent,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'
-        }
+        },
+        cacheTtlMs: 0
       })
       responseStatus = response.status
       if (!response.ok) {
@@ -747,7 +748,7 @@ function buildLocalMarketHistory (logDir, currentMarketId) {
   return { history, status }
 }
 
-export default async function handler (req, res) {
+async function handler (req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -979,3 +980,5 @@ export default async function handler (req, res) {
     }
   })
 }
+
+module.exports = handler

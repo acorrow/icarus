@@ -25,9 +25,9 @@ jest.mock('../lib/socket', () => ({
   eventListener: (...args) => mockEventListener(...args)
 }))
 
-jest.mock('../components/layout', () => ({ children }) => <>{children}</>)
-jest.mock('../components/panel', () => ({ children }) => <div>{children}</div>)
-jest.mock('../components/panels/nav/navigation-inspector-panel', () => () => <div data-testid='navigation-inspector-placeholder' />)
+jest.mock('../components/layout')
+jest.mock('../components/panel')
+jest.mock('../components/panels/nav/navigation-inspector-panel')
 
 describe('INARA page', () => {
   beforeEach(() => {

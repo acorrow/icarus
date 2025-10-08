@@ -9,22 +9,22 @@ describe('inara-search API handler', () => {
   })
 
   async function loadModule() {
-    jest.doMock('node-fetch', () => jest.fn())
+    jest.doMock('axios', () => jest.fn())
 
     const tokenCurrency = require(tokenCurrencyPath)
     tokenCurrency.spendTokensForInaraExchange = jest.fn().mockResolvedValue()
 
     const handlerModule = require(handlerPath)
     const handler = handlerModule.default || handlerModule
-    const fetchMock = require('node-fetch')
+    const httpMock = require('axios')
 
-    return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
+    return { handler, httpMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
   }
 
   it('records token spend metadata for successful searches', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+    const { handler, httpMock, spendTokensMock } = await loadModule()
 
-    fetchMock.mockResolvedValue(createFetchResponse({
+    httpMock.mockResolvedValue(createFetchResponse({
       status: 200,
       ok: true,
       body: JSON.stringify({ data: [{ id: 1 }] })
@@ -58,9 +58,9 @@ describe('inara-search API handler', () => {
   })
 
   it('records token spend metadata when the INARA request fails', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+    const { handler, httpMock, spendTokensMock } = await loadModule()
 
-    fetchMock.mockRejectedValue(new Error('network down'))
+    httpMock.mockRejectedValue(new Error('network down'))
 
     const req = createMockReq({
       method: 'POST',

@@ -1,7 +1,7 @@
-import https from 'https'
-import { load } from 'cheerio'
-import { estimateByteSize, spendTokensForInaraExchange } from './token-currency.js'
-import { fetchWithInaraCache } from './inara-request-cache.js'
+const https = require('https')
+const { load } = require('cheerio')
+const { estimateByteSize, spendTokensForInaraExchange } = require('./token-currency.js')
+const { fetchWithInaraCache } = require('./inara-request-cache.js')
 
 const BASE_URL = 'https://inara.cz'
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
@@ -130,7 +130,7 @@ function parseBodies (html, targetSystem) {
   return bodies
 }
 
-export default async function handler (req, res) {
+async function handler (req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
     res.status(405).json({ error: 'Method not allowed' })
@@ -185,3 +185,5 @@ export default async function handler (req, res) {
     }).catch(() => {})
   }
 }
+
+module.exports = handler

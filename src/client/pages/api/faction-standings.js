@@ -1,8 +1,8 @@
-import path from 'path'
-import fs from 'fs'
-import os from 'os'
-import EliteLog from '../../../service/lib/elite-log.js'
-import { appendInaraLogEntry } from './inara-log-utils.js'
+const path = require('path')
+const fs = require('fs')
+const os = require('os')
+const EliteLog = require('../../../service/lib/elite-log.js')
+const { appendInaraLogEntry } = require('./inara-log-utils.js')
 
 const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
 
@@ -189,7 +189,7 @@ function extractFactionRecords (snapshot) {
   return records
 }
 
-export default async function handler (req, res) {
+async function handler (req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET'])
     res.status(405).json({ error: 'Method not allowed' })
@@ -252,3 +252,5 @@ export default async function handler (req, res) {
     res.status(500).json({ error: 'Failed to resolve faction standings', details: err?.message || String(err) })
   }
 }
+
+module.exports = handler

@@ -1,8 +1,7 @@
 const fs = require('fs')
 const path = require('path')
-const { compile } = require('nexe')
 const changeExe = require('changeexe')
-const UPX = require('upx')({ brute: false }) // Brute on service seems to hang
+const { execFileSync } = require('child_process')
 const yargs = require('yargs')
 const commandLineArgs = yargs.argv
 
@@ -22,6 +21,8 @@ const DEVELOPMENT_BUILD = commandLineArgs.debug || DEVELOPMENT_BUILD_DEFAULT
 const DEBUG_CONSOLE = commandLineArgs.debug || DEBUG_CONSOLE_DEFAULT
 const ENTRY_POINT = path.join(__dirname, '..', 'src', 'service', 'main.js')
 const COMPRESS_FINAL_BUILD = false
+const DEFAULT_PKG_TARGET = 'node16-win-x64'
+const pkgTarget = process.env.PKG_TARGET || DEFAULT_PKG_TARGET
 
 ;(async () => {
   clean()
@@ -37,43 +38,32 @@ function clean () {
 }
 
 async function build () {
-  await compile({
-    name: 'ICARUS Service',
-    ico: SERVICE_ICON,
-    input: ENTRY_POINT,
-    output: SERVICE_UNOPTIMIZED_BUILD,
-    target: 'windows-x86-14.15.3', // from https://github.com/nexe/nexe/releases/tag/v3.3.3
-    resources: [
-      path.join(BUILD_DIR, 'client'), // Include web client
-      'src/service/data' // Include dynamically loaded JSON files
-    ],
-    debug: DEBUG_CONSOLE,
-    build: false,
-    bundle: true,
-    runtime: {
-      nodeConfigureOpts: ['--fully-static']
-    },
-    // https://github.com/nodejs/node/blob/master/src/res/node.rc
-    rc: SERVICE_VERSION_INFO
-  })
+  console.log(`Building ICARUS service using pkg target: ${pkgTarget}`)
+
+  const pkgExecutable = process.platform === 'win32'
+    ? path.join(__dirname, '..', 'node_modules', '.bin', 'pkg.cmd')
+    : path.join(__dirname, '..', 'node_modules', '.bin', 'pkg')
+
+  const pkgArgs = [
+    '--targets', pkgTarget,
+    '--output', SERVICE_UNOPTIMIZED_BUILD,
+    ENTRY_POINT
+  ]
+
+  const env = {
+    ...process.env,
+    PKG_EXE_BANNER: DEBUG_CONSOLE ? 'on' : 'off'
+  }
+
+  if (process.platform === 'win32') {
+    execFileSync('cmd.exe', ['/c', pkgExecutable, ...pkgArgs], { stdio: 'inherit', env })
+  } else {
+    execFileSync(pkgExecutable, pkgArgs, { stdio: 'inherit', env })
+  }
 
   await changeExe.icon(SERVICE_UNOPTIMIZED_BUILD, SERVICE_ICON)
   await changeExe.versionInfo(SERVICE_UNOPTIMIZED_BUILD, SERVICE_VERSION_INFO)
 
-  if (DEVELOPMENT_BUILD) {
-    console.log('Development build (skipping compression)')
-    fs.copyFileSync(SERVICE_UNOPTIMIZED_BUILD, SERVICE_FINAL_BUILD)
-  } else {
-    if (COMPRESS_FINAL_BUILD) {
-      console.log('Optimizing service build...')
-      const optimisationStats = await UPX(SERVICE_UNOPTIMIZED_BUILD)
-        .output(SERVICE_OPTIMIZED_BUILD)
-        .start()
-      fs.copyFileSync(SERVICE_OPTIMIZED_BUILD, SERVICE_FINAL_BUILD)
-      console.log('Optimized service build', optimisationStats)
-    } else {
-      console.log('Compression disabled (skipping service build optimization)')
-      fs.copyFileSync(SERVICE_UNOPTIMIZED_BUILD, SERVICE_FINAL_BUILD)
-    }
-  }
+  console.log('Copying optimized build artefact')
+  fs.copyFileSync(SERVICE_UNOPTIMIZED_BUILD, SERVICE_FINAL_BUILD)
 }

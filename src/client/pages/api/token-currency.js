@@ -1,5 +1,5 @@
-import TokenLedger from '../../../service/lib/token-ledger.js'
-import { isInaraTokenCurrencyEnabled } from '../../../shared/feature-flags.js'
+const TokenLedger = require('../../../service/lib/token-ledger.js')
+const { isInaraTokenCurrencyEnabled } = require('../../../shared/feature-flags.js')
 
 const ledgerInstances = new Map()
 
@@ -24,13 +24,13 @@ function getLedgerEntry (userId) {
   return ledgerInstances.get(normalized)
 }
 
-export async function getTokenLedgerInstance (userId = 'local') {
+async function getTokenLedgerInstance (userId = 'local') {
   const entry = getLedgerEntry(userId)
   await entry.ready
   return entry.ledger
 }
 
-export function estimateByteSize (value) {
+function estimateByteSize (value) {
   if (value === null || value === undefined) return 0
   if (typeof value === 'string') return Buffer.byteLength(value, 'utf8')
   if (Buffer.isBuffer(value)) return value.length
@@ -44,7 +44,7 @@ export function estimateByteSize (value) {
   return Buffer.byteLength(String(value), 'utf8')
 }
 
-export async function spendTokensForInaraExchange ({
+async function spendTokensForInaraExchange ({
   userId = 'local',
   endpoint = '',
   requestBytes = 0,
@@ -63,4 +63,10 @@ export async function spendTokensForInaraExchange ({
     reason: metadata.reason || 'inara-request'
   }
   return ledger.recordSpend(totalBytes, enrichedMetadata)
+}
+
+module.exports = {
+  getTokenLedgerInstance,
+  estimateByteSize,
+  spendTokensForInaraExchange
 }

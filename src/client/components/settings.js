@@ -248,11 +248,10 @@ function FeatureFlagSettings () {
       setLoading(true)
       setError(null)
       try {
-        const response = await fetch('/api/feature-flags')
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`)
+        const payload = await sendEvent('getFeatureFlags')
+        if (payload?.error) {
+          throw new Error(payload.error)
         }
-        const payload = await response.json()
         if (!cancelled) {
           setFlags(Array.isArray(payload?.flags) ? payload.flags : [])
           setLoading(false)

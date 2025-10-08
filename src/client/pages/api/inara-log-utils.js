@@ -1,4 +1,4 @@
-import fs from 'fs'
+const fs = require('fs')
 
 const TRUTHY = new Set(['1', 'true', 'yes', 'on'])
 const FALSY = new Set(['0', 'false', 'no', 'off'])
@@ -12,7 +12,7 @@ function readEnvFlag (name) {
   return null
 }
 
-export function shouldLogInaraActivity () {
+function shouldLogInaraActivity () {
   const explicitEnable = readEnvFlag('ICARUS_ENABLE_INARA_LOGS')
   if (explicitEnable !== null) return explicitEnable
 
@@ -22,9 +22,14 @@ export function shouldLogInaraActivity () {
   return (process.env.NODE_ENV || '').toLowerCase() === 'development'
 }
 
-export function appendInaraLogEntry (logPath, entry) {
+function appendInaraLogEntry (logPath, entry) {
   if (!shouldLogInaraActivity()) return
   try {
     fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${entry}\n`)
   } catch (e) {}
+}
+
+module.exports = {
+  shouldLogInaraActivity,
+  appendInaraLogEntry
 }
