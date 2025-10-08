@@ -22,6 +22,7 @@
     "dev": "cross-env NEXT_SKIP_NATIVE_BUILD=1 node src/service/main.js --dev",
     "dev:swc": "node src/service/main.js --dev",
     "serve:export": "node scripts/serve-export.js",
+    "logs:http": "powershell -ExecutionPolicy Bypass -File ./scripts/view-http-logs.ps1",
     "lint": "npm run lint:go && npm run lint:javascript",
     "lint:go": "go fmt src/app/main.go",
     "lint:javascript": "npx standard --fix",

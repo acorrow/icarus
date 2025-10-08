@@ -34,6 +34,12 @@ const commandLineArgs = yargs
 
 console.log(`ICARUS Terminal Service ${packageJson.version}`)
 
+// Initialize HTTP request logger early
+const httpLogger = require('./lib/http-request-logger')
+const httpLogPath = httpLogger.getLogFilePath()
+console.log(`HTTP request logging enabled: ${httpLogPath}`)
+console.log('All HTTP requests to external services will be logged with verbose details.')
+
 // Parse command line arguments
 const PORT = commandLineArgs.port || commandLineArgs.p || 3300 // Port to listen on
 const DEVELOPMENT = commandLineArgs.dev || false // Development mode

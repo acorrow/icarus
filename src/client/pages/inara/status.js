@@ -880,6 +880,15 @@ function normaliseName (value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
 
+function normaliseCommodityKey (value) {
+  if (!value) return ''
+  const cleaned = typeof value === 'string' ? value.trim() : String(value)
+  return cleaned
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]/g, '')
+}
+
 const MISSIONS_CACHE_KEY = 'icarus.inaraMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = {

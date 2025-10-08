@@ -1,4 +1,5 @@
 const fetch = require('axios') // Using axios instead of node-fetch for better compatibility
+const httpLogger = require('../http-request-logger.js')
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000
 const MAX_CACHE_SIZE = 200
@@ -126,72 +127,166 @@ async function fetchWithInaraCache (url, options = {}) {
   const method = typeof fetchOptions.method === 'string' ? fetchOptions.method.toUpperCase() : 'GET'
   const ttlMs = typeof cacheTtlMs === 'number' && Number.isFinite(cacheTtlMs) ? cacheTtlMs : FIVE_MINUTES_MS
 
-  if (method !== 'GET') {
-    const response = await fetch({ url, ...fetchOptions, method })
-    const headers = normaliseHeaders(response.headers)
-    return {
-      status: response.status,
-      ok: response.status >= 200 && response.status < 300,
-      url,
-      headers: createHeadersInterface(headers),
-      fromCache: false,
-      text: async () => response.data,
-      json: async () => response.data,
-      clone: () => ({ ...response })
+  // Log the incoming request
+  const requestId = httpLogger.logRequestStart({
+    url,
+    method,
+    headers: fetchOptions.headers,
+    body: fetchOptions.body
+  })
+
+  const startTime = Date.now()
+
+  // Set up a timeout warning after 10 seconds
+  const timeoutWarning = setTimeout(() => {
+    const elapsed = Date.now() - startTime
+    httpLogger.logRequestTimeout(requestId, url, elapsed)
+  }, 10000)
+
+  try {
+    if (method !== 'GET') {
+      const response = await fetch({ url, ...fetchOptions, method })
+      const duration = Date.now() - startTime
+      clearTimeout(timeoutWarning)
+      
+      const headers = normaliseHeaders(response.headers)
+      
+      httpLogger.logRequestComplete({
+        requestId,
+        url,
+        method,
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+        body: response.data,
+        duration,
+        fromCache: false
+      })
+      
+      return {
+        status: response.status,
+        ok: response.status >= 200 && response.status < 300,
+        url,
+        headers: createHeadersInterface(headers),
+        fromCache: false,
+        text: async () => response.data,
+        json: async () => response.data,
+        clone: () => ({ ...response })
+      }
     }
-  }
 
-  const cache = getCacheStore()
-  const now = Date.now()
-  pruneExpiredEntries(cache, now, ttlMs)
+    const cache = getCacheStore()
+    const now = Date.now()
+    pruneExpiredEntries(cache, now, ttlMs)
 
-  const cachedEntry = cache.get(url)
-  if (cachedEntry && (now - cachedEntry.timestamp) <= ttlMs && cachedEntry.status === 200) {
-    return createCachedResponse(cachedEntry, true)
-  }
-  if (cachedEntry && (now - cachedEntry.timestamp) > ttlMs) {
-    cache.delete(url)
-  }
-
-  const inFlight = getInFlightStore()
-  if (inFlight.has(url)) {
-    const entry = await inFlight.get(url)
-    if (entry) {
-      const withinTtl = (Date.now() - entry.timestamp) <= ttlMs
-      return createCachedResponse(entry, entry.status === 200 && withinTtl)
+    const cachedEntry = cache.get(url)
+    if (cachedEntry && (now - cachedEntry.timestamp) <= ttlMs && cachedEntry.status === 200) {
+      const duration = Date.now() - startTime
+      clearTimeout(timeoutWarning)
+      
+      httpLogger.logRequestComplete({
+        requestId,
+        url,
+        method,
+        status: cachedEntry.status,
+        statusText: 'OK',
+        headers: cachedEntry.headers,
+        body: cachedEntry.body,
+        duration,
+        fromCache: true
+      })
+      
+      return createCachedResponse(cachedEntry, true)
     }
-  }
-
-  const fetchPromise = (async () => {
-    const response = await fetch({ url, ...fetchOptions, method: 'GET', responseType: 'text' })
-    const headers = normaliseHeaders(response.headers)
-    const body = typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
-    const record = {
-      url,
-      status: response.status,
-      ok: response.status >= 200 && response.status < 300,
-      headers,
-      body,
-      timestamp: Date.now()
-    }
-
-    if (response.status === 200) {
-      cache.set(url, record)
-      recordCacheEntryOrder(url)
-    } else {
+    if (cachedEntry && (now - cachedEntry.timestamp) > ttlMs) {
       cache.delete(url)
     }
 
-    return record
-  })()
+    const inFlight = getInFlightStore()
+    if (inFlight.has(url)) {
+      const entry = await inFlight.get(url)
+      if (entry) {
+        const duration = Date.now() - startTime
+        clearTimeout(timeoutWarning)
+        
+        const withinTtl = (Date.now() - entry.timestamp) <= ttlMs
+        
+        httpLogger.logRequestComplete({
+          requestId,
+          url,
+          method,
+          status: entry.status,
+          statusText: entry.ok ? 'OK' : 'Error',
+          headers: entry.headers,
+          body: entry.body,
+          duration,
+          fromCache: entry.status === 200 && withinTtl
+        })
+        
+        return createCachedResponse(entry, entry.status === 200 && withinTtl)
+      }
+    }
 
-  inFlight.set(url, fetchPromise)
+    const fetchPromise = (async () => {
+      const response = await fetch({ url, ...fetchOptions, method: 'GET', responseType: 'text' })
+      const headers = normaliseHeaders(response.headers)
+      const body = typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
+      const record = {
+        url,
+        status: response.status,
+        ok: response.status >= 200 && response.status < 300,
+        headers,
+        body,
+        timestamp: Date.now()
+      }
 
-  try {
-    const entry = await fetchPromise
-    return createCachedResponse(entry, false)
-  } finally {
-    inFlight.delete(url)
+      if (response.status === 200) {
+        cache.set(url, record)
+        recordCacheEntryOrder(url)
+      } else {
+        cache.delete(url)
+      }
+
+      return record
+    })()
+
+    inFlight.set(url, fetchPromise)
+
+    try {
+      const entry = await fetchPromise
+      const duration = Date.now() - startTime
+      clearTimeout(timeoutWarning)
+      
+      httpLogger.logRequestComplete({
+        requestId,
+        url,
+        method,
+        status: entry.status,
+        statusText: entry.ok ? 'OK' : 'Error',
+        headers: entry.headers,
+        body: entry.body,
+        duration,
+        fromCache: false
+      })
+      
+      return createCachedResponse(entry, false)
+    } finally {
+      inFlight.delete(url)
+    }
+  } catch (error) {
+    const duration = Date.now() - startTime
+    clearTimeout(timeoutWarning)
+    
+    httpLogger.logRequestComplete({
+      requestId,
+      url,
+      method,
+      status: null,
+      duration,
+      error
+    })
+    
+    throw error
   }
 }
 
