@@ -1,0 +1,10 @@
+{
+  "name": "ICARUS Dev Environment",
+  "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:0-20",
+  "postCreateCommand": "npm install && (npm run dev &) && (npm run dev:web &)",
+  "forwardPorts": [3300, 3000],
+  "portsAttributes": {
+    "3300": { "label": "ICARUS Service", "onAutoForward": "openBrowser" },
+    "3000": { "label": "INARA Web Client", "onAutoForward": "openBrowser" }
+  }
+}
