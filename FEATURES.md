@@ -2,6 +2,45 @@
 
 This file contains the canonical list of features, shortnames, and their mapping for the ICARUS Terminal and INARA. All CODEX agents MUST keep this file up to date with ANY changes to features, endpoints, or feature mappings. If you add, remove, or modify a feature, update this file immediately.
 
+## Critical: What is INARA?
+
+**INARA is an external third-party website** (https://inara.cz) that provides Elite Dangerous data through both web pages and an official API.
+
+### Current Implementation: Web Scraping (Active)
+ICARUS Terminal currently uses **web scraping** to extract data from INARA's public web pages:
+- HTTP requests are made to INARA search pages (e.g., `https://inara.cz/elite/market-traderoutes/?ps1=Saktsak&pi10=1040...`)
+- HTML responses are parsed using **Cheerio** (an HTML parsing library)
+- Structured data is extracted and normalized for use in ICARUS
+- Scrapers are located in: `src/service/lib/api/inara-*.js`
+  - `inara-trade-routes.js` - Trade route search scraper
+  - `inara-commodity-values.js` - Commodity market scraper
+  - `inara-missions.js` - Mission board scraper
+  - `inara-pristine-mining.js` - Pristine ring location scraper
+  - `inara-websearch.js` - General outfitting/search scraper
+
+### Future Implementation: INARA Official API (Not Yet Used)
+INARA provides an official API that we plan to integrate:
+- **API Documentation**: 
+  - Overview: https://inara.cz/elite/inara-api/
+  - Developer Guide: https://inara.cz/elite/inara-api-devguide/
+  - Full Docs: https://inara.cz/elite/inara-api-docs/
+- **Status**: Not implemented yet, only experimental code exists in `inara-search.js`
+- **Future Goal**: 
+  - Wire up INARA API endpoints
+  - Send Elite Dangerous journal data to INARA via their API
+  - Retrieve data FROM INARA API instead of scraping
+  - Maintain web scraper as fallback or deprecate it
+
+### Web Scraper Architecture
+The INARA web scraper engine is intentionally **decoupled** from other code:
+- All scraper logic is isolated in `src/service/lib/api/inara-*.js` files
+- HTTP caching layer: `src/service/lib/api/inara-request-cache.js`
+- HTTP request logging: `src/service/lib/http-request-logger.js`
+- Agents can work on scrapers in isolation without affecting other systems
+- Scrapers must always output properly structured, normalized data
+
+**Important**: "The INARA Page" in ICARUS Terminal refers to the UI surface (`src/client/pages/inara.js`) that **displays** data scraped from inara.cz. INARA itself is NOT part of ICARUS—it's an external data source.
+
 ## INARA Feature Mapping
 
 

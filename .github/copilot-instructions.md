@@ -33,7 +33,15 @@ The application reads Elite Dangerous journal files in real-time and provides a 
 
 ## INARA Workspace (Primary UI Surface)
 
-**INARA** is the main UI surface for active development. It provides trade routes, cargo valuation, mining missions, and other companion features.
+**CRITICAL: What is INARA?**
+- **INARA is an external third-party website** (https://inara.cz) that provides Elite Dangerous data
+- ICARUS Terminal **scrapes data from INARA's web pages** using Cheerio (HTML parser)
+- We do **NOT yet use INARA's official API** - only web scraping is implemented
+- "The INARA Page" in ICARUS refers to the UI surface that **displays** scraped data, not INARA itself
+- All INARA scrapers live in `src/service/lib/api/inara-*.js` and are intentionally decoupled
+- See `FEATURES.md` for full details on INARA architecture and future API integration plans
+
+**INARA** is the main UI surface for active development. It provides trade routes, cargo valuation, mining missions, and other companion features by displaying data scraped from inara.cz.
 
 ### INARA Layout Principles
 - Pages must never render beneath secondary navigation rail
@@ -87,12 +95,21 @@ The project includes comprehensive HTTP logging:
 
 ### Common Patterns
 
-#### Adding a New INARA API Endpoint
+#### Adding a New INARA Web Scraper Endpoint
 1. Create handler in `src/service/lib/api/inara-<feature>.js`
-2. Use `fetchWithInaraCache()` for external requests (includes logging)
-3. Register route in `src/service/main.js`: `app.use('/api/inara-<feature>', require('./lib/api/inara-<feature>'))`
-4. Add feature mapping to `FEATURES.md`
-5. Update client to call `/api/inara-<feature>`
+2. Use Cheerio to parse HTML from inara.cz pages
+3. Use `fetchWithInaraCache()` for external requests (includes logging)
+4. Register route in `src/service/main.js`: `app.use('/api/inara-<feature>', require('./lib/api/inara-<feature>'))`
+5. Add feature mapping to `FEATURES.md`
+6. Update client to call `/api/inara-<feature>`
+7. Keep scraper logic decoupled and isolated
+
+#### Future: Adding INARA Official API Integration
+1. Reference INARA API docs: https://inara.cz/elite/inara-api-docs/
+2. Build request payload from Elite Dangerous journal data
+3. Use official API endpoints instead of web scraping
+4. Maintain web scraper as fallback during transition
+5. Update `FEATURES.md` to reflect API integration status
 
 #### Adding a New WebSocket Event
 1. Add handler to `src/service/lib/event-handlers/<domain>.js`
