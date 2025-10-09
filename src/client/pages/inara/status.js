@@ -7391,7 +7391,7 @@ export default function InaraStatusPage () {
     return [...panelItems, ...sharedNavItems]
   }, [activeTab])
 
-  const workspaceClassName = [styles.inara, styles.inaraIcarus].join(' ')
+  const workspaceClassName = styles.inara
 
   const loaderVisible = activeTab === 'tradeRoutes' && tradeRoutesStatus === 'loading'
 

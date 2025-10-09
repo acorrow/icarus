@@ -83,22 +83,6 @@
     "npm": "9.6.7",
     "node": "18.17.1"
   },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "transform": {
-      "^.+\\.(js|jsx|ts|tsx)$": [
-        "babel-jest",
-        {
-          "presets": [
-            "next/babel"
-          ]
-        }
-      ]
-    },
-    "moduleNameMapper": {
-      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
-    }
-  },
   "optionalDependencies": {
     "@next/swc-linux-x64-gnu": "^12.1.5",
     "@next/swc-win32-x64-msvc": "^12.1.5"

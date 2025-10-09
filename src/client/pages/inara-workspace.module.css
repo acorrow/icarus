@@ -15,8 +15,8 @@
 
 .inaraNavigation {
   position: relative;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--inara-color-primary-dark) 70%, transparent) 0%, color-mix(in srgb, var(--inara-color-background) 88%, transparent) 100%);
-  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary-dark) 70%, transparent) 0%, color-mix(in srgb, var(--color-background) 88%, transparent) 100%);
+  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--color-primary) 35%, transparent);
   display: flex;
   justify-content: center;
 }
@@ -56,7 +56,7 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--inara-color-background);
+  background: var(--color-background);
 }
 
 .inaraScrollRegionClassic {
@@ -93,42 +93,42 @@
   min-height: 100%;
   --inara-viewport-height: 100vh;
   --inara-terminal-height: clamp(180px, 18vh, 220px);
-  --inara-bg: var(--inara-color-background);
-  --inara-panel: color-mix(in srgb, var(--inara-color-background) 88%, transparent);
-  --inara-border-soft: color-mix(in srgb, var(--inara-color-primary) 28%, transparent);
-  --inara-border-regular: color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
-  --inara-border-strong: color-mix(in srgb, var(--inara-color-primary) 55%, transparent);
-  --inara-border-focus: color-mix(in srgb, var(--inara-color-primary-light) 45%, transparent);
+  --inara-bg: var(--color-background);
+  --inara-panel: color-mix(in srgb, var(--color-background) 88%, transparent);
+  --inara-border-soft: color-mix(in srgb, var(--color-primary) 28%, transparent);
+  --inara-border-regular: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  --inara-border-strong: color-mix(in srgb, var(--color-primary) 55%, transparent);
+  --inara-border-focus: color-mix(in srgb, var(--color-secondary) 45%, transparent);
   --inara-panel-border: var(--inara-border-soft);
-  --inara-shadow: color-mix(in srgb, var(--inara-color-background) 55%, transparent);
-  --inara-shadow-deep: color-mix(in srgb, var(--inara-color-background) 68%, transparent);
-  --inara-glow: color-mix(in srgb, var(--inara-color-primary-light) 36%, transparent);
-  --inara-divider: color-mix(in srgb, var(--inara-color-text-strong) 16%, transparent);
-  --inara-ink: color-mix(in srgb, var(--inara-color-text-strong) 92%, transparent);
-  --inara-muted: color-mix(in srgb, var(--inara-color-text-strong) 70%, transparent);
-  --inara-subdued: color-mix(in srgb, var(--inara-color-text-strong) 56%, transparent);
-  --inara-text-soft: color-mix(in srgb, var(--inara-color-text-strong) 68%, transparent);
-  --inara-text-faint: color-mix(in srgb, var(--inara-color-text-strong) 54%, transparent);
-  --inara-accent: var(--inara-color-primary-light);
-  --inara-highlight: color-mix(in srgb, var(--inara-color-primary-light) 18%, transparent);
-  --inara-highlight-strong: color-mix(in srgb, var(--inara-color-primary) 25%, transparent);
-  --inara-scrollbar-track: var(--inara-color-scroll-track);
-  --inara-scrollbar-thumb: var(--inara-color-scroll-thumb);
-  --inara-scrollbar-thumb-border: var(--inara-color-scroll-thumb-border);
-  --inara-terminal-jackpot-flood: color-mix(in srgb, var(--inara-color-success) 88%, transparent);
-  --inara-terminal-jackpot-flood-shadow: color-mix(in srgb, var(--inara-color-success) 58%, transparent);
-  --inara-terminal-jackpot-flood-accent: color-mix(in srgb, var(--inara-color-primary-light) 28%, transparent);
-  --inara-terminal-debit: color-mix(in srgb, var(--inara-color-warning) 92%, transparent);
-  --inara-terminal-debit-shadow: color-mix(in srgb, var(--inara-color-warning) 64%, transparent);
-  --inara-terminal-debit-contrast: color-mix(in srgb, var(--inara-color-text-strong) 94%, transparent);
+  --inara-shadow: color-mix(in srgb, var(--color-background) 55%, transparent);
+  --inara-shadow-deep: color-mix(in srgb, var(--color-background) 68%, transparent);
+  --inara-glow: color-mix(in srgb, var(--color-secondary) 36%, transparent);
+  --inara-divider: color-mix(in srgb, var(--color-info) 16%, transparent);
+  --inara-ink: color-mix(in srgb, var(--color-info) 92%, transparent);
+  --inara-muted: color-mix(in srgb, var(--color-info) 70%, transparent);
+  --inara-subdued: color-mix(in srgb, var(--color-info) 56%, transparent);
+  --inara-text-soft: color-mix(in srgb, var(--color-info) 68%, transparent);
+  --inara-text-faint: color-mix(in srgb, var(--color-info) 54%, transparent);
+  --inara-accent: var(--color-secondary);
+  --inara-highlight: color-mix(in srgb, var(--color-secondary) 18%, transparent);
+  --inara-highlight-strong: color-mix(in srgb, var(--color-primary) 25%, transparent);
+  --inara-scrollbar-track: #000;
+  --inara-scrollbar-thumb: color-mix(in srgb, var(--color-secondary) 75%, transparent);
+  --inara-scrollbar-thumb-border: color-mix(in srgb, var(--color-secondary) 45%, transparent);
+  --inara-terminal-jackpot-flood: color-mix(in srgb, var(--color-success) 88%, transparent);
+  --inara-terminal-jackpot-flood-shadow: color-mix(in srgb, var(--color-success) 58%, transparent);
+  --inara-terminal-jackpot-flood-accent: color-mix(in srgb, var(--color-secondary) 28%, transparent);
+  --inara-terminal-debit: color-mix(in srgb, var(--color-danger) 92%, transparent);
+  --inara-terminal-debit-shadow: color-mix(in srgb, var(--color-danger) 64%, transparent);
+  --inara-terminal-debit-contrast: color-mix(in srgb, var(--color-info) 94%, transparent);
   --inara-table-header: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--inara-color-primary) 82%, transparent) 0%,
-    color-mix(in srgb, var(--inara-color-primary-dark) 78%, transparent) 100%
+    color-mix(in srgb, var(--color-primary) 82%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary-dark) 78%, transparent) 100%
   );
-  --inara-gradient-top: color-mix(in srgb, var(--inara-color-surface) 92%, transparent);
-  --inara-gradient-mid: color-mix(in srgb, var(--inara-color-primary-dark) 60%, transparent);
-  --inara-gradient-bottom: color-mix(in srgb, var(--inara-color-background) 88%, transparent);
+  --inara-gradient-top: color-mix(in srgb, var(--color-background-panel) 92%, transparent);
+  --inara-gradient-mid: color-mix(in srgb, var(--color-primary-dark) 60%, transparent);
+  --inara-gradient-bottom: color-mix(in srgb, var(--color-background) 88%, transparent);
   padding: 0 0 calc(4.25rem + var(--inara-terminal-height));
   background: linear-gradient(165deg, var(--inara-gradient-top) 0%, var(--inara-gradient-mid) 55%, var(--inara-gradient-bottom) 100%),
     var(--inara-bg);
@@ -148,31 +148,7 @@
   }
 }
 
-.inaraIcarus {
-  --inara-color-background: #000;
-  --inara-color-surface: var(--color-background-panel);
-  --inara-color-primary: var(--color-primary);
-  --inara-color-primary-dark: var(--color-primary-dark);
-  --inara-color-primary-light: var(--color-secondary);
-  --inara-color-text-strong: var(--color-info);
-  --inara-color-success: var(--color-success);
-  --inara-color-warning: var(--color-danger);
-  --inara-color-scroll-track: #000;
-  --inara-color-scroll-thumb: color-mix(in srgb, var(--color-secondary) 75%, transparent);
-  --inara-color-scroll-thumb-border: color-mix(in srgb, var(--color-secondary) 45%, transparent);
-  --inara-gradient-top: #000;
-  --inara-gradient-mid: #000;
-  --inara-gradient-bottom: #000;
-  --inara-bg: #000;
-  background: #000;
-  color: var(--color-info);
-  box-shadow: none;
-}
 
-.inaraIcarus::before,
-.inaraIcarus::after {
-  display: none;
-}
 
 .inara::before {
   content: '';

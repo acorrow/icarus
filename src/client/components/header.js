@@ -27,11 +27,6 @@ const NAV_BUTTONS = [
     abbr: 'Log',
     path: '/log'
   },
-  {
-    name: 'INARA',
-    abbr: 'INARA',
-    path: '/inara'
-  }
 ]
 
 export default function Header ({ connected, active }) {
