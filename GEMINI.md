@@ -69,13 +69,69 @@ To get started with development, you can follow these general steps:
 
 1.  **Install dependencies:** Run `npm install` to install all the necessary dependencies.
 2.  **Set up environment:** Duplicate `.env-example` to `.env` and configure the `LOG_DIR` to point to your Elite Dangerous journal directory for live data.
-3.  **Run the application:**
+3.  **Enable Mock Data Mode (Optional):** Add `FORCE_MOCK_DATA=true` to your `.env` file to develop without Elite Dangerous installed or live INARA.cz access. See Mock Data Mode section below.
+4.  **Run the application:**
     *   For the web client, use `npm run dev:web` (available at http://127.0.0.1:3000).
     *   For the full stack, use `npm run dev` (available at http://127.0.0.1:3300).
     *   To run the packaged application, use `npm start`.
-4.  **Build the application:**
+5.  **Build the application:**
     *   To create a full build, run `npm run build`.
     *   To build only the client, run `npm run build:client`.
-5.  **Run tests:** To run the test suite, use `npm test -- --runInBand --config jest.config.js`.
+6.  **Run tests:** To run the test suite, use `npm test -- --runInBand --config jest.config.js`.
+
+### Mock Data Mode for Development
+
+**Mock Data Mode** enables full-stack development and testing without requiring Elite Dangerous game data or live network access to INARA.cz. It provides a cohesive Sol-based scenario with complete commander profile, cargo hold, active missions, and pre-captured INARA HTML.
+
+**Enable Mock Data Mode:**
+```bash
+# Add to .env file
+FORCE_MOCK_DATA=true
+
+# Start service
+npm run start
+```
+
+**What Mock Data Provides:**
+- Current System: **Sol** (Home system of humanity)
+- Current Station: **Galileo** (Coriolis starport, 3.5 Ls)
+- Commander: **CMDR Mock** (123,456,789 CR)
+- Ship: **Cobra MkIII** ("Mock Cobra")
+- Cargo: 47t (Painite 12t, Tritium 8t, LTDs 5t, Gold 10t, Palladium 7t, Platinum 5t)
+- Active Missions: 3 mining missions (Painite, LTDs, Palladium deliveries)
+- INARA Data: Real INARA HTML with 50 trade routes from Sol (333KB file from live site)
+
+**When to Use Mock Data Mode:**
+- Developing UI components without Elite Dangerous installed
+- Testing INARA scrapers offline (no network access to inara.cz)
+- Running CI/CD pipelines with deterministic test data
+- Debugging specific game scenarios without replaying journal logs
+- Validating feature behavior with known, controlled inputs
+
+**What Gets Skipped:**
+- EDSM API calls (system lookups, nearby systems)
+- INARA.cz network requests (loads from pre-captured HTML files)
+- Real-time journal ingestion (loads from mock Journal.20240101.log)
+
+**Mock Data Files:**
+- `resources/mock-game-data/Journal.20240101.log` - 15 journal events
+- `resources/mock-game-data/Cargo.json` - 47t cargo with 6 commodity types
+- `resources/mock-game-data/Status.json` - Docked at Galileo station
+- `resources/mock-game-data/inara/*.html` - Pre-captured INARA HTML responses
+- `resources/mock-game-data/events/*.json` - 142 event types with 594 samples from real logs
+
+**Testing INARA Scrapers:**
+```bash
+# Test all scrapers with mock HTML (offline)
+node test/scraper-tests.js mock
+
+# Test scrapers against live INARA.cz (requires network)
+node test/scraper-tests.js real
+
+# Test specific scraper
+node test/scraper-tests.js real trade-routes
+```
+
+See `FEATURES.md` → Mock Data Mode section for complete documentation.
 
 For more detailed information on the architecture, development workflow, and project conventions, please refer to the `README.md` and `BUILD.md` files.

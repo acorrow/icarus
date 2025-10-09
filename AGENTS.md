@@ -55,9 +55,11 @@ Every event type and data structure was catalogued. Instead of a single monolith
 
 A **decoupled, testable scraper engine** is now available for cloud agent testing and independent scraper development:
 
-**Development with Mock Data:**
+**Development with Mock Data Mode:**
 
-Force the service to use mock data for UI development:
+Mock Data Mode enables full-stack development and testing without Elite Dangerous or live INARA.cz access. It provides a cohesive Sol-based scenario with complete game state (CMDR Mock at Galileo station with 47t cargo and 3 active mining missions).
+
+**Enable Mock Data Mode:**
 ```bash
 # Add to .env file
 FORCE_MOCK_DATA=true
@@ -66,15 +68,37 @@ FORCE_MOCK_DATA=true
 npm run start
 ```
 
-This loads mock game data from `resources/mock-game-data/`:
-- Current System: **Sol**
-- Commander: **CMDR Mock**
-- Ship: **Cobra MkIII**
-- All JSON files (Cargo, Status, NavRoute, ShipLocker)
+**What Mock Data Provides:**
+- Current System: **Sol** (Home system of humanity)
+- Current Station: **Galileo** (Coriolis starport, 3.5 Ls)
+- Commander: **CMDR Mock** (123,456,789 CR)
+- Ship: **Cobra MkIII** ("Mock Cobra")
+- Cargo: 47t (Painite 12t, Tritium 8t, LTDs 5t, Gold 10t, Palladium 7t, Platinum 5t)
+- Active Missions: 3 mining missions (Painite, LTDs, Palladium deliveries)
+- INARA Data: Real INARA HTML with 50 trade routes from Sol (333KB file from live site)
 
-Perfect for testing UI components without Elite Dangerous running!
+**Mock Data Files:**
+- `resources/mock-game-data/Journal.20240101.log` - 15 journal events
+- `resources/mock-game-data/Cargo.json` - 47t cargo with 6 commodity types
+- `resources/mock-game-data/Status.json` - Docked at Galileo
+- `resources/mock-game-data/inara/*.html` - Pre-captured INARA HTML responses
 
-**Architecture:**
+**Performance Benefits:**
+- Skips slow EDSM API calls (system lookups, nearby systems)
+- Loads pre-captured INARA HTML instead of network requests
+- Fast, deterministic test data for UI development
+- No external dependencies (game installation, network access)
+
+**When to Use Mock Data Mode:**
+- Developing UI components without Elite Dangerous installed
+- Testing INARA scrapers offline
+- Running CI/CD pipelines
+- Debugging specific scenarios without replaying real logs
+- Cloud agents fixing scrapers without local game installation
+
+See `FEATURES.md` → Mock Data Mode section for complete documentation.
+
+**Scraper Architecture:**
 - Pure scraping functions isolated in `src/service/lib/api/scrapers/`
 - No dependencies on ICARUS state, logs, or file system
 - Each scraper is a pure function: HTML → Structured JSON
