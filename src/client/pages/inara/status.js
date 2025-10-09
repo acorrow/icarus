@@ -832,8 +832,7 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
         onClick={handleClick}
         data-inara-table-row='profit'
       >
-        <td className={`${styles.tableCellTop} ${styles.tradeRouteProfitSpacerCell}`} aria-hidden='true' />
-        <td className={`${styles.tableCellTop} ${styles.tradeRouteProfitCell}`}>
+        <td colSpan={3} className={`${styles.tableCellTop} ${styles.tradeRouteProfitCell}`}>
           <div
             className={`${styles.tradeRouteProfitBanner}${isSelected ? ` ${styles.tradeRouteProfitBannerSelected}` : ''}`}
             style={profitHighlightStyle}
@@ -869,7 +868,6 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
             </div>
           </div>
         </td>
-        <td className={`${styles.tableCellTop} ${styles.tradeRouteProfitSpacerCell}`} aria-hidden='true' />
       </tr>
     </>
   )
