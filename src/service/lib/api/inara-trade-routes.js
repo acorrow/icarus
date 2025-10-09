@@ -355,6 +355,58 @@ async function handler(req, res) {
   
   logger.info('[trade-routes] Processing request for system: %s', system)
 
+  // MOCK DATA MODE: Load mock HTML instead of fetching from INARA
+  if (process.env.FORCE_MOCK_DATA === 'true') {
+    logger.info('[trade-routes] FORCE_MOCK_DATA enabled, loading mock HTML for system: %s', system)
+    const mockDataDir = resolveMockDataDir()
+    const mockHtmlPath = path.join(mockDataDir, 'inara', 'trade-routes-painite-sol.html')
+    
+    if (!fs.existsSync(mockHtmlPath)) {
+      logger.error('[trade-routes] Mock HTML file not found: %s', mockHtmlPath)
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: 'Mock data file not found' }))
+      return
+    }
+    
+    try {
+      const mockHtml = fs.readFileSync(mockHtmlPath, 'utf-8')
+      logger.info('[trade-routes] Loaded mock HTML (%d bytes)', mockHtml.length)
+      
+      const routes = parseTradeRoutes(mockHtml)
+      logger.info('[trade-routes] Parsed %d routes from mock data', routes.length)
+      
+      // Enrich with system data (skip distance calculations in mock mode)
+      // Add mock station types for icon display
+      const stationTypes = ['Coriolis', 'Orbis', 'Ocellus', 'Asteroid', 'Outpost']
+      const enrichedRoutes = routes.map((route, index) => ({
+        ...route,
+        origin: {
+          ...route.origin,
+          distanceFromCurrentLy: 0,
+          stationType: route.origin.stationType || stationTypes[index % stationTypes.length]
+        },
+        destination: {
+          ...route.destination,
+          distanceFromCurrentLy: 0,
+          stationType: route.destination.stationType || stationTypes[(index + 1) % stationTypes.length]
+        }
+      }))
+      
+      logInaraTrade(`MOCK_DATA_SUCCESS: system=${system} routes=${enrichedRoutes.length}`)
+      res.statusCode = 200
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ results: enrichedRoutes }))
+      return
+    } catch (error) {
+      logger.error('[trade-routes] Error loading mock data:', error)
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: 'Failed to load mock data: ' + error.message }))
+      return
+    }
+  }
+
   const params = new URLSearchParams()
   params.append('formbrief', '1')
   params.append('ps1', system.trim())

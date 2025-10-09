@@ -2171,11 +2171,20 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   }, [])
 
   const fetchCurrentSystem = useCallback(({ allowAutoSelect = false } = {}) => {
+    console.log('[fetchCurrentSystem] Fetching current system from /api/current-system')
     fetch('/api/current-system')
-      .then(res => res.json())
+      .then(res => {
+        console.log('[fetchCurrentSystem] Response received, status:', res.status)
+        return res.json()
+      })
       .then(data => {
-        if (!isMounted.current) return
+        console.log('[fetchCurrentSystem] Data received:', data)
+        if (!isMounted.current) {
+          console.log('[fetchCurrentSystem] Component unmounted, ignoring data')
+          return
+        }
         setCurrentSystem(data.currentSystem)
+        console.log('[fetchCurrentSystem] Set current system to:', data.currentSystem?.name)
         const seen = new Set()
         const opts = []
         if (data.currentSystem?.name) {
@@ -2188,14 +2197,18 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
             seen.add(sys.name)
           }
         })
+        console.log('[fetchCurrentSystem] System options:', opts)
         setSystemOptions(opts)
         const shouldAutoSelect = allowAutoSelect && autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
+        console.log('[fetchCurrentSystem] Auto-select check:', { allowAutoSelect, autoSelectCurrent, autoSelectApplied: autoSelectApplied.current, hasName: !!data.currentSystem?.name, shouldAutoSelect })
         if (shouldAutoSelect) {
+          console.log('[fetchCurrentSystem] Auto-selecting system:', data.currentSystem.name)
           setSystemFromName(data.currentSystem.name)
           autoSelectApplied.current = true
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('[fetchCurrentSystem] Error fetching current system:', error)
         if (!isMounted.current) return
         setCurrentSystem(null)
       })
@@ -2204,6 +2217,10 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   useEffect(() => {
     fetchCurrentSystem({ allowAutoSelect: true })
   }, [fetchCurrentSystem])
+
+  useEffect(() => eventListener('gameStateChange', () => {
+    fetchCurrentSystem({ allowAutoSelect: !autoSelectApplied.current })
+  }), [fetchCurrentSystem])
 
   useEffect(() => eventListener('newLogEntry', log => {
     if (!log?.event) return

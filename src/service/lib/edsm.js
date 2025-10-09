@@ -81,26 +81,37 @@ class EDSM {
   }
 
   static async system (systemName) {
+    console.log('[EDSM.system] Starting EDSM system fetch for:', systemName)
     return await retry(async bail => {
-      const resSystem = await axios.get(`${baseUrl}api-v1/system?systemName=${encodeURIComponent(systemName)}&showInformation=1&showCoordinates=1`)
-      const resBodies = await axios.get(`${baseUrl}api-system-v1/bodies?systemName=${encodeURIComponent(systemName)}`)
-      const resStations = await axios.get(`${baseUrl}api-system-v1/stations?systemName=${encodeURIComponent(systemName)}`)
-      return {
-        name: resSystem?.data?.name ?? UNKNOWN_VALUE,
-        address: resSystem?.data?.address ?? UNKNOWN_VALUE,
-        position: resSystem?.data?.coords ? [resSystem?.data?.coords.x, resSystem?.data?.coords.y, resSystem?.data?.coords.z] : null,
-        allegiance: resSystem?.data?.information?.allegiance ?? UNKNOWN_VALUE,
-        government: resSystem?.data?.information?.government ?? UNKNOWN_VALUE,
-        security: resSystem?.data?.information?.security ? `${resSystem.data.information.security} Security` : UNKNOWN_VALUE,
-        state: resSystem?.data?.information?.factionState ?? UNKNOWN_VALUE,
-        economy: {
-          primary: resSystem?.data?.information?.economy ?? UNKNOWN_VALUE,
-          secondary: resSystem?.data?.information?.secondEconomy ?? UNKNOWN_VALUE
-        },
-        population: resSystem?.data?.information?.population ?? UNKNOWN_VALUE,
-        faction: resSystem?.data?.information?.faction ?? UNKNOWN_VALUE,
-        bodies: resBodies?.data?.bodies ?? [],
-        stations: resStations?.data?.stations ?? []
+      console.log('[EDSM.system] Making API request to EDSM for:', systemName)
+      try {
+        const resSystem = await axios.get(`${baseUrl}api-v1/system?systemName=${encodeURIComponent(systemName)}&showInformation=1&showCoordinates=1`, { timeout: 5000 })
+        console.log('[EDSM.system] Got system data:', resSystem?.data?.name)
+        const resBodies = await axios.get(`${baseUrl}api-system-v1/bodies?systemName=${encodeURIComponent(systemName)}`, { timeout: 5000 })
+        console.log('[EDSM.system] Got bodies data:', resBodies?.data?.bodies?.length, 'bodies')
+        const resStations = await axios.get(`${baseUrl}api-system-v1/stations?systemName=${encodeURIComponent(systemName)}`, { timeout: 5000 })
+        console.log('[EDSM.system] Got stations data:', resStations?.data?.stations?.length, 'stations')
+        return {
+          name: resSystem?.data?.name ?? UNKNOWN_VALUE,
+          address: resSystem?.data?.address ?? UNKNOWN_VALUE,
+          position: resSystem?.data?.coords ? [resSystem?.data?.coords.x, resSystem?.data?.coords.y, resSystem?.data?.coords.z] : null,
+          allegiance: resSystem?.data?.information?.allegiance ?? UNKNOWN_VALUE,
+          government: resSystem?.data?.information?.government ?? UNKNOWN_VALUE,
+          security: resSystem?.data?.information?.security ? `${resSystem.data.information.security} Security` : UNKNOWN_VALUE,
+          state: resSystem?.data?.information?.factionState ?? UNKNOWN_VALUE,
+          economy: {
+            primary: resSystem?.data?.information?.economy ?? UNKNOWN_VALUE,
+            secondary: resSystem?.data?.information?.secondEconomy ?? UNKNOWN_VALUE
+          },
+          population: resSystem?.data?.information?.population ?? UNKNOWN_VALUE,
+          faction: resSystem?.data?.information?.faction ?? UNKNOWN_VALUE,
+          bodies: resBodies?.data?.bodies ?? [],
+          stations: resStations?.data?.stations ?? []
+        }
+      } catch (error) {
+        console.error('[EDSM.system] Error fetching system data:', error.message)
+        console.error('[EDSM.system] Error details:', error.code, error.response?.status)
+        throw error
       }
     }, {
       retries: 10

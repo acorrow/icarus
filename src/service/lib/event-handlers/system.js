@@ -12,15 +12,20 @@ class System {
   async getCurrentLocation () {
     // Get most recent Location event (written at startup and after respawn)
     const Location = await this.eliteLog.getEvent('Location')
+    console.log('[System.getCurrentLocation] Location event:', Location ? `${Location.StarSystem} at ${Location.timestamp}` : 'NOT FOUND')
 
     const currentLocation = {
       name: UNKNOWN_VALUE, // System Name
       mode: 'SHIP' // ENUM: [SHIP|SRV|FOOT|TAXI|MULTICREW]
     }
 
-    if (!Location) return currentLocation
+    if (!Location) {
+      console.log('[System.getCurrentLocation] No Location event found, returning UNKNOWN_VALUE')
+      return currentLocation
+    }
 
     const FSDJump = (await this.eliteLog.getEventsFromTimestamp('FSDJump', Location?.timestamp, 1))?.[0]
+    console.log('[System.getCurrentLocation] FSDJump event:', FSDJump ? `${FSDJump.StarSystem} at ${FSDJump.timestamp}` : 'NOT FOUND')
 
     // If there is an FSD Jump event more recent than the Location event
     // then use that for current location (note: they are formatted almost
@@ -73,12 +78,15 @@ class System {
 
   async getSystem ({ name = null, useCache = true } = {}) {
     const currentLocation = await this.getCurrentLocation()
+    console.log('[System.getSystem] currentLocation:', currentLocation?.name || 'UNKNOWN', 'docked:', !!currentLocation?.docked, 'station:', currentLocation?.station || 'N/A')
 
     // If no system name was specified, get the star system the player is in
     const systemName = name?.trim() ?? currentLocation?.name ?? null
+    console.log('[System.getSystem] systemName to fetch:', systemName)
 
     // If no system name was provided amd we don't know the players location
     if (!systemName || systemName === UNKNOWN_VALUE) {
+      console.log('[System.getSystem] No valid system name, returning UNKNOWN_VALUE')
       return {
         name: UNKNOWN_VALUE,
         unknownSystem: true
@@ -89,6 +97,33 @@ class System {
     // Note: System names are unique (they can change, but will still be unique)
     // so is okay to use them as a key.
     if (!global.CACHE.SYSTEMS[systemName.toLowerCase()] || useCache === false) {
+      console.log('[System.getSystem] System not in cache or useCache=false, fetching from EDSM:', systemName)
+      
+      // OPTIMIZATION: When using mock data, skip EDSM calls and create minimal system object
+      if (process.env.FORCE_MOCK_DATA === 'true') {
+        console.log('[System.getSystem] FORCE_MOCK_DATA enabled, creating minimal system object without EDSM call')
+        const minimalSystem = {
+          name: systemName,
+          address: UNKNOWN_VALUE,
+          position: null,
+          allegiance: UNKNOWN_VALUE,
+          government: UNKNOWN_VALUE,
+          security: UNKNOWN_VALUE,
+          state: UNKNOWN_VALUE,
+          economy: {
+            primary: UNKNOWN_VALUE,
+            secondary: UNKNOWN_VALUE
+          },
+          population: UNKNOWN_VALUE,
+          faction: UNKNOWN_VALUE,
+          bodies: [],
+          stations: []
+        }
+        global.CACHE.SYSTEMS[systemName.toLowerCase()] = minimalSystem
+        console.log('[System.getSystem] Created and cached minimal system for:', systemName)
+        return minimalSystem
+      }
+      
       // Get system from EDSM
       const system = await EDSM.system(systemName)
 

@@ -38,9 +38,16 @@ async function ensureSystemInstance () {
   if (systemInitPromise) return systemInitPromise
 
   systemInitPromise = (async () => {
-    let eliteLog = global.ICARUS_ELITE_LOG
+    // CRITICAL: Use the global ELITE_LOG instance if it exists (loaded by main service with FORCE_MOCK_DATA support)
+    let eliteLog = global.ELITE_LOG || global.ICARUS_ELITE_LOG
+    
+    console.log('[current-system] ensureSystemInstance - global.ELITE_LOG exists:', !!global.ELITE_LOG)
+    console.log('[current-system] ensureSystemInstance - global.ICARUS_ELITE_LOG exists:', !!global.ICARUS_ELITE_LOG)
+    console.log('[current-system] ensureSystemInstance - using eliteLog:', !!eliteLog)
+    
     if (!eliteLog) {
       const logDir = resolveLogDir()
+      console.log('[current-system] No global eliteLog found, creating new instance with logDir:', logDir)
       if (logDir) {
         try {
           eliteLog = new EliteLog(logDir)
@@ -175,10 +182,22 @@ module.exports = async function handler (req, res) {
   }
 
   try {
+    console.log('[current-system] Handler called - getting system instance')
     const systemInstance = await ensureSystemInstance()
+    console.log('[current-system] Got system instance, calling getSystem()')
     const currentSystem = await systemInstance.getSystem()
+    console.log('[current-system] Current system:', currentSystem?.name || 'UNKNOWN')
     const responseCurrent = sanitiseCurrentSystem(currentSystem)
-    const nearby = await buildNearbySystems(currentSystem)
+    console.log('[current-system] Sanitised current system:', responseCurrent?.name || 'UNKNOWN')
+    
+    // Skip nearby systems lookup in mock data mode - only need current system for INARA searches
+    let nearby = []
+    if (process.env.FORCE_MOCK_DATA === 'true') {
+      console.log('[current-system] FORCE_MOCK_DATA enabled, skipping nearby systems lookup')
+    } else {
+      nearby = await buildNearbySystems(currentSystem)
+      console.log('[current-system] Found nearby systems:', nearby?.length || 0)
+    }
 
     res.statusCode = 200
     res.setHeader('Content-Type', 'application/json')
@@ -187,6 +206,7 @@ module.exports = async function handler (req, res) {
       nearby
     }))
   } catch (err) {
+    console.error('[current-system] Error in handler:', err)
     res.statusCode = 500
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify({ error: 'Failed to resolve current system', details: err?.message || String(err) }))

@@ -2,11 +2,41 @@
   "timestamp": "2024-01-01T12:00:09Z",
   "event": "Cargo",
   "Vessel": "Ship",
-  "Count": 5,
+  "Count": 47,
   "Inventory": [
+    {
+      "Name": "painite",
+      "Name_Localised": "Painite",
+      "Count": 12,
+      "Stolen": 0
+    },
+    {
+      "Name": "tritium",
+      "Name_Localised": "Tritium",
+      "Count": 8,
+      "Stolen": 0
+    },
+    {
+      "Name": "lowtemperaturediamond",
+      "Name_Localised": "Low Temperature Diamonds",
+      "Count": 5,
+      "Stolen": 0
+    },
     {
       "Name": "gold",
       "Name_Localised": "Gold",
+      "Count": 10,
+      "Stolen": 0
+    },
+    {
+      "Name": "palladium",
+      "Name_Localised": "Palladium",
+      "Count": 7,
+      "Stolen": 0
+    },
+    {
+      "Name": "platinum",
+      "Name_Localised": "Platinum",
       "Count": 5,
       "Stolen": 0
     }

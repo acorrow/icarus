@@ -38,7 +38,8 @@ class NavRoute {
 
         // Look up system in EDSM (if it's not alrady in cache) to see if it's
         // a previously explored system
-        if (!global.CACHE.SYSTEMS[system.StarSystem.toLowerCase()]) {
+        // Skip EDSM lookup in mock data mode to avoid unnecessary API calls
+        if (!global.CACHE.SYSTEMS[system.StarSystem.toLowerCase()] && process.env.FORCE_MOCK_DATA !== 'true') {
           const systemFromESDM = await EDSM.system(system.StarSystem)
           const systemMap = new SystemMap(systemFromESDM)
           global.CACHE.SYSTEMS[system.StarSystem.toLowerCase()] = {
@@ -46,6 +47,17 @@ class NavRoute {
             ...systemMap
           }
         }
+        
+        // In mock data mode, create minimal system entry if not in cache
+        if (!global.CACHE.SYSTEMS[system.StarSystem.toLowerCase()] && process.env.FORCE_MOCK_DATA === 'true') {
+          global.CACHE.SYSTEMS[system.StarSystem.toLowerCase()] = {
+            name: system.StarSystem,
+            position: system.StarPos,
+            stars: [{ name: 'Null' }], // Placeholder for "not orbiting a star"
+            bodies: []
+          }
+        }
+        
         const cacheResponse = global.CACHE.SYSTEMS[system.StarSystem.toLowerCase()]
         
         // FIXME Refactor this if how objects orbiting a null point changes

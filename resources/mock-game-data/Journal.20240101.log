@@ -4,3 +4,12 @@
 {"timestamp":"2024-01-01T12:00:03Z","event":"Materials","Raw":[{"Name":"iron","Count":5}],"Manufactured":[{"Name":"chemicalprocessors","Count":2}],"Encoded":[{"Name":"shieldcycleexperiments","Count":1}]}
 {"timestamp":"2024-01-01T12:00:04Z","event":"EngineerProgress","Engineers":[{"Engineer":"Felicity Farseer","Progress":"Known","RankProgress":0}]}
 {"timestamp":"2024-01-01T12:00:05Z","event":"Docked","StarSystem":"Sol","SystemAddress":10477373803,"StationName":"Galileo","StationType":"Coriolis"}
+{"timestamp":"2024-01-01T12:00:06Z","event":"MissionAccepted","Faction":"Mother Gaia","Name":"Mission_Mining","LocalisedName":"Deliver 156 units of Painite","Commodity":"$Painite_Name;","Commodity_Localised":"Painite","Count":156,"DestinationSystem":"Sol","DestinationStation":"Galileo","Expiry":"2024-01-06T06:00:00Z","MissionID":123456789,"Reward":2456789}
+{"timestamp":"2024-01-01T12:00:07Z","event":"MissionAccepted","Faction":"Federal Congress","Name":"Mission_Mining","LocalisedName":"Deliver 98 units of Low Temperature Diamonds","Commodity":"$LowTemperatureDiamond_Name;","Commodity_Localised":"Low Temperature Diamonds","Count":98,"DestinationSystem":"Sol","DestinationStation":"Columbus","Expiry":"2024-01-04T18:00:00Z","MissionID":123456790,"Reward":3892140}
+{"timestamp":"2024-01-01T12:00:08Z","event":"MissionAccepted","Faction":"Mother Gaia","Name":"Mission_Mining","LocalisedName":"Deliver 134 units of Palladium","Commodity":"$Palladium_Name;","Commodity_Localised":"Palladium","Count":134,"DestinationSystem":"Sol","DestinationStation":"Galileo","Expiry":"2024-01-03T21:00:00Z","MissionID":123456791,"Reward":1567890}
+{"timestamp":"2024-01-01T12:00:09Z","event":"MiningRefined","Type":"$Painite_Name;","Type_Localised":"Painite"}
+{"timestamp":"2024-01-01T12:00:10Z","event":"MiningRefined","Type":"$LowTemperatureDiamond_Name;","Type_Localised":"Low Temperature Diamonds"}
+{"timestamp":"2024-01-01T12:00:11Z","event":"MiningRefined","Type":"$Palladium_Name;","Type_Localised":"Palladium"}
+{"timestamp":"2024-01-01T12:00:12Z","event":"MiningRefined","Type":"$Platinum_Name;","Type_Localised":"Platinum"}
+{"timestamp":"2024-01-01T12:00:13Z","event":"MiningRefined","Type":"$Gold_Name;","Type_Localised":"Gold"}
+{"timestamp":"2024-01-01T12:00:14Z","event":"MiningRefined","Type":"$Tritium_Name;","Type_Localised":"Tritium"}

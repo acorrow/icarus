@@ -357,13 +357,43 @@ class EliteLog {
           return new File({ name, lastModified, size, lineCount })
         })
 
-        // Track most (mostly recently modified) log file
-        if (files.length > 0) {
-          const activeLogFile = files.sort((a, b) => b.lastModified - a.lastModified)[0]
-          this.lastActiveLogFileName = activeLogFile.name
-        }
+        // If no journal files found, try to load from mock data directory
+        if (files.length === 0) {
+          const mockDataDir = path.join(__dirname, '..', '..', '..', 'resources', 'mock-game-data')
+          console.log(`No journal files found in ${this.dir}, attempting to load mock data from ${mockDataDir}`)
+          
+          glob(`${mockDataDir}/Journal.*.log`, {}, async (mockError, mockFiles) => {
+            if (mockError || mockFiles.length === 0) {
+              console.log('No mock journal files found either. Service will run with empty data.')
+              return resolve([])
+            }
+            
+            const mockFileObjects = mockFiles.map(name => {
+              const { size, mtime: lastModified } = fs.statSync(name)
+              const lineCount = fs.readFileSync(name).toString().split('\n').length
+              return new File({ name, lastModified, size, lineCount })
+            })
+            
+            console.log(`Loaded ${mockFileObjects.length} mock journal file(s) from ${mockDataDir}`)
+            console.log('⚠️  USING MOCK DATA - Game data will not be live')
+            
+            // Track most (mostly recently modified) log file
+            if (mockFileObjects.length > 0) {
+              const activeLogFile = mockFileObjects.sort((a, b) => b.lastModified - a.lastModified)[0]
+              this.lastActiveLogFileName = activeLogFile.name
+            }
+            
+            resolve(mockFileObjects)
+          })
+        } else {
+          // Track most (mostly recently modified) log file
+          if (files.length > 0) {
+            const activeLogFile = files.sort((a, b) => b.lastModified - a.lastModified)[0]
+            this.lastActiveLogFileName = activeLogFile.name
+          }
 
-        resolve(files)
+          resolve(files)
+        }
       })
     })
   }

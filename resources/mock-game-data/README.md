@@ -78,6 +78,44 @@ npm test -- scraper-tests.js
 node test/scraper-tests.js mock
 ```
 
+### Using Mock Data in Development
+
+**NEW**: You can now force the ICARUS service to use mock data instead of real game logs. This is perfect for UI development and testing without needing Elite Dangerous running.
+
+**Option 1: Environment Variable (Recommended)**
+
+Add to your `.env` file:
+```bash
+FORCE_MOCK_DATA=true
+```
+
+Then start the service normally:
+```bash
+npm run start
+```
+
+The service will load mock game data from `resources/mock-game-data/` instead of your real Elite Dangerous logs.
+
+**Option 2: Command Line**
+
+```bash
+FORCE_MOCK_DATA=true npm run start
+```
+
+**What Gets Loaded:**
+- Mock journal events from `Journal.20240101.log`
+- Mock JSON files: `Cargo.json`, `NavRoute.json`, `ShipLocker.json`, `Status.json`
+- Current system: **Sol** (from Location event)
+- Commander: **CMDR Mock**
+- Ship: **Cobra MkIII** (Mock Cobra)
+
+**Benefits:**
+- ✓ No Elite Dangerous installation required
+- ✓ Consistent test data across development sessions
+- ✓ Fast UI iteration without waiting for game events
+- ✓ Test edge cases that are hard to reproduce in-game
+- ✓ Works offline without network access
+
 ### Testing with Real INARA URLs
 
 **WARNING:** This makes real HTTP requests to INARA.cz. Be respectful of their servers.

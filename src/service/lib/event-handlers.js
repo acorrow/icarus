@@ -114,6 +114,15 @@ class EventHandlers {
 
   gameStateChangeHandler (event) {
     this.textToSpeech.gameStateChangeHandler(event)
+    
+    // Immediately broadcast current system data so UI doesn't have to wait for API call
+    this.system.getSystem().then(currentSystem => {
+      if (currentSystem && currentSystem.name) {
+        broadcastEvent('SHIP_STATUS_UPDATE', { currentSystem })
+      }
+    }).catch(err => {
+      console.error('Failed to broadcast current system', err)
+    })
   }
 
   // Return handlers for events that are fired from the client

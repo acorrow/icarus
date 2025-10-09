@@ -55,6 +55,25 @@ Every event type and data structure was catalogued. Instead of a single monolith
 
 A **decoupled, testable scraper engine** is now available for cloud agent testing and independent scraper development:
 
+**Development with Mock Data:**
+
+Force the service to use mock data for UI development:
+```bash
+# Add to .env file
+FORCE_MOCK_DATA=true
+
+# Start service
+npm run start
+```
+
+This loads mock game data from `resources/mock-game-data/`:
+- Current System: **Sol**
+- Commander: **CMDR Mock**
+- Ship: **Cobra MkIII**
+- All JSON files (Cargo, Status, NavRoute, ShipLocker)
+
+Perfect for testing UI components without Elite Dangerous running!
+
 **Architecture:**
 - Pure scraping functions isolated in `src/service/lib/api/scrapers/`
 - No dependencies on ICARUS state, logs, or file system

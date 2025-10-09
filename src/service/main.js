@@ -49,6 +49,13 @@ let LOG_DIR = DEFAULT_LOG_DIR
 console.log('Loading save game data from', LOG_DIR)
 
 function getLogDir () {
+  // Check if FORCE_MOCK_DATA environment variable is set
+  if (process.env.FORCE_MOCK_DATA === 'true' || process.env.FORCE_MOCK_DATA === '1') {
+    const mockDataDir = path.join(__dirname, '..', '..', 'resources', 'mock-game-data')
+    console.log('⚠️  FORCE_MOCK_DATA enabled - Using mock data directory:', mockDataDir)
+    return mockDataDir
+  }
+
   // Hard coded fallback
   const FALLBACK_LOG_DIR = path.join(os.homedir(), 'Saved Games', 'Frontier Developments', 'Elite Dangerous')
   let logDir = FALLBACK_LOG_DIR
@@ -154,7 +161,19 @@ if (DEVELOPMENT) {
   // requests will be forwarded to a web server which is started on localhost
   // to allow UI changes to be tested without rebuilding the app.
   exec('npx next src/client')
-  httpServer = http.createServer((req, res) => proxy.web(req, res, { target: 'http://localhost:3000' }))
+  
+  // Setup API routes in dev mode too (not just production)
+  const webServer = connect()
+  setupApiRoutes(webServer)
+  
+  // Proxy non-API requests to Next.js dev server
+  webServer.use((req, res) => {
+    if (!req.url.startsWith('/api/')) {
+      proxy.web(req, res, { target: 'http://localhost:3000' })
+    }
+  })
+  
+  httpServer = http.createServer(webServer)
 } else {
   // The default behaviour (i.e. production) is to serve static assets. When the
   // application is compiled to a native executable these assets will be bundled
@@ -243,5 +262,18 @@ async function startService () {
     console.log(`Listening on port ${PORT}…`)
   })
 }
+
+// Global error handlers to prevent silent crashes
+process.on('uncaughtException', (error) => {
+  console.error('[FATAL] Uncaught Exception:', error)
+  console.error('[FATAL] Stack trace:', error.stack)
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Promise Rejection at:', promise)
+  console.error('[FATAL] Reason:', reason)
+  process.exit(1)
+})
 
 startService()

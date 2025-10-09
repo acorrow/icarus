@@ -85,7 +85,7 @@ class EliteJson {
       glob(`${this.dir}/*.json`, {}, async (error, files) => {
         if (error) return console.error(error)
 
-        const response = files.map(name => {
+        let responseFiles = files.map(name => {
           const { size, mtime: lastModified } = fs.statSync(name)
           return new File({ 
             name,
@@ -95,7 +95,41 @@ class EliteJson {
           })
         })
 
-        resolve(response)
+        // If no JSON files found, try to load from mock data directory
+        if (responseFiles.length === 0) {
+          const mockDataDir = path.join(__dirname, '..', '..', '..', 'resources', 'mock-game-data')
+          console.log(`No JSON files found in ${this.dir}, attempting to load mock data from ${mockDataDir}`)
+          
+          glob(`${mockDataDir}/*.json`, {}, async (mockError, mockFiles) => {
+            if (mockError || mockFiles.length === 0) {
+              console.log('No mock JSON files found either. Service will run with empty data.')
+              return resolve([])
+            }
+            
+            // Filter out files that are not game state files (exclude elite-dangerous-mock-log.json and README, etc.)
+            const validMockFiles = mockFiles.filter(name => {
+              const basename = path.basename(name)
+              return !basename.includes('mock-log') && !basename.includes('README')
+            })
+            
+            const mockFileObjects = validMockFiles.map(name => {
+              const { size, mtime: lastModified } = fs.statSync(name)
+              return new File({ 
+                name,
+                lastModified,
+                size,
+                label: path.basename(name).replace(/\.json$/, '')
+              })
+            })
+            
+            console.log(`Loaded ${mockFileObjects.length} mock JSON file(s) from ${mockDataDir}`)
+            console.log('⚠️  USING MOCK DATA - Game data will not be live')
+            
+            resolve(mockFileObjects)
+          })
+        } else {
+          resolve(responseFiles)
+        }
       })
     })
   }

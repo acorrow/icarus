@@ -15,6 +15,10 @@ const {
 const eliteLog = new EliteLog(LOG_DIR)
 const eliteJson = new EliteJson(LOG_DIR)
 
+// Expose eliteLog globally so API endpoints can use the same instance (critical for FORCE_MOCK_DATA)
+global.ELITE_LOG = eliteLog
+global.ELITE_JSON = eliteJson
+
 const _eventHandlers = new EventHandlers({ eliteLog, eliteJson })
 // Define handlers for events trigged by the client
 const eventHandlers = _eventHandlers.getEventHandlers()
