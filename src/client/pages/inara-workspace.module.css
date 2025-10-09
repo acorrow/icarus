@@ -1074,6 +1074,8 @@ button.terminalStatusPreview:focus-visible {
 .tableSection {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .tablePanel {
@@ -3504,12 +3506,18 @@ button.terminalStatusPreview:focus-visible {
   border: 0;
   border-radius: 0;
   box-shadow: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .inara :global(.inara-panel-table > .scrollable) {
   background: transparent;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .inara :global(.inara-panel-table > .scrollable::-webkit-scrollbar) {

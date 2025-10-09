@@ -891,8 +891,6 @@ function normaliseCommodityKey (value) {
 const MISSIONS_CACHE_KEY = 'icarus.inaraMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = {
-  minHeight: 'max(0px, calc(var(--inara-viewport-height, 100vh) - 360px))',
-  maxHeight: 'max(0px, calc(var(--inara-viewport-height, 100vh) - 360px))',
   overflowY: 'auto'
 }
 const STATION_TABLE_SCROLL_AREA_STYLE = {
