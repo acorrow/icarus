@@ -62,6 +62,16 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - Treat `src/app` (Go launcher), `src/service` (Node backend), and `src/client` (Next/React UI) as separate concerns; the launcher expects the service binary in the same directory or it will exit on startup.
 
 ## INARA asset references
+
+**CRITICAL: What is INARA?**
+- **INARA is an external third-party website** (https://inara.cz) that provides Elite Dangerous data
+- ICARUS Terminal **scrapes data from INARA's web pages** using Cheerio (HTML parser)
+- We do **NOT yet use INARA's official API** - only web scraping is implemented
+- "The INARA Page" in ICARUS refers to the UI surface that **displays** scraped data, not INARA itself
+- All INARA scrapers live in `src/service/lib/api/inara-*.js` and are intentionally decoupled
+- See `FEATURES.md` for full details on INARA architecture and future API integration plans
+
+**INARA UI Assets:**
 - Primary surfaces live in `src/client/pages/inara.js` and `src/client/pages/inara-workspace.module.css`; the hero animation draws from `public/inara/signal-mesh.svg`.
 - Jest + Testing Library smoke tests in `src/client/__tests__/inara.test.js` validate accessibility affordances. Extend mocks in `test/setupTests.js` if you add socket- or browser-dependent behaviors.
 - Maintain the INARA copy and animation rhythm introduced during the rebrand. Hero tickers pull from `tickerMessages` in `InaraPage`; update both arrays to keep the loop seamless.
@@ -88,6 +98,11 @@ See `resources/mock-game-data/events/README.md` for details and rationale.
 - **`src/service/` (Node)** – Backend process that tails Elite Dangerous journal files, normalizes live JSON telemetry, and exposes both HTTP endpoints and a WebSocket bridge. `main.js` wires up static asset serving, dev proxying, and the WebSocket server; `lib/events.js` binds log readers and publishes broadcast events.
 - **`src/client/` (Next/React)** – Browser UI for ICARUS/INARA. Components in `components/` provide shared layout primitives, while `pages/` contain route-specific views (including the monolithic `inara.js`). CSS modules live alongside their consumers.
 - **`src/service/lib/event-handlers/`** – Domain-specific modules that respond to ingested journal/state changes. They form the authoritative source for Commander/system data queried by INARA panels (e.g., ship inventory, mission caches, route lookup helpers).
+- **`src/service/lib/api/`** – HTTP API routes including:
+  - **INARA Web Scrapers** (`inara-*.js`) – Isolated, decoupled modules that scrape data from inara.cz web pages using Cheerio. Each scraper handles one feature (trade routes, commodity values, missions, pristine mining, general search). These are the **only** INARA integration currently active.
+  - `inara-request-cache.js` – HTTP caching layer for INARA requests with TTL management
+  - `http-request-logger.js` – Verbose logging for all HTTP requests to external services
+  - Other API routes for ship data, faction standings, feature flags, etc.
 - **`resources/mock-game-data/`** – Development fixtures consumed when the service cannot reach real journal directories. Respect the `USING_MOCK_DATA` guard so the UI clearly communicates when mock values drive results.
 
 ## INARA feature mapping
