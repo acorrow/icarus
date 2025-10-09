@@ -38,6 +38,55 @@ function formatThresholdInputs (settings) {
 
 function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPanel = 'Theme' }) {
   const [activeSettingsPanel, setActiveSettingsPanel] = useState(defaultActiveSettingsPanel)
+  const [uiConfig, setUiConfig] = useState({ exposeFeatureFlags: false })
+  const [featureFlags, setFeatureFlags] = useState({})
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadUiConfig () {
+      try {
+        const response = await fetch('/api/ui-config')
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`)
+        }
+        const config = await response.json()
+        if (!cancelled) {
+          setUiConfig(config)
+        }
+      } catch (err) {
+        // Silently fail - defaults to not exposing feature flags
+        console.warn('Failed to load UI config:', err)
+      }
+    }
+
+    async function loadFeatureFlags () {
+      try {
+        const response = await fetch('/api/feature-flags')
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`)
+        }
+        const payload = await response.json()
+        if (!cancelled && payload.flags) {
+          const flagsMap = {}
+          payload.flags.forEach(flag => {
+            flagsMap[flag.key] = flag.value
+          })
+          setFeatureFlags(flagsMap)
+        }
+      } catch (err) {
+        // Silently fail - defaults to not enabling INARA settings
+        console.warn('Failed to load feature flags:', err)
+      }
+    }
+
+    loadUiConfig()
+    loadFeatureFlags()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <>
@@ -55,7 +104,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         <h2 className='modal-dialog__title'>Settings</h2>
         <hr />
         <div className='secondary-navigation modal-dialog__navigation'>
-          {SettingsNavItems(activeSettingsPanel).map(item =>
+          {SettingsNavItems(activeSettingsPanel, uiConfig.exposeFeatureFlags).map(item =>
             <Fragment key={item.name}>
               <button
                 tabIndex='2'
@@ -66,20 +115,22 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
               </button>
             </Fragment>
           )}
-          <Fragment key='INARA'>
-            <button
-              tabIndex='2'
-              className={`button--icon ${activeSettingsPanel === 'INARA' ? 'button--active' : ''}`}
-              onClick={() => setActiveSettingsPanel('INARA')}
-            >
-              <i className='icon icarus-terminal-info' />
-            </button>
-          </Fragment>
+          {featureFlags.icarusEnableInaraSettings && (
+            <Fragment key='INARA'>
+              <button
+                tabIndex='2'
+                className={`button--icon ${activeSettingsPanel === 'INARA' ? 'button--active' : ''}`}
+                onClick={() => setActiveSettingsPanel('INARA')}
+              >
+                <i className='icon icarus-terminal-info' />
+              </button>
+            </Fragment>
+          )}
         </div>
         {activeSettingsPanel === 'Theme' && <ThemeSettings visible={visible} />}
         {activeSettingsPanel === 'Sounds' && <SoundSettings visible={visible} />}
         {activeSettingsPanel === 'Feature Flags' && <FeatureFlagSettings />}
-        {activeSettingsPanel === 'INARA' && <InaraSettings />}
+        {activeSettingsPanel === 'INARA' && featureFlags.icarusEnableInaraSettings && <InaraSettings />}
         <div className='modal-dialog__footer'>
           <hr style={{ margin: '1rem 0 .5rem 0' }} />
           <button className='float-right' onClick={toggleVisible}>

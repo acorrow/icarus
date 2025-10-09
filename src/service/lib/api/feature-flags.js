@@ -2,6 +2,7 @@ const {
   isInaraTokenCurrencyEnabled,
   isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
+  isInaraSettingsEnabled,
   _private: featureFlagInternals
 } = require('../../../shared/feature-flags.js')
 
@@ -9,25 +10,32 @@ const { hasFlagKey } = featureFlagInternals
 
 const FLAG_DEFINITIONS = [
   {
-    key: 'inaraTokenCurrencyEnabled',
+    key: 'icarusInaraTokenCurrencyEnabled',
     label: 'INARA Token Currency',
     description: 'Enables the remote INARA token currency ledger and INARA data exchange integration.',
     resolver: isInaraTokenCurrencyEnabled,
     defaultValue: false
   },
   {
-    key: 'inaraTokenJackpotEnabled',
+    key: 'icarusInaraTokenJackpotEnabled',
     label: 'Token Jackpot Bonus',
     description: 'Unlocks the simulated jackpot multiplier when commanders recover from deep token debt.',
     resolver: isInaraTokenJackpotEnabled,
     defaultValue: false
   },
   {
-    key: 'inaraTokenRecoveryCompatEnabled',
+    key: 'icarusInaraTokenRecoveryCompatEnabled',
     label: 'Token Recovery Compatibility Mode',
     description: 'Retains the legacy negative-balance recovery schedule for the INARA token ledger.',
     resolver: isTokenRecoveryCompatibilityEnabled,
     defaultValue: true
+  },
+  {
+    key: 'icarusEnableInaraSettings',
+    label: 'INARA Settings',
+    description: 'Enables the INARA integration settings panel in the application settings.',
+    resolver: isInaraSettingsEnabled,
+    defaultValue: false
   }
 ]
 

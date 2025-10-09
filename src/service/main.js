@@ -133,6 +133,9 @@ function setupApiRoutes (app) {
   
   logger.info('Registering API routes...')
   
+  // UI configuration endpoint
+  app.use('/api/ui-config', require('./lib/api/ui-config'))
+  
   // Feature flags endpoint
   app.use('/api/feature-flags', require('./lib/api/feature-flags'))
   
@@ -257,6 +260,18 @@ async function startService () {
     console.error('Failed to initialize log readers', error)
     process.exit(1)
   }
+
+  // Set up periodic cleanup of expired INARA cache files
+  const { clearExpiredInaraCache } = require('./lib/api/inara-request-cache')
+  setInterval(() => {
+    try {
+      clearExpiredInaraCache()
+    } catch (error) {
+      console.error('Failed to clean expired INARA cache:', error)
+    }
+  }, 5 * 60 * 1000) // Clean every 5 minutes
+
+  console.log('INARA file-based caching enabled with 30-minute TTL')
 
   httpServer.listen(PORT, () => {
     console.log(`Listening on port ${PORT}…`)

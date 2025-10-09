@@ -161,7 +161,7 @@ function EngineeringPanelNavItems (activePanel) {
   return navigationItems
 }
 
-function SettingsNavItems (activePanel) {
+function SettingsNavItems (activePanel, exposeFeatureFlags = false) {
   const navigationItems = [
     {
       name: 'Theme',
@@ -170,12 +170,16 @@ function SettingsNavItems (activePanel) {
     {
       name: 'Sounds',
       icon: 'sound'
-    },
-    {
-      name: 'Feature Flags',
-      icon: 'settings'
     }
   ]
+  
+  if (exposeFeatureFlags) {
+    navigationItems.push({
+      name: 'Feature Flags',
+      icon: 'settings'
+    })
+  }
+  
   navigationItems.forEach(item => {
     if (item.name.toLowerCase() === activePanel.toLowerCase()) item.active = true
   })

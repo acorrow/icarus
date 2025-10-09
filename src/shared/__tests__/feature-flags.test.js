@@ -2,6 +2,7 @@ const {
   isInaraTokenCurrencyEnabled,
   isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
+  isInaraSettingsEnabled,
   _private
 } = require('../feature-flags')
 
@@ -15,12 +16,12 @@ describe('feature-flags', () => {
   })
 
   it('resolves INARA token currency flag from camelCase env', () => {
-    const env = { inaraTokenCurrencyEnabled: 'true' }
+    const env = { icarusInaraTokenCurrencyEnabled: 'true' }
     expect(isInaraTokenCurrencyEnabled(env)).toBe(true)
   })
 
   it('resolves INARA token currency flag from uppercase env', () => {
-    const env = { INARA_TOKEN_CURRENCY_ENABLED: '1' }
+    const env = { ICARUS_INARA_TOKEN_CURRENCY_ENABLED: '1' }
     expect(isInaraTokenCurrencyEnabled(env)).toBe(true)
   })
 
@@ -34,13 +35,13 @@ describe('feature-flags', () => {
   })
 
   it('resolves jackpot flag independently of currency flag', () => {
-    const env = { inaraTokenJackpotEnabled: 'true', inaraTokenCurrencyEnabled: 'false' }
+    const env = { icarusInaraTokenJackpotEnabled: 'true', icarusInaraTokenCurrencyEnabled: 'false' }
     expect(isInaraTokenJackpotEnabled(env)).toBe(true)
     expect(isInaraTokenCurrencyEnabled(env)).toBe(false)
   })
 
   it('reads recovery compatibility flag from uppercase env', () => {
-    const env = { INARA_TOKEN_RECOVERY_COMPAT_ENABLED: '1' }
+    const env = { ICARUS_INARA_TOKEN_RECOVERY_COMPAT_ENABLED: '1' }
     expect(isTokenRecoveryCompatibilityEnabled(env)).toBe(true)
   })
 
@@ -49,8 +50,14 @@ describe('feature-flags', () => {
   })
 
   it('allows disabling compatibility explicitly', () => {
-    const env = { inaraTokenRecoveryCompatEnabled: 'false' }
+    const env = { icarusInaraTokenRecoveryCompatEnabled: 'false' }
     expect(isTokenRecoveryCompatibilityEnabled(env)).toBe(false)
-    expect(hasFlagKey('inaraTokenRecoveryCompatEnabled', env)).toBe(true)
+    expect(hasFlagKey('icarusInaraTokenRecoveryCompatEnabled', env)).toBe(true)
+  })
+
+  it('resolves INARA settings flag', () => {
+    const env = { icarusEnableInaraSettings: 'true' }
+    expect(isInaraSettingsEnabled(env)).toBe(true)
+    expect(isInaraSettingsEnabled({})).toBe(false)
   })
 })

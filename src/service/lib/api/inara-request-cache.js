@@ -1,61 +1,15 @@
 const fetch = require('axios') // Using axios instead of node-fetch for better compatibility
 const httpLogger = require('../http-request-logger.js')
+const fileCache = require('./inara-file-cache.js')
 
-const FIVE_MINUTES_MS = 5 * 60 * 1000
-const MAX_CACHE_SIZE = 200
-
-function getCacheStore () {
-  if (!global.__INARA_FETCH_CACHE__) {
-    global.__INARA_FETCH_CACHE__ = new Map()
-  }
-  return global.__INARA_FETCH_CACHE__
-}
-
-function getCacheOrder () {
-  if (!global.__INARA_FETCH_CACHE_ORDER__) {
-    global.__INARA_FETCH_CACHE_ORDER__ = []
-  }
-  return global.__INARA_FETCH_CACHE_ORDER__
-}
+const FIVE_MINUTES_MS = 5 * 60 * 1000 // Keep for backward compatibility but use 30 minutes for INARA
+const MAX_CACHE_SIZE = 200 // Not used with file cache
 
 function getInFlightStore () {
   if (!global.__INARA_FETCH_INFLIGHT__) {
     global.__INARA_FETCH_INFLIGHT__ = new Map()
   }
   return global.__INARA_FETCH_INFLIGHT__
-}
-
-function pruneExpiredEntries (cache, now, ttlMs) {
-  if (!cache || cache.size === 0) return
-  for (const [key, entry] of cache.entries()) {
-    if (!entry || typeof entry.timestamp !== 'number') {
-      cache.delete(key)
-      continue
-    }
-    if ((now - entry.timestamp) > ttlMs) {
-      cache.delete(key)
-      const order = getCacheOrder()
-      const index = order.indexOf(key)
-      if (index !== -1) order.splice(index, 1)
-    }
-  }
-}
-
-function recordCacheEntryOrder (key) {
-  const order = getCacheOrder()
-  const existingIndex = order.indexOf(key)
-  if (existingIndex !== -1) order.splice(existingIndex, 1)
-  order.push(key)
-  while (order.length > MAX_CACHE_SIZE) {
-    const oldest = order.shift()
-    if (oldest !== undefined) {
-      const cache = getCacheStore()
-      const cachedEntry = cache.get(oldest)
-      if (!cachedEntry || (Date.now() - cachedEntry.timestamp) > FIVE_MINUTES_MS) {
-        cache.delete(oldest)
-      }
-    }
-  }
 }
 
 function normaliseHeaders (headers) {
@@ -125,7 +79,7 @@ async function fetchWithInaraCache (url, options = {}) {
 
   const { fetchImpl, cacheTtlMs, ...fetchOptions } = options || {}
   const method = typeof fetchOptions.method === 'string' ? fetchOptions.method.toUpperCase() : 'GET'
-  const ttlMs = typeof cacheTtlMs === 'number' && Number.isFinite(cacheTtlMs) ? cacheTtlMs : FIVE_MINUTES_MS
+  const ttlMs = typeof cacheTtlMs === 'number' && Number.isFinite(cacheTtlMs) ? cacheTtlMs : fileCache.THIRTY_MINUTES_MS
 
   // Log the incoming request
   const requestId = httpLogger.logRequestStart({
@@ -175,12 +129,9 @@ async function fetchWithInaraCache (url, options = {}) {
       }
     }
 
-    const cache = getCacheStore()
-    const now = Date.now()
-    pruneExpiredEntries(cache, now, ttlMs)
-
-    const cachedEntry = cache.get(url)
-    if (cachedEntry && (now - cachedEntry.timestamp) <= ttlMs && cachedEntry.status === 200) {
+    // Check file-based cache first
+    const cachedEntry = fileCache.getCachedResponse(url)
+    if (cachedEntry && cachedEntry.status === 200) {
       const duration = Date.now() - startTime
       clearTimeout(timeoutWarning)
       
@@ -198,9 +149,6 @@ async function fetchWithInaraCache (url, options = {}) {
       
       return createCachedResponse(cachedEntry, true)
     }
-    if (cachedEntry && (now - cachedEntry.timestamp) > ttlMs) {
-      cache.delete(url)
-    }
 
     const inFlight = getInFlightStore()
     if (inFlight.has(url)) {
@@ -209,7 +157,11 @@ async function fetchWithInaraCache (url, options = {}) {
         const duration = Date.now() - startTime
         clearTimeout(timeoutWarning)
         
-        const withinTtl = (Date.now() - entry.timestamp) <= ttlMs
+        // Check if the in-flight response is still valid for caching
+        const shouldCache = entry.status === 200
+        if (shouldCache) {
+          fileCache.setCachedResponse(url, entry.status, entry.headers, entry.body)
+        }
         
         httpLogger.logRequestComplete({
           requestId,
@@ -220,10 +172,10 @@ async function fetchWithInaraCache (url, options = {}) {
           headers: entry.headers,
           body: entry.body,
           duration,
-          fromCache: entry.status === 200 && withinTtl
+          fromCache: false
         })
         
-        return createCachedResponse(entry, entry.status === 200 && withinTtl)
+        return createCachedResponse(entry, false)
       }
     }
 
@@ -240,11 +192,9 @@ async function fetchWithInaraCache (url, options = {}) {
         timestamp: Date.now()
       }
 
+      // Cache successful responses to file
       if (response.status === 200) {
-        cache.set(url, record)
-        recordCacheEntryOrder(url)
-      } else {
-        cache.delete(url)
+        fileCache.setCachedResponse(url, response.status, headers, body)
       }
 
       return record
@@ -291,28 +241,23 @@ async function fetchWithInaraCache (url, options = {}) {
 }
 
 function clearInaraCache () {
-  if (global.__INARA_FETCH_CACHE__) {
-    global.__INARA_FETCH_CACHE__.clear()
-  }
-  if (global.__INARA_FETCH_CACHE_ORDER__) {
-    global.__INARA_FETCH_CACHE_ORDER__.length = 0
-  }
+  fileCache.clearAllCache()
+  // Also clear in-flight requests
+  const inFlight = getInFlightStore()
+  inFlight.clear()
+}
+
+function clearExpiredInaraCache () {
+  fileCache.clearExpiredCache()
 }
 
 function getInaraCacheSnapshot () {
-  const cache = getCacheStore()
-  const snapshot = {}
-  for (const [key, entry] of cache.entries()) {
-    snapshot[key] = {
-      status: entry.status,
-      timestamp: entry.timestamp
-    }
-  }
-  return snapshot
+  return fileCache.getCacheStats()
 }
 
 module.exports = {
   fetchWithInaraCache,
   clearInaraCache,
+  clearExpiredInaraCache,
   getInaraCacheSnapshot
 }

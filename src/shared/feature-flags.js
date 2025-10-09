@@ -37,23 +37,28 @@ function hasFlagKey (primaryKey, env = process.env) {
 }
 
 function isInaraTokenCurrencyEnabled (env = process.env) {
-  return resolveFlag('inaraTokenCurrencyEnabled', env)
+  return resolveFlag('icarusInaraTokenCurrencyEnabled', env)
 }
 
 function isInaraTokenJackpotEnabled (env = process.env) {
-  return resolveFlag('inaraTokenJackpotEnabled', env)
+  return resolveFlag('icarusInaraTokenJackpotEnabled', env)
 }
 
 function isTokenRecoveryCompatibilityEnabled (env = process.env) {
-  if (!hasFlagKey('inaraTokenRecoveryCompatEnabled', env)) {
+  if (!hasFlagKey('icarusInaraTokenRecoveryCompatEnabled', env)) {
     return true
   }
-  return resolveFlag('inaraTokenRecoveryCompatEnabled', env)
+  return resolveFlag('icarusInaraTokenRecoveryCompatEnabled', env)
+}
+
+function isInaraSettingsEnabled (env = process.env) {
+  return resolveFlag('icarusEnableInaraSettings', env)
 }
 
 module.exports = {
   isInaraTokenCurrencyEnabled,
   isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
+  isInaraSettingsEnabled,
   _private: { normalizeFlagValue, resolveFlag, hasFlagKey }
 }
