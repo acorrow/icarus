@@ -1,0 +1,38 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1119491-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-12-24T01:44:44Z",
+                        "event":  "RefuelAll",
+                        "Cost":  194,
+                        "Amount":  3.864647
+                    },
+                    {
+                        "timestamp":  "2024-01-07T19:44:27Z",
+                        "event":  "RefuelAll",
+                        "Cost":  352,
+                        "Amount":  7.026176
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:44:43Z",
+                        "event":  "RefuelAll",
+                        "Cost":  50,
+                        "Amount":  0.982711
+                    },
+                    {
+                        "timestamp":  "2024-04-14T02:40:41Z",
+                        "event":  "RefuelAll",
+                        "Cost":  65,
+                        "Amount":  1.274123
+                    },
+                    {
+                        "timestamp":  "2024-04-14T03:41:33Z",
+                        "event":  "RefuelAll",
+                        "Cost":  181,
+                        "Amount":  3.597596
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "RefuelAll"
+}

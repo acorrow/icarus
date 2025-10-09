@@ -1,0 +1,48 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1378852-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T04:19:40Z",
+                        "event":  "SellDrones",
+                        "Type":  "Drones",
+                        "Count":  32,
+                        "SellPrice":  100,
+                        "TotalSale":  3200
+                    },
+                    {
+                        "timestamp":  "2025-09-23T00:57:15Z",
+                        "event":  "SellDrones",
+                        "Type":  "Drones",
+                        "Count":  64,
+                        "SellPrice":  100,
+                        "TotalSale":  6400
+                    },
+                    {
+                        "timestamp":  "2025-09-24T12:35:46Z",
+                        "event":  "SellDrones",
+                        "Type":  "Drones",
+                        "Count":  36,
+                        "SellPrice":  100,
+                        "TotalSale":  3600
+                    },
+                    {
+                        "timestamp":  "2025-09-25T13:46:28Z",
+                        "event":  "SellDrones",
+                        "Type":  "Drones",
+                        "Count":  7,
+                        "SellPrice":  100,
+                        "TotalSale":  700
+                    },
+                    {
+                        "timestamp":  "2025-09-28T04:48:55Z",
+                        "event":  "SellDrones",
+                        "Type":  "Drones",
+                        "Count":  16,
+                        "SellPrice":  100,
+                        "TotalSale":  1600
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "SellDrones"
+}

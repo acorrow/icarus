@@ -1,0 +1,46 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9138025-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-23T14:49:09Z",
+                        "event":  "CommitCrime",
+                        "CrimeType":  "dockingMinorTresspass",
+                        "Faction":  "Struve 1321 Free",
+                        "Fine":  400
+                    },
+                    {
+                        "timestamp":  "2025-09-23T14:49:43Z",
+                        "event":  "CommitCrime",
+                        "CrimeType":  "dockingMinorTresspass",
+                        "Faction":  "Struve 1321 Free",
+                        "Fine":  400
+                    },
+                    {
+                        "timestamp":  "2025-09-23T14:49:53Z",
+                        "event":  "CommitCrime",
+                        "CrimeType":  "dockingMajorTresspass",
+                        "Faction":  "Struve 1321 Free",
+                        "Bounty":  600
+                    },
+                    {
+                        "timestamp":  "2025-09-27T04:33:11Z",
+                        "event":  "CommitCrime",
+                        "CrimeType":  "assault",
+                        "Faction":  "Elite Rebel Force",
+                        "Victim":  "Jack Flasheart",
+                        "Bounty":  100
+                    },
+                    {
+                        "timestamp":  "2025-09-27T04:34:52Z",
+                        "event":  "CommitCrime",
+                        "CrimeType":  "assault",
+                        "Faction":  "Elite Rebel Force",
+                        "Victim":  "$ShipName_Police_Federation;",
+                        "Victim_Localised":  "Federal Security Service",
+                        "Bounty":  100
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "CommitCrime"
+}

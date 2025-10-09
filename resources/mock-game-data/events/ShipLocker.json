@@ -1,4 +1,88 @@
-[
-  { "timestamp": "2025-10-03T14:53:56Z", "event": "ShipLocker", "Items": [], "Components": [], "Consumables": [], "Data": [] },
-  { "timestamp": "2025-10-03T15:12:44Z", "event": "ShipLocker", "Items": ["item1"], "Components": ["comp1"], "Consumables": ["cons1"], "Data": ["data1"] }
-]
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1464131-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "ShipLocker",
+                        "Items":  [
+
+                                  ],
+                        "Components":  [
+
+                                       ],
+                        "Consumables":  [
+
+                                        ],
+                        "Data":  [
+
+                                 ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:29Z",
+                        "event":  "ShipLocker",
+                        "Items":  [
+
+                                  ],
+                        "Components":  [
+
+                                       ],
+                        "Consumables":  [
+
+                                        ],
+                        "Data":  [
+
+                                 ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:55Z",
+                        "event":  "ShipLocker",
+                        "Items":  [
+
+                                  ],
+                        "Components":  [
+
+                                       ],
+                        "Consumables":  [
+
+                                        ],
+                        "Data":  [
+
+                                 ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T02:03:51Z",
+                        "event":  "ShipLocker",
+                        "Items":  [
+
+                                  ],
+                        "Components":  [
+
+                                       ],
+                        "Consumables":  [
+
+                                        ],
+                        "Data":  [
+
+                                 ]
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:25Z",
+                        "event":  "ShipLocker",
+                        "Items":  [
+
+                                  ],
+                        "Components":  [
+
+                                       ],
+                        "Consumables":  [
+
+                                        ],
+                        "Data":  [
+
+                                 ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ShipLocker"
+}

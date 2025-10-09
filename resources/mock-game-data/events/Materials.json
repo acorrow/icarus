@@ -1,0 +1,1428 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0381723-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:27Z",
+                        "event":  "Materials",
+                        "Raw":  [
+                                    {
+                                        "Name":  "phosphorus",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "carbon",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "sulphur",
+                                        "Count":  17
+                                    },
+                                    {
+                                        "Name":  "nickel",
+                                        "Count":  15
+                                    },
+                                    {
+                                        "Name":  "iron",
+                                        "Count":  1
+                                    },
+                                    {
+                                        "Name":  "rhenium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "chromium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "boron",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "manganese",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "vanadium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "zinc",
+                                        "Count":  3
+                                    }
+                                ],
+                        "Manufactured":  [
+                                             {
+                                                 "Name":  "phasealloys",
+                                                 "Name_Localised":  "Phase Alloys",
+                                                 "Count":  78
+                                             },
+                                             {
+                                                 "Name":  "shieldemitters",
+                                                 "Name_Localised":  "Shield Emitters",
+                                                 "Count":  105
+                                             },
+                                             {
+                                                 "Name":  "temperedalloys",
+                                                 "Name_Localised":  "Tempered Alloys",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "mechanicalcomponents",
+                                                 "Name_Localised":  "Mechanical Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "uncutfocuscrystals",
+                                                 "Name_Localised":  "Flawed Focus Crystals",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "precipitatedalloys",
+                                                 "Name_Localised":  "Precipitated Alloys",
+                                                 "Count":  27
+                                             },
+                                             {
+                                                 "Name":  "compoundshielding",
+                                                 "Name_Localised":  "Compound Shielding",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "galvanisingalloys",
+                                                 "Name_Localised":  "Galvanising Alloys",
+                                                 "Count":  57
+                                             },
+                                             {
+                                                 "Name":  "chemicalprocessors",
+                                                 "Name_Localised":  "Chemical Processors",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "wornshieldemitters",
+                                                 "Name_Localised":  "Worn Shield Emitters",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "focuscrystals",
+                                                 "Name_Localised":  "Focus Crystals",
+                                                 "Count":  36
+                                             },
+                                             {
+                                                 "Name":  "shieldingsensors",
+                                                 "Name_Localised":  "Shielding Sensors",
+                                                 "Count":  60
+                                             },
+                                             {
+                                                 "Name":  "protolightalloys",
+                                                 "Name_Localised":  "Proto Light Alloys",
+                                                 "Count":  15
+                                             },
+                                             {
+                                                 "Name":  "electrochemicalarrays",
+                                                 "Name_Localised":  "Electrochemical Arrays",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "highdensitycomposites",
+                                                 "Name_Localised":  "High Density Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "crystalshards",
+                                                 "Name_Localised":  "Crystal Shards",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "filamentcomposites",
+                                                 "Name_Localised":  "Filament Composites",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "compactcomposites",
+                                                 "Name_Localised":  "Compact Composites",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "polymercapacitors",
+                                                 "Name_Localised":  "Polymer Capacitors",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "chemicaldistillery",
+                                                 "Name_Localised":  "Chemical Distillery",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "salvagedalloys",
+                                                 "Name_Localised":  "Salvaged Alloys",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "conductiveceramics",
+                                                 "Name_Localised":  "Conductive Ceramics",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "mechanicalscrap",
+                                                 "Name_Localised":  "Mechanical Scrap",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "basicconductors",
+                                                 "Name_Localised":  "Basic Conductors",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "conductivecomponents",
+                                                 "Name_Localised":  "Conductive Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "mechanicalequipment",
+                                                 "Name_Localised":  "Mechanical Equipment",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "heatdispersionplate",
+                                                 "Name_Localised":  "Heat Dispersion Plate",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "refinedfocuscrystals",
+                                                 "Name_Localised":  "Refined Focus Crystals",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "fedproprietarycomposites",
+                                                 "Name_Localised":  "Proprietary Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "chemicalmanipulators",
+                                                 "Name_Localised":  "Chemical Manipulators",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "thermicalloys",
+                                                 "Name_Localised":  "Thermic Alloys",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "imperialshielding",
+                                                 "Name_Localised":  "Imperial Shielding",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "biotechconductors",
+                                                 "Name_Localised":  "Biotech Conductors",
+                                                 "Count":  2
+                                             },
+                                             {
+                                                 "Name":  "exquisitefocuscrystals",
+                                                 "Name_Localised":  "Exquisite Focus Crystals",
+                                                 "Count":  7
+                                             }
+                                         ],
+                        "Encoded":  [
+                                        {
+                                            "Name":  "shieldcyclerecordings",
+                                            "Name_Localised":  "Distorted Shield Cycle Recordings",
+                                            "Count":  42
+                                        },
+                                        {
+                                            "Name":  "shieldpatternanalysis",
+                                            "Name_Localised":  "Aberrant Shield Pattern Analysis",
+                                            "Count":  60
+                                        },
+                                        {
+                                            "Name":  "shieldsoakanalysis",
+                                            "Name_Localised":  "Inconsistent Shield Soak Analysis",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "encodedscandata",
+                                            "Name_Localised":  "Divergent Scan Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "shielddensityreports",
+                                            "Name_Localised":  "Untypical Shield Scans",
+                                            "Count":  84
+                                        },
+                                        {
+                                            "Name":  "emissiondata",
+                                            "Name_Localised":  "Unexpected Emission Data",
+                                            "Count":  66
+                                        },
+                                        {
+                                            "Name":  "decodedemissiondata",
+                                            "Name_Localised":  "Decoded Emission Data",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "bulkscandata",
+                                            "Name_Localised":  "Anomalous Bulk Scan Data",
+                                            "Count":  12
+                                        },
+                                        {
+                                            "Name":  "scandatabanks",
+                                            "Name_Localised":  "Classified Scan Databanks",
+                                            "Count":  9
+                                        },
+                                        {
+                                            "Name":  "archivedemissiondata",
+                                            "Name_Localised":  "Irregular Emission Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "scanarchives",
+                                            "Name_Localised":  "Unidentified Scan Archives",
+                                            "Count":  3
+                                        },
+                                        {
+                                            "Name":  "embeddedfirmware",
+                                            "Name_Localised":  "Modified Embedded Firmware",
+                                            "Count":  1
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:17Z",
+                        "event":  "Materials",
+                        "Raw":  [
+                                    {
+                                        "Name":  "phosphorus",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "carbon",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "sulphur",
+                                        "Count":  17
+                                    },
+                                    {
+                                        "Name":  "nickel",
+                                        "Count":  15
+                                    },
+                                    {
+                                        "Name":  "iron",
+                                        "Count":  1
+                                    },
+                                    {
+                                        "Name":  "rhenium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "chromium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "boron",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "manganese",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "vanadium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "zinc",
+                                        "Count":  3
+                                    }
+                                ],
+                        "Manufactured":  [
+                                             {
+                                                 "Name":  "phasealloys",
+                                                 "Name_Localised":  "Phase Alloys",
+                                                 "Count":  78
+                                             },
+                                             {
+                                                 "Name":  "shieldemitters",
+                                                 "Name_Localised":  "Shield Emitters",
+                                                 "Count":  105
+                                             },
+                                             {
+                                                 "Name":  "temperedalloys",
+                                                 "Name_Localised":  "Tempered Alloys",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "mechanicalcomponents",
+                                                 "Name_Localised":  "Mechanical Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "uncutfocuscrystals",
+                                                 "Name_Localised":  "Flawed Focus Crystals",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "precipitatedalloys",
+                                                 "Name_Localised":  "Precipitated Alloys",
+                                                 "Count":  27
+                                             },
+                                             {
+                                                 "Name":  "compoundshielding",
+                                                 "Name_Localised":  "Compound Shielding",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "galvanisingalloys",
+                                                 "Name_Localised":  "Galvanising Alloys",
+                                                 "Count":  57
+                                             },
+                                             {
+                                                 "Name":  "chemicalprocessors",
+                                                 "Name_Localised":  "Chemical Processors",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "wornshieldemitters",
+                                                 "Name_Localised":  "Worn Shield Emitters",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "focuscrystals",
+                                                 "Name_Localised":  "Focus Crystals",
+                                                 "Count":  36
+                                             },
+                                             {
+                                                 "Name":  "shieldingsensors",
+                                                 "Name_Localised":  "Shielding Sensors",
+                                                 "Count":  60
+                                             },
+                                             {
+                                                 "Name":  "protolightalloys",
+                                                 "Name_Localised":  "Proto Light Alloys",
+                                                 "Count":  15
+                                             },
+                                             {
+                                                 "Name":  "electrochemicalarrays",
+                                                 "Name_Localised":  "Electrochemical Arrays",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "highdensitycomposites",
+                                                 "Name_Localised":  "High Density Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "crystalshards",
+                                                 "Name_Localised":  "Crystal Shards",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "filamentcomposites",
+                                                 "Name_Localised":  "Filament Composites",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "compactcomposites",
+                                                 "Name_Localised":  "Compact Composites",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "polymercapacitors",
+                                                 "Name_Localised":  "Polymer Capacitors",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "chemicaldistillery",
+                                                 "Name_Localised":  "Chemical Distillery",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "salvagedalloys",
+                                                 "Name_Localised":  "Salvaged Alloys",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "conductiveceramics",
+                                                 "Name_Localised":  "Conductive Ceramics",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "mechanicalscrap",
+                                                 "Name_Localised":  "Mechanical Scrap",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "basicconductors",
+                                                 "Name_Localised":  "Basic Conductors",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "conductivecomponents",
+                                                 "Name_Localised":  "Conductive Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "mechanicalequipment",
+                                                 "Name_Localised":  "Mechanical Equipment",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "heatdispersionplate",
+                                                 "Name_Localised":  "Heat Dispersion Plate",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "refinedfocuscrystals",
+                                                 "Name_Localised":  "Refined Focus Crystals",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "fedproprietarycomposites",
+                                                 "Name_Localised":  "Proprietary Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "chemicalmanipulators",
+                                                 "Name_Localised":  "Chemical Manipulators",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "thermicalloys",
+                                                 "Name_Localised":  "Thermic Alloys",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "imperialshielding",
+                                                 "Name_Localised":  "Imperial Shielding",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "biotechconductors",
+                                                 "Name_Localised":  "Biotech Conductors",
+                                                 "Count":  2
+                                             },
+                                             {
+                                                 "Name":  "exquisitefocuscrystals",
+                                                 "Name_Localised":  "Exquisite Focus Crystals",
+                                                 "Count":  7
+                                             }
+                                         ],
+                        "Encoded":  [
+                                        {
+                                            "Name":  "shieldcyclerecordings",
+                                            "Name_Localised":  "Distorted Shield Cycle Recordings",
+                                            "Count":  42
+                                        },
+                                        {
+                                            "Name":  "shieldpatternanalysis",
+                                            "Name_Localised":  "Aberrant Shield Pattern Analysis",
+                                            "Count":  60
+                                        },
+                                        {
+                                            "Name":  "shieldsoakanalysis",
+                                            "Name_Localised":  "Inconsistent Shield Soak Analysis",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "encodedscandata",
+                                            "Name_Localised":  "Divergent Scan Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "shielddensityreports",
+                                            "Name_Localised":  "Untypical Shield Scans",
+                                            "Count":  84
+                                        },
+                                        {
+                                            "Name":  "emissiondata",
+                                            "Name_Localised":  "Unexpected Emission Data",
+                                            "Count":  66
+                                        },
+                                        {
+                                            "Name":  "decodedemissiondata",
+                                            "Name_Localised":  "Decoded Emission Data",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "bulkscandata",
+                                            "Name_Localised":  "Anomalous Bulk Scan Data",
+                                            "Count":  12
+                                        },
+                                        {
+                                            "Name":  "scandatabanks",
+                                            "Name_Localised":  "Classified Scan Databanks",
+                                            "Count":  9
+                                        },
+                                        {
+                                            "Name":  "archivedemissiondata",
+                                            "Name_Localised":  "Irregular Emission Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "scanarchives",
+                                            "Name_Localised":  "Unidentified Scan Archives",
+                                            "Count":  3
+                                        },
+                                        {
+                                            "Name":  "embeddedfirmware",
+                                            "Name_Localised":  "Modified Embedded Firmware",
+                                            "Count":  1
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:47Z",
+                        "event":  "Materials",
+                        "Raw":  [
+                                    {
+                                        "Name":  "phosphorus",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "carbon",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "sulphur",
+                                        "Count":  17
+                                    },
+                                    {
+                                        "Name":  "nickel",
+                                        "Count":  15
+                                    },
+                                    {
+                                        "Name":  "iron",
+                                        "Count":  1
+                                    },
+                                    {
+                                        "Name":  "rhenium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "chromium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "boron",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "manganese",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "vanadium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "zinc",
+                                        "Count":  3
+                                    }
+                                ],
+                        "Manufactured":  [
+                                             {
+                                                 "Name":  "phasealloys",
+                                                 "Name_Localised":  "Phase Alloys",
+                                                 "Count":  78
+                                             },
+                                             {
+                                                 "Name":  "shieldemitters",
+                                                 "Name_Localised":  "Shield Emitters",
+                                                 "Count":  105
+                                             },
+                                             {
+                                                 "Name":  "temperedalloys",
+                                                 "Name_Localised":  "Tempered Alloys",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "mechanicalcomponents",
+                                                 "Name_Localised":  "Mechanical Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "uncutfocuscrystals",
+                                                 "Name_Localised":  "Flawed Focus Crystals",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "precipitatedalloys",
+                                                 "Name_Localised":  "Precipitated Alloys",
+                                                 "Count":  27
+                                             },
+                                             {
+                                                 "Name":  "compoundshielding",
+                                                 "Name_Localised":  "Compound Shielding",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "galvanisingalloys",
+                                                 "Name_Localised":  "Galvanising Alloys",
+                                                 "Count":  57
+                                             },
+                                             {
+                                                 "Name":  "chemicalprocessors",
+                                                 "Name_Localised":  "Chemical Processors",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "wornshieldemitters",
+                                                 "Name_Localised":  "Worn Shield Emitters",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "focuscrystals",
+                                                 "Name_Localised":  "Focus Crystals",
+                                                 "Count":  36
+                                             },
+                                             {
+                                                 "Name":  "shieldingsensors",
+                                                 "Name_Localised":  "Shielding Sensors",
+                                                 "Count":  60
+                                             },
+                                             {
+                                                 "Name":  "protolightalloys",
+                                                 "Name_Localised":  "Proto Light Alloys",
+                                                 "Count":  15
+                                             },
+                                             {
+                                                 "Name":  "electrochemicalarrays",
+                                                 "Name_Localised":  "Electrochemical Arrays",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "highdensitycomposites",
+                                                 "Name_Localised":  "High Density Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "crystalshards",
+                                                 "Name_Localised":  "Crystal Shards",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "filamentcomposites",
+                                                 "Name_Localised":  "Filament Composites",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "compactcomposites",
+                                                 "Name_Localised":  "Compact Composites",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "polymercapacitors",
+                                                 "Name_Localised":  "Polymer Capacitors",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "chemicaldistillery",
+                                                 "Name_Localised":  "Chemical Distillery",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "salvagedalloys",
+                                                 "Name_Localised":  "Salvaged Alloys",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "conductiveceramics",
+                                                 "Name_Localised":  "Conductive Ceramics",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "mechanicalscrap",
+                                                 "Name_Localised":  "Mechanical Scrap",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "basicconductors",
+                                                 "Name_Localised":  "Basic Conductors",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "conductivecomponents",
+                                                 "Name_Localised":  "Conductive Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "mechanicalequipment",
+                                                 "Name_Localised":  "Mechanical Equipment",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "heatdispersionplate",
+                                                 "Name_Localised":  "Heat Dispersion Plate",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "refinedfocuscrystals",
+                                                 "Name_Localised":  "Refined Focus Crystals",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "fedproprietarycomposites",
+                                                 "Name_Localised":  "Proprietary Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "chemicalmanipulators",
+                                                 "Name_Localised":  "Chemical Manipulators",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "thermicalloys",
+                                                 "Name_Localised":  "Thermic Alloys",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "imperialshielding",
+                                                 "Name_Localised":  "Imperial Shielding",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "biotechconductors",
+                                                 "Name_Localised":  "Biotech Conductors",
+                                                 "Count":  2
+                                             },
+                                             {
+                                                 "Name":  "exquisitefocuscrystals",
+                                                 "Name_Localised":  "Exquisite Focus Crystals",
+                                                 "Count":  7
+                                             }
+                                         ],
+                        "Encoded":  [
+                                        {
+                                            "Name":  "shieldcyclerecordings",
+                                            "Name_Localised":  "Distorted Shield Cycle Recordings",
+                                            "Count":  42
+                                        },
+                                        {
+                                            "Name":  "shieldpatternanalysis",
+                                            "Name_Localised":  "Aberrant Shield Pattern Analysis",
+                                            "Count":  60
+                                        },
+                                        {
+                                            "Name":  "shieldsoakanalysis",
+                                            "Name_Localised":  "Inconsistent Shield Soak Analysis",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "encodedscandata",
+                                            "Name_Localised":  "Divergent Scan Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "shielddensityreports",
+                                            "Name_Localised":  "Untypical Shield Scans",
+                                            "Count":  84
+                                        },
+                                        {
+                                            "Name":  "emissiondata",
+                                            "Name_Localised":  "Unexpected Emission Data",
+                                            "Count":  66
+                                        },
+                                        {
+                                            "Name":  "decodedemissiondata",
+                                            "Name_Localised":  "Decoded Emission Data",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "bulkscandata",
+                                            "Name_Localised":  "Anomalous Bulk Scan Data",
+                                            "Count":  12
+                                        },
+                                        {
+                                            "Name":  "scandatabanks",
+                                            "Name_Localised":  "Classified Scan Databanks",
+                                            "Count":  9
+                                        },
+                                        {
+                                            "Name":  "archivedemissiondata",
+                                            "Name_Localised":  "Irregular Emission Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "scanarchives",
+                                            "Name_Localised":  "Unidentified Scan Archives",
+                                            "Count":  3
+                                        },
+                                        {
+                                            "Name":  "embeddedfirmware",
+                                            "Name_Localised":  "Modified Embedded Firmware",
+                                            "Count":  1
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:19Z",
+                        "event":  "Materials",
+                        "Raw":  [
+                                    {
+                                        "Name":  "phosphorus",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "carbon",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "sulphur",
+                                        "Count":  17
+                                    },
+                                    {
+                                        "Name":  "nickel",
+                                        "Count":  15
+                                    },
+                                    {
+                                        "Name":  "iron",
+                                        "Count":  1
+                                    },
+                                    {
+                                        "Name":  "rhenium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "chromium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "boron",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "manganese",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "vanadium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "zinc",
+                                        "Count":  3
+                                    }
+                                ],
+                        "Manufactured":  [
+                                             {
+                                                 "Name":  "phasealloys",
+                                                 "Name_Localised":  "Phase Alloys",
+                                                 "Count":  78
+                                             },
+                                             {
+                                                 "Name":  "shieldemitters",
+                                                 "Name_Localised":  "Shield Emitters",
+                                                 "Count":  105
+                                             },
+                                             {
+                                                 "Name":  "temperedalloys",
+                                                 "Name_Localised":  "Tempered Alloys",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "mechanicalcomponents",
+                                                 "Name_Localised":  "Mechanical Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "uncutfocuscrystals",
+                                                 "Name_Localised":  "Flawed Focus Crystals",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "precipitatedalloys",
+                                                 "Name_Localised":  "Precipitated Alloys",
+                                                 "Count":  27
+                                             },
+                                             {
+                                                 "Name":  "compoundshielding",
+                                                 "Name_Localised":  "Compound Shielding",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "galvanisingalloys",
+                                                 "Name_Localised":  "Galvanising Alloys",
+                                                 "Count":  57
+                                             },
+                                             {
+                                                 "Name":  "chemicalprocessors",
+                                                 "Name_Localised":  "Chemical Processors",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "wornshieldemitters",
+                                                 "Name_Localised":  "Worn Shield Emitters",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "focuscrystals",
+                                                 "Name_Localised":  "Focus Crystals",
+                                                 "Count":  36
+                                             },
+                                             {
+                                                 "Name":  "shieldingsensors",
+                                                 "Name_Localised":  "Shielding Sensors",
+                                                 "Count":  60
+                                             },
+                                             {
+                                                 "Name":  "protolightalloys",
+                                                 "Name_Localised":  "Proto Light Alloys",
+                                                 "Count":  15
+                                             },
+                                             {
+                                                 "Name":  "electrochemicalarrays",
+                                                 "Name_Localised":  "Electrochemical Arrays",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "highdensitycomposites",
+                                                 "Name_Localised":  "High Density Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "crystalshards",
+                                                 "Name_Localised":  "Crystal Shards",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "filamentcomposites",
+                                                 "Name_Localised":  "Filament Composites",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "compactcomposites",
+                                                 "Name_Localised":  "Compact Composites",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "polymercapacitors",
+                                                 "Name_Localised":  "Polymer Capacitors",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "chemicaldistillery",
+                                                 "Name_Localised":  "Chemical Distillery",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "salvagedalloys",
+                                                 "Name_Localised":  "Salvaged Alloys",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "conductiveceramics",
+                                                 "Name_Localised":  "Conductive Ceramics",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "mechanicalscrap",
+                                                 "Name_Localised":  "Mechanical Scrap",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "basicconductors",
+                                                 "Name_Localised":  "Basic Conductors",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "conductivecomponents",
+                                                 "Name_Localised":  "Conductive Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "mechanicalequipment",
+                                                 "Name_Localised":  "Mechanical Equipment",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "heatdispersionplate",
+                                                 "Name_Localised":  "Heat Dispersion Plate",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "refinedfocuscrystals",
+                                                 "Name_Localised":  "Refined Focus Crystals",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "fedproprietarycomposites",
+                                                 "Name_Localised":  "Proprietary Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "chemicalmanipulators",
+                                                 "Name_Localised":  "Chemical Manipulators",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "thermicalloys",
+                                                 "Name_Localised":  "Thermic Alloys",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "imperialshielding",
+                                                 "Name_Localised":  "Imperial Shielding",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "biotechconductors",
+                                                 "Name_Localised":  "Biotech Conductors",
+                                                 "Count":  2
+                                             },
+                                             {
+                                                 "Name":  "exquisitefocuscrystals",
+                                                 "Name_Localised":  "Exquisite Focus Crystals",
+                                                 "Count":  7
+                                             }
+                                         ],
+                        "Encoded":  [
+                                        {
+                                            "Name":  "shieldcyclerecordings",
+                                            "Name_Localised":  "Distorted Shield Cycle Recordings",
+                                            "Count":  42
+                                        },
+                                        {
+                                            "Name":  "shieldpatternanalysis",
+                                            "Name_Localised":  "Aberrant Shield Pattern Analysis",
+                                            "Count":  60
+                                        },
+                                        {
+                                            "Name":  "shieldsoakanalysis",
+                                            "Name_Localised":  "Inconsistent Shield Soak Analysis",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "encodedscandata",
+                                            "Name_Localised":  "Divergent Scan Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "shielddensityreports",
+                                            "Name_Localised":  "Untypical Shield Scans",
+                                            "Count":  84
+                                        },
+                                        {
+                                            "Name":  "emissiondata",
+                                            "Name_Localised":  "Unexpected Emission Data",
+                                            "Count":  66
+                                        },
+                                        {
+                                            "Name":  "decodedemissiondata",
+                                            "Name_Localised":  "Decoded Emission Data",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "bulkscandata",
+                                            "Name_Localised":  "Anomalous Bulk Scan Data",
+                                            "Count":  12
+                                        },
+                                        {
+                                            "Name":  "scandatabanks",
+                                            "Name_Localised":  "Classified Scan Databanks",
+                                            "Count":  9
+                                        },
+                                        {
+                                            "Name":  "archivedemissiondata",
+                                            "Name_Localised":  "Irregular Emission Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "scanarchives",
+                                            "Name_Localised":  "Unidentified Scan Archives",
+                                            "Count":  3
+                                        },
+                                        {
+                                            "Name":  "embeddedfirmware",
+                                            "Name_Localised":  "Modified Embedded Firmware",
+                                            "Count":  1
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:42:50Z",
+                        "event":  "Materials",
+                        "Raw":  [
+                                    {
+                                        "Name":  "phosphorus",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "carbon",
+                                        "Count":  18
+                                    },
+                                    {
+                                        "Name":  "sulphur",
+                                        "Count":  17
+                                    },
+                                    {
+                                        "Name":  "nickel",
+                                        "Count":  15
+                                    },
+                                    {
+                                        "Name":  "iron",
+                                        "Count":  1
+                                    },
+                                    {
+                                        "Name":  "rhenium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "chromium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "boron",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "manganese",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "vanadium",
+                                        "Count":  3
+                                    },
+                                    {
+                                        "Name":  "zinc",
+                                        "Count":  3
+                                    }
+                                ],
+                        "Manufactured":  [
+                                             {
+                                                 "Name":  "phasealloys",
+                                                 "Name_Localised":  "Phase Alloys",
+                                                 "Count":  78
+                                             },
+                                             {
+                                                 "Name":  "shieldemitters",
+                                                 "Name_Localised":  "Shield Emitters",
+                                                 "Count":  105
+                                             },
+                                             {
+                                                 "Name":  "temperedalloys",
+                                                 "Name_Localised":  "Tempered Alloys",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "mechanicalcomponents",
+                                                 "Name_Localised":  "Mechanical Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "uncutfocuscrystals",
+                                                 "Name_Localised":  "Flawed Focus Crystals",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "precipitatedalloys",
+                                                 "Name_Localised":  "Precipitated Alloys",
+                                                 "Count":  27
+                                             },
+                                             {
+                                                 "Name":  "compoundshielding",
+                                                 "Name_Localised":  "Compound Shielding",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "galvanisingalloys",
+                                                 "Name_Localised":  "Galvanising Alloys",
+                                                 "Count":  57
+                                             },
+                                             {
+                                                 "Name":  "chemicalprocessors",
+                                                 "Name_Localised":  "Chemical Processors",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "wornshieldemitters",
+                                                 "Name_Localised":  "Worn Shield Emitters",
+                                                 "Count":  51
+                                             },
+                                             {
+                                                 "Name":  "focuscrystals",
+                                                 "Name_Localised":  "Focus Crystals",
+                                                 "Count":  36
+                                             },
+                                             {
+                                                 "Name":  "shieldingsensors",
+                                                 "Name_Localised":  "Shielding Sensors",
+                                                 "Count":  60
+                                             },
+                                             {
+                                                 "Name":  "protolightalloys",
+                                                 "Name_Localised":  "Proto Light Alloys",
+                                                 "Count":  15
+                                             },
+                                             {
+                                                 "Name":  "electrochemicalarrays",
+                                                 "Name_Localised":  "Electrochemical Arrays",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "highdensitycomposites",
+                                                 "Name_Localised":  "High Density Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "crystalshards",
+                                                 "Name_Localised":  "Crystal Shards",
+                                                 "Count":  30
+                                             },
+                                             {
+                                                 "Name":  "filamentcomposites",
+                                                 "Name_Localised":  "Filament Composites",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "compactcomposites",
+                                                 "Name_Localised":  "Compact Composites",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "polymercapacitors",
+                                                 "Name_Localised":  "Polymer Capacitors",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "chemicaldistillery",
+                                                 "Name_Localised":  "Chemical Distillery",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "salvagedalloys",
+                                                 "Name_Localised":  "Salvaged Alloys",
+                                                 "Count":  21
+                                             },
+                                             {
+                                                 "Name":  "conductiveceramics",
+                                                 "Name_Localised":  "Conductive Ceramics",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "mechanicalscrap",
+                                                 "Name_Localised":  "Mechanical Scrap",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "basicconductors",
+                                                 "Name_Localised":  "Basic Conductors",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "conductivecomponents",
+                                                 "Name_Localised":  "Conductive Components",
+                                                 "Count":  5
+                                             },
+                                             {
+                                                 "Name":  "mechanicalequipment",
+                                                 "Name_Localised":  "Mechanical Equipment",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "heatdispersionplate",
+                                                 "Name_Localised":  "Heat Dispersion Plate",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "refinedfocuscrystals",
+                                                 "Name_Localised":  "Refined Focus Crystals",
+                                                 "Count":  18
+                                             },
+                                             {
+                                                 "Name":  "fedproprietarycomposites",
+                                                 "Name_Localised":  "Proprietary Composites",
+                                                 "Count":  12
+                                             },
+                                             {
+                                                 "Name":  "chemicalmanipulators",
+                                                 "Name_Localised":  "Chemical Manipulators",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "thermicalloys",
+                                                 "Name_Localised":  "Thermic Alloys",
+                                                 "Count":  6
+                                             },
+                                             {
+                                                 "Name":  "imperialshielding",
+                                                 "Name_Localised":  "Imperial Shielding",
+                                                 "Count":  3
+                                             },
+                                             {
+                                                 "Name":  "biotechconductors",
+                                                 "Name_Localised":  "Biotech Conductors",
+                                                 "Count":  2
+                                             },
+                                             {
+                                                 "Name":  "exquisitefocuscrystals",
+                                                 "Name_Localised":  "Exquisite Focus Crystals",
+                                                 "Count":  7
+                                             }
+                                         ],
+                        "Encoded":  [
+                                        {
+                                            "Name":  "shieldcyclerecordings",
+                                            "Name_Localised":  "Distorted Shield Cycle Recordings",
+                                            "Count":  42
+                                        },
+                                        {
+                                            "Name":  "shieldpatternanalysis",
+                                            "Name_Localised":  "Aberrant Shield Pattern Analysis",
+                                            "Count":  60
+                                        },
+                                        {
+                                            "Name":  "shieldsoakanalysis",
+                                            "Name_Localised":  "Inconsistent Shield Soak Analysis",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "encodedscandata",
+                                            "Name_Localised":  "Divergent Scan Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "shielddensityreports",
+                                            "Name_Localised":  "Untypical Shield Scans",
+                                            "Count":  84
+                                        },
+                                        {
+                                            "Name":  "emissiondata",
+                                            "Name_Localised":  "Unexpected Emission Data",
+                                            "Count":  66
+                                        },
+                                        {
+                                            "Name":  "decodedemissiondata",
+                                            "Name_Localised":  "Decoded Emission Data",
+                                            "Count":  45
+                                        },
+                                        {
+                                            "Name":  "bulkscandata",
+                                            "Name_Localised":  "Anomalous Bulk Scan Data",
+                                            "Count":  12
+                                        },
+                                        {
+                                            "Name":  "scandatabanks",
+                                            "Name_Localised":  "Classified Scan Databanks",
+                                            "Count":  9
+                                        },
+                                        {
+                                            "Name":  "archivedemissiondata",
+                                            "Name_Localised":  "Irregular Emission Data",
+                                            "Count":  6
+                                        },
+                                        {
+                                            "Name":  "scanarchives",
+                                            "Name_Localised":  "Unidentified Scan Archives",
+                                            "Count":  3
+                                        },
+                                        {
+                                            "Name":  "embeddedfirmware",
+                                            "Name_Localised":  "Modified Embedded Firmware",
+                                            "Count":  1
+                                        }
+                                    ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Materials"
+}

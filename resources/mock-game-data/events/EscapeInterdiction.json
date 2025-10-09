@@ -1,0 +1,38 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9712868-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-23T19:09:37Z",
+                        "event":  "EscapeInterdiction",
+                        "Interdictor":  "Mr. Minnis",
+                        "IsPlayer":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-23T19:11:52Z",
+                        "event":  "EscapeInterdiction",
+                        "Interdictor":  "Publius",
+                        "IsPlayer":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-24T17:38:58Z",
+                        "event":  "EscapeInterdiction",
+                        "Interdictor":  "Waddonboy",
+                        "IsPlayer":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-25T16:40:48Z",
+                        "event":  "EscapeInterdiction",
+                        "Interdictor":  "DelBoy Lambert",
+                        "IsPlayer":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-29T19:42:20Z",
+                        "event":  "EscapeInterdiction",
+                        "Interdictor":  "Gert",
+                        "IsPlayer":  false
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "EscapeInterdiction"
+}

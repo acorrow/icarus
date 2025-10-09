@@ -1,0 +1,14 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9413393-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-04-16T13:46:54Z",
+                        "event":  "DataScanned",
+                        "Type":  "$Datascan_ShipUplink;",
+                        "Type_Localised":  "Ship Uplink"
+                    }
+                ],
+    "sampleCount":  1,
+    "eventType":  "DataScanned"
+}

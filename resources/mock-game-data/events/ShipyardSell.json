@@ -1,0 +1,28 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1606882-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-25T04:43:33Z",
+                        "event":  "ShipyardSell",
+                        "ShipType":  "Type9",
+                        "ShipType_Localised":  "Type-9 Heavy",
+                        "SellShipID":  16,
+                        "ShipPrice":  171960540,
+                        "System":  "WISE 1506+7027",
+                        "ShipMarketID":  3228867072,
+                        "MarketID":  128125944
+                    },
+                    {
+                        "timestamp":  "2025-09-29T17:33:07Z",
+                        "event":  "ShipyardSell",
+                        "ShipType":  "type9_military",
+                        "ShipType_Localised":  "Type-10 Defender",
+                        "SellShipID":  18,
+                        "ShipPrice":  279867468,
+                        "MarketID":  4207980803
+                    }
+                ],
+    "sampleCount":  2,
+    "eventType":  "ShipyardSell"
+}

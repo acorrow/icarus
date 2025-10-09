@@ -1,0 +1,63 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1144545-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-21T15:46:12Z",
+                        "event":  "Repair",
+                        "Items":  [
+                                      "$krait_mkii_cockpit_name;",
+                                      "Hull",
+                                      "$modularcargobaydoor_name;",
+                                      "Wear"
+                                  ],
+                        "Cost":  6828
+                    },
+                    {
+                        "timestamp":  "2025-09-22T20:02:25Z",
+                        "event":  "Repair",
+                        "Items":  [
+                                      "$type9_cockpit_name;",
+                                      "Hull",
+                                      "$modularcargobaydoor_name;",
+                                      "Wear"
+                                  ],
+                        "Cost":  8040
+                    },
+                    {
+                        "timestamp":  "2025-09-23T00:57:06Z",
+                        "event":  "Repair",
+                        "Items":  [
+                                      "$type9_cockpit_name;",
+                                      "Hull",
+                                      "$modularcargobaydoor_name;",
+                                      "Wear"
+                                  ],
+                        "Cost":  1991
+                    },
+                    {
+                        "timestamp":  "2025-09-23T00:58:36Z",
+                        "event":  "Repair",
+                        "Items":  [
+                                      "$krait_mkii_cockpit_name;",
+                                      "Hull",
+                                      "$modularcargobaydoor_name;",
+                                      "Wear"
+                                  ],
+                        "Cost":  92
+                    },
+                    {
+                        "timestamp":  "2025-09-24T12:35:36Z",
+                        "event":  "Repair",
+                        "Items":  [
+                                      "$type9_cockpit_name;",
+                                      "Hull",
+                                      "$modularcargobaydoor_name;",
+                                      "Wear"
+                                  ],
+                        "Cost":  8882
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Repair"
+}

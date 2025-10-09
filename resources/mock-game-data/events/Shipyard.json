@@ -1,0 +1,43 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1519327-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-12-24T01:47:23Z",
+                        "event":  "Shipyard",
+                        "MarketID":  128016896,
+                        "StationName":  "Abraham Lincoln",
+                        "StarSystem":  "Sol"
+                    },
+                    {
+                        "timestamp":  "2024-04-14T02:26:37Z",
+                        "event":  "Shipyard",
+                        "MarketID":  3228884736,
+                        "StationName":  "Kepler Gateway",
+                        "StarSystem":  "Kruger 60"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T04:19:55Z",
+                        "event":  "Shipyard",
+                        "MarketID":  3228884736,
+                        "StationName":  "Kepler Gateway",
+                        "StarSystem":  "Kruger 60"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T05:05:41Z",
+                        "event":  "Shipyard",
+                        "MarketID":  3228867072,
+                        "StationName":  "Dobrovolskiy Enterprise",
+                        "StarSystem":  "WISE 1506+7027"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T20:01:09Z",
+                        "event":  "Shipyard",
+                        "MarketID":  3228884736,
+                        "StationName":  "Kepler Gateway",
+                        "StarSystem":  "Kruger 60"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Shipyard"
+}

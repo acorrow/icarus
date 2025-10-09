@@ -1,0 +1,48 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.8663138-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T21:50:28Z",
+                        "event":  "ApproachBody",
+                        "StarSystem":  "V1581 Cygni",
+                        "SystemAddress":  22958211091280,
+                        "Body":  "V1581 Cygni B 4 a",
+                        "BodyID":  21
+                    },
+                    {
+                        "timestamp":  "2025-09-22T22:06:15Z",
+                        "event":  "ApproachBody",
+                        "StarSystem":  "V1581 Cygni",
+                        "SystemAddress":  22958211091280,
+                        "Body":  "V1581 Cygni A 3 a",
+                        "BodyID":  11
+                    },
+                    {
+                        "timestamp":  "2025-09-23T01:53:06Z",
+                        "event":  "ApproachBody",
+                        "StarSystem":  "Struve 1321",
+                        "SystemAddress":  18262872106401,
+                        "Body":  "Struve 1321 A 2",
+                        "BodyID":  10
+                    },
+                    {
+                        "timestamp":  "2025-09-23T01:59:02Z",
+                        "event":  "ApproachBody",
+                        "StarSystem":  "Struve 1321",
+                        "SystemAddress":  18262872106401,
+                        "Body":  "Struve 1321 A 2",
+                        "BodyID":  10
+                    },
+                    {
+                        "timestamp":  "2025-09-23T14:43:57Z",
+                        "event":  "ApproachBody",
+                        "StarSystem":  "Struve 1321",
+                        "SystemAddress":  18262872106401,
+                        "Body":  "Struve 1321 A 2",
+                        "BodyID":  10
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ApproachBody"
+}

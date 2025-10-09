@@ -1,0 +1,38 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9045986-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T03:19:02Z",
+                        "event":  "ChangeCrewRole",
+                        "Role":  "FighterCon",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T03:21:28Z",
+                        "event":  "ChangeCrewRole",
+                        "Role":  "Helm",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T05:00:44Z",
+                        "event":  "ChangeCrewRole",
+                        "Role":  "Idle",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T05:01:32Z",
+                        "event":  "ChangeCrewRole",
+                        "Role":  "FireCon",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-25T04:03:36Z",
+                        "event":  "ChangeCrewRole",
+                        "Role":  "Idle",
+                        "Telepresence":  true
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ChangeCrewRole"
+}

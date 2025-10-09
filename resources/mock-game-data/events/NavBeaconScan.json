@@ -1,0 +1,38 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0750147-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-23T04:04:55Z",
+                        "event":  "NavBeaconScan",
+                        "SystemAddress":  18262872106401,
+                        "NumBodies":  37
+                    },
+                    {
+                        "timestamp":  "2025-09-23T14:25:48Z",
+                        "event":  "NavBeaconScan",
+                        "SystemAddress":  18262872106401,
+                        "NumBodies":  37
+                    },
+                    {
+                        "timestamp":  "2025-09-23T19:14:15Z",
+                        "event":  "NavBeaconScan",
+                        "SystemAddress":  11665802339753,
+                        "NumBodies":  20
+                    },
+                    {
+                        "timestamp":  "2025-09-24T01:40:50Z",
+                        "event":  "NavBeaconScan",
+                        "SystemAddress":  11665802339753,
+                        "NumBodies":  20
+                    },
+                    {
+                        "timestamp":  "2025-09-24T12:50:10Z",
+                        "event":  "NavBeaconScan",
+                        "SystemAddress":  5366025177936,
+                        "NumBodies":  26
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "NavBeaconScan"
+}

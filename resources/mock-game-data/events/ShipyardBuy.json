@@ -1,0 +1,38 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1544388-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T16:12:55Z",
+                        "event":  "ShipyardBuy",
+                        "ShipType":  "type9_military",
+                        "ShipType_Localised":  "Type-10 Defender",
+                        "ShipPrice":  124755342,
+                        "StoreOldShip":  "Krait_MkII",
+                        "StoreShipID":  11,
+                        "MarketID":  4207861507
+                    },
+                    {
+                        "timestamp":  "2025-09-28T02:36:33Z",
+                        "event":  "ShipyardBuy",
+                        "ShipType":  "type8",
+                        "ShipType_Localised":  "Type-8 Transporter",
+                        "ShipPrice":  38453967,
+                        "StoreOldShip":  "Type9_Military",
+                        "StoreShipID":  18,
+                        "MarketID":  3228884736
+                    },
+                    {
+                        "timestamp":  "2025-09-29T17:41:29Z",
+                        "event":  "ShipyardBuy",
+                        "ShipType":  "type9",
+                        "ShipType_Localised":  "Type-9 Heavy",
+                        "ShipPrice":  76555842,
+                        "StoreOldShip":  "Krait_MkII",
+                        "StoreShipID":  11,
+                        "MarketID":  3228824064
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "ShipyardBuy"
+}

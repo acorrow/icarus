@@ -1,0 +1,596 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0244502-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "Location",
+                        "DistFromStarLS":  504.930654,
+                        "Docked":  true,
+                        "StationName":  "Abraham Lincoln",
+                        "StationType":  "Orbis",
+                        "MarketID":  128016896,
+                        "StationFaction":  {
+                                               "Name":  "Mother Gaia"
+                                           },
+                        "StationGovernment":  "$government_Democracy;",
+                        "StationGovernment_Localised":  "Democracy",
+                        "StationAllegiance":  "Federation",
+                        "StationServices":  [
+                                                "dock",
+                                                "autodock",
+                                                "blackmarket",
+                                                "commodities",
+                                                "contacts",
+                                                "exploration",
+                                                "missions",
+                                                "outfitting",
+                                                "crewlounge",
+                                                "rearm",
+                                                "refuel",
+                                                "repair",
+                                                "shipyard",
+                                                "tuning",
+                                                "engineer",
+                                                "missionsgenerated",
+                                                "flightcontroller",
+                                                "stationoperations",
+                                                "powerplay",
+                                                "searchrescue",
+                                                "stationMenu",
+                                                "shop",
+                                                "livery",
+                                                "socialspace",
+                                                "bartender",
+                                                "vistagenomics",
+                                                "pioneersupplies",
+                                                "apexinterstellar",
+                                                "frontlinesolutions"
+                                            ],
+                        "StationEconomy":  "$economy_Service;",
+                        "StationEconomy_Localised":  "Service",
+                        "StationEconomies":  [
+                                                 {
+                                                     "Name":  "$economy_Service;",
+                                                     "Name_Localised":  "Service",
+                                                     "Proportion":  1.000000
+                                                 }
+                                             ],
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Sol",
+                        "SystemAddress":  10477373803,
+                        "StarPos":  [
+                                        0.00000,
+                                        0.00000,
+                                        0.00000
+                                    ],
+                        "SystemAllegiance":  "Federation",
+                        "SystemEconomy":  "$economy_Refinery;",
+                        "SystemEconomy_Localised":  "Refinery",
+                        "SystemSecondEconomy":  "$economy_Service;",
+                        "SystemSecondEconomy_Localised":  "Service",
+                        "SystemGovernment":  "$government_Democracy;",
+                        "SystemGovernment_Localised":  "Democracy",
+                        "SystemSecurity":  "$SYSTEM_SECURITY_high;",
+                        "SystemSecurity_Localised":  "High Security",
+                        "Population":  22780919531,
+                        "Body":  "Abraham Lincoln",
+                        "BodyID":  49,
+                        "BodyType":  "Station",
+                        "Factions":  [
+                                         {
+                                             "Name":  "Federal Congress",
+                                             "FactionState":  "Boom",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.192000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -51.150002,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "Boom"
+                                                                  }
+                                                              ]
+                                         },
+                                         {
+                                             "Name":  "Sol Workers\u0027 Party",
+                                             "FactionState":  "Boom",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.221000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "Boom"
+                                                                  }
+                                                              ]
+                                         },
+                                         {
+                                             "Name":  "Sol Constitution Party",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.137000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000
+                                         },
+                                         {
+                                             "Name":  "Mother Gaia",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.298000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  100.000000
+                                         },
+                                         {
+                                             "Name":  "Sol Nationalists",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.142000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  3.300000
+                                         },
+                                         {
+                                             "Name":  "Aegis Core",
+                                             "FactionState":  "None",
+                                             "Government":  "Cooperative",
+                                             "Influence":  0.010000,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000
+                                         }
+                                     ],
+                        "SystemFaction":  {
+                                              "Name":  "Mother Gaia"
+                                          }
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:29Z",
+                        "event":  "Location",
+                        "DistFromStarLS":  506.880164,
+                        "Docked":  true,
+                        "StationName":  "Abraham Lincoln",
+                        "StationType":  "Orbis",
+                        "MarketID":  128016896,
+                        "StationFaction":  {
+                                               "Name":  "Mother Gaia"
+                                           },
+                        "StationGovernment":  "$government_Democracy;",
+                        "StationGovernment_Localised":  "Democracy",
+                        "StationAllegiance":  "Federation",
+                        "StationServices":  [
+                                                "dock",
+                                                "autodock",
+                                                "blackmarket",
+                                                "commodities",
+                                                "contacts",
+                                                "exploration",
+                                                "missions",
+                                                "outfitting",
+                                                "crewlounge",
+                                                "rearm",
+                                                "refuel",
+                                                "repair",
+                                                "shipyard",
+                                                "tuning",
+                                                "engineer",
+                                                "missionsgenerated",
+                                                "flightcontroller",
+                                                "stationoperations",
+                                                "powerplay",
+                                                "searchrescue",
+                                                "stationMenu",
+                                                "shop",
+                                                "livery",
+                                                "socialspace",
+                                                "bartender",
+                                                "vistagenomics",
+                                                "pioneersupplies",
+                                                "apexinterstellar",
+                                                "frontlinesolutions"
+                                            ],
+                        "StationEconomy":  "$economy_Service;",
+                        "StationEconomy_Localised":  "Service",
+                        "StationEconomies":  [
+                                                 {
+                                                     "Name":  "$economy_Service;",
+                                                     "Name_Localised":  "Service",
+                                                     "Proportion":  1.000000
+                                                 }
+                                             ],
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Sol",
+                        "SystemAddress":  10477373803,
+                        "StarPos":  [
+                                        0.00000,
+                                        0.00000,
+                                        0.00000
+                                    ],
+                        "SystemAllegiance":  "Federation",
+                        "SystemEconomy":  "$economy_Refinery;",
+                        "SystemEconomy_Localised":  "Refinery",
+                        "SystemSecondEconomy":  "$economy_Service;",
+                        "SystemSecondEconomy_Localised":  "Service",
+                        "SystemGovernment":  "$government_Democracy;",
+                        "SystemGovernment_Localised":  "Democracy",
+                        "SystemSecurity":  "$SYSTEM_SECURITY_high;",
+                        "SystemSecurity_Localised":  "High Security",
+                        "Population":  22780919531,
+                        "Body":  "Abraham Lincoln",
+                        "BodyID":  49,
+                        "BodyType":  "Station",
+                        "Factions":  [
+                                         {
+                                             "Name":  "Federal Congress",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.173653,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -51.150002
+                                         },
+                                         {
+                                             "Name":  "Sol Workers\u0027 Party",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.210579,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000
+                                         },
+                                         {
+                                             "Name":  "Sol Constitution Party",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.129741,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000
+                                         },
+                                         {
+                                             "Name":  "Mother Gaia",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.330339,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  100.000000
+                                         },
+                                         {
+                                             "Name":  "Sol Nationalists",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.145709,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  3.300000,
+                                             "RecoveringStates":  [
+                                                                      {
+                                                                          "State":  "PublicHoliday",
+                                                                          "Trend":  0
+                                                                      }
+                                                                  ]
+                                         },
+                                         {
+                                             "Name":  "Aegis Core",
+                                             "FactionState":  "None",
+                                             "Government":  "Cooperative",
+                                             "Influence":  0.009980,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000
+                                         }
+                                     ],
+                        "SystemFaction":  {
+                                              "Name":  "Mother Gaia"
+                                          }
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:55Z",
+                        "event":  "Location",
+                        "DistFromStarLS":  506.879313,
+                        "Docked":  false,
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Sol",
+                        "SystemAddress":  10477373803,
+                        "StarPos":  [
+                                        0.00000,
+                                        0.00000,
+                                        0.00000
+                                    ],
+                        "SystemAllegiance":  "Federation",
+                        "SystemEconomy":  "$economy_Refinery;",
+                        "SystemEconomy_Localised":  "Refinery",
+                        "SystemSecondEconomy":  "$economy_Service;",
+                        "SystemSecondEconomy_Localised":  "Service",
+                        "SystemGovernment":  "$government_Democracy;",
+                        "SystemGovernment_Localised":  "Democracy",
+                        "SystemSecurity":  "$SYSTEM_SECURITY_high;",
+                        "SystemSecurity_Localised":  "High Security",
+                        "Population":  22780919531,
+                        "Body":  "Abraham Lincoln",
+                        "BodyID":  49,
+                        "BodyType":  "Station",
+                        "Factions":  [
+                                         {
+                                             "Name":  "Federal Congress",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.173653,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -51.150002
+                                         },
+                                         {
+                                             "Name":  "Sol Workers\u0027 Party",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.210579,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000
+                                         },
+                                         {
+                                             "Name":  "Sol Constitution Party",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.129741,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000
+                                         },
+                                         {
+                                             "Name":  "Mother Gaia",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.330339,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  100.000000
+                                         },
+                                         {
+                                             "Name":  "Sol Nationalists",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.145709,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  3.300000,
+                                             "RecoveringStates":  [
+                                                                      {
+                                                                          "State":  "PublicHoliday",
+                                                                          "Trend":  0
+                                                                      }
+                                                                  ]
+                                         },
+                                         {
+                                             "Name":  "Aegis Core",
+                                             "FactionState":  "None",
+                                             "Government":  "Cooperative",
+                                             "Influence":  0.009980,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000
+                                         }
+                                     ],
+                        "SystemFaction":  {
+                                              "Name":  "Mother Gaia"
+                                          }
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:25Z",
+                        "event":  "Location",
+                        "Docked":  false,
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Sol",
+                        "SystemAddress":  10477373803,
+                        "StarPos":  [
+                                        0.00000,
+                                        0.00000,
+                                        0.00000
+                                    ],
+                        "SystemAllegiance":  "Federation",
+                        "SystemEconomy":  "$economy_Refinery;",
+                        "SystemEconomy_Localised":  "Refinery",
+                        "SystemSecondEconomy":  "$economy_Service;",
+                        "SystemSecondEconomy_Localised":  "Service",
+                        "SystemGovernment":  "$government_Democracy;",
+                        "SystemGovernment_Localised":  "Democracy",
+                        "SystemSecurity":  "$SYSTEM_SECURITY_high;",
+                        "SystemSecurity_Localised":  "High Security",
+                        "Population":  22780919531,
+                        "Body":  "Sol",
+                        "BodyID":  0,
+                        "BodyType":  "Star",
+                        "Factions":  [
+                                         {
+                                             "Name":  "Federal Congress",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.174000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -51.150002
+                                         },
+                                         {
+                                             "Name":  "Sol Workers\u0027 Party",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.211000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000
+                                         },
+                                         {
+                                             "Name":  "Sol Constitution Party",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.135000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000
+                                         },
+                                         {
+                                             "Name":  "Mother Gaia",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.324000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  100.000000
+                                         },
+                                         {
+                                             "Name":  "Sol Nationalists",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.146000,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  3.300000
+                                         },
+                                         {
+                                             "Name":  "Aegis Core",
+                                             "FactionState":  "None",
+                                             "Government":  "Cooperative",
+                                             "Influence":  0.010000,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000
+                                         }
+                                     ],
+                        "SystemFaction":  {
+                                              "Name":  "Mother Gaia"
+                                          }
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:42:56Z",
+                        "event":  "Location",
+                        "Docked":  false,
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Sol",
+                        "SystemAddress":  10477373803,
+                        "StarPos":  [
+                                        0.00000,
+                                        0.00000,
+                                        0.00000
+                                    ],
+                        "SystemAllegiance":  "Federation",
+                        "SystemEconomy":  "$economy_Refinery;",
+                        "SystemEconomy_Localised":  "Refinery",
+                        "SystemSecondEconomy":  "$economy_Service;",
+                        "SystemSecondEconomy_Localised":  "Service",
+                        "SystemGovernment":  "$government_Democracy;",
+                        "SystemGovernment_Localised":  "Democracy",
+                        "SystemSecurity":  "$SYSTEM_SECURITY_high;",
+                        "SystemSecurity_Localised":  "High Security",
+                        "Population":  22780919531,
+                        "Body":  "Sol",
+                        "BodyID":  0,
+                        "BodyType":  "Star",
+                        "Factions":  [
+                                         {
+                                             "Name":  "Federal Congress",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.173826,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -51.150002
+                                         },
+                                         {
+                                             "Name":  "Sol Workers\u0027 Party",
+                                             "FactionState":  "CivilLiberty",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.211788,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "CivilLiberty"
+                                                                  }
+                                                              ]
+                                         },
+                                         {
+                                             "Name":  "Sol Constitution Party",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.136863,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -1.650000
+                                         },
+                                         {
+                                             "Name":  "Mother Gaia",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.324675,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  100.000000
+                                         },
+                                         {
+                                             "Name":  "Sol Nationalists",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.142857,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  3.300000
+                                         },
+                                         {
+                                             "Name":  "Aegis Core",
+                                             "FactionState":  "None",
+                                             "Government":  "Cooperative",
+                                             "Influence":  0.009990,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000
+                                         }
+                                     ],
+                        "SystemFaction":  {
+                                              "Name":  "Mother Gaia"
+                                          }
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Location"
+}

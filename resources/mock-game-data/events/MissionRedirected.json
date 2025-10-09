@@ -1,0 +1,52 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0532808-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-04-16T13:46:55Z",
+                        "event":  "MissionRedirected",
+                        "MissionID":  961522383,
+                        "Name":  "Mission_HackMegaship",
+                        "LocalisedName":  "Infiltrate the Megaship\u0027s Ship Log Uplink",
+                        "NewDestinationStation":  "Kepler Gateway",
+                        "NewDestinationSystem":  "Kruger 60",
+                        "OldDestinationStation":  "",
+                        "OldDestinationSystem":  "L 26-27"
+                    },
+                    {
+                        "timestamp":  "2024-04-17T02:24:05Z",
+                        "event":  "MissionRedirected",
+                        "MissionID":  961588959,
+                        "Name":  "Mission_HackMegaship",
+                        "LocalisedName":  "Infiltrate the Megaship\u0027s Ship Log Uplink",
+                        "NewDestinationStation":  "Kepler Gateway",
+                        "NewDestinationSystem":  "Kruger 60",
+                        "OldDestinationStation":  "",
+                        "OldDestinationSystem":  "Beta Comae Berenices"
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:17:54Z",
+                        "event":  "MissionRedirected",
+                        "MissionID":  1030191840,
+                        "Name":  "Mission_Assassinate_Planetary_Expansion",
+                        "LocalisedName":  "Expansion Support by Killing Known Terrorist: Quennell",
+                        "NewDestinationStation":  "Kepler Gateway",
+                        "NewDestinationSystem":  "Kruger 60",
+                        "OldDestinationStation":  "",
+                        "OldDestinationSystem":  "TZ Arietis"
+                    },
+                    {
+                        "timestamp":  "2025-09-27T01:12:29Z",
+                        "event":  "MissionRedirected",
+                        "MissionID":  1030238404,
+                        "Name":  "Mission_MassacreWing_Legal_CivilUnrest",
+                        "LocalisedName":  "Put down Pirates of LHS 450 Pirates",
+                        "NewDestinationStation":  "Kepler Gateway",
+                        "NewDestinationSystem":  "Kruger 60",
+                        "OldDestinationStation":  "",
+                        "OldDestinationSystem":  "LHS 450"
+                    }
+                ],
+    "sampleCount":  4,
+    "eventType":  "MissionRedirected"
+}

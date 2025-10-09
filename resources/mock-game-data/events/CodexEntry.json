@@ -1,0 +1,25 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9072862-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-04-17T02:17:59Z",
+                        "event":  "CodexEntry",
+                        "EntryID":  1300701,
+                        "Name":  "$Codex_Ent_Standard_Rocky_Ice_No_Atmos_Name;",
+                        "Name_Localised":  "Non Terraformable",
+                        "SubCategory":  "$Codex_SubCategory_Terrestrials;",
+                        "SubCategory_Localised":  "Terrestrial planets",
+                        "Category":  "$Codex_Category_StellarBodies;",
+                        "Category_Localised":  "Astronomical Bodies",
+                        "Region":  "$Codex_RegionName_18;",
+                        "Region_Localised":  "Inner Orion Spur",
+                        "System":  "Flousop",
+                        "SystemAddress":  7268024329641,
+                        "BodyID":  2,
+                        "IsNewEntry":  true
+                    }
+                ],
+    "sampleCount":  1,
+    "eventType":  "CodexEntry"
+}

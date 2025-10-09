@@ -1,0 +1,105 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0987596-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T05:19:04Z",
+                        "event":  "ProspectedAsteroid",
+                        "Materials":  [
+                                          {
+                                              "Name":  "uraninite",
+                                              "Proportion":  12.691996
+                                          }
+                                      ],
+                        "Content":  "$AsteroidMaterialContent_Medium;",
+                        "Content_Localised":  "Material Content: Medium",
+                        "Remaining":  100.000000
+                    },
+                    {
+                        "timestamp":  "2025-09-22T05:25:25Z",
+                        "event":  "ProspectedAsteroid",
+                        "Materials":  [
+                                          {
+                                              "Name":  "uraninite",
+                                              "Proportion":  4.433603
+                                          },
+                                          {
+                                              "Name":  "Samarium",
+                                              "Proportion":  4.775957
+                                          },
+                                          {
+                                              "Name":  "lepidolite",
+                                              "Proportion":  3.189528
+                                          }
+                                      ],
+                        "Content":  "$AsteroidMaterialContent_High;",
+                        "Content_Localised":  "Material Content: High",
+                        "Remaining":  100.000000
+                    },
+                    {
+                        "timestamp":  "2025-09-22T05:56:38Z",
+                        "event":  "ProspectedAsteroid",
+                        "Materials":  [
+                                          {
+                                              "Name":  "uraninite",
+                                              "Proportion":  5.311037
+                                          },
+                                          {
+                                              "Name":  "bertrandite",
+                                              "Proportion":  2.998940
+                                          },
+                                          {
+                                              "Name":  "silver",
+                                              "Proportion":  1.577875
+                                          }
+                                      ],
+                        "Content":  "$AsteroidMaterialContent_Medium;",
+                        "Content_Localised":  "Material Content: Medium",
+                        "Remaining":  100.000000
+                    },
+                    {
+                        "timestamp":  "2025-09-22T06:06:13Z",
+                        "event":  "ProspectedAsteroid",
+                        "Materials":  [
+                                          {
+                                              "Name":  "uraninite",
+                                              "Proportion":  4.366032
+                                          },
+                                          {
+                                              "Name":  "Praseodymium",
+                                              "Proportion":  3.260216
+                                          },
+                                          {
+                                              "Name":  "lepidolite",
+                                              "Proportion":  4.687041
+                                          }
+                                      ],
+                        "Content":  "$AsteroidMaterialContent_High;",
+                        "Content_Localised":  "Material Content: High",
+                        "Remaining":  100.000000
+                    },
+                    {
+                        "timestamp":  "2025-09-22T06:15:42Z",
+                        "event":  "ProspectedAsteroid",
+                        "Materials":  [
+                                          {
+                                              "Name":  "uraninite",
+                                              "Proportion":  3.849034
+                                          },
+                                          {
+                                              "Name":  "lepidolite",
+                                              "Proportion":  3.959680
+                                          },
+                                          {
+                                              "Name":  "gallite",
+                                              "Proportion":  3.333865
+                                          }
+                                      ],
+                        "Content":  "$AsteroidMaterialContent_Medium;",
+                        "Content_Localised":  "Material Content: Medium",
+                        "Remaining":  100.000000
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ProspectedAsteroid"
+}

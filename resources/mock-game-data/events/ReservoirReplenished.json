@@ -1,0 +1,38 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1195613-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-01-07T17:49:28Z",
+                        "event":  "ReservoirReplenished",
+                        "FuelMain":  31.370001,
+                        "FuelReservoir":  0.630000
+                    },
+                    {
+                        "timestamp":  "2024-01-07T18:04:16Z",
+                        "event":  "ReservoirReplenished",
+                        "FuelMain":  29.363726,
+                        "FuelReservoir":  0.630000
+                    },
+                    {
+                        "timestamp":  "2024-01-07T18:18:33Z",
+                        "event":  "ReservoirReplenished",
+                        "FuelMain":  28.733727,
+                        "FuelReservoir":  0.630000
+                    },
+                    {
+                        "timestamp":  "2024-01-07T18:32:50Z",
+                        "event":  "ReservoirReplenished",
+                        "FuelMain":  28.103727,
+                        "FuelReservoir":  0.630000
+                    },
+                    {
+                        "timestamp":  "2024-01-07T18:47:07Z",
+                        "event":  "ReservoirReplenished",
+                        "FuelMain":  27.473728,
+                        "FuelReservoir":  0.630000
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ReservoirReplenished"
+}

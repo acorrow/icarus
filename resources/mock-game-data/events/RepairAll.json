@@ -1,0 +1,33 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1160053-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T08:02:06Z",
+                        "event":  "RepairAll",
+                        "Cost":  38024
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:33:42Z",
+                        "event":  "RepairAll",
+                        "Cost":  223
+                    },
+                    {
+                        "timestamp":  "2025-09-23T20:17:23Z",
+                        "event":  "RepairAll",
+                        "Cost":  567
+                    },
+                    {
+                        "timestamp":  "2025-09-24T04:59:13Z",
+                        "event":  "RepairAll",
+                        "Cost":  16680
+                    },
+                    {
+                        "timestamp":  "2025-09-24T06:55:18Z",
+                        "event":  "RepairAll",
+                        "Cost":  14170
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "RepairAll"
+}

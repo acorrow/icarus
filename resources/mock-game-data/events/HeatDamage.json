@@ -1,0 +1,24 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9991668-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-25T06:00:04Z",
+                        "event":  "HeatDamage"
+                    },
+                    {
+                        "timestamp":  "2025-09-25T06:00:07Z",
+                        "event":  "HeatDamage"
+                    },
+                    {
+                        "timestamp":  "2025-09-29T05:12:10Z",
+                        "event":  "HeatDamage"
+                    },
+                    {
+                        "timestamp":  "2025-09-29T05:12:12Z",
+                        "event":  "HeatDamage"
+                    }
+                ],
+    "sampleCount":  4,
+    "eventType":  "HeatDamage"
+}

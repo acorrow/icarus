@@ -1,0 +1,26 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1423999-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-10-03T05:04:34Z",
+                        "event":  "SharedBookmarkToSquadron",
+                        "SquadronID":  83861,
+                        "SquadronName":  "INTERGALACTIC SHARTS OF JUSTICE"
+                    },
+                    {
+                        "timestamp":  "2025-10-03T05:05:50Z",
+                        "event":  "SharedBookmarkToSquadron",
+                        "SquadronID":  83861,
+                        "SquadronName":  "INTERGALACTIC SHARTS OF JUSTICE"
+                    },
+                    {
+                        "timestamp":  "2025-10-03T05:06:26Z",
+                        "event":  "SharedBookmarkToSquadron",
+                        "SquadronID":  83861,
+                        "SquadronName":  "INTERGALACTIC SHARTS OF JUSTICE"
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "SharedBookmarkToSquadron"
+}

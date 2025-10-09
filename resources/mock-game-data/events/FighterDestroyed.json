@@ -1,0 +1,33 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9757965-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T12:57:54Z",
+                        "event":  "FighterDestroyed",
+                        "ID":  12
+                    },
+                    {
+                        "timestamp":  "2025-09-24T17:54:07Z",
+                        "event":  "FighterDestroyed",
+                        "ID":  19
+                    },
+                    {
+                        "timestamp":  "2025-09-25T03:25:37Z",
+                        "event":  "FighterDestroyed",
+                        "ID":  12
+                    },
+                    {
+                        "timestamp":  "2025-09-25T03:58:00Z",
+                        "event":  "FighterDestroyed",
+                        "ID":  12
+                    },
+                    {
+                        "timestamp":  "2025-09-25T06:47:13Z",
+                        "event":  "FighterDestroyed",
+                        "ID":  12
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "FighterDestroyed"
+}

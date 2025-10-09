@@ -1,0 +1,33 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0725105-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "Music",
+                        "MusicTrack":  "NoTrack"
+                    },
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "Music",
+                        "MusicTrack":  "Exploration"
+                    },
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "Music",
+                        "MusicTrack":  "NoTrack"
+                    },
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "Music",
+                        "MusicTrack":  "Starport"
+                    },
+                    {
+                        "timestamp":  "2023-10-15T22:37:02Z",
+                        "event":  "Music",
+                        "MusicTrack":  "Exploration"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Music"
+}

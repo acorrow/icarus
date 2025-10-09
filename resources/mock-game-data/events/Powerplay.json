@@ -1,0 +1,40 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0870795-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-10-06T03:55:24Z",
+                        "event":  "Powerplay",
+                        "Power":  "Jerome Archer",
+                        "Rank":  0,
+                        "Merits":  0,
+                        "TimePledged":  563
+                    },
+                    {
+                        "timestamp":  "2025-10-06T12:00:33Z",
+                        "event":  "Powerplay",
+                        "Power":  "Jerome Archer",
+                        "Rank":  0,
+                        "Merits":  0,
+                        "TimePledged":  29672
+                    },
+                    {
+                        "timestamp":  "2025-10-07T03:56:07Z",
+                        "event":  "Powerplay",
+                        "Power":  "Jerome Archer",
+                        "Rank":  0,
+                        "Merits":  0,
+                        "TimePledged":  87006
+                    },
+                    {
+                        "timestamp":  "2025-10-08T19:27:12Z",
+                        "event":  "Powerplay",
+                        "Power":  "Jerome Archer",
+                        "Rank":  0,
+                        "Merits":  10,
+                        "TimePledged":  229271
+                    }
+                ],
+    "sampleCount":  4,
+    "eventType":  "Powerplay"
+}

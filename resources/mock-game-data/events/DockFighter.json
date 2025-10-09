@@ -1,0 +1,33 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9494573-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T07:14:07Z",
+                        "event":  "DockFighter",
+                        "ID":  17
+                    },
+                    {
+                        "timestamp":  "2025-09-22T07:17:50Z",
+                        "event":  "DockFighter",
+                        "ID":  17
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:25:17Z",
+                        "event":  "DockFighter",
+                        "ID":  12
+                    },
+                    {
+                        "timestamp":  "2025-09-23T19:15:41Z",
+                        "event":  "DockFighter",
+                        "ID":  12
+                    },
+                    {
+                        "timestamp":  "2025-09-23T19:25:01Z",
+                        "event":  "DockFighter",
+                        "ID":  12
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "DockFighter"
+}

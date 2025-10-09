@@ -1,0 +1,48 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9559774-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-12-24T01:43:16Z",
+                        "event":  "DockingGranted",
+                        "LandingPad":  23,
+                        "MarketID":  128016896,
+                        "StationName":  "Abraham Lincoln",
+                        "StationType":  "Orbis"
+                    },
+                    {
+                        "timestamp":  "2024-01-07T19:42:47Z",
+                        "event":  "DockingGranted",
+                        "LandingPad":  8,
+                        "MarketID":  3228884736,
+                        "StationName":  "Kepler Gateway",
+                        "StationType":  "Coriolis"
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:43:40Z",
+                        "event":  "DockingGranted",
+                        "LandingPad":  11,
+                        "MarketID":  3228884736,
+                        "StationName":  "Kepler Gateway",
+                        "StationType":  "Coriolis"
+                    },
+                    {
+                        "timestamp":  "2024-04-14T02:34:14Z",
+                        "event":  "DockingGranted",
+                        "LandingPad":  41,
+                        "MarketID":  3228867072,
+                        "StationName":  "Dobrovolskiy Enterprise",
+                        "StationType":  "Ocellus"
+                    },
+                    {
+                        "timestamp":  "2024-04-14T03:39:36Z",
+                        "event":  "DockingGranted",
+                        "LandingPad":  18,
+                        "MarketID":  128016896,
+                        "StationName":  "Abraham Lincoln",
+                        "StationType":  "Orbis"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "DockingGranted"
+}

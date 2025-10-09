@@ -1,0 +1,28 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1672099-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:37:05Z",
+                        "event":  "Shutdown"
+                    },
+                    {
+                        "timestamp":  "2023-12-23T21:31:59Z",
+                        "event":  "Shutdown"
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:18:19Z",
+                        "event":  "Shutdown"
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:33:05Z",
+                        "event":  "Shutdown"
+                    },
+                    {
+                        "timestamp":  "2023-12-24T02:09:34Z",
+                        "event":  "Shutdown"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Shutdown"
+}

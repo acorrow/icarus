@@ -1,0 +1,33 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0110652-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T05:18:12Z",
+                        "event":  "LaunchDrone",
+                        "Type":  "Prospector"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T05:18:55Z",
+                        "event":  "LaunchDrone",
+                        "Type":  "Prospector"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T05:25:05Z",
+                        "event":  "LaunchDrone",
+                        "Type":  "Prospector"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T05:30:09Z",
+                        "event":  "LaunchDrone",
+                        "Type":  "Prospector"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T05:56:03Z",
+                        "event":  "LaunchDrone",
+                        "Type":  "Prospector"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "LaunchDrone"
+}

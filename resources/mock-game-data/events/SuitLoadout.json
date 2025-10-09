@@ -1,0 +1,80 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1833620-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-26T17:30:30Z",
+                        "event":  "SuitLoadout",
+                        "SuitID":  1763431555357438,
+                        "SuitName":  "flightsuit",
+                        "SuitName_Localised":  "Flight Suit",
+                        "SuitMods":  [
+
+                                     ],
+                        "LoadoutID":  4293000000,
+                        "LoadoutName":  "Default loadout",
+                        "Modules":  [
+                                        {
+                                            "SlotName":  "SecondaryWeapon",
+                                            "SuitModuleID":  1763431555357589,
+                                            "ModuleName":  "wpn_s_pistol_kinetic_sauto",
+                                            "ModuleName_Localised":  "Karma P-15",
+                                            "Class":  1,
+                                            "WeaponMods":  [
+
+                                                           ]
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2025-09-26T20:37:41Z",
+                        "event":  "SuitLoadout",
+                        "SuitID":  1763431555357438,
+                        "SuitName":  "flightsuit",
+                        "SuitName_Localised":  "Flight Suit",
+                        "SuitMods":  [
+
+                                     ],
+                        "LoadoutID":  4293000000,
+                        "LoadoutName":  "Default loadout",
+                        "Modules":  [
+                                        {
+                                            "SlotName":  "SecondaryWeapon",
+                                            "SuitModuleID":  1763431555357589,
+                                            "ModuleName":  "wpn_s_pistol_kinetic_sauto",
+                                            "ModuleName_Localised":  "Karma P-15",
+                                            "Class":  1,
+                                            "WeaponMods":  [
+
+                                                           ]
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2025-09-26T20:49:50Z",
+                        "event":  "SuitLoadout",
+                        "SuitID":  1763431555357438,
+                        "SuitName":  "flightsuit",
+                        "SuitName_Localised":  "Flight Suit",
+                        "SuitMods":  [
+
+                                     ],
+                        "LoadoutID":  4293000000,
+                        "LoadoutName":  "Default loadout",
+                        "Modules":  [
+                                        {
+                                            "SlotName":  "SecondaryWeapon",
+                                            "SuitModuleID":  1763431555357589,
+                                            "ModuleName":  "wpn_s_pistol_kinetic_sauto",
+                                            "ModuleName_Localised":  "Karma P-15",
+                                            "Class":  1,
+                                            "WeaponMods":  [
+
+                                                           ]
+                                        }
+                                    ]
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "SuitLoadout"
+}

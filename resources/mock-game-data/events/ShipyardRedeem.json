@@ -1,0 +1,32 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1586827-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-29T20:32:37Z",
+                        "event":  "ShipyardRedeem",
+                        "ShipType":  "lakonminer",
+                        "ShipType_Localised":  "Type-11 Prospector",
+                        "BundleID":  129036457,
+                        "MarketID":  3228029952
+                    },
+                    {
+                        "timestamp":  "2025-10-03T03:33:59Z",
+                        "event":  "ShipyardRedeem",
+                        "ShipType":  "panthermkii",
+                        "ShipType_Localised":  "Panther Clipper Mk II",
+                        "BundleID":  129035485,
+                        "MarketID":  3228884736
+                    },
+                    {
+                        "timestamp":  "2025-10-03T05:32:10Z",
+                        "event":  "ShipyardRedeem",
+                        "ShipType":  "asp",
+                        "ShipType_Localised":  "Asp Explorer",
+                        "BundleID":  129031329,
+                        "MarketID":  3228756992
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "ShipyardRedeem"
+}

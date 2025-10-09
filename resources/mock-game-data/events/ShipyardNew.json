@@ -1,0 +1,29 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1561279-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T16:12:56Z",
+                        "event":  "ShipyardNew",
+                        "ShipType":  "type9_military",
+                        "ShipType_Localised":  "Type-10 Defender",
+                        "NewShipID":  18
+                    },
+                    {
+                        "timestamp":  "2025-09-28T02:36:34Z",
+                        "event":  "ShipyardNew",
+                        "ShipType":  "type8",
+                        "ShipType_Localised":  "Type-8 Transporter",
+                        "NewShipID":  21
+                    },
+                    {
+                        "timestamp":  "2025-09-29T17:41:30Z",
+                        "event":  "ShipyardNew",
+                        "ShipType":  "type9",
+                        "ShipType_Localised":  "Type-9 Heavy",
+                        "NewShipID":  22
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "ShipyardNew"
+}

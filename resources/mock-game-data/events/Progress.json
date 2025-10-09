@@ -1,0 +1,68 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0951455-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:27Z",
+                        "event":  "Progress",
+                        "Combat":  83,
+                        "Trade":  20,
+                        "Explore":  65,
+                        "Soldier":  0,
+                        "Exobiologist":  0,
+                        "Empire":  13,
+                        "Federation":  57,
+                        "CQC":  0
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:17Z",
+                        "event":  "Progress",
+                        "Combat":  83,
+                        "Trade":  20,
+                        "Explore":  65,
+                        "Soldier":  0,
+                        "Exobiologist":  0,
+                        "Empire":  13,
+                        "Federation":  57,
+                        "CQC":  0
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:47Z",
+                        "event":  "Progress",
+                        "Combat":  83,
+                        "Trade":  20,
+                        "Explore":  65,
+                        "Soldier":  0,
+                        "Exobiologist":  0,
+                        "Empire":  13,
+                        "Federation":  57,
+                        "CQC":  0
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:19Z",
+                        "event":  "Progress",
+                        "Combat":  83,
+                        "Trade":  20,
+                        "Explore":  65,
+                        "Soldier":  0,
+                        "Exobiologist":  0,
+                        "Empire":  13,
+                        "Federation":  57,
+                        "CQC":  0
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:42:50Z",
+                        "event":  "Progress",
+                        "Combat":  83,
+                        "Trade":  20,
+                        "Explore":  65,
+                        "Soldier":  0,
+                        "Exobiologist":  0,
+                        "Empire":  13,
+                        "Federation":  57,
+                        "CQC":  0
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Progress"
+}

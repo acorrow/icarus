@@ -1,0 +1,29 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1479235-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-29T20:32:38Z",
+                        "event":  "ShipRedeemed",
+                        "ShipType":  "lakonminer",
+                        "ShipType_Localised":  "Type-11 Prospector",
+                        "NewShipID":  25
+                    },
+                    {
+                        "timestamp":  "2025-10-03T03:34:00Z",
+                        "event":  "ShipRedeemed",
+                        "ShipType":  "panthermkii",
+                        "ShipType_Localised":  "Panther Clipper Mk II",
+                        "NewShipID":  28
+                    },
+                    {
+                        "timestamp":  "2025-10-03T05:32:11Z",
+                        "event":  "ShipRedeemed",
+                        "ShipType":  "asp",
+                        "ShipType_Localised":  "Asp Explorer",
+                        "NewShipID":  29
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "ShipRedeemed"
+}

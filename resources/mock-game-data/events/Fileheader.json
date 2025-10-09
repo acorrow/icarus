@@ -1,0 +1,53 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9811537-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:32:23Z",
+                        "event":  "Fileheader",
+                        "part":  1,
+                        "language":  "English/UK",
+                        "Odyssey":  true,
+                        "gameversion":  "4.0.0.1601",
+                        "build":  "r295971/r0 "
+                    },
+                    {
+                        "timestamp":  "2023-12-23T21:29:10Z",
+                        "event":  "Fileheader",
+                        "part":  1,
+                        "language":  "English/UK",
+                        "Odyssey":  true,
+                        "gameversion":  "4.0.0.1701",
+                        "build":  "r298704/r0 "
+                    },
+                    {
+                        "timestamp":  "2023-12-23T21:33:03Z",
+                        "event":  "Fileheader",
+                        "part":  1,
+                        "language":  "English/UK",
+                        "Odyssey":  true,
+                        "gameversion":  "4.0.0.1701",
+                        "build":  "r298704/r0 "
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:14:00Z",
+                        "event":  "Fileheader",
+                        "part":  1,
+                        "language":  "English/UK",
+                        "Odyssey":  true,
+                        "gameversion":  "4.0.0.1701",
+                        "build":  "r298704/r0 "
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:19:20Z",
+                        "event":  "Fileheader",
+                        "part":  1,
+                        "language":  "English/UK",
+                        "Odyssey":  true,
+                        "gameversion":  "4.0.0.1701",
+                        "build":  "r298704/r0 "
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Fileheader"
+}

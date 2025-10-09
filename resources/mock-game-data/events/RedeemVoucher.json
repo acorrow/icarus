@@ -1,0 +1,63 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1099503-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-04-14T02:36:10Z",
+                        "event":  "RedeemVoucher",
+                        "Type":  "CombatBond",
+                        "Amount":  2594918,
+                        "Faction":  "Green Party of WISE 1506+7027"
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:44:42Z",
+                        "event":  "RedeemVoucher",
+                        "Type":  "bounty",
+                        "Amount":  76904,
+                        "Factions":  [
+                                         {
+                                             "Faction":  "",
+                                             "Amount":  76904
+                                         }
+                                     ]
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:44:44Z",
+                        "event":  "RedeemVoucher",
+                        "Type":  "bounty",
+                        "Amount":  815069,
+                        "Factions":  [
+                                         {
+                                             "Faction":  "",
+                                             "Amount":  815069
+                                         }
+                                     ]
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:44:46Z",
+                        "event":  "RedeemVoucher",
+                        "Type":  "bounty",
+                        "Amount":  508545,
+                        "Factions":  [
+                                         {
+                                             "Faction":  "Earth Defense Fleet",
+                                             "Amount":  508545
+                                         }
+                                     ]
+                    },
+                    {
+                        "timestamp":  "2025-09-24T02:40:13Z",
+                        "event":  "RedeemVoucher",
+                        "Type":  "bounty",
+                        "Amount":  5238709,
+                        "Factions":  [
+                                         {
+                                             "Faction":  "Gilgamesh Corps Orbital Protection",
+                                             "Amount":  5238709
+                                         }
+                                     ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "RedeemVoucher"
+}

@@ -1,0 +1,40 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0064692-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-23T19:26:27Z",
+                        "event":  "Interdicted",
+                        "Submitted":  false,
+                        "Interdictor":  "Mr. Minnis",
+                        "IsPlayer":  false,
+                        "Faction":  "Pirates of LHS 450"
+                    },
+                    {
+                        "timestamp":  "2025-09-24T01:23:42Z",
+                        "event":  "Interdicted",
+                        "Submitted":  true,
+                        "Interdictor":  "Ath",
+                        "IsPlayer":  false,
+                        "Faction":  "Pirates of LHS 450"
+                    },
+                    {
+                        "timestamp":  "2025-09-25T02:08:55Z",
+                        "event":  "Interdicted",
+                        "Submitted":  false,
+                        "Interdictor":  "Russell Cooksley",
+                        "IsPlayer":  false,
+                        "Faction":  "WISE 1506+7027 Purple Boys"
+                    },
+                    {
+                        "timestamp":  "2025-10-01T12:31:44Z",
+                        "event":  "Interdicted",
+                        "Submitted":  true,
+                        "Interdictor":  "Gareth Southern",
+                        "IsPlayer":  false,
+                        "Faction":  "Kruger 60 Society"
+                    }
+                ],
+    "sampleCount":  4,
+    "eventType":  "Interdicted"
+}

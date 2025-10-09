@@ -1,0 +1,88 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.8923417-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T07:12:42Z",
+                        "event":  "Bounty",
+                        "Rewards":  [
+                                        {
+                                            "Faction":  "Redshift Logistics",
+                                            "Reward":  399800
+                                        }
+                                    ],
+                        "PilotName":  "$npc_name_decorate:#name=Budda;",
+                        "PilotName_Localised":  "Budda",
+                        "Target":  "empire_trader",
+                        "Target_Localised":  "Imperial Clipper",
+                        "TotalReward":  399800,
+                        "VictimFaction":  "WISE 1506+7027 Purple Boys"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T07:15:16Z",
+                        "event":  "Bounty",
+                        "Rewards":  [
+                                        {
+                                            "Faction":  "Redshift Logistics",
+                                            "Reward":  415269
+                                        }
+                                    ],
+                        "PilotName":  "$npc_name_decorate:#name=Arran Hartgroves;",
+                        "PilotName_Localised":  "Arran Hartgroves",
+                        "Target":  "federation_gunship",
+                        "Target_Localised":  "Federal Gunship",
+                        "TotalReward":  415269,
+                        "VictimFaction":  "WISE 1506+7027 Purple Boys"
+                    },
+                    {
+                        "timestamp":  "2025-09-23T04:11:14Z",
+                        "event":  "Bounty",
+                        "Rewards":  [
+                                        {
+                                            "Faction":  "Earth Defense Fleet",
+                                            "Reward":  508545
+                                        }
+                                    ],
+                        "PilotName":  "$npc_name_decorate:#name=Penfold;",
+                        "PilotName_Localised":  "Penfold",
+                        "Target":  "ferdelance",
+                        "Target_Localised":  "Fer-de-Lance",
+                        "TotalReward":  508545,
+                        "VictimFaction":  "Society of Struve 1321"
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:17:54Z",
+                        "event":  "Bounty",
+                        "Rewards":  [
+                                        {
+                                            "Faction":  "FrogCorp",
+                                            "Reward":  76904
+                                        }
+                                    ],
+                        "PilotName":  "$npc_name_decorate:#name=Quennell;",
+                        "PilotName_Localised":  "Quennell",
+                        "Target":  "viper_mkiv",
+                        "Target_Localised":  "Viper Mk IV",
+                        "TotalReward":  76904,
+                        "VictimFaction":  "LP 336-6 Blue Brothers"
+                    },
+                    {
+                        "timestamp":  "2025-09-23T19:21:09Z",
+                        "event":  "Bounty",
+                        "Rewards":  [
+                                        {
+                                            "Faction":  "Gilgamesh Corps Orbital Protection",
+                                            "Reward":  145236
+                                        }
+                                    ],
+                        "PilotName":  "$npc_name_decorate:#name=Winter Silverman;",
+                        "PilotName_Localised":  "Winter Silverman",
+                        "Target":  "asp_scout",
+                        "Target_Localised":  "Asp Scout",
+                        "TotalReward":  145236,
+                        "VictimFaction":  "Pirates of LHS 450"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Bounty"
+}

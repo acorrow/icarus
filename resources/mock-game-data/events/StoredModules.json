@@ -1,0 +1,713 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1772919-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-04-14T02:37:30Z",
+                        "event":  "StoredModules",
+                        "MarketID":  3228867072,
+                        "StationName":  "Dobrovolskiy Enterprise",
+                        "StarSystem":  "WISE 1506+7027",
+                        "Items":  [
+                                      {
+                                          "Name":  "$int_engine_size7_class1_name;",
+                                          "Name_Localised":  "Thrusters",
+                                          "StorageSlot":  199,
+                                          "StarSystem":  "Groombridge 34",
+                                          "MarketID":  128123384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  413,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$int_cargorack_size6_class1_name;",
+                                          "Name_Localised":  "Cargo Rack",
+                                          "StorageSlot":  200,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  405,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  101,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  102,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  1,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  125,
+                                          "TransferTime":  399,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  2,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  125,
+                                          "TransferTime":  399,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  120,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  125,
+                                          "TransferTime":  399,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  121,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  125,
+                                          "TransferTime":  399,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_medium_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  98,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016896,
+                                          "TransferCost":  127,
+                                          "TransferTime":  405,
+                                          "BuyPrice":  32576,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_advancedtorppylon_fixed_medium_name;",
+                                          "Name_Localised":  "Torpedo Pylon",
+                                          "StorageSlot":  184,
+                                          "StarSystem":  "V1581 Cygni",
+                                          "MarketID":  3228874240,
+                                          "TransferCost":  133,
+                                          "TransferTime":  404,
+                                          "BuyPrice":  40320,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  146,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  137,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  147,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  137,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      }
+                                  ]
+                    },
+                    {
+                        "timestamp":  "2025-09-21T15:42:33Z",
+                        "event":  "StoredModules",
+                        "MarketID":  3228884736,
+                        "StationName":  "Kepler Gateway",
+                        "StarSystem":  "Kruger 60",
+                        "Items":  [
+                                      {
+                                          "Name":  "$int_engine_size7_class1_name;",
+                                          "Name_Localised":  "Thrusters",
+                                          "StorageSlot":  199,
+                                          "StarSystem":  "Groombridge 34",
+                                          "MarketID":  128123384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  348,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$int_cargorack_size6_class1_name;",
+                                          "Name_Localised":  "Cargo Rack",
+                                          "StorageSlot":  200,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  430,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  101,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  106,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  102,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  106,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  1,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  2,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  120,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  121,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_medium_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  98,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016896,
+                                          "TransferCost":  132,
+                                          "TransferTime":  430,
+                                          "BuyPrice":  32576,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_advancedtorppylon_fixed_medium_name;",
+                                          "Name_Localised":  "Torpedo Pylon",
+                                          "StorageSlot":  184,
+                                          "StarSystem":  "V1581 Cygni",
+                                          "MarketID":  3228874240,
+                                          "TransferCost":  125,
+                                          "TransferTime":  371,
+                                          "BuyPrice":  40320,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  146,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  147,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      }
+                                  ]
+                    },
+                    {
+                        "timestamp":  "2025-09-21T15:47:18Z",
+                        "event":  "StoredModules",
+                        "MarketID":  3228884736,
+                        "StationName":  "Kepler Gateway",
+                        "StarSystem":  "Kruger 60",
+                        "Items":  [
+                                      {
+                                          "Name":  "$int_engine_size7_class1_name;",
+                                          "Name_Localised":  "Thrusters",
+                                          "StorageSlot":  199,
+                                          "StarSystem":  "Groombridge 34",
+                                          "MarketID":  128123384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  348,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$int_cargorack_size6_class1_name;",
+                                          "Name_Localised":  "Cargo Rack",
+                                          "StorageSlot":  200,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  430,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  101,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  106,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  102,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  106,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  1,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  2,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  120,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  121,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_medium_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  98,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016896,
+                                          "TransferCost":  132,
+                                          "TransferTime":  430,
+                                          "BuyPrice":  32576,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_advancedtorppylon_fixed_medium_name;",
+                                          "Name_Localised":  "Torpedo Pylon",
+                                          "StorageSlot":  184,
+                                          "StarSystem":  "V1581 Cygni",
+                                          "MarketID":  3228874240,
+                                          "TransferCost":  125,
+                                          "TransferTime":  371,
+                                          "BuyPrice":  40320,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  146,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  147,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      }
+                                  ]
+                    },
+                    {
+                        "timestamp":  "2025-09-22T02:19:50Z",
+                        "event":  "StoredModules",
+                        "MarketID":  3228884736,
+                        "StationName":  "Kepler Gateway",
+                        "StarSystem":  "Kruger 60",
+                        "Items":  [
+                                      {
+                                          "Name":  "$int_engine_size7_class1_name;",
+                                          "Name_Localised":  "Thrusters",
+                                          "StorageSlot":  199,
+                                          "StarSystem":  "Groombridge 34",
+                                          "MarketID":  128123384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  348,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$int_cargorack_size6_class1_name;",
+                                          "Name_Localised":  "Cargo Rack",
+                                          "StorageSlot":  200,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  430,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  101,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  106,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  102,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  106,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  1,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  2,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  120,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  121,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_medium_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  98,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016896,
+                                          "TransferCost":  132,
+                                          "TransferTime":  430,
+                                          "BuyPrice":  32576,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_advancedtorppylon_fixed_medium_name;",
+                                          "Name_Localised":  "Torpedo Pylon",
+                                          "StorageSlot":  184,
+                                          "StarSystem":  "V1581 Cygni",
+                                          "MarketID":  3228874240,
+                                          "TransferCost":  125,
+                                          "TransferTime":  371,
+                                          "BuyPrice":  40320,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  146,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  147,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      }
+                                  ]
+                    },
+                    {
+                        "timestamp":  "2025-09-22T02:23:58Z",
+                        "event":  "StoredModules",
+                        "MarketID":  3228884736,
+                        "StationName":  "Kepler Gateway",
+                        "StarSystem":  "Kruger 60",
+                        "Items":  [
+                                      {
+                                          "Name":  "$int_engine_size7_class1_name;",
+                                          "Name_Localised":  "Thrusters",
+                                          "StorageSlot":  199,
+                                          "StarSystem":  "Groombridge 34",
+                                          "MarketID":  128123384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  348,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$int_cargorack_size6_class1_name;",
+                                          "Name_Localised":  "Cargo Rack",
+                                          "StorageSlot":  200,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016384,
+                                          "TransferCost":  100,
+                                          "TransferTime":  430,
+                                          "BuyPrice":  0,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  101,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  106,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_small_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  102,
+                                          "StarSystem":  "WISE 1506+7027",
+                                          "MarketID":  3228867072,
+                                          "TransferCost":  106,
+                                          "TransferTime":  388,
+                                          "BuyPrice":  9400,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  1,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  2,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  120,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_pulselaser_gimbal_medium_name;",
+                                          "Name_Localised":  "Pulse Laser",
+                                          "StorageSlot":  121,
+                                          "StarSystem":  "61 Cygni",
+                                          "MarketID":  3228837888,
+                                          "TransferCost":  116,
+                                          "TransferTime":  351,
+                                          "BuyPrice":  31860,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_mininglaser_turret_medium_name;",
+                                          "Name_Localised":  "Mining Laser",
+                                          "StorageSlot":  98,
+                                          "StarSystem":  "Sol",
+                                          "MarketID":  128016896,
+                                          "TransferCost":  132,
+                                          "TransferTime":  430,
+                                          "BuyPrice":  32576,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_advancedtorppylon_fixed_medium_name;",
+                                          "Name_Localised":  "Torpedo Pylon",
+                                          "StorageSlot":  184,
+                                          "StarSystem":  "V1581 Cygni",
+                                          "MarketID":  3228874240,
+                                          "TransferCost":  125,
+                                          "TransferTime":  371,
+                                          "BuyPrice":  40320,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  146,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      },
+                                      {
+                                          "Name":  "$hpt_multicannon_gimbal_medium_name;",
+                                          "Name_Localised":  "Multi-Cannon",
+                                          "StorageSlot":  147,
+                                          "StarSystem":  "Kruger 60",
+                                          "MarketID":  3228884736,
+                                          "TransferCost":  0,
+                                          "TransferTime":  0,
+                                          "BuyPrice":  51300,
+                                          "Hot":  false
+                                      }
+                                  ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "StoredModules"
+}

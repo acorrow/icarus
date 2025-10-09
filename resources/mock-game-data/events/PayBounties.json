@@ -1,0 +1,26 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0850610-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-23T16:19:12Z",
+                        "event":  "PayBounties",
+                        "Amount":  1750,
+                        "AllFines":  false,
+                        "Faction":  "Struve 1321 Free",
+                        "ShipID":  11,
+                        "BrokerPercentage":  25.000000
+                    },
+                    {
+                        "timestamp":  "2025-09-27T15:46:47Z",
+                        "event":  "PayBounties",
+                        "Amount":  250,
+                        "AllFines":  false,
+                        "Faction":  "Elite Rebel Force",
+                        "ShipID":  11,
+                        "BrokerPercentage":  25.000000
+                    }
+                ],
+    "sampleCount":  2,
+    "eventType":  "PayBounties"
+}

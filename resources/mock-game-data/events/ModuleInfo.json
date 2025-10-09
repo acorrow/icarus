@@ -1,0 +1,28 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0603906-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-12-24T01:45:10Z",
+                        "event":  "ModuleInfo"
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:43:34Z",
+                        "event":  "ModuleInfo"
+                    },
+                    {
+                        "timestamp":  "2024-04-14T02:28:23Z",
+                        "event":  "ModuleInfo"
+                    },
+                    {
+                        "timestamp":  "2024-04-16T03:03:09Z",
+                        "event":  "ModuleInfo"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T05:44:50Z",
+                        "event":  "ModuleInfo"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ModuleInfo"
+}

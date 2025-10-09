@@ -1,0 +1,78 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1311910-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-04-17T02:17:59Z",
+                        "event":  "ScanBaryCentre",
+                        "StarSystem":  "Flousop",
+                        "SystemAddress":  7268024329641,
+                        "BodyID":  1,
+                        "SemiMajorAxis":  1038143515586.853027,
+                        "Eccentricity":  0.138849,
+                        "OrbitalInclination":  -24.739058,
+                        "Periapsis":  148.654990,
+                        "OrbitalPeriod":  6526614308.357239,
+                        "AscendingNode":  130.356937,
+                        "MeanAnomaly":  204.624032
+                    },
+                    {
+                        "timestamp":  "2024-04-17T02:17:59Z",
+                        "event":  "ScanBaryCentre",
+                        "StarSystem":  "Flousop",
+                        "SystemAddress":  7268024329641,
+                        "BodyID":  12,
+                        "SemiMajorAxis":  7222703933.715820,
+                        "Eccentricity":  0.000869,
+                        "OrbitalInclination":  0.057472,
+                        "Periapsis":  117.137024,
+                        "OrbitalPeriod":  640175.366402,
+                        "AscendingNode":  -1.662550,
+                        "MeanAnomaly":  40.021423
+                    },
+                    {
+                        "timestamp":  "2025-09-23T04:04:55Z",
+                        "event":  "ScanBaryCentre",
+                        "StarSystem":  "Struve 1321",
+                        "SystemAddress":  18262872106401,
+                        "BodyID":  8,
+                        "SemiMajorAxis":  3106889128.684998,
+                        "Eccentricity":  0.000001,
+                        "OrbitalInclination":  -0.000061,
+                        "Periapsis":  89.294663,
+                        "OrbitalPeriod":  159100.341797,
+                        "AscendingNode":  -37.344100,
+                        "MeanAnomaly":  118.686236
+                    },
+                    {
+                        "timestamp":  "2025-09-23T04:04:55Z",
+                        "event":  "ScanBaryCentre",
+                        "StarSystem":  "Struve 1321",
+                        "SystemAddress":  18262872106401,
+                        "BodyID":  25,
+                        "SemiMajorAxis":  2924237549.304962,
+                        "Eccentricity":  0.000086,
+                        "OrbitalInclination":  -6.515777,
+                        "Periapsis":  58.461648,
+                        "OrbitalPeriod":  3805165.410042,
+                        "AscendingNode":  58.774799,
+                        "MeanAnomaly":  277.968892
+                    },
+                    {
+                        "timestamp":  "2025-09-23T04:04:55Z",
+                        "event":  "ScanBaryCentre",
+                        "StarSystem":  "Struve 1321",
+                        "SystemAddress":  18262872106401,
+                        "BodyID":  39,
+                        "SemiMajorAxis":  447450357.675552,
+                        "Eccentricity":  0.000152,
+                        "OrbitalInclination":  -0.020324,
+                        "Periapsis":  356.454452,
+                        "OrbitalPeriod":  817236.965895,
+                        "AscendingNode":  -116.194273,
+                        "MeanAnomaly":  47.920833
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ScanBaryCentre"
+}

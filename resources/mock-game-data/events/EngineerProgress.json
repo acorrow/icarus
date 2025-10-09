@@ -1,0 +1,403 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9692793-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:27Z",
+                        "event":  "EngineerProgress",
+                        "Engineers":  [
+                                          {
+                                              "Engineer":  "Felicity Farseer",
+                                              "EngineerID":  300100,
+                                              "Progress":  "Invited"
+                                          },
+                                          {
+                                              "Engineer":  "Eleanor Bresa",
+                                              "EngineerID":  400011,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Hero Ferrari",
+                                              "EngineerID":  400003,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Jude Navarro",
+                                              "EngineerID":  400001,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Liz Ryder",
+                                              "EngineerID":  300080,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Rosa Dayette",
+                                              "EngineerID":  400012,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Baltanos",
+                                              "EngineerID":  400010,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "The Dweller",
+                                              "EngineerID":  300180,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  32,
+                                              "Rank":  3
+                                          },
+                                          {
+                                              "Engineer":  "Elvira Martuuk",
+                                              "EngineerID":  300160,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Lei Cheung",
+                                              "EngineerID":  300120,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Tod \u0027The Blaster\u0027 McQuinn",
+                                              "EngineerID":  300260,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Domino Green",
+                                              "EngineerID":  400002,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Marsha Hicks",
+                                              "EngineerID":  300150,
+                                              "Progress":  "Invited"
+                                          }
+                                      ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:17Z",
+                        "event":  "EngineerProgress",
+                        "Engineers":  [
+                                          {
+                                              "Engineer":  "Felicity Farseer",
+                                              "EngineerID":  300100,
+                                              "Progress":  "Invited"
+                                          },
+                                          {
+                                              "Engineer":  "Eleanor Bresa",
+                                              "EngineerID":  400011,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Hero Ferrari",
+                                              "EngineerID":  400003,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Jude Navarro",
+                                              "EngineerID":  400001,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Liz Ryder",
+                                              "EngineerID":  300080,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Rosa Dayette",
+                                              "EngineerID":  400012,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Baltanos",
+                                              "EngineerID":  400010,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "The Dweller",
+                                              "EngineerID":  300180,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  32,
+                                              "Rank":  3
+                                          },
+                                          {
+                                              "Engineer":  "Elvira Martuuk",
+                                              "EngineerID":  300160,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Lei Cheung",
+                                              "EngineerID":  300120,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Tod \u0027The Blaster\u0027 McQuinn",
+                                              "EngineerID":  300260,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Domino Green",
+                                              "EngineerID":  400002,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Marsha Hicks",
+                                              "EngineerID":  300150,
+                                              "Progress":  "Invited"
+                                          }
+                                      ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:47Z",
+                        "event":  "EngineerProgress",
+                        "Engineers":  [
+                                          {
+                                              "Engineer":  "Felicity Farseer",
+                                              "EngineerID":  300100,
+                                              "Progress":  "Invited"
+                                          },
+                                          {
+                                              "Engineer":  "Eleanor Bresa",
+                                              "EngineerID":  400011,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Hero Ferrari",
+                                              "EngineerID":  400003,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Jude Navarro",
+                                              "EngineerID":  400001,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Liz Ryder",
+                                              "EngineerID":  300080,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Rosa Dayette",
+                                              "EngineerID":  400012,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Baltanos",
+                                              "EngineerID":  400010,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "The Dweller",
+                                              "EngineerID":  300180,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  32,
+                                              "Rank":  3
+                                          },
+                                          {
+                                              "Engineer":  "Elvira Martuuk",
+                                              "EngineerID":  300160,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Lei Cheung",
+                                              "EngineerID":  300120,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Tod \u0027The Blaster\u0027 McQuinn",
+                                              "EngineerID":  300260,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Domino Green",
+                                              "EngineerID":  400002,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Marsha Hicks",
+                                              "EngineerID":  300150,
+                                              "Progress":  "Invited"
+                                          }
+                                      ]
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:19Z",
+                        "event":  "EngineerProgress",
+                        "Engineers":  [
+                                          {
+                                              "Engineer":  "Felicity Farseer",
+                                              "EngineerID":  300100,
+                                              "Progress":  "Invited"
+                                          },
+                                          {
+                                              "Engineer":  "Eleanor Bresa",
+                                              "EngineerID":  400011,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Hero Ferrari",
+                                              "EngineerID":  400003,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Jude Navarro",
+                                              "EngineerID":  400001,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Liz Ryder",
+                                              "EngineerID":  300080,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Rosa Dayette",
+                                              "EngineerID":  400012,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Baltanos",
+                                              "EngineerID":  400010,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "The Dweller",
+                                              "EngineerID":  300180,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  32,
+                                              "Rank":  3
+                                          },
+                                          {
+                                              "Engineer":  "Elvira Martuuk",
+                                              "EngineerID":  300160,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Lei Cheung",
+                                              "EngineerID":  300120,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Tod \u0027The Blaster\u0027 McQuinn",
+                                              "EngineerID":  300260,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Domino Green",
+                                              "EngineerID":  400002,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Marsha Hicks",
+                                              "EngineerID":  300150,
+                                              "Progress":  "Invited"
+                                          }
+                                      ]
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:42:50Z",
+                        "event":  "EngineerProgress",
+                        "Engineers":  [
+                                          {
+                                              "Engineer":  "Felicity Farseer",
+                                              "EngineerID":  300100,
+                                              "Progress":  "Invited"
+                                          },
+                                          {
+                                              "Engineer":  "Eleanor Bresa",
+                                              "EngineerID":  400011,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Hero Ferrari",
+                                              "EngineerID":  400003,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Jude Navarro",
+                                              "EngineerID":  400001,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Liz Ryder",
+                                              "EngineerID":  300080,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Rosa Dayette",
+                                              "EngineerID":  400012,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Baltanos",
+                                              "EngineerID":  400010,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "The Dweller",
+                                              "EngineerID":  300180,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  32,
+                                              "Rank":  3
+                                          },
+                                          {
+                                              "Engineer":  "Elvira Martuuk",
+                                              "EngineerID":  300160,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Lei Cheung",
+                                              "EngineerID":  300120,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Tod \u0027The Blaster\u0027 McQuinn",
+                                              "EngineerID":  300260,
+                                              "Progress":  "Unlocked",
+                                              "RankProgress":  0,
+                                              "Rank":  1
+                                          },
+                                          {
+                                              "Engineer":  "Domino Green",
+                                              "EngineerID":  400002,
+                                              "Progress":  "Known"
+                                          },
+                                          {
+                                              "Engineer":  "Marsha Hicks",
+                                              "EngineerID":  300150,
+                                              "Progress":  "Invited"
+                                          }
+                                      ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "EngineerProgress"
+}

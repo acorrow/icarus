@@ -1,0 +1,26 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1346960-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-26T07:33:40Z",
+                        "event":  "SearchAndRescue",
+                        "MarketID":  3228858624,
+                        "Name":  "damagedescapepod",
+                        "Name_Localised":  "Damaged Escape Pod",
+                        "Count":  1,
+                        "Reward":  32009
+                    },
+                    {
+                        "timestamp":  "2025-09-26T07:33:57Z",
+                        "event":  "SearchAndRescue",
+                        "MarketID":  3228858624,
+                        "Name":  "occupiedcryopod",
+                        "Name_Localised":  "Occupied Escape Pod",
+                        "Count":  3,
+                        "Reward":  85782
+                    }
+                ],
+    "sampleCount":  2,
+    "eventType":  "SearchAndRescue"
+}

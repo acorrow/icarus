@@ -1,0 +1,43 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1843605-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-01-07T19:42:32Z",
+                        "event":  "SupercruiseDestinationDrop",
+                        "Type":  "Kepler Gateway",
+                        "Threat":  0,
+                        "MarketID":  3228884736
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:33:02Z",
+                        "event":  "SupercruiseDestinationDrop",
+                        "Type":  "$USS_Type_TradingBeacon;",
+                        "Type_Localised":  "Trading beacon",
+                        "Threat":  0
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:43:23Z",
+                        "event":  "SupercruiseDestinationDrop",
+                        "Type":  "Kepler Gateway",
+                        "Threat":  0,
+                        "MarketID":  3228884736
+                    },
+                    {
+                        "timestamp":  "2024-04-14T02:33:36Z",
+                        "event":  "SupercruiseDestinationDrop",
+                        "Type":  "Dobrovolskiy Enterprise",
+                        "Threat":  0,
+                        "MarketID":  3228867072
+                    },
+                    {
+                        "timestamp":  "2024-04-14T03:39:24Z",
+                        "event":  "SupercruiseDestinationDrop",
+                        "Type":  "Abraham Lincoln",
+                        "Threat":  0,
+                        "MarketID":  128016896
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "SupercruiseDestinationDrop"
+}

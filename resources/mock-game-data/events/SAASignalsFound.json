@@ -1,0 +1,108 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1277556-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-28T06:21:02Z",
+                        "event":  "SAASignalsFound",
+                        "BodyName":  "LHS 71 A 2 A Ring",
+                        "SystemAddress":  6406044390098,
+                        "BodyID":  28,
+                        "Signals":  [
+                                        {
+                                            "Type":  "tritium",
+                                            "Count":  2
+                                        },
+                                        {
+                                            "Type":  "Alexandrite",
+                                            "Count":  1
+                                        }
+                                    ],
+                        "Genuses":  [
+
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2025-09-28T07:24:24Z",
+                        "event":  "SAASignalsFound",
+                        "BodyName":  "LHS 71 A 2 A Ring",
+                        "SystemAddress":  6406044390098,
+                        "BodyID":  28,
+                        "Signals":  [
+                                        {
+                                            "Type":  "tritium",
+                                            "Count":  2
+                                        },
+                                        {
+                                            "Type":  "Alexandrite",
+                                            "Count":  1
+                                        }
+                                    ],
+                        "Genuses":  [
+
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2025-09-29T05:18:18Z",
+                        "event":  "SAASignalsFound",
+                        "BodyName":  "WISE J004945 6 A Ring",
+                        "SystemAddress":  5364951042888,
+                        "BodyID":  14,
+                        "Signals":  [
+                                        {
+                                            "Type":  "Opal",
+                                            "Type_Localised":  "Void Opal",
+                                            "Count":  1
+                                        },
+                                        {
+                                            "Type":  "LowTemperatureDiamond",
+                                            "Type_Localised":  "Low Temp. Diamonds",
+                                            "Count":  2
+                                        }
+                                    ],
+                        "Genuses":  [
+
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2025-09-30T03:18:55Z",
+                        "event":  "SAASignalsFound",
+                        "BodyName":  "WISE J004945 6 A Ring",
+                        "SystemAddress":  5364951042888,
+                        "BodyID":  14,
+                        "Signals":  [
+                                        {
+                                            "Type":  "Opal",
+                                            "Type_Localised":  "Void Opal",
+                                            "Count":  1
+                                        },
+                                        {
+                                            "Type":  "LowTemperatureDiamond",
+                                            "Type_Localised":  "Low Temp. Diamonds",
+                                            "Count":  2
+                                        }
+                                    ],
+                        "Genuses":  [
+
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2025-10-07T04:48:33Z",
+                        "event":  "SAASignalsFound",
+                        "BodyName":  "LFT 65 4 A Ring",
+                        "SystemAddress":  3102853810539,
+                        "BodyID":  21,
+                        "Signals":  [
+                                        {
+                                            "Type":  "Monazite",
+                                            "Count":  1
+                                        }
+                                    ],
+                        "Genuses":  [
+
+                                    ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "SAASignalsFound"
+}

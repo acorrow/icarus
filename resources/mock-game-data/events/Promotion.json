@@ -1,0 +1,13 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0972549-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-10-05T07:56:34Z",
+                        "event":  "Promotion",
+                        "Trade":  7
+                    }
+                ],
+    "sampleCount":  1,
+    "eventType":  "Promotion"
+}

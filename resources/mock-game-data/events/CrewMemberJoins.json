@@ -1,0 +1,38 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9302378-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T02:50:50Z",
+                        "event":  "CrewMemberJoins",
+                        "Crew":  "BIM TIQUI",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T03:22:56Z",
+                        "event":  "CrewMemberJoins",
+                        "Crew":  "BIM TIQUI",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T03:40:30Z",
+                        "event":  "CrewMemberJoins",
+                        "Crew":  "BIM TIQUI",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T04:26:00Z",
+                        "event":  "CrewMemberJoins",
+                        "Crew":  "BIM TIQUI",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T05:06:38Z",
+                        "event":  "CrewMemberJoins",
+                        "Crew":  "BIM TIQUI",
+                        "Telepresence":  true
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "CrewMemberJoins"
+}

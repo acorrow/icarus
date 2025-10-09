@@ -1,0 +1,48 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1180550-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:27Z",
+                        "event":  "Reputation",
+                        "Empire":  -0.198000,
+                        "Federation":  75.000000,
+                        "Independent":  0.000000,
+                        "Alliance":  7.454350
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:17Z",
+                        "event":  "Reputation",
+                        "Empire":  -0.198000,
+                        "Federation":  75.000000,
+                        "Independent":  0.000000,
+                        "Alliance":  7.454350
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:47Z",
+                        "event":  "Reputation",
+                        "Empire":  -0.198000,
+                        "Federation":  75.000000,
+                        "Independent":  0.000000,
+                        "Alliance":  7.454350
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:19Z",
+                        "event":  "Reputation",
+                        "Empire":  -0.198000,
+                        "Federation":  75.000000,
+                        "Independent":  0.000000,
+                        "Alliance":  7.454350
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:42:50Z",
+                        "event":  "Reputation",
+                        "Empire":  -0.198000,
+                        "Federation":  75.000000,
+                        "Independent":  0.000000,
+                        "Alliance":  7.454350
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Reputation"
+}

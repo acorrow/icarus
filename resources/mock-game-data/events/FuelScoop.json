@@ -1,0 +1,38 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9972820-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-01-07T17:50:10Z",
+                        "event":  "FuelScoop",
+                        "Scooped":  0.353961,
+                        "Total":  30.186644
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:50:55Z",
+                        "event":  "FuelScoop",
+                        "Scooped":  0.003682,
+                        "Total":  29.993725
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:26:54Z",
+                        "event":  "FuelScoop",
+                        "Scooped":  0.242874,
+                        "Total":  32.000000
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:31:13Z",
+                        "event":  "FuelScoop",
+                        "Scooped":  0.079988,
+                        "Total":  31.837132
+                    },
+                    {
+                        "timestamp":  "2024-04-14T03:37:22Z",
+                        "event":  "FuelScoop",
+                        "Scooped":  0.298632,
+                        "Total":  28.826164
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "FuelScoop"
+}

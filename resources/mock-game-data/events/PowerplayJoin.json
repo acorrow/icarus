@@ -1,0 +1,13 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0890853-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-10-06T03:46:01Z",
+                        "event":  "PowerplayJoin",
+                        "Power":  "Jerome Archer"
+                    }
+                ],
+    "sampleCount":  1,
+    "eventType":  "PowerplayJoin"
+}

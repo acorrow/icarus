@@ -44,10 +44,55 @@ Every event type and data structure was catalogued. Instead of a single monolith
 - Multiple entries per file ensure coverage of typical, edge, and rare cases for robust testing.
 - This mirrors real log ingestion, but with curated, decision-driven examples.
 - Data was chosen to maximize coverage, highlight edge cases, and expose rare structures that may break naive parsers.
+- **Updated October 2025**: Comprehensive mock data extraction now includes **142 event types** with **594 total samples** extracted from real game logs.
 
 **How to use:**
 - Treat each file as a source of canonical examples for its event type.
 - Extend files with new cases as needed, but keep rationale clear in comments or commit messages.
+- Regenerate all mock events from game logs: `powershell -ExecutionPolicy Bypass -File scripts/extract-mock-events.ps1`
+
+### INARA Scraper Engine (NEW)
+
+A **decoupled, testable scraper engine** is now available for cloud agent testing and independent scraper development:
+
+**Architecture:**
+- Pure scraping functions isolated in `src/service/lib/api/scrapers/`
+- No dependencies on ICARUS state, logs, or file system
+- Each scraper is a pure function: HTML → Structured JSON
+- Mock HTML responses available in `resources/mock-game-data/inara/`
+
+**Testing:**
+```bash
+# Test all scrapers with mock data (offline, fast)
+node test/scraper-tests.js mock
+
+# Test scrapers with real INARA.cz URLs (requires network)
+node test/scraper-tests.js real
+
+# Test a specific scraper
+node test/scraper-tests.js real trade-routes
+```
+
+**Cloud Agent Workflow:**
+1. Pull latest code
+2. Run mock tests to establish baseline: `node test/scraper-tests.js mock`
+3. Identify failing scraper from test output
+4. Test against real URL to see current INARA structure: `node test/scraper-tests.js real <scraper-name>`
+5. Update scraper logic in `src/service/lib/api/scrapers/<scraper-name>.js`
+6. Re-test with mock data
+7. Re-test with real URL
+8. Commit fix with descriptive message
+
+**Documentation:**
+- Complete scraper engine documentation: `resources/mock-game-data/README.md`
+- Feature mapping and architecture: `FEATURES.md`
+- Scraper development guidelines included in mock data README
+
+**Why This Matters:**
+- Cloud agents can fix INARA scrapers without local game installation
+- Pure functions mean deterministic, testable code
+- Mock data allows offline development and CI/CD testing
+- Real URL tests validate against live INARA.cz to catch layout changes
 - Use this folder to validate event normalization, error handling, and downstream logic.
 
 See `resources/mock-game-data/events/README.md` for details and rationale.

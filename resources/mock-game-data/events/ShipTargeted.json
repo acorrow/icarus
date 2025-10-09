@@ -1,0 +1,56 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1499315-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-12-24T01:42:57Z",
+                        "event":  "ShipTargeted",
+                        "TargetLocked":  true,
+                        "Ship":  "orca",
+                        "ScanStage":  0
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:42:58Z",
+                        "event":  "ShipTargeted",
+                        "TargetLocked":  true,
+                        "Ship":  "orca",
+                        "ScanStage":  1,
+                        "PilotName":  "$npc_name_decorate:#name=Sopot;",
+                        "PilotName_Localised":  "Sopot",
+                        "PilotRank":  "Deadly"
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:43:00Z",
+                        "event":  "ShipTargeted",
+                        "TargetLocked":  true,
+                        "Ship":  "orca",
+                        "ScanStage":  2,
+                        "PilotName":  "$npc_name_decorate:#name=Sopot;",
+                        "PilotName_Localised":  "Sopot",
+                        "PilotRank":  "Deadly",
+                        "ShieldHealth":  100.000000,
+                        "HullHealth":  100.000000
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:43:02Z",
+                        "event":  "ShipTargeted",
+                        "TargetLocked":  true,
+                        "Ship":  "orca",
+                        "ScanStage":  3,
+                        "PilotName":  "$npc_name_decorate:#name=Sopot;",
+                        "PilotName_Localised":  "Sopot",
+                        "PilotRank":  "Deadly",
+                        "ShieldHealth":  100.000000,
+                        "HullHealth":  100.000000,
+                        "Faction":  "Sol Nationalists",
+                        "LegalStatus":  "Clean"
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:43:13Z",
+                        "event":  "ShipTargeted",
+                        "TargetLocked":  false
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ShipTargeted"
+}

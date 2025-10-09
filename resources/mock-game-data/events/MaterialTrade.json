@@ -1,0 +1,80 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0421884-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-27T16:06:58Z",
+                        "event":  "MaterialTrade",
+                        "MarketID":  3228751360,
+                        "TraderType":  "manufactured",
+                        "Paid":  {
+                                     "Material":  "biotechconductors",
+                                     "Material_Localised":  "Biotech Conductors",
+                                     "Category":  "Manufactured",
+                                     "Quantity":  2
+                                 },
+                        "Received":  {
+                                         "Material":  "conductivecomponents",
+                                         "Material_Localised":  "Conductive Components",
+                                         "Category":  "Manufactured",
+                                         "Quantity":  54
+                                     }
+                    },
+                    {
+                        "timestamp":  "2025-09-27T16:17:36Z",
+                        "event":  "MaterialTrade",
+                        "MarketID":  3228751360,
+                        "TraderType":  "manufactured",
+                        "Paid":  {
+                                     "Material":  "galvanisingalloys",
+                                     "Material_Localised":  "Galvanising Alloys",
+                                     "Category":  "Manufactured",
+                                     "Quantity":  72
+                                 },
+                        "Received":  {
+                                         "Material":  "conductiveceramics",
+                                         "Material_Localised":  "Conductive Ceramics",
+                                         "Category":  "Manufactured",
+                                         "Quantity":  2
+                                     }
+                    },
+                    {
+                        "timestamp":  "2025-09-27T16:18:28Z",
+                        "event":  "MaterialTrade",
+                        "MarketID":  3228751360,
+                        "TraderType":  "manufactured",
+                        "Paid":  {
+                                     "Material":  "fedproprietarycomposites",
+                                     "Material_Localised":  "Proprietary Composites",
+                                     "Category":  "Manufactured",
+                                     "Quantity":  20
+                                 },
+                        "Received":  {
+                                         "Material":  "conductiveceramics",
+                                         "Material_Localised":  "Conductive Ceramics",
+                                         "Category":  "Manufactured",
+                                         "Quantity":  10
+                                     }
+                    },
+                    {
+                        "timestamp":  "2025-09-27T16:19:22Z",
+                        "event":  "MaterialTrade",
+                        "MarketID":  3228751360,
+                        "TraderType":  "manufactured",
+                        "Paid":  {
+                                     "Material":  "compoundshielding",
+                                     "Material_Localised":  "Compound Shielding",
+                                     "Category":  "Manufactured",
+                                     "Quantity":  30
+                                 },
+                        "Received":  {
+                                         "Material":  "polymercapacitors",
+                                         "Material_Localised":  "Polymer Capacitors",
+                                         "Category":  "Manufactured",
+                                         "Quantity":  5
+                                     }
+                    }
+                ],
+    "sampleCount":  4,
+    "eventType":  "MaterialTrade"
+}

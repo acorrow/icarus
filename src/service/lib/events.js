@@ -144,6 +144,10 @@ async function init ({ days = 7 } = {}) {
 
   loadingProgressEvent() // Trigger once complete
 
+  // Broadcast gameStateChange so UI components know to fetch current system
+  broadcastEvent('gameStateChange')
+  gameStateChangeHandler()
+
   return getLoadingStatus()
 }
 

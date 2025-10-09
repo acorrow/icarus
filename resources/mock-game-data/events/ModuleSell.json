@@ -1,0 +1,41 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0648948-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-25T12:01:44Z",
+                        "event":  "ModuleSell",
+                        "MarketID":  3228867072,
+                        "Slot":  "TinyHardpoint4",
+                        "SellItem":  "$hpt_shieldbooster_size0_class5_name;",
+                        "SellItem_Localised":  "Shield Booster",
+                        "SellPrice":  281000,
+                        "Ship":  "type9_military",
+                        "ShipID":  18
+                    },
+                    {
+                        "timestamp":  "2025-09-30T04:24:54Z",
+                        "event":  "ModuleSell",
+                        "MarketID":  4207980803,
+                        "Slot":  "Slot07_Size3",
+                        "SellItem":  "$int_refinery_size3_class5_name;",
+                        "SellItem_Localised":  "Refinery",
+                        "SellPrice":  0,
+                        "Ship":  "lakonminer",
+                        "ShipID":  25
+                    },
+                    {
+                        "timestamp":  "2025-09-30T04:25:47Z",
+                        "event":  "ModuleSell",
+                        "MarketID":  4207980803,
+                        "Slot":  "Slot06_Size4",
+                        "SellItem":  "$int_shieldgenerator_size4_class5_name;",
+                        "SellItem_Localised":  "Shield Generator",
+                        "SellPrice":  0,
+                        "Ship":  "lakonminer",
+                        "ShipID":  25
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "ModuleSell"
+}

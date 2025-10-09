@@ -1,5 +1,38 @@
-[
-  { "timestamp": "2025-10-03T17:19:14Z", "event": "MiningRefined", "Type": "$coltan_name;", "Type_Localised": "Coltan" },
-  { "timestamp": "2025-10-03T17:29:28Z", "event": "MiningRefined", "Type": "$praseodymium_name;", "Type_Localised": "Praseodymium" },
-  { "timestamp": "2025-10-03T17:33:24Z", "event": "MiningRefined", "Type": "$gallite_name;", "Type_Localised": "Gallite" }
-]
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0431882-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T07:09:44Z",
+                        "event":  "MiningRefined",
+                        "Type":  "$rhodplumsite_name;",
+                        "Type_Localised":  "Rhodplumsite"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T07:09:44Z",
+                        "event":  "MiningRefined",
+                        "Type":  "$rhodplumsite_name;",
+                        "Type_Localised":  "Rhodplumsite"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T07:09:59Z",
+                        "event":  "MiningRefined",
+                        "Type":  "$rhodplumsite_name;",
+                        "Type_Localised":  "Rhodplumsite"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T07:10:05Z",
+                        "event":  "MiningRefined",
+                        "Type":  "$rhodplumsite_name;",
+                        "Type_Localised":  "Rhodplumsite"
+                    },
+                    {
+                        "timestamp":  "2025-09-22T07:10:26Z",
+                        "event":  "MiningRefined",
+                        "Type":  "$rhodplumsite_name;",
+                        "Type_Localised":  "Rhodplumsite"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "MiningRefined"
+}

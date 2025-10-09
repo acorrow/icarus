@@ -1,0 +1,69 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0588060-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T05:43:56Z",
+                        "event":  "ModuleBuy",
+                        "Slot":  "MediumHardpoint2",
+                        "StoredItem":  "$hpt_mining_seismchrgwarhd_turret_medium_name;",
+                        "StoredItem_Localised":  "Seismic Charge",
+                        "BuyItem":  "$hpt_mining_subsurfdispmisle_turret_medium_name;",
+                        "BuyItem_Localised":  "Displacement Missile",
+                        "MarketID":  3228867072,
+                        "BuyPrice":  381750,
+                        "Ship":  "type9",
+                        "ShipID":  16
+                    },
+                    {
+                        "timestamp":  "2025-09-23T01:08:43Z",
+                        "event":  "ModuleBuy",
+                        "Slot":  "Slot07_Size3",
+                        "BuyItem":  "$int_detailedsurfacescanner_tiny_name;",
+                        "BuyItem_Localised":  "Surface Scanner",
+                        "MarketID":  3228884736,
+                        "BuyPrice":  250000,
+                        "Ship":  "krait_mkii",
+                        "ShipID":  11
+                    },
+                    {
+                        "timestamp":  "2025-09-24T16:40:34Z",
+                        "event":  "ModuleBuy",
+                        "Slot":  "Slot11_Size2",
+                        "BuyItem":  "$int_dockingcomputer_advanced_name;",
+                        "BuyItem_Localised":  "Docking Computer",
+                        "MarketID":  3228867072,
+                        "BuyPrice":  13507,
+                        "Ship":  "type9_military",
+                        "ShipID":  18
+                    },
+                    {
+                        "timestamp":  "2025-09-24T16:51:07Z",
+                        "event":  "ModuleBuy",
+                        "Slot":  "MediumHardpoint1",
+                        "StoredItem":  "$hpt_pulselaser_fixed_small_name;",
+                        "StoredItem_Localised":  "Pulse Laser",
+                        "BuyItem":  "$hpt_mininglaser_turret_medium_name;",
+                        "BuyItem_Localised":  "Mining Laser",
+                        "MarketID":  3228867072,
+                        "BuyPrice":  32576,
+                        "Ship":  "type9_military",
+                        "ShipID":  18
+                    },
+                    {
+                        "timestamp":  "2025-09-24T16:51:29Z",
+                        "event":  "ModuleBuy",
+                        "Slot":  "MediumHardpoint2",
+                        "StoredItem":  "$hpt_pulselaser_fixed_small_name;",
+                        "StoredItem_Localised":  "Pulse Laser",
+                        "BuyItem":  "$hpt_mininglaser_turret_medium_name;",
+                        "BuyItem_Localised":  "Mining Laser",
+                        "MarketID":  3228867072,
+                        "BuyPrice":  32576,
+                        "Ship":  "type9_military",
+                        "ShipID":  18
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ModuleBuy"
+}

@@ -1,0 +1,152 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0492740-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-04-16T14:01:07Z",
+                        "event":  "MissionCompleted",
+                        "Faction":  "Mars Congressional Republic Navy",
+                        "Name":  "Mission_HackMegaship_name",
+                        "LocalisedName":  "Infiltrate the Megaship\u0027s Ship Log Uplink",
+                        "MissionID":  961522383,
+                        "DestinationSystem":  "L 26-27",
+                        "Target":  "$MissionUtil_FactionTag_Datalink;",
+                        "Target_Localised":  "Ship Log Uplink",
+                        "Reward":  453484,
+                        "FactionEffects":  [
+                                               {
+                                                   "Faction":  "Mars Congressional Republic Navy",
+                                                   "Effects":  [
+                                                                   {
+                                                                       "Effect":  "$MISSIONUTIL_Interaction_Summary_EP_up;",
+                                                                       "Effect_Localised":  "The economic status of $#MinorFaction; has improved in the $#System; system.",
+                                                                       "Trend":  "UpGood"
+                                                                   }
+                                                               ],
+                                                   "Influence":  [
+                                                                     {
+                                                                         "SystemAddress":  22660918617513,
+                                                                         "Trend":  "UpGood",
+                                                                         "Influence":  "+++++"
+                                                                     }
+                                                                 ],
+                                                   "ReputationTrend":  "UpGood",
+                                                   "Reputation":  "++"
+                                               }
+                                           ]
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:34:21Z",
+                        "event":  "MissionCompleted",
+                        "Faction":  "Elite Rebel Force",
+                        "Name":  "Mission_Assassinate_Planetary_Expansion_name",
+                        "LocalisedName":  "Expansion Support by Killing Known Terrorist: Quennell",
+                        "MissionID":  1030191840,
+                        "TargetType":  "$MissionUtil_FactionTag_TerroristLeader;",
+                        "TargetType_Localised":  "Known Terrorist",
+                        "TargetFaction":  "LP 336-6 Blue Brothers",
+                        "DestinationSystem":  "TZ Arietis",
+                        "DestinationSettlement":  "Dorsett\u0027s Folly",
+                        "Target":  "Quennell",
+                        "Target_Localised":  "Hub Access Terminal",
+                        "Reward":  2172249,
+                        "FactionEffects":  [
+                                               {
+                                                   "Faction":  "",
+                                                   "Effects":  [
+                                                                   {
+                                                                       "Effect":  "$MISSIONUTIL_Interaction_Summary_EP_down;",
+                                                                       "Effect_Localised":  "The economic status of $#MinorFaction; has declined in the $#System; system.",
+                                                                       "Trend":  "DownBad"
+                                                                   }
+                                                               ],
+                                                   "Influence":  [
+                                                                     {
+                                                                         "SystemAddress":  33656034895273,
+                                                                         "Trend":  "DownBad",
+                                                                         "Influence":  "+"
+                                                                     }
+                                                                 ],
+                                                   "ReputationTrend":  "DownBad",
+                                                   "Reputation":  "+"
+                                               },
+                                               {
+                                                   "Faction":  "Elite Rebel Force",
+                                                   "Effects":  [
+                                                                   {
+                                                                       "Effect":  "$MISSIONUTIL_Interaction_Summary_EP_up;",
+                                                                       "Effect_Localised":  "The economic status of $#MinorFaction; has improved in the $#System; system.",
+                                                                       "Trend":  "UpGood"
+                                                                   }
+                                                               ],
+                                                   "Influence":  [
+                                                                     {
+                                                                         "SystemAddress":  22660918617513,
+                                                                         "Trend":  "UpGood",
+                                                                         "Influence":  "+"
+                                                                     }
+                                                                 ],
+                                                   "ReputationTrend":  "UpGood",
+                                                   "Reputation":  "+"
+                                               }
+                                           ]
+                    },
+                    {
+                        "timestamp":  "2025-09-27T01:30:58Z",
+                        "event":  "MissionCompleted",
+                        "Faction":  "Mars Congressional Republic Navy",
+                        "Name":  "Mission_MassacreWing_Legal_CivilUnrest_name",
+                        "LocalisedName":  "Put down Pirates of LHS 450 Pirates",
+                        "MissionID":  1030238404,
+                        "TargetType":  "$MissionUtil_FactionTag_Pirate;",
+                        "TargetType_Localised":  "Pirates",
+                        "TargetFaction":  "Pirates of LHS 450",
+                        "KillCount":  45,
+                        "DestinationSystem":  "LHS 450",
+                        "DestinationStation":  "Stevenson Relay",
+                        "Reward":  23759082,
+                        "FactionEffects":  [
+                                               {
+                                                   "Faction":  "Mars Congressional Republic Navy",
+                                                   "Effects":  [
+                                                                   {
+                                                                       "Effect":  "$MISSIONUTIL_Interaction_Summary_EP_up;",
+                                                                       "Effect_Localised":  "The economic status of $#MinorFaction; has improved in the $#System; system.",
+                                                                       "Trend":  "UpGood"
+                                                                   }
+                                                               ],
+                                                   "Influence":  [
+                                                                     {
+                                                                         "SystemAddress":  22660918617513,
+                                                                         "Trend":  "UpGood",
+                                                                         "Influence":  "++"
+                                                                     }
+                                                                 ],
+                                                   "ReputationTrend":  "UpGood",
+                                                   "Reputation":  "++"
+                                               },
+                                               {
+                                                   "Faction":  "",
+                                                   "Effects":  [
+                                                                   {
+                                                                       "Effect":  "$MISSIONUTIL_Interaction_Summary_EP_up;",
+                                                                       "Effect_Localised":  "The economic status of $#MinorFaction; has improved in the $#System; system.",
+                                                                       "Trend":  "UpGood"
+                                                                   }
+                                                               ],
+                                                   "Influence":  [
+                                                                     {
+                                                                         "SystemAddress":  11665802339753,
+                                                                         "Trend":  "DownBad",
+                                                                         "Influence":  "+"
+                                                                     }
+                                                                 ],
+                                                   "ReputationTrend":  "DownBad",
+                                                   "Reputation":  "+"
+                                               }
+                                           ]
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "MissionCompleted"
+}

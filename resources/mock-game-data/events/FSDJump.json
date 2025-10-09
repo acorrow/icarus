@@ -1,0 +1,606 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9846612-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-01-07T17:50:01Z",
+                        "event":  "FSDJump",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Ross 248",
+                        "SystemAddress":  5366025046864,
+                        "StarPos":  [
+                                        -9.31250,
+                                        -3.03125,
+                                        -3.40625
+                                    ],
+                        "SystemAllegiance":  "",
+                        "SystemEconomy":  "$economy_None;",
+                        "SystemEconomy_Localised":  "None",
+                        "SystemSecondEconomy":  "$economy_None;",
+                        "SystemSecondEconomy_Localised":  "None",
+                        "SystemGovernment":  "$government_None;",
+                        "SystemGovernment_Localised":  "None",
+                        "SystemSecurity":  "$GAlAXY_MAP_INFO_state_anarchy;",
+                        "SystemSecurity_Localised":  "Anarchy",
+                        "Population":  0,
+                        "Body":  "Ross 248 A",
+                        "BodyID":  1,
+                        "BodyType":  "Star",
+                        "JumpDist":  10.369,
+                        "FuelUsed":  1.537326,
+                        "FuelLevel":  29.832676
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:50:47Z",
+                        "event":  "FSDJump",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Kruger 60",
+                        "SystemAddress":  22660918617513,
+                        "StarPos":  [
+                                        -12.62500,
+                                        0.00000,
+                                        -3.40625
+                                    ],
+                        "SystemAllegiance":  "Federation",
+                        "SystemEconomy":  "$economy_HighTech;",
+                        "SystemEconomy_Localised":  "High Tech",
+                        "SystemSecondEconomy":  "$economy_Refinery;",
+                        "SystemSecondEconomy_Localised":  "Refinery",
+                        "SystemGovernment":  "$government_Confederacy;",
+                        "SystemGovernment_Localised":  "Confederacy",
+                        "SystemSecurity":  "$SYSTEM_SECURITY_high;",
+                        "SystemSecurity_Localised":  "High Security",
+                        "Population":  20092481,
+                        "Body":  "Kruger 60",
+                        "BodyID":  1,
+                        "BodyType":  "Star",
+                        "JumpDist":  4.490,
+                        "FuelUsed":  0.196611,
+                        "FuelLevel":  29.990032,
+                        "Factions":  [
+                                         {
+                                             "Name":  "Kruger 60 Free",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.127255,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -75.000000
+                                         },
+                                         {
+                                             "Name":  "Kruger 60 First",
+                                             "FactionState":  "None",
+                                             "Government":  "Dictatorship",
+                                             "Influence":  0.037074,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -12.950000
+                                         },
+                                         {
+                                             "Name":  "Kruger 60 \u0026 Co",
+                                             "FactionState":  "None",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.068136,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  90.099998
+                                         },
+                                         {
+                                             "Name":  "V1581 Cygni Dynamic Ltd",
+                                             "FactionState":  "None",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.078156,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  100.000000
+                                         },
+                                         {
+                                             "Name":  "Natural Kruger 60 Regulatory State",
+                                             "FactionState":  "None",
+                                             "Government":  "Dictatorship",
+                                             "Influence":  0.060120,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  16.170000
+                                         },
+                                         {
+                                             "Name":  "Kruger 60 Society",
+                                             "FactionState":  "None",
+                                             "Government":  "Anarchy",
+                                             "Influence":  0.010020,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  9.570000
+                                         },
+                                         {
+                                             "Name":  "Mars Congressional Republic Navy",
+                                             "FactionState":  "Boom",
+                                             "Government":  "Confederacy",
+                                             "Influence":  0.619238,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "SquadronFaction":  true,
+                                             "HomeSystem":  true,
+                                             "MyReputation":  100.000000,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "Boom"
+                                                                  }
+                                                              ]
+                                         }
+                                     ],
+                        "SystemFaction":  {
+                                              "Name":  "Mars Congressional Republic Navy",
+                                              "FactionState":  "Boom"
+                                          }
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:26:45Z",
+                        "event":  "FSDJump",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Groombridge 34",
+                        "SystemAddress":  7267755828641,
+                        "StarPos":  [
+                                        -9.90625,
+                                        -3.68750,
+                                        -5.09375
+                                    ],
+                        "SystemAllegiance":  "Independent",
+                        "SystemEconomy":  "$economy_HighTech;",
+                        "SystemEconomy_Localised":  "High Tech",
+                        "SystemSecondEconomy":  "$economy_Extraction;",
+                        "SystemSecondEconomy_Localised":  "Extraction",
+                        "SystemGovernment":  "$government_Feudal;",
+                        "SystemGovernment_Localised":  "Feudal",
+                        "SystemSecurity":  "$SYSTEM_SECURITY_medium;",
+                        "SystemSecurity_Localised":  "Medium Security",
+                        "Population":  9521472,
+                        "Body":  "Groombridge 34",
+                        "BodyID":  1,
+                        "BodyType":  "Star",
+                        "JumpDist":  4.882,
+                        "FuelUsed":  0.242859,
+                        "FuelLevel":  31.757141,
+                        "Factions":  [
+                                         {
+                                             "Name":  "Groombridge 34 Blue Public Sysy",
+                                             "FactionState":  "None",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.052052,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  1.980000
+                                         },
+                                         {
+                                             "Name":  "Official Groombridge 34 Liberty Party",
+                                             "FactionState":  "None",
+                                             "Government":  "Dictatorship",
+                                             "Influence":  0.030030,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000,
+                                             "RecoveringStates":  [
+                                                                      {
+                                                                          "State":  "CivilWar",
+                                                                          "Trend":  0
+                                                                      }
+                                                                  ]
+                                         },
+                                         {
+                                             "Name":  "Mob of Groombridge 34",
+                                             "FactionState":  "None",
+                                             "Government":  "Anarchy",
+                                             "Influence":  0.010010,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -70.620003
+                                         },
+                                         {
+                                             "Name":  "Independents of Groombridge 34",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.094094,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000,
+                                             "RecoveringStates":  [
+                                                                      {
+                                                                          "State":  "CivilWar",
+                                                                          "Trend":  0
+                                                                      }
+                                                                  ]
+                                         },
+                                         {
+                                             "Name":  "Equestrian Naval Fleet",
+                                             "FactionState":  "Expansion",
+                                             "Government":  "Feudal",
+                                             "Influence":  0.605606,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand1;",
+                                             "Happiness_Localised":  "Elated",
+                                             "MyReputation":  100.000000,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "Boom"
+                                                                  },
+                                                                  {
+                                                                      "State":  "CivilLiberty"
+                                                                  },
+                                                                  {
+                                                                      "State":  "Expansion"
+                                                                  }
+                                                              ]
+                                         },
+                                         {
+                                             "Name":  "The Federation of Ravenwood",
+                                             "FactionState":  "Election",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.104104,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  5.850000,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "Election"
+                                                                  }
+                                                              ]
+                                         },
+                                         {
+                                             "Name":  "Earth Defense Fleet",
+                                             "FactionState":  "Election",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.104104,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  4.898010,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "Expansion"
+                                                                  },
+                                                                  {
+                                                                      "State":  "Election"
+                                                                  }
+                                                              ]
+                                         }
+                                     ],
+                        "SystemFaction":  {
+                                              "Name":  "Equestrian Naval Fleet",
+                                              "FactionState":  "Expansion"
+                                          },
+                        "Conflicts":  [
+                                          {
+                                              "WarType":  "civilwar",
+                                              "Status":  "",
+                                              "Faction1":  {
+                                                               "Name":  "Official Groombridge 34 Liberty Party",
+                                                               "Stake":  "",
+                                                               "WonDays":  1
+                                                           },
+                                              "Faction2":  {
+                                                               "Name":  "Independents of Groombridge 34",
+                                                               "Stake":  "Rymill Mining Prospect",
+                                                               "WonDays":  4
+                                                           }
+                                          },
+                                          {
+                                              "WarType":  "election",
+                                              "Status":  "active",
+                                              "Faction1":  {
+                                                               "Name":  "The Federation of Ravenwood",
+                                                               "Stake":  "Jackson Industrial Productions",
+                                                               "WonDays":  0
+                                                           },
+                                              "Faction2":  {
+                                                               "Name":  "Earth Defense Fleet",
+                                                               "Stake":  "Lobbo\u0027s Constructions",
+                                                               "WonDays":  1
+                                                           }
+                                          }
+                                      ]
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:31:03Z",
+                        "event":  "FSDJump",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Kruger 60",
+                        "SystemAddress":  22660918617513,
+                        "StarPos":  [
+                                        -12.62500,
+                                        0.00000,
+                                        -3.40625
+                                    ],
+                        "SystemAllegiance":  "Federation",
+                        "SystemEconomy":  "$economy_HighTech;",
+                        "SystemEconomy_Localised":  "High Tech",
+                        "SystemSecondEconomy":  "$economy_Refinery;",
+                        "SystemSecondEconomy_Localised":  "Refinery",
+                        "SystemGovernment":  "$government_Confederacy;",
+                        "SystemGovernment_Localised":  "Confederacy",
+                        "SystemSecurity":  "$SYSTEM_SECURITY_high;",
+                        "SystemSecurity_Localised":  "High Security",
+                        "Population":  20092481,
+                        "Body":  "Kruger 60",
+                        "BodyID":  1,
+                        "BodyType":  "Star",
+                        "JumpDist":  4.882,
+                        "FuelUsed":  0.242859,
+                        "FuelLevel":  31.757141,
+                        "Factions":  [
+                                         {
+                                             "Name":  "Kruger 60 Free",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.126126,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -75.000000
+                                         },
+                                         {
+                                             "Name":  "Kruger 60 First",
+                                             "FactionState":  "None",
+                                             "Government":  "Dictatorship",
+                                             "Influence":  0.039039,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -12.950000
+                                         },
+                                         {
+                                             "Name":  "Kruger 60 \u0026 Co",
+                                             "FactionState":  "None",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.060060,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  90.099998
+                                         },
+                                         {
+                                             "Name":  "V1581 Cygni Dynamic Ltd",
+                                             "FactionState":  "None",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.079079,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  100.000000
+                                         },
+                                         {
+                                             "Name":  "Natural Kruger 60 Regulatory State",
+                                             "FactionState":  "None",
+                                             "Government":  "Dictatorship",
+                                             "Influence":  0.052052,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  16.170000
+                                         },
+                                         {
+                                             "Name":  "Kruger 60 Society",
+                                             "FactionState":  "None",
+                                             "Government":  "Anarchy",
+                                             "Influence":  0.010010,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  9.570000
+                                         },
+                                         {
+                                             "Name":  "Mars Congressional Republic Navy",
+                                             "FactionState":  "Boom",
+                                             "Government":  "Confederacy",
+                                             "Influence":  0.633634,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "SquadronFaction":  true,
+                                             "HomeSystem":  true,
+                                             "MyReputation":  100.000000,
+                                             "PendingStates":  [
+                                                                   {
+                                                                       "State":  "CivilLiberty",
+                                                                       "Trend":  0
+                                                                   }
+                                                               ],
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "Boom"
+                                                                  }
+                                                              ]
+                                         }
+                                     ],
+                        "SystemFaction":  {
+                                              "Name":  "Mars Congressional Republic Navy",
+                                              "FactionState":  "Boom"
+                                          }
+                    },
+                    {
+                        "timestamp":  "2024-04-14T02:31:42Z",
+                        "event":  "FSDJump",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "WISE 1506+7027",
+                        "SystemAddress":  5366025177936,
+                        "StarPos":  [
+                                        -7.37500,
+                                        7.09375,
+                                        -2.43750
+                                    ],
+                        "SystemAllegiance":  "Independent",
+                        "SystemEconomy":  "$economy_Industrial;",
+                        "SystemEconomy_Localised":  "Industrial",
+                        "SystemSecondEconomy":  "$economy_Extraction;",
+                        "SystemSecondEconomy_Localised":  "Extraction",
+                        "SystemGovernment":  "$government_Corporate;",
+                        "SystemGovernment_Localised":  "Corporate",
+                        "SystemSecurity":  "$SYSTEM_SECURITY_high;",
+                        "SystemSecurity_Localised":  "High Security",
+                        "Population":  14971863,
+                        "Body":  "WISE 1506+7027",
+                        "BodyID":  0,
+                        "BodyType":  "Star",
+                        "JumpDist":  8.878,
+                        "FuelUsed":  1.051037,
+                        "FuelLevel":  30.948963,
+                        "Factions":  [
+                                         {
+                                             "Name":  "Green Party of WISE 1506+7027",
+                                             "FactionState":  "None",
+                                             "Government":  "Democracy",
+                                             "Influence":  0.149505,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  1.680000,
+                                             "RecoveringStates":  [
+                                                                      {
+                                                                          "State":  "CivilWar",
+                                                                          "Trend":  0
+                                                                      }
+                                                                  ]
+                                         },
+                                         {
+                                             "Name":  "LHS 2459 Advanced Corp.",
+                                             "FactionState":  "War",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.080198,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "War"
+                                                                  }
+                                                              ]
+                                         },
+                                         {
+                                             "Name":  "League of WISE 1506+7027",
+                                             "FactionState":  "None",
+                                             "Government":  "Dictatorship",
+                                             "Influence":  0.072277,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000
+                                         },
+                                         {
+                                             "Name":  "WISE 1506+7027 Company",
+                                             "FactionState":  "None",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.070297,
+                                             "Allegiance":  "Federation",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000,
+                                             "PendingStates":  [
+                                                                   {
+                                                                       "State":  "Outbreak",
+                                                                       "Trend":  0
+                                                                   }
+                                                               ],
+                                             "RecoveringStates":  [
+                                                                      {
+                                                                          "State":  "CivilWar",
+                                                                          "Trend":  0
+                                                                      }
+                                                                  ]
+                                         },
+                                         {
+                                             "Name":  "WISE 1506+7027 Purple Boys",
+                                             "FactionState":  "None",
+                                             "Government":  "Anarchy",
+                                             "Influence":  0.009901,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  -10.560000
+                                         },
+                                         {
+                                             "Name":  "Justice Party of WISE 1506+7027",
+                                             "FactionState":  "War",
+                                             "Government":  "Dictatorship",
+                                             "Influence":  0.080198,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  0.000000,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "War"
+                                                                  }
+                                                              ]
+                                         },
+                                         {
+                                             "Name":  "Redshift Logistics",
+                                             "FactionState":  "Boom",
+                                             "Government":  "Corporate",
+                                             "Influence":  0.537624,
+                                             "Allegiance":  "Independent",
+                                             "Happiness":  "$Faction_HappinessBand2;",
+                                             "Happiness_Localised":  "Happy",
+                                             "MyReputation":  100.000000,
+                                             "ActiveStates":  [
+                                                                  {
+                                                                      "State":  "Boom"
+                                                                  }
+                                                              ]
+                                         }
+                                     ],
+                        "SystemFaction":  {
+                                              "Name":  "Redshift Logistics",
+                                              "FactionState":  "Boom"
+                                          },
+                        "Conflicts":  [
+                                          {
+                                              "WarType":  "civilwar",
+                                              "Status":  "",
+                                              "Faction1":  {
+                                                               "Name":  "Green Party of WISE 1506+7027",
+                                                               "Stake":  "Stafford Penal colony",
+                                                               "WonDays":  4
+                                                           },
+                                              "Faction2":  {
+                                                               "Name":  "WISE 1506+7027 Company",
+                                                               "Stake":  "",
+                                                               "WonDays":  1
+                                                           }
+                                          },
+                                          {
+                                              "WarType":  "war",
+                                              "Status":  "active",
+                                              "Faction1":  {
+                                                               "Name":  "LHS 2459 Advanced Corp.",
+                                                               "Stake":  "Loeffler Cultivation Base",
+                                                               "WonDays":  1
+                                                           },
+                                              "Faction2":  {
+                                                               "Name":  "Justice Party of WISE 1506+7027",
+                                                               "Stake":  "",
+                                                               "WonDays":  0
+                                                           }
+                                          }
+                                      ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "FSDJump"
+}

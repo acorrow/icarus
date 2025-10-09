@@ -1,0 +1,28 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0787097-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-01-07T17:50:35Z",
+                        "event":  "NavRouteClear"
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:26:34Z",
+                        "event":  "NavRouteClear"
+                    },
+                    {
+                        "timestamp":  "2024-04-16T03:05:48Z",
+                        "event":  "NavRouteClear"
+                    },
+                    {
+                        "timestamp":  "2024-04-16T13:39:30Z",
+                        "event":  "NavRouteClear"
+                    },
+                    {
+                        "timestamp":  "2024-04-16T13:53:39Z",
+                        "event":  "NavRouteClear"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "NavRouteClear"
+}

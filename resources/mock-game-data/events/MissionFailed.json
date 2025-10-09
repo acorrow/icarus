@@ -1,0 +1,43 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0512795-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-23T14:23:23Z",
+                        "event":  "MissionFailed",
+                        "Name":  "MISSION_Salvage_InSpace_CivilUnrest_name",
+                        "LocalisedName":  "Counter-insurgency Local Salvage Operations",
+                        "MissionID":  1030188072
+                    },
+                    {
+                        "timestamp":  "2025-09-26T00:41:13Z",
+                        "event":  "MissionFailed",
+                        "Name":  "Mission_Massacre_Conflict_CivilWar_name",
+                        "LocalisedName":  "Kill Tharsis Corporation ships",
+                        "MissionID":  1030390481
+                    },
+                    {
+                        "timestamp":  "2025-09-29T00:36:21Z",
+                        "event":  "MissionFailed",
+                        "Name":  "Mission_Massacre_Illegal_InSpace_name",
+                        "LocalisedName":  "Causing Mayhem Contract",
+                        "MissionID":  1030577922
+                    },
+                    {
+                        "timestamp":  "2025-09-30T01:10:15Z",
+                        "event":  "MissionFailed",
+                        "Name":  "Mission_MassacreWing_Legal_CivilUnrest_name",
+                        "LocalisedName":  "Put down WISE 1506+7027 Purple Boys Pirates",
+                        "MissionID":  1030191760
+                    },
+                    {
+                        "timestamp":  "2025-10-04T03:16:04Z",
+                        "event":  "MissionFailed",
+                        "Name":  "Mission_MassacreWing_Legal_CivilUnrest_name",
+                        "LocalisedName":  "Put down V1581 Cygni Gold Rats Pirates",
+                        "MissionID":  1030586661
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "MissionFailed"
+}

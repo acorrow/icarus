@@ -1,0 +1,43 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0045507-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T07:14:29Z",
+                        "event":  "HullDamage",
+                        "Health":  0.799852,
+                        "PlayerPilot":  true,
+                        "Fighter":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-24T12:57:42Z",
+                        "event":  "HullDamage",
+                        "Health":  0.798223,
+                        "PlayerPilot":  true,
+                        "Fighter":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-24T12:57:46Z",
+                        "event":  "HullDamage",
+                        "Health":  0.598190,
+                        "PlayerPilot":  true,
+                        "Fighter":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-24T17:48:06Z",
+                        "event":  "HullDamage",
+                        "Health":  0.774091,
+                        "PlayerPilot":  true,
+                        "Fighter":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-24T17:48:12Z",
+                        "event":  "HullDamage",
+                        "Health":  0.591094,
+                        "PlayerPilot":  true,
+                        "Fighter":  false
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "HullDamage"
+}

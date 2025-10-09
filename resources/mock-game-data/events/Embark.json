@@ -1,0 +1,39 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9621950-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-26T17:43:13Z",
+                        "event":  "Embark",
+                        "SRV":  false,
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "ID":  11,
+                        "StarSystem":  "Wyrd",
+                        "SystemAddress":  5031654888146,
+                        "Body":  "Lister",
+                        "BodyID":  12,
+                        "OnStation":  false,
+                        "OnPlanet":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-26T23:43:59Z",
+                        "event":  "Embark",
+                        "SRV":  false,
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "ID":  11,
+                        "StarSystem":  "LHS 71",
+                        "SystemAddress":  6406044390098,
+                        "Body":  "Jun Hub",
+                        "BodyID":  67,
+                        "OnStation":  true,
+                        "OnPlanet":  false,
+                        "StationName":  "Jun Hub",
+                        "StationType":  "Coriolis",
+                        "MarketID":  3228858624
+                    }
+                ],
+    "sampleCount":  2,
+    "eventType":  "Embark"
+}

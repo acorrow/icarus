@@ -1,0 +1,63 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0674470-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T16:40:47Z",
+                        "event":  "ModuleStore",
+                        "MarketID":  3228867072,
+                        "Slot":  "Slot07_Size3",
+                        "StoredItem":  "$int_cargorack_size2_class1_name;",
+                        "StoredItem_Localised":  "Cargo Rack",
+                        "Ship":  "type9_military",
+                        "ShipID":  18,
+                        "Hot":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-24T16:40:51Z",
+                        "event":  "ModuleStore",
+                        "MarketID":  3228867072,
+                        "Slot":  "Slot05_Size4",
+                        "StoredItem":  "$int_cargorack_size3_class1_name;",
+                        "StoredItem_Localised":  "Cargo Rack",
+                        "Ship":  "type9_military",
+                        "ShipID":  18,
+                        "Hot":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-24T16:40:57Z",
+                        "event":  "ModuleStore",
+                        "MarketID":  3228867072,
+                        "Slot":  "Slot04_Size5",
+                        "StoredItem":  "$int_cargorack_size4_class1_name;",
+                        "StoredItem_Localised":  "Cargo Rack",
+                        "Ship":  "type9_military",
+                        "ShipID":  18,
+                        "Hot":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-24T16:41:01Z",
+                        "event":  "ModuleStore",
+                        "MarketID":  3228867072,
+                        "Slot":  "Slot02_Size7",
+                        "StoredItem":  "$int_cargorack_size6_class1_name;",
+                        "StoredItem_Localised":  "Cargo Rack",
+                        "Ship":  "type9_military",
+                        "ShipID":  18,
+                        "Hot":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-24T16:41:04Z",
+                        "event":  "ModuleStore",
+                        "MarketID":  3228867072,
+                        "Slot":  "Slot01_Size8",
+                        "StoredItem":  "$int_cargorack_size7_class1_name;",
+                        "StoredItem_Localised":  "Cargo Rack",
+                        "Ship":  "type9_military",
+                        "ShipID":  18,
+                        "Hot":  false
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ModuleStore"
+}

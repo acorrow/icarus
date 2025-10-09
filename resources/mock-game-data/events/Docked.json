@@ -1,3 +1,347 @@
-[
-  { "timestamp": "2025-10-03T15:00:22Z", "event": "Docked", "StationName": "Kepler Gateway", "StationType": "Coriolis", "Taxi": false, "Multicrew": false, "StarSystem": "Kruger 60", "SystemAddress": 22660918617513, "MarketID": 3228884736, "StationFaction": { "Name": "Mars Congressional Republic Navy", "FactionState": "Expansion" }, "StationGovernment": "$government_Confederacy;", "StationGovernment_Localised": "Confederacy", "StationAllegiance": "Federation", "StationServices": ["dock", "autodock", "commodities", "contacts", "exploration", "missions", "outfitting", "crewlounge", "rearm", "refuel", "repair", "shipyard", "tuning", "engineer", "missionsgenerated", "flightcontroller", "stationoperations", "powerplay", "searchrescue", "materialtrader", "stationMenu", "shop", "carriervendor", "livery", "modulepacks", "socialspace", "bartender", "vistagenomics", "pioneersupplies", "apexinterstellar", "frontlinesolutions", "registeringcolonisation"], "StationEconomy": "$economy_HighTech;", "StationEconomy_Localised": "High Tech", "StationEconomies": [ { "Name": "$economy_HighTech;", "Name_Localised": "High Tech", "Proportion": 0.8 }, { "Name": "$economy_Refinery;", "Name_Localised": "Refinery", "Proportion": 0.2 } ], "DistFromStarLS": 3774.712666, "LandingPads": { "Small": 11, "Medium": 12, "Large": 5 } }
-]
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9473991-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-12-24T01:44:34Z",
+                        "event":  "Docked",
+                        "StationName":  "Abraham Lincoln",
+                        "StationType":  "Orbis",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Sol",
+                        "SystemAddress":  10477373803,
+                        "MarketID":  128016896,
+                        "StationFaction":  {
+                                               "Name":  "Mother Gaia"
+                                           },
+                        "StationGovernment":  "$government_Democracy;",
+                        "StationGovernment_Localised":  "Democracy",
+                        "StationAllegiance":  "Federation",
+                        "StationServices":  [
+                                                "dock",
+                                                "autodock",
+                                                "blackmarket",
+                                                "commodities",
+                                                "contacts",
+                                                "exploration",
+                                                "missions",
+                                                "outfitting",
+                                                "crewlounge",
+                                                "rearm",
+                                                "refuel",
+                                                "repair",
+                                                "shipyard",
+                                                "tuning",
+                                                "engineer",
+                                                "missionsgenerated",
+                                                "flightcontroller",
+                                                "stationoperations",
+                                                "powerplay",
+                                                "searchrescue",
+                                                "stationMenu",
+                                                "shop",
+                                                "livery",
+                                                "socialspace",
+                                                "bartender",
+                                                "vistagenomics",
+                                                "pioneersupplies",
+                                                "apexinterstellar",
+                                                "frontlinesolutions"
+                                            ],
+                        "StationEconomy":  "$economy_Service;",
+                        "StationEconomy_Localised":  "Service",
+                        "StationEconomies":  [
+                                                 {
+                                                     "Name":  "$economy_Service;",
+                                                     "Name_Localised":  "Service",
+                                                     "Proportion":  1.000000
+                                                 }
+                                             ],
+                        "DistFromStarLS":  506.878664,
+                        "LandingPads":  {
+                                            "Small":  17,
+                                            "Medium":  18,
+                                            "Large":  9
+                                        }
+                    },
+                    {
+                        "timestamp":  "2024-01-07T19:44:17Z",
+                        "event":  "Docked",
+                        "StationName":  "Kepler Gateway",
+                        "StationType":  "Coriolis",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Kruger 60",
+                        "SystemAddress":  22660918617513,
+                        "MarketID":  3228884736,
+                        "StationFaction":  {
+                                               "Name":  "Mars Congressional Republic Navy",
+                                               "FactionState":  "Boom"
+                                           },
+                        "StationGovernment":  "$government_Confederacy;",
+                        "StationGovernment_Localised":  "Confederacy",
+                        "StationAllegiance":  "Federation",
+                        "StationServices":  [
+                                                "dock",
+                                                "autodock",
+                                                "blackmarket",
+                                                "commodities",
+                                                "contacts",
+                                                "exploration",
+                                                "missions",
+                                                "outfitting",
+                                                "crewlounge",
+                                                "rearm",
+                                                "refuel",
+                                                "repair",
+                                                "shipyard",
+                                                "tuning",
+                                                "engineer",
+                                                "missionsgenerated",
+                                                "flightcontroller",
+                                                "stationoperations",
+                                                "powerplay",
+                                                "searchrescue",
+                                                "materialtrader",
+                                                "stationMenu",
+                                                "shop",
+                                                "carriervendor",
+                                                "livery",
+                                                "modulepacks",
+                                                "socialspace",
+                                                "bartender",
+                                                "vistagenomics",
+                                                "pioneersupplies",
+                                                "apexinterstellar",
+                                                "frontlinesolutions"
+                                            ],
+                        "StationEconomy":  "$economy_HighTech;",
+                        "StationEconomy_Localised":  "High Tech",
+                        "StationEconomies":  [
+                                                 {
+                                                     "Name":  "$economy_HighTech;",
+                                                     "Name_Localised":  "High Tech",
+                                                     "Proportion":  0.800000
+                                                 },
+                                                 {
+                                                     "Name":  "$economy_Refinery;",
+                                                     "Name_Localised":  "Refinery",
+                                                     "Proportion":  0.200000
+                                                 }
+                                             ],
+                        "DistFromStarLS":  4339.826933,
+                        "LandingPads":  {
+                                            "Small":  11,
+                                            "Medium":  12,
+                                            "Large":  5
+                                        }
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:44:34Z",
+                        "event":  "Docked",
+                        "StationName":  "Kepler Gateway",
+                        "StationType":  "Coriolis",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Kruger 60",
+                        "SystemAddress":  22660918617513,
+                        "MarketID":  3228884736,
+                        "StationFaction":  {
+                                               "Name":  "Mars Congressional Republic Navy",
+                                               "FactionState":  "Boom"
+                                           },
+                        "StationGovernment":  "$government_Confederacy;",
+                        "StationGovernment_Localised":  "Confederacy",
+                        "StationAllegiance":  "Federation",
+                        "StationServices":  [
+                                                "dock",
+                                                "autodock",
+                                                "blackmarket",
+                                                "commodities",
+                                                "contacts",
+                                                "exploration",
+                                                "missions",
+                                                "outfitting",
+                                                "crewlounge",
+                                                "rearm",
+                                                "refuel",
+                                                "repair",
+                                                "shipyard",
+                                                "tuning",
+                                                "engineer",
+                                                "missionsgenerated",
+                                                "flightcontroller",
+                                                "stationoperations",
+                                                "powerplay",
+                                                "searchrescue",
+                                                "materialtrader",
+                                                "stationMenu",
+                                                "shop",
+                                                "carriervendor",
+                                                "livery",
+                                                "modulepacks",
+                                                "socialspace",
+                                                "bartender",
+                                                "vistagenomics",
+                                                "pioneersupplies",
+                                                "apexinterstellar",
+                                                "frontlinesolutions"
+                                            ],
+                        "StationEconomy":  "$economy_HighTech;",
+                        "StationEconomy_Localised":  "High Tech",
+                        "StationEconomies":  [
+                                                 {
+                                                     "Name":  "$economy_HighTech;",
+                                                     "Name_Localised":  "High Tech",
+                                                     "Proportion":  0.800000
+                                                 },
+                                                 {
+                                                     "Name":  "$economy_Refinery;",
+                                                     "Name_Localised":  "Refinery",
+                                                     "Proportion":  0.200000
+                                                 }
+                                             ],
+                        "DistFromStarLS":  4343.741114,
+                        "LandingPads":  {
+                                            "Small":  11,
+                                            "Medium":  12,
+                                            "Large":  5
+                                        }
+                    },
+                    {
+                        "timestamp":  "2024-04-14T02:35:39Z",
+                        "event":  "Docked",
+                        "StationName":  "Dobrovolskiy Enterprise",
+                        "StationType":  "Ocellus",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "WISE 1506+7027",
+                        "SystemAddress":  5366025177936,
+                        "MarketID":  3228867072,
+                        "StationFaction":  {
+                                               "Name":  "Redshift Logistics",
+                                               "FactionState":  "Boom"
+                                           },
+                        "StationGovernment":  "$government_Corporate;",
+                        "StationGovernment_Localised":  "Corporate",
+                        "StationServices":  [
+                                                "dock",
+                                                "autodock",
+                                                "commodities",
+                                                "contacts",
+                                                "exploration",
+                                                "missions",
+                                                "outfitting",
+                                                "crewlounge",
+                                                "rearm",
+                                                "refuel",
+                                                "repair",
+                                                "shipyard",
+                                                "tuning",
+                                                "engineer",
+                                                "missionsgenerated",
+                                                "flightcontroller",
+                                                "stationoperations",
+                                                "powerplay",
+                                                "searchrescue",
+                                                "techBroker",
+                                                "stationMenu",
+                                                "shop",
+                                                "livery",
+                                                "socialspace",
+                                                "bartender",
+                                                "vistagenomics",
+                                                "pioneersupplies",
+                                                "apexinterstellar",
+                                                "frontlinesolutions"
+                                            ],
+                        "StationEconomy":  "$economy_Industrial;",
+                        "StationEconomy_Localised":  "Industrial",
+                        "StationEconomies":  [
+                                                 {
+                                                     "Name":  "$economy_Industrial;",
+                                                     "Name_Localised":  "Industrial",
+                                                     "Proportion":  0.770000
+                                                 },
+                                                 {
+                                                     "Name":  "$economy_Extraction;",
+                                                     "Name_Localised":  "Extraction",
+                                                     "Proportion":  0.230000
+                                                 }
+                                             ],
+                        "DistFromStarLS":  257.296209,
+                        "LandingPads":  {
+                                            "Small":  17,
+                                            "Medium":  18,
+                                            "Large":  9
+                                        }
+                    },
+                    {
+                        "timestamp":  "2024-04-14T03:40:42Z",
+                        "event":  "Docked",
+                        "StationName":  "Abraham Lincoln",
+                        "StationType":  "Orbis",
+                        "Taxi":  false,
+                        "Multicrew":  false,
+                        "StarSystem":  "Sol",
+                        "SystemAddress":  10477373803,
+                        "MarketID":  128016896,
+                        "StationFaction":  {
+                                               "Name":  "Mother Gaia",
+                                               "FactionState":  "CivilLiberty"
+                                           },
+                        "StationGovernment":  "$government_Democracy;",
+                        "StationGovernment_Localised":  "Democracy",
+                        "StationAllegiance":  "Federation",
+                        "StationServices":  [
+                                                "dock",
+                                                "autodock",
+                                                "blackmarket",
+                                                "commodities",
+                                                "contacts",
+                                                "exploration",
+                                                "missions",
+                                                "outfitting",
+                                                "crewlounge",
+                                                "rearm",
+                                                "refuel",
+                                                "repair",
+                                                "shipyard",
+                                                "tuning",
+                                                "engineer",
+                                                "missionsgenerated",
+                                                "flightcontroller",
+                                                "stationoperations",
+                                                "powerplay",
+                                                "searchrescue",
+                                                "stationMenu",
+                                                "shop",
+                                                "livery",
+                                                "socialspace",
+                                                "bartender",
+                                                "vistagenomics",
+                                                "pioneersupplies",
+                                                "apexinterstellar",
+                                                "frontlinesolutions"
+                                            ],
+                        "StationEconomy":  "$economy_Service;",
+                        "StationEconomy_Localised":  "Service",
+                        "StationEconomies":  [
+                                                 {
+                                                     "Name":  "$economy_Service;",
+                                                     "Name_Localised":  "Service",
+                                                     "Proportion":  1.000000
+                                                 }
+                                             ],
+                        "DistFromStarLS":  493.509575,
+                        "LandingPads":  {
+                                            "Small":  17,
+                                            "Medium":  18,
+                                            "Large":  9
+                                        }
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Docked"
+}

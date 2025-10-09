@@ -1,6 +1,42 @@
-[
-  { "timestamp": "2025-10-03T14:54:04Z", "event": "FSSSignalDiscovered", "SystemAddress": 22660918617513, "SignalName": "Kepler Gateway", "SignalType": "StationCoriolis", "IsStation": true },
-  { "timestamp": "2025-10-03T14:54:04Z", "event": "FSSSignalDiscovered", "SystemAddress": 22660918617513, "SignalName": "Queen Kathy's Pride X7F-B5X", "SignalType": "FleetCarrier", "IsStation": true },
-  { "timestamp": "2025-10-03T15:15:58Z", "event": "FSSSignalDiscovered", "SystemAddress": 22660918617513, "SignalName": "[BSIC] MFOB Rajingudon T9J-48T", "SignalType": "FleetCarrier", "IsStation": true },
-  { "timestamp": "2025-10-03T14:54:04Z", "event": "FSSSignalDiscovered", "SystemAddress": 22660918617513, "SignalName": "General Scientific Research", "SignalType": "Installation" }
-]
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9947015-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "FSSSignalDiscovered",
+                        "SystemAddress":  10477373803,
+                        "SignalName":  "$MULTIPLAYER_SCENARIO77_TITLE;",
+                        "SignalName_Localised":  "Resource Extraction Site [Low]"
+                    },
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "FSSSignalDiscovered",
+                        "SystemAddress":  10477373803,
+                        "SignalName":  "FIA Responsibilities"
+                    },
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "FSSSignalDiscovered",
+                        "SystemAddress":  10477373803,
+                        "SignalName":  "$MULTIPLAYER_SCENARIO14_TITLE;",
+                        "SignalName_Localised":  "Resource Extraction Site"
+                    },
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "FSSSignalDiscovered",
+                        "SystemAddress":  10477373803,
+                        "SignalName":  "$MULTIPLAYER_SCENARIO14_TITLE;",
+                        "SignalName_Localised":  "Resource Extraction Site"
+                    },
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "FSSSignalDiscovered",
+                        "SystemAddress":  10477373803,
+                        "SignalName":  "Titan City",
+                        "IsStation":  true
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "FSSSignalDiscovered"
+}

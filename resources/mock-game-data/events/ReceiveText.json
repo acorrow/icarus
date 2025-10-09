@@ -1,0 +1,49 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1071276-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "ReceiveText",
+                        "From":  "",
+                        "Message":  "$COMMS_entered:#name=Sol;",
+                        "Message_Localised":  "Entered Channel: Sol",
+                        "Channel":  "npc"
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:29Z",
+                        "event":  "ReceiveText",
+                        "From":  "",
+                        "Message":  "$COMMS_entered:#name=Sol;",
+                        "Message_Localised":  "Entered Channel: Sol",
+                        "Channel":  "npc"
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:23:53Z",
+                        "event":  "ReceiveText",
+                        "From":  "$npc_name_decorate:#name=Carlos Fandango;",
+                        "From_Localised":  "Carlos Fandango",
+                        "Message":  "$Commuter_AuthorityScan02;",
+                        "Message_Localised":  "How can I be of assistance?",
+                        "Channel":  "npc"
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:55Z",
+                        "event":  "ReceiveText",
+                        "From":  "",
+                        "Message":  "$COMMS_entered:#name=Sol;",
+                        "Message_Localised":  "Entered Channel: Sol",
+                        "Channel":  "npc"
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:56Z",
+                        "event":  "ReceiveText",
+                        "From":  "Abraham Lincoln",
+                        "Message":  "$STATION_NoFireZone_entered;",
+                        "Message_Localised":  "No fire zone entered.",
+                        "Channel":  "npc"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ReceiveText"
+}

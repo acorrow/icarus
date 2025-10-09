@@ -1,0 +1,19 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9423386-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T17:58:44Z",
+                        "event":  "Died"
+                    },
+                    {
+                        "timestamp":  "2025-09-27T03:28:07Z",
+                        "event":  "Died",
+                        "KillerName":  "Hamer",
+                        "KillerShip":  "diamondbackxl",
+                        "KillerRank":  "Novice"
+                    }
+                ],
+    "sampleCount":  2,
+    "eventType":  "Died"
+}

@@ -1,0 +1,154 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0705057-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-28T03:04:36Z",
+                        "event":  "MultiSellExplorationData",
+                        "Discovered":  [
+                                           {
+                                               "SystemName":  "Beurex",
+                                               "NumBodies":  2
+                                           },
+                                           {
+                                               "SystemName":  "Ross 47",
+                                               "NumBodies":  4
+                                           },
+                                           {
+                                               "SystemName":  "Lalande 29917",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "Guangul",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "LHS 1723",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "Ross 248",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "Teegarden\u0027s star",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "QY Aurigae",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "Sigma Draconis",
+                                               "NumBodies":  2
+                                           },
+                                           {
+                                               "SystemName":  "Ross 1019",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "LP 71-165",
+                                               "NumBodies":  5
+                                           }
+                                       ],
+                        "BaseValue":  61846,
+                        "Bonus":  0,
+                        "TotalEarnings":  57522
+                    },
+                    {
+                        "timestamp":  "2025-10-01T13:58:57Z",
+                        "event":  "MultiSellExplorationData",
+                        "Discovered":  [
+                                           {
+                                               "SystemName":  "Ross 556",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "Danu",
+                                               "NumBodies":  3
+                                           },
+                                           {
+                                               "SystemName":  "Ross 47",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "Ross 903",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "BF Canis Venatici",
+                                               "NumBodies":  8
+                                           },
+                                           {
+                                               "SystemName":  "Bei Dou Sector JH-V b2-1",
+                                               "NumBodies":  3
+                                           },
+                                           {
+                                               "SystemName":  "G 121-8",
+                                               "NumBodies":  5
+                                           },
+                                           {
+                                               "SystemName":  "V1201 Orionis",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "LP 467-16",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "WISE J0254+0223",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "WISE J0521+1025",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "UGPS 0722-05",
+                                               "NumBodies":  3
+                                           },
+                                           {
+                                               "SystemName":  "Bei Dou Sector EL-Y c20",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "LP 658-2",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "LHS 1375",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "Ross 614",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "LFT 215",
+                                               "NumBodies":  3
+                                           },
+                                           {
+                                               "SystemName":  "LHS 295",
+                                               "NumBodies":  8
+                                           },
+                                           {
+                                               "SystemName":  "G 99-49",
+                                               "NumBodies":  4
+                                           },
+                                           {
+                                               "SystemName":  "LHS 476",
+                                               "NumBodies":  1
+                                           },
+                                           {
+                                               "SystemName":  "WISE 1647+5632",
+                                               "NumBodies":  2
+                                           }
+                                       ],
+                        "BaseValue":  179923,
+                        "Bonus":  0,
+                        "TotalEarnings":  167337
+                    }
+                ],
+    "sampleCount":  2,
+    "eventType":  "MultiSellExplorationData"
+}

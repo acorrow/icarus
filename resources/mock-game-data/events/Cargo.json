@@ -1,0 +1,78 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9030929-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:41Z",
+                        "event":  "Cargo",
+                        "Vessel":  "Ship",
+                        "Count":  16,
+                        "Inventory":  [
+                                          {
+                                              "Name":  "drones",
+                                              "Name_Localised":  "Limpet",
+                                              "Count":  16,
+                                              "Stolen":  0
+                                          }
+                                      ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:32Z",
+                        "event":  "Cargo",
+                        "Vessel":  "Ship",
+                        "Count":  16,
+                        "Inventory":  [
+                                          {
+                                              "Name":  "drones",
+                                              "Name_Localised":  "Limpet",
+                                              "Count":  16,
+                                              "Stolen":  0
+                                          }
+                                      ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:58Z",
+                        "event":  "Cargo",
+                        "Vessel":  "Ship",
+                        "Count":  16,
+                        "Inventory":  [
+                                          {
+                                              "Name":  "drones",
+                                              "Name_Localised":  "Limpet",
+                                              "Count":  16,
+                                              "Stolen":  0
+                                          }
+                                      ]
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:28Z",
+                        "event":  "Cargo",
+                        "Vessel":  "Ship",
+                        "Count":  16,
+                        "Inventory":  [
+                                          {
+                                              "Name":  "drones",
+                                              "Name_Localised":  "Limpet",
+                                              "Count":  16,
+                                              "Stolen":  0
+                                          }
+                                      ]
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:42:59Z",
+                        "event":  "Cargo",
+                        "Vessel":  "Ship",
+                        "Count":  16,
+                        "Inventory":  [
+                                          {
+                                              "Name":  "drones",
+                                              "Name_Localised":  "Limpet",
+                                              "Count":  16,
+                                              "Stolen":  0
+                                          }
+                                      ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Cargo"
+}

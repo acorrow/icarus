@@ -1,0 +1,20 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1061222-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T17:52:54Z",
+                        "event":  "RebootRepair",
+                        "Modules":  [
+                                        "MainEngines",
+                                        "LargeHardpoint2",
+                                        "LargeHardpoint3",
+                                        "MediumHardpoint2",
+                                        "TinyHardpoint1",
+                                        "TinyHardpoint3"
+                                    ]
+                    }
+                ],
+    "sampleCount":  1,
+    "eventType":  "RebootRepair"
+}

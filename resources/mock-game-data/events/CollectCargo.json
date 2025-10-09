@@ -1,0 +1,36 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9087955-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-26T07:02:08Z",
+                        "event":  "CollectCargo",
+                        "Type":  "damagedescapepod",
+                        "Type_Localised":  "Damaged Escape Pod",
+                        "Stolen":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-26T07:17:12Z",
+                        "event":  "CollectCargo",
+                        "Type":  "occupiedcryopod",
+                        "Type_Localised":  "Occupied Escape Pod",
+                        "Stolen":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-26T07:18:43Z",
+                        "event":  "CollectCargo",
+                        "Type":  "occupiedcryopod",
+                        "Type_Localised":  "Occupied Escape Pod",
+                        "Stolen":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-26T07:19:36Z",
+                        "event":  "CollectCargo",
+                        "Type":  "occupiedcryopod",
+                        "Type_Localised":  "Occupied Escape Pod",
+                        "Stolen":  false
+                    }
+                ],
+    "sampleCount":  4,
+    "eventType":  "CollectCargo"
+}

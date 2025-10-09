@@ -1,0 +1,46 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9891914-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-01-07T17:49:11Z",
+                        "event":  "FSDTarget",
+                        "Name":  "Ross 248",
+                        "SystemAddress":  5366025046864,
+                        "StarClass":  "M",
+                        "RemainingJumpsInRoute":  2
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:49:49Z",
+                        "event":  "FSDTarget",
+                        "Name":  "Kruger 60",
+                        "SystemAddress":  22660918617513,
+                        "StarClass":  "M",
+                        "RemainingJumpsInRoute":  1
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:25:15Z",
+                        "event":  "FSDTarget",
+                        "Name":  "Groombridge 34",
+                        "SystemAddress":  7267755828641,
+                        "StarClass":  "M",
+                        "RemainingJumpsInRoute":  1
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:30:19Z",
+                        "event":  "FSDTarget",
+                        "Name":  "Kruger 60",
+                        "SystemAddress":  22660918617513,
+                        "StarClass":  "M"
+                    },
+                    {
+                        "timestamp":  "2024-04-14T02:30:58Z",
+                        "event":  "FSDTarget",
+                        "Name":  "WISE 1506+7027",
+                        "SystemAddress":  5366025177936,
+                        "StarClass":  "T"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "FSDTarget"
+}

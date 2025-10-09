@@ -39,6 +39,56 @@ The INARA web scraper engine is intentionally **decoupled** from other code:
 - Agents can work on scrapers in isolation without affecting other systems
 - Scrapers must always output properly structured, normalized data
 
+### Scraper Engine Architecture (NEW)
+A **decoupled, testable scraper engine** has been implemented to make INARA scrapers cloud-agent-friendly:
+
+- **Core Engine**: `src/service/lib/api/scraper-engine.js`
+  - Pure utility functions for HTML parsing (parseNumber, parseDistance, cleanText, etc.)
+  - Scraper registry for managing all scrapers
+  - No dependencies on ICARUS state, logs, or file system
+  - Can be tested independently by cloud agents
+
+- **Individual Scrapers**: `src/service/lib/api/scrapers/`
+  - `trade-routes.js` - Trade route intelligence scraper
+  - `commodity-values.js` - Market commodity pricing scraper
+  - `mining-missions.js` - Mining mission radar scraper
+  - `pristine-mining.js` - Pristine ring prospecting scraper
+  - Each scraper is a pure function: HTML → Structured JSON
+  - Built-in validation for data structure integrity
+
+- **Scraper Index**: `src/service/lib/api/scraper-index.js`
+  - Central registry of all scrapers
+  - Testing utilities (`testScraper`, `runScraper`)
+  - Scraper lookup and management
+
+- **Test Suite**: `test/scraper-tests.js`
+  - Mock data testing (offline, fast)
+  - Real URL testing (validates against live INARA.cz)
+  - CLI interface for cloud agents
+  - Usage: `node test/scraper-tests.js mock` or `node test/scraper-tests.js real`
+
+### Mock Data Strategy (NEW)
+Comprehensive mock data has been extracted from real game logs for offline development and cloud agent testing:
+
+- **Elite Dangerous Events**: `resources/mock-game-data/events/`
+  - **142 event types** extracted from real journal logs
+  - **594 total samples** covering common, edge, and rare cases
+  - Each event file includes metadata (sample count, extraction timestamp)
+  - Source: Real logs from `C:\Users\Adam\Saved Games\Frontier Developments\Elite Dangerous`
+  - Regenerate with: `powershell scripts/extract-mock-events.ps1`
+
+- **INARA HTML Responses**: `resources/mock-game-data/inara/`
+  - Mock HTML responses for each scraper
+  - Naming convention: `{scraper-name}-{commodity/system}.html`
+  - Used for offline scraper testing without network access
+  - Examples: `trade-routes-painite.html`, `commodity-values-tritium.html`
+
+- **Mock Data README**: `resources/mock-game-data/README.md`
+  - Complete documentation of mock data architecture
+  - Scraper development guidelines
+  - Cloud agent testing workflow
+  - Mock data update procedures
+
 **Important**: "The INARA Page" in ICARUS Terminal refers to the UI surface (`src/client/pages/inara.js`) that **displays** data scraped from inara.cz. INARA itself is NOT part of ICARUS—it's an external data source.
 
 ## INARA Feature Mapping

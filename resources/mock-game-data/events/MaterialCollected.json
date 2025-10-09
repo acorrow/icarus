@@ -1,5 +1,48 @@
-[
-  { "timestamp": "2025-10-03T17:20:41Z", "event": "MaterialCollected", "Category": "Raw", "Name": "nickel", "Count": 3 },
-  { "timestamp": "2025-10-03T17:22:15Z", "event": "MaterialCollected", "Category": "Raw", "Name": "carbon", "Count": 3 },
-  { "timestamp": "2025-10-03T17:30:07Z", "event": "MaterialCollected", "Category": "Raw", "Name": "phosphorus", "Count": 3 }
-]
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0329725-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T04:43:13Z",
+                        "event":  "MaterialCollected",
+                        "Category":  "Encoded",
+                        "Name":  "shieldcyclerecordings",
+                        "Name_Localised":  "Distorted Shield Cycle Recordings",
+                        "Count":  3
+                    },
+                    {
+                        "timestamp":  "2025-09-23T04:09:50Z",
+                        "event":  "MaterialCollected",
+                        "Category":  "Encoded",
+                        "Name":  "shieldcyclerecordings",
+                        "Name_Localised":  "Distorted Shield Cycle Recordings",
+                        "Count":  3
+                    },
+                    {
+                        "timestamp":  "2025-09-23T04:10:03Z",
+                        "event":  "MaterialCollected",
+                        "Category":  "Encoded",
+                        "Name":  "bulkscandata",
+                        "Name_Localised":  "Anomalous Bulk Scan Data",
+                        "Count":  3
+                    },
+                    {
+                        "timestamp":  "2025-09-23T04:10:04Z",
+                        "event":  "MaterialCollected",
+                        "Category":  "Encoded",
+                        "Name":  "shieldcyclerecordings",
+                        "Name_Localised":  "Distorted Shield Cycle Recordings",
+                        "Count":  3
+                    },
+                    {
+                        "timestamp":  "2025-09-23T14:26:08Z",
+                        "event":  "MaterialCollected",
+                        "Category":  "Encoded",
+                        "Name":  "shieldcyclerecordings",
+                        "Name_Localised":  "Distorted Shield Cycle Recordings",
+                        "Count":  3
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "MaterialCollected"
+}

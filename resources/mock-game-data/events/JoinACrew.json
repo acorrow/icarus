@@ -1,0 +1,20 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0090642-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T05:00:35Z",
+                        "event":  "JoinACrew",
+                        "Captain":  "BIM TIQUI",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-25T04:03:27Z",
+                        "event":  "JoinACrew",
+                        "Captain":  "BIM TIQUI",
+                        "Telepresence":  true
+                    }
+                ],
+    "sampleCount":  2,
+    "eventType":  "JoinACrew"
+}

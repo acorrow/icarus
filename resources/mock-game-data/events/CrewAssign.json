@@ -1,0 +1,29 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9160089-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T17:26:30Z",
+                        "event":  "CrewAssign",
+                        "Name":  "Dallas Robbins",
+                        "CrewID":  102139616,
+                        "Role":  "Active"
+                    },
+                    {
+                        "timestamp":  "2025-09-28T07:16:38Z",
+                        "event":  "CrewAssign",
+                        "Name":  "Dallas Robbins",
+                        "CrewID":  102139616,
+                        "Role":  "Active"
+                    },
+                    {
+                        "timestamp":  "2025-10-03T03:19:59Z",
+                        "event":  "CrewAssign",
+                        "Name":  "Dallas Robbins",
+                        "CrewID":  102139616,
+                        "Role":  "Active"
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "CrewAssign"
+}

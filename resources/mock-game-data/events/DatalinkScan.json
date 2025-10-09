@@ -1,0 +1,14 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9388217-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-23T14:49:52Z",
+                        "event":  "DatalinkScan",
+                        "Message":  "$DataLink_ScannedInfo_Operations;",
+                        "Message_Localised":  "Op-Net accessed"
+                    }
+                ],
+    "sampleCount":  1,
+    "eventType":  "DatalinkScan"
+}

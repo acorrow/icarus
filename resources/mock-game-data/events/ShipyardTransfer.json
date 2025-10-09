@@ -1,0 +1,73 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1646944-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-23T00:27:26Z",
+                        "event":  "ShipyardTransfer",
+                        "ShipType":  "Krait_MkII",
+                        "ShipType_Localised":  "Krait Mk II",
+                        "ShipID":  11,
+                        "System":  "WISE 1506+7027",
+                        "ShipMarketID":  3228867072,
+                        "Distance":  8.878190,
+                        "TransferPrice":  104803,
+                        "TransferTime":  388,
+                        "MarketID":  3228884736
+                    },
+                    {
+                        "timestamp":  "2025-09-24T12:28:30Z",
+                        "event":  "ShipyardTransfer",
+                        "ShipType":  "Krait_MkII",
+                        "ShipType_Localised":  "Krait Mk II",
+                        "ShipID":  11,
+                        "System":  "Kruger 60",
+                        "ShipMarketID":  3228884736,
+                        "Distance":  8.878190,
+                        "TransferPrice":  104986,
+                        "TransferTime":  388,
+                        "MarketID":  3228867072
+                    },
+                    {
+                        "timestamp":  "2025-09-24T16:31:39Z",
+                        "event":  "ShipyardTransfer",
+                        "ShipType":  "Type9_Military",
+                        "ShipType_Localised":  "Type-10 Defender",
+                        "ShipID":  18,
+                        "System":  "Chara",
+                        "ShipMarketID":  4207861507,
+                        "Distance":  19.881857,
+                        "TransferPrice":  174773,
+                        "TransferTime":  498,
+                        "MarketID":  3228867072
+                    },
+                    {
+                        "timestamp":  "2025-09-25T04:41:26Z",
+                        "event":  "ShipyardTransfer",
+                        "ShipType":  "Type9_Military",
+                        "ShipType_Localised":  "Type-10 Defender",
+                        "ShipID":  18,
+                        "System":  "WISE 1506+7027",
+                        "ShipMarketID":  3228867072,
+                        "Distance":  20.048914,
+                        "TransferPrice":  221924,
+                        "TransferTime":  500,
+                        "MarketID":  128125944
+                    },
+                    {
+                        "timestamp":  "2025-09-25T05:31:00Z",
+                        "event":  "ShipyardTransfer",
+                        "ShipType":  "Type9_Military",
+                        "ShipType_Localised":  "Type-10 Defender",
+                        "ShipID":  18,
+                        "System":  "Zeessze",
+                        "ShipMarketID":  128125944,
+                        "Distance":  7.190081,
+                        "TransferPrice":  118953,
+                        "TransferTime":  371,
+                        "MarketID":  3228858624
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ShipyardTransfer"
+}

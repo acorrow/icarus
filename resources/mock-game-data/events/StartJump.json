@@ -1,0 +1,50 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1702664-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-12-24T02:03:46Z",
+                        "event":  "StartJump",
+                        "JumpType":  "Supercruise",
+                        "Taxi":  false
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:49:42Z",
+                        "event":  "StartJump",
+                        "JumpType":  "Hyperspace",
+                        "Taxi":  false,
+                        "StarSystem":  "Ross 248",
+                        "SystemAddress":  5366025046864,
+                        "StarClass":  "M"
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:50:28Z",
+                        "event":  "StartJump",
+                        "JumpType":  "Hyperspace",
+                        "Taxi":  false,
+                        "StarSystem":  "Kruger 60",
+                        "SystemAddress":  22660918617513,
+                        "StarClass":  "M"
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:26:27Z",
+                        "event":  "StartJump",
+                        "JumpType":  "Hyperspace",
+                        "Taxi":  false,
+                        "StarSystem":  "Groombridge 34",
+                        "SystemAddress":  7267755828641,
+                        "StarClass":  "M"
+                    },
+                    {
+                        "timestamp":  "2024-01-08T03:30:45Z",
+                        "event":  "StartJump",
+                        "JumpType":  "Hyperspace",
+                        "Taxi":  false,
+                        "StarSystem":  "Kruger 60",
+                        "SystemAddress":  22660918617513,
+                        "StarClass":  "M"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "StartJump"
+}

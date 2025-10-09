@@ -1,0 +1,1993 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0188926-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "Loadout",
+                        "Ship":  "krait_mkii",
+                        "ShipID":  11,
+                        "ShipName":  " ",
+                        "ShipIdent":  "DA-10K",
+                        "HullValue":  45814205,
+                        "ModulesValue":  95860408,
+                        "HullHealth":  1.000000,
+                        "UnladenMass":  686.000000,
+                        "CargoCapacity":  64,
+                        "MaxJumpRange":  17.824310,
+                        "FuelCapacity":  {
+                                             "Main":  32.000000,
+                                             "Reserve":  0.630000
+                                         },
+                        "Rebuy":  7083731,
+                        "Modules":  [
+                                        {
+                                            "Slot":  "LargeHardpoint1",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.866300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.661201,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4015.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  669.300049,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint2",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.891300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  72.472397,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4027.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  671.299988,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint3",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.855600,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.858803,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4010.699951,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  668.450012,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint1",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint2",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint1",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint2",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint3",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint4",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "Armour",
+                                            "Item":  "krait_mkii_armour_grade1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerPlant",
+                                            "Item":  "int_powerplant_size7_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  38913291
+                                        },
+                                        {
+                                            "Slot":  "MainEngines",
+                                            "Item":  "int_engine_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "FrameShiftDrive",
+                                            "Item":  "int_hyperdrive_size5_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  5103953
+                                        },
+                                        {
+                                            "Slot":  "LifeSupport",
+                                            "Item":  "int_lifesupport_size4_class1",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerDistributor",
+                                            "Item":  "int_powerdistributor_size7_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  9731925,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673751,
+                                                                "BlueprintName":  "PowerDistributor_PriorityWeapons",
+                                                                "Level":  2,
+                                                                "Quality":  0.931000,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "WeaponsCapacity",
+                                                                                      "Value":  78.879097,
+                                                                                      "OriginalValue":  61.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "WeaponsRecharge",
+                                                                                      "Value":  7.486530,
+                                                                                      "OriginalValue":  6.100000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesRecharge",
+                                                                                      "Value":  3.760000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsRecharge",
+                                                                                      "Value":  3.920000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "Radar",
+                                            "Item":  "int_sensors_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  3475688
+                                        },
+                                        {
+                                            "Slot":  "FuelTank",
+                                            "Item":  "int_fueltank_size5_class3",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot01_Size6",
+                                            "Item":  "int_shieldgenerator_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "Slot02_Size6",
+                                            "Item":  "int_fighterbay_size6_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  1869340
+                                        },
+                                        {
+                                            "Slot":  "Slot03_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot04_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot05_Size4",
+                                            "Item":  "int_shieldcellbank_size4_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  1,
+                                            "AmmoInHopper":  3,
+                                            "Health":  1.000000,
+                                            "Value":  443328
+                                        },
+                                        {
+                                            "Slot":  "Slot06_Size3",
+                                            "Item":  "int_fuelscoop_size3_class5",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000,
+                                            "Value":  902954
+                                        },
+                                        {
+                                            "Slot":  "Slot08_Size2",
+                                            "Item":  "int_dockingcomputer_advanced",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  13507
+                                        },
+                                        {
+                                            "Slot":  "Slot09_Size1",
+                                            "Item":  "int_supercruiseassist",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PlanetaryApproachSuite",
+                                            "Item":  "int_planetapproachsuite_advanced",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "VesselVoice",
+                                            "Item":  "voicepack_verity",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "ShipCockpit",
+                                            "Item":  "krait_mkii_cockpit",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "CargoHatch",
+                                            "Item":  "modularcargobaydoor",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:29Z",
+                        "event":  "Loadout",
+                        "Ship":  "krait_mkii",
+                        "ShipID":  11,
+                        "ShipName":  " ",
+                        "ShipIdent":  "DA-10K",
+                        "HullValue":  45814205,
+                        "ModulesValue":  95860408,
+                        "HullHealth":  1.000000,
+                        "UnladenMass":  686.000000,
+                        "CargoCapacity":  64,
+                        "MaxJumpRange":  17.824310,
+                        "FuelCapacity":  {
+                                             "Main":  32.000000,
+                                             "Reserve":  0.630000
+                                         },
+                        "Rebuy":  7083731,
+                        "Modules":  [
+                                        {
+                                            "Slot":  "LargeHardpoint1",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.866300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.661201,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4015.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  669.300049,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint2",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.891300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  72.472397,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4027.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  671.299988,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint3",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.855600,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.858803,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4010.699951,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  668.450012,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint1",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint2",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint1",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint2",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint3",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint4",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "Armour",
+                                            "Item":  "krait_mkii_armour_grade1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerPlant",
+                                            "Item":  "int_powerplant_size7_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  38913291
+                                        },
+                                        {
+                                            "Slot":  "MainEngines",
+                                            "Item":  "int_engine_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "FrameShiftDrive",
+                                            "Item":  "int_hyperdrive_size5_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  5103953
+                                        },
+                                        {
+                                            "Slot":  "LifeSupport",
+                                            "Item":  "int_lifesupport_size4_class1",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerDistributor",
+                                            "Item":  "int_powerdistributor_size7_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  9731925,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673751,
+                                                                "BlueprintName":  "PowerDistributor_PriorityWeapons",
+                                                                "Level":  2,
+                                                                "Quality":  0.931000,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "WeaponsCapacity",
+                                                                                      "Value":  78.879097,
+                                                                                      "OriginalValue":  61.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "WeaponsRecharge",
+                                                                                      "Value":  7.486530,
+                                                                                      "OriginalValue":  6.100000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesRecharge",
+                                                                                      "Value":  3.760000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsRecharge",
+                                                                                      "Value":  3.920000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "Radar",
+                                            "Item":  "int_sensors_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  3475688
+                                        },
+                                        {
+                                            "Slot":  "FuelTank",
+                                            "Item":  "int_fueltank_size5_class3",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot01_Size6",
+                                            "Item":  "int_shieldgenerator_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "Slot02_Size6",
+                                            "Item":  "int_fighterbay_size6_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  1869340
+                                        },
+                                        {
+                                            "Slot":  "Slot03_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot04_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot05_Size4",
+                                            "Item":  "int_shieldcellbank_size4_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  1,
+                                            "AmmoInHopper":  3,
+                                            "Health":  1.000000,
+                                            "Value":  443328
+                                        },
+                                        {
+                                            "Slot":  "Slot06_Size3",
+                                            "Item":  "int_fuelscoop_size3_class5",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000,
+                                            "Value":  902954
+                                        },
+                                        {
+                                            "Slot":  "Slot08_Size2",
+                                            "Item":  "int_dockingcomputer_advanced",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  13507
+                                        },
+                                        {
+                                            "Slot":  "Slot09_Size1",
+                                            "Item":  "int_supercruiseassist",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PlanetaryApproachSuite",
+                                            "Item":  "int_planetapproachsuite_advanced",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "VesselVoice",
+                                            "Item":  "voicepack_verity",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "ShipCockpit",
+                                            "Item":  "krait_mkii_cockpit",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "CargoHatch",
+                                            "Item":  "modularcargobaydoor",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:55Z",
+                        "event":  "Loadout",
+                        "Ship":  "krait_mkii",
+                        "ShipID":  11,
+                        "ShipName":  " ",
+                        "ShipIdent":  "DA-10K",
+                        "HullValue":  45814205,
+                        "ModulesValue":  95860408,
+                        "HullHealth":  1.000000,
+                        "UnladenMass":  686.000000,
+                        "CargoCapacity":  64,
+                        "MaxJumpRange":  17.824310,
+                        "FuelCapacity":  {
+                                             "Main":  32.000000,
+                                             "Reserve":  0.630000
+                                         },
+                        "Rebuy":  7083731,
+                        "Modules":  [
+                                        {
+                                            "Slot":  "LargeHardpoint1",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.866300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.661201,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4015.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  669.300049,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint2",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.891300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  72.472397,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4027.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  671.299988,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint3",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.855600,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.858803,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4010.699951,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  668.450012,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint1",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint2",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint1",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint2",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint3",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint4",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "Armour",
+                                            "Item":  "krait_mkii_armour_grade1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerPlant",
+                                            "Item":  "int_powerplant_size7_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  38913291
+                                        },
+                                        {
+                                            "Slot":  "MainEngines",
+                                            "Item":  "int_engine_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "FrameShiftDrive",
+                                            "Item":  "int_hyperdrive_size5_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  5103953
+                                        },
+                                        {
+                                            "Slot":  "LifeSupport",
+                                            "Item":  "int_lifesupport_size4_class1",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerDistributor",
+                                            "Item":  "int_powerdistributor_size7_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  9731925,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673751,
+                                                                "BlueprintName":  "PowerDistributor_PriorityWeapons",
+                                                                "Level":  2,
+                                                                "Quality":  0.931000,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "WeaponsCapacity",
+                                                                                      "Value":  78.879097,
+                                                                                      "OriginalValue":  61.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "WeaponsRecharge",
+                                                                                      "Value":  7.486530,
+                                                                                      "OriginalValue":  6.100000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesRecharge",
+                                                                                      "Value":  3.760000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsRecharge",
+                                                                                      "Value":  3.920000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "Radar",
+                                            "Item":  "int_sensors_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  3475688
+                                        },
+                                        {
+                                            "Slot":  "FuelTank",
+                                            "Item":  "int_fueltank_size5_class3",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot01_Size6",
+                                            "Item":  "int_shieldgenerator_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "Slot02_Size6",
+                                            "Item":  "int_fighterbay_size6_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  1869340
+                                        },
+                                        {
+                                            "Slot":  "Slot03_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot04_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot05_Size4",
+                                            "Item":  "int_shieldcellbank_size4_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  1,
+                                            "AmmoInHopper":  3,
+                                            "Health":  1.000000,
+                                            "Value":  443328
+                                        },
+                                        {
+                                            "Slot":  "Slot06_Size3",
+                                            "Item":  "int_fuelscoop_size3_class5",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000,
+                                            "Value":  902954
+                                        },
+                                        {
+                                            "Slot":  "Slot08_Size2",
+                                            "Item":  "int_dockingcomputer_advanced",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  13507
+                                        },
+                                        {
+                                            "Slot":  "Slot09_Size1",
+                                            "Item":  "int_supercruiseassist",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PlanetaryApproachSuite",
+                                            "Item":  "int_planetapproachsuite_advanced",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "VesselVoice",
+                                            "Item":  "voicepack_verity",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "ShipCockpit",
+                                            "Item":  "krait_mkii_cockpit",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "CargoHatch",
+                                            "Item":  "modularcargobaydoor",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:25Z",
+                        "event":  "Loadout",
+                        "Ship":  "krait_mkii",
+                        "ShipID":  11,
+                        "ShipName":  " ",
+                        "ShipIdent":  "DA-10K",
+                        "HullValue":  45814205,
+                        "ModulesValue":  95860408,
+                        "HullHealth":  1.000000,
+                        "UnladenMass":  686.000000,
+                        "CargoCapacity":  64,
+                        "MaxJumpRange":  17.824310,
+                        "FuelCapacity":  {
+                                             "Main":  32.000000,
+                                             "Reserve":  0.630000
+                                         },
+                        "Rebuy":  7083731,
+                        "Modules":  [
+                                        {
+                                            "Slot":  "LargeHardpoint1",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.866300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.661201,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4015.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  669.300049,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint2",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.891300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  72.472397,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4027.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  671.299988,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint3",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.855600,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.858803,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4010.699951,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  668.450012,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint1",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint2",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint1",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint2",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint3",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint4",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "Armour",
+                                            "Item":  "krait_mkii_armour_grade1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerPlant",
+                                            "Item":  "int_powerplant_size7_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  38913291
+                                        },
+                                        {
+                                            "Slot":  "MainEngines",
+                                            "Item":  "int_engine_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "FrameShiftDrive",
+                                            "Item":  "int_hyperdrive_size5_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  5103953
+                                        },
+                                        {
+                                            "Slot":  "LifeSupport",
+                                            "Item":  "int_lifesupport_size4_class1",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerDistributor",
+                                            "Item":  "int_powerdistributor_size7_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  9731925,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673751,
+                                                                "BlueprintName":  "PowerDistributor_PriorityWeapons",
+                                                                "Level":  2,
+                                                                "Quality":  0.931000,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "WeaponsCapacity",
+                                                                                      "Value":  78.879097,
+                                                                                      "OriginalValue":  61.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "WeaponsRecharge",
+                                                                                      "Value":  7.486530,
+                                                                                      "OriginalValue":  6.100000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesRecharge",
+                                                                                      "Value":  3.760000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsRecharge",
+                                                                                      "Value":  3.920000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "Radar",
+                                            "Item":  "int_sensors_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  3475688
+                                        },
+                                        {
+                                            "Slot":  "FuelTank",
+                                            "Item":  "int_fueltank_size5_class3",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot01_Size6",
+                                            "Item":  "int_shieldgenerator_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "Slot02_Size6",
+                                            "Item":  "int_fighterbay_size6_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  1869340
+                                        },
+                                        {
+                                            "Slot":  "Slot03_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot04_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot05_Size4",
+                                            "Item":  "int_shieldcellbank_size4_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  1,
+                                            "AmmoInHopper":  3,
+                                            "Health":  1.000000,
+                                            "Value":  443328
+                                        },
+                                        {
+                                            "Slot":  "Slot06_Size3",
+                                            "Item":  "int_fuelscoop_size3_class5",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000,
+                                            "Value":  902954
+                                        },
+                                        {
+                                            "Slot":  "Slot08_Size2",
+                                            "Item":  "int_dockingcomputer_advanced",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  13507
+                                        },
+                                        {
+                                            "Slot":  "Slot09_Size1",
+                                            "Item":  "int_supercruiseassist",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PlanetaryApproachSuite",
+                                            "Item":  "int_planetapproachsuite_advanced",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "VesselVoice",
+                                            "Item":  "voicepack_verity",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "ShipCockpit",
+                                            "Item":  "krait_mkii_cockpit",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "CargoHatch",
+                                            "Item":  "modularcargobaydoor",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        }
+                                    ]
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:42:56Z",
+                        "event":  "Loadout",
+                        "Ship":  "krait_mkii",
+                        "ShipID":  11,
+                        "ShipName":  " ",
+                        "ShipIdent":  "DA-10K",
+                        "HullValue":  45814205,
+                        "ModulesValue":  95860408,
+                        "HullHealth":  1.000000,
+                        "UnladenMass":  686.000000,
+                        "CargoCapacity":  64,
+                        "MaxJumpRange":  17.824310,
+                        "FuelCapacity":  {
+                                             "Main":  32.000000,
+                                             "Reserve":  0.630000
+                                         },
+                        "Rebuy":  7083731,
+                        "Modules":  [
+                                        {
+                                            "Slot":  "LargeHardpoint1",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.866300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.661201,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4015.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  669.300049,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint2",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.891300,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  72.472397,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4027.800049,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  671.299988,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "LargeHardpoint3",
+                                            "Item":  "hpt_pulselaser_gimbal_large",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  140600,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673565,
+                                                                "BlueprintName":  "Weapon_Focused",
+                                                                "Level":  1,
+                                                                "Quality":  0.855600,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "ThermalLoad",
+                                                                                      "Value":  0.929200,
+                                                                                      "OriginalValue":  0.920000,
+                                                                                      "LessIsGood":  1
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "ArmourPenetration",
+                                                                                      "Value":  71.858803,
+                                                                                      "OriginalValue":  52.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "MaximumRange",
+                                                                                      "Value":  4010.699951,
+                                                                                      "OriginalValue":  3000.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "DamageFalloffRange",
+                                                                                      "Value":  668.450012,
+                                                                                      "OriginalValue":  500.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint1",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "MediumHardpoint2",
+                                            "Item":  "hpt_plasmaaccelerator_fixed_medium",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  5,
+                                            "AmmoInHopper":  100,
+                                            "Health":  1.000000,
+                                            "Value":  750780
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint1",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint2",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint3",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "TinyHardpoint4",
+                                            "Item":  "hpt_shieldbooster_size0_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  281000
+                                        },
+                                        {
+                                            "Slot":  "Armour",
+                                            "Item":  "krait_mkii_armour_grade1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerPlant",
+                                            "Item":  "int_powerplant_size7_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  38913291
+                                        },
+                                        {
+                                            "Slot":  "MainEngines",
+                                            "Item":  "int_engine_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "FrameShiftDrive",
+                                            "Item":  "int_hyperdrive_size5_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  5103953
+                                        },
+                                        {
+                                            "Slot":  "LifeSupport",
+                                            "Item":  "int_lifesupport_size4_class1",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PowerDistributor",
+                                            "Item":  "int_powerdistributor_size7_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  9731925,
+                                            "Engineering":  {
+                                                                "Engineer":  "The Dweller",
+                                                                "EngineerID":  300180,
+                                                                "BlueprintID":  128673751,
+                                                                "BlueprintName":  "PowerDistributor_PriorityWeapons",
+                                                                "Level":  2,
+                                                                "Quality":  0.931000,
+                                                                "Modifiers":  [
+                                                                                  {
+                                                                                      "Label":  "WeaponsCapacity",
+                                                                                      "Value":  78.879097,
+                                                                                      "OriginalValue":  61.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "WeaponsRecharge",
+                                                                                      "Value":  7.486530,
+                                                                                      "OriginalValue":  6.100000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "EnginesRecharge",
+                                                                                      "Value":  3.760000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsCapacity",
+                                                                                      "Value":  38.540001,
+                                                                                      "OriginalValue":  41.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  },
+                                                                                  {
+                                                                                      "Label":  "SystemsRecharge",
+                                                                                      "Value":  3.920000,
+                                                                                      "OriginalValue":  4.000000,
+                                                                                      "LessIsGood":  0
+                                                                                  }
+                                                                              ]
+                                                            }
+                                        },
+                                        {
+                                            "Slot":  "Radar",
+                                            "Item":  "int_sensors_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  3475688
+                                        },
+                                        {
+                                            "Slot":  "FuelTank",
+                                            "Item":  "int_fueltank_size5_class3",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot01_Size6",
+                                            "Item":  "int_shieldgenerator_size6_class5",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  16179531
+                                        },
+                                        {
+                                            "Slot":  "Slot02_Size6",
+                                            "Item":  "int_fighterbay_size6_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000,
+                                            "Value":  1869340
+                                        },
+                                        {
+                                            "Slot":  "Slot03_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot04_Size5",
+                                            "Item":  "int_cargorack_size5_class1",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "Slot05_Size4",
+                                            "Item":  "int_shieldcellbank_size4_class5",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "AmmoInClip":  1,
+                                            "AmmoInHopper":  3,
+                                            "Health":  1.000000,
+                                            "Value":  443328
+                                        },
+                                        {
+                                            "Slot":  "Slot06_Size3",
+                                            "Item":  "int_fuelscoop_size3_class5",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000,
+                                            "Value":  902954
+                                        },
+                                        {
+                                            "Slot":  "Slot08_Size2",
+                                            "Item":  "int_dockingcomputer_advanced",
+                                            "On":  true,
+                                            "Priority":  0,
+                                            "Health":  1.000000,
+                                            "Value":  13507
+                                        },
+                                        {
+                                            "Slot":  "Slot09_Size1",
+                                            "Item":  "int_supercruiseassist",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "PlanetaryApproachSuite",
+                                            "Item":  "int_planetapproachsuite_advanced",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "VesselVoice",
+                                            "Item":  "voicepack_verity",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "ShipCockpit",
+                                            "Item":  "krait_mkii_cockpit",
+                                            "On":  true,
+                                            "Priority":  1,
+                                            "Health":  1.000000
+                                        },
+                                        {
+                                            "Slot":  "CargoHatch",
+                                            "Item":  "modularcargobaydoor",
+                                            "On":  true,
+                                            "Priority":  2,
+                                            "Health":  1.000000
+                                        }
+                                    ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Loadout"
+}

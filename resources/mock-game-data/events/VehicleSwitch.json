@@ -1,0 +1,13 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1999873-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T03:19:02Z",
+                        "event":  "VehicleSwitch",
+                        "To":  "Fighter"
+                    }
+                ],
+    "sampleCount":  1,
+    "eventType":  "VehicleSwitch"
+}

@@ -1,0 +1,123 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1803543-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-12-24T01:47:23Z",
+                        "event":  "StoredShips",
+                        "StationName":  "Abraham Lincoln",
+                        "MarketID":  128016896,
+                        "StarSystem":  "Sol",
+                        "ShipsHere":  [
+
+                                      ],
+                        "ShipsRemote":  [
+                                            {
+                                                "ShipID":  16,
+                                                "ShipType":  "Type9",
+                                                "ShipType_Localised":  "Type-9 Heavy",
+                                                "Name":  "",
+                                                "StarSystem":  "WISE 1506+7027",
+                                                "ShipMarketID":  3228867072,
+                                                "TransferPrice":  159858,
+                                                "TransferTime":  405,
+                                                "Value":  172017978,
+                                                "Hot":  false
+                                            }
+                                        ]
+                    },
+                    {
+                        "timestamp":  "2024-04-14T02:26:37Z",
+                        "event":  "StoredShips",
+                        "StationName":  "Kepler Gateway",
+                        "MarketID":  3228884736,
+                        "StarSystem":  "Kruger 60",
+                        "ShipsHere":  [
+
+                                      ],
+                        "ShipsRemote":  [
+                                            {
+                                                "ShipID":  16,
+                                                "ShipType":  "Type9",
+                                                "ShipType_Localised":  "Type-9 Heavy",
+                                                "Name":  "",
+                                                "StarSystem":  "WISE 1506+7027",
+                                                "ShipMarketID":  3228867072,
+                                                "TransferPrice":  141040,
+                                                "TransferTime":  388,
+                                                "Value":  172017978,
+                                                "Hot":  false
+                                            }
+                                        ]
+                    },
+                    {
+                        "timestamp":  "2025-09-22T04:19:55Z",
+                        "event":  "StoredShips",
+                        "StationName":  "Kepler Gateway",
+                        "MarketID":  3228884736,
+                        "StarSystem":  "Kruger 60",
+                        "ShipsHere":  [
+
+                                      ],
+                        "ShipsRemote":  [
+                                            {
+                                                "ShipID":  16,
+                                                "ShipType":  "Type9",
+                                                "ShipType_Localised":  "Type-9 Heavy",
+                                                "Name":  "",
+                                                "StarSystem":  "WISE 1506+7027",
+                                                "ShipMarketID":  3228867072,
+                                                "TransferPrice":  141040,
+                                                "TransferTime":  388,
+                                                "Value":  172017978,
+                                                "Hot":  false
+                                            }
+                                        ]
+                    },
+                    {
+                        "timestamp":  "2025-09-22T05:05:41Z",
+                        "event":  "StoredShips",
+                        "StationName":  "Dobrovolskiy Enterprise",
+                        "MarketID":  3228867072,
+                        "StarSystem":  "WISE 1506+7027",
+                        "ShipsHere":  [
+                                          {
+                                              "ShipID":  16,
+                                              "ShipType":  "type9",
+                                              "ShipType_Localised":  "Type-9 Heavy",
+                                              "Value":  172017978,
+                                              "Hot":  false
+                                          }
+                                      ],
+                        "ShipsRemote":  [
+
+                                        ]
+                    },
+                    {
+                        "timestamp":  "2025-09-22T20:01:09Z",
+                        "event":  "StoredShips",
+                        "StationName":  "Kepler Gateway",
+                        "MarketID":  3228884736,
+                        "StarSystem":  "Kruger 60",
+                        "ShipsHere":  [
+
+                                      ],
+                        "ShipsRemote":  [
+                                            {
+                                                "ShipID":  11,
+                                                "ShipType":  "Krait_MkII",
+                                                "ShipType_Localised":  "Krait Mk II",
+                                                "Name":  "",
+                                                "StarSystem":  "WISE 1506+7027",
+                                                "ShipMarketID":  3228867072,
+                                                "TransferPrice":  104803,
+                                                "TransferTime":  388,
+                                                "Value":  127507151,
+                                                "Hot":  false
+                                            }
+                                        ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "StoredShips"
+}

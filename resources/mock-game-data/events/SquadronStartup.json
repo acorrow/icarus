@@ -1,0 +1,38 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1692608-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:28Z",
+                        "event":  "SquadronStartup",
+                        "SquadronName":  "INTERGALACTIC SHARTS OF JUSTICE",
+                        "CurrentRank":  0
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:18Z",
+                        "event":  "SquadronStartup",
+                        "SquadronName":  "INTERGALACTIC SHARTS OF JUSTICE",
+                        "CurrentRank":  0
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:47Z",
+                        "event":  "SquadronStartup",
+                        "SquadronName":  "INTERGALACTIC SHARTS OF JUSTICE",
+                        "CurrentRank":  0
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:20Z",
+                        "event":  "SquadronStartup",
+                        "SquadronName":  "INTERGALACTIC SHARTS OF JUSTICE",
+                        "CurrentRank":  0
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:42:51Z",
+                        "event":  "SquadronStartup",
+                        "SquadronName":  "INTERGALACTIC SHARTS OF JUSTICE",
+                        "CurrentRank":  0
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "SquadronStartup"
+}

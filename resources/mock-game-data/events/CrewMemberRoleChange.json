@@ -1,0 +1,43 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9347434-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T02:50:50Z",
+                        "event":  "CrewMemberRoleChange",
+                        "Crew":  "BIM TIQUI",
+                        "Role":  "Idle",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T03:00:22Z",
+                        "event":  "CrewMemberRoleChange",
+                        "Crew":  "BIM TIQUI",
+                        "Role":  "FireCon",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T03:04:50Z",
+                        "event":  "CrewMemberRoleChange",
+                        "Crew":  "BIM TIQUI",
+                        "Role":  "Idle",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T03:05:12Z",
+                        "event":  "CrewMemberRoleChange",
+                        "Crew":  "BIM TIQUI",
+                        "Role":  "FighterCon",
+                        "Telepresence":  true
+                    },
+                    {
+                        "timestamp":  "2025-09-24T03:22:56Z",
+                        "event":  "CrewMemberRoleChange",
+                        "Crew":  "BIM TIQUI",
+                        "Role":  "Idle",
+                        "Telepresence":  true
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "CrewMemberRoleChange"
+}

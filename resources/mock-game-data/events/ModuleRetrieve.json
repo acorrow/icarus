@@ -1,0 +1,71 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0623885-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-25T12:02:59Z",
+                        "event":  "ModuleRetrieve",
+                        "MarketID":  3228867072,
+                        "Slot":  "Slot03_Size6",
+                        "RetrievedItem":  "$int_cargorack_size6_class1_name;",
+                        "RetrievedItem_Localised":  "Cargo Rack",
+                        "Ship":  "type9_military",
+                        "ShipID":  18,
+                        "Hot":  false,
+                        "SwapOutItem":  "$int_shieldcellbank_size6_class5_name;",
+                        "SwapOutItem_Localised":  "Shield Cell Bank"
+                    },
+                    {
+                        "timestamp":  "2025-09-25T13:35:45Z",
+                        "event":  "ModuleRetrieve",
+                        "MarketID":  3228867072,
+                        "Slot":  "TinyHardpoint2",
+                        "RetrievedItem":  "$hpt_crimescanner_size0_class5_name;",
+                        "RetrievedItem_Localised":  "K-Warrant Scanner",
+                        "Ship":  "type9_military",
+                        "ShipID":  18,
+                        "Hot":  false,
+                        "SwapOutItem":  "$hpt_plasmapointdefence_turret_tiny_name;",
+                        "SwapOutItem_Localised":  "Point Defence Turret"
+                    },
+                    {
+                        "timestamp":  "2025-09-28T02:36:57Z",
+                        "event":  "ModuleRetrieve",
+                        "MarketID":  3228884736,
+                        "Slot":  "Slot02_Size6",
+                        "RetrievedItem":  "$int_cargorack_size6_class1_name;",
+                        "RetrievedItem_Localised":  "Cargo Rack",
+                        "Ship":  "type8",
+                        "ShipID":  21,
+                        "Hot":  false,
+                        "SwapOutItem":  "$int_cargorack_size5_class1_name;",
+                        "SwapOutItem_Localised":  "Cargo Rack"
+                    },
+                    {
+                        "timestamp":  "2025-09-28T02:37:29Z",
+                        "event":  "ModuleRetrieve",
+                        "MarketID":  3228884736,
+                        "Slot":  "Slot04_Size6",
+                        "RetrievedItem":  "$int_cargorack_size5_class1_name;",
+                        "RetrievedItem_Localised":  "Cargo Rack",
+                        "Ship":  "type8",
+                        "ShipID":  21,
+                        "Hot":  false
+                    },
+                    {
+                        "timestamp":  "2025-09-29T17:42:15Z",
+                        "event":  "ModuleRetrieve",
+                        "MarketID":  3228824064,
+                        "Slot":  "Slot02_Size7",
+                        "RetrievedItem":  "$int_cargorack_size7_class1_name;",
+                        "RetrievedItem_Localised":  "Cargo Rack",
+                        "Ship":  "type9",
+                        "ShipID":  22,
+                        "Hot":  false,
+                        "SwapOutItem":  "$int_cargorack_size6_class1_name;",
+                        "SwapOutItem_Localised":  "Cargo Rack"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ModuleRetrieve"
+}

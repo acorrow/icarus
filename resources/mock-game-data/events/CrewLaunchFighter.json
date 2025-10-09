@@ -1,0 +1,26 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9277267-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-24T03:05:12Z",
+                        "event":  "CrewLaunchFighter",
+                        "Telepresence":  true,
+                        "Crew":  "BIM TIQUI"
+                    },
+                    {
+                        "timestamp":  "2025-09-24T03:23:24Z",
+                        "event":  "CrewLaunchFighter",
+                        "Telepresence":  true,
+                        "Crew":  "BIM TIQUI"
+                    },
+                    {
+                        "timestamp":  "2025-09-25T04:25:07Z",
+                        "event":  "CrewLaunchFighter",
+                        "Telepresence":  true,
+                        "Crew":  "DADBOD420"
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "CrewLaunchFighter"
+}

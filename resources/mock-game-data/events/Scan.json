@@ -1,0 +1,235 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1277556-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2024-04-16T13:34:46Z",
+                        "event":  "Scan",
+                        "ScanType":  "AutoScan",
+                        "BodyName":  "UV Ceti B",
+                        "BodyID":  2,
+                        "Parents":  [
+                                        {
+                                            "Null":  0
+                                        }
+                                    ],
+                        "StarSystem":  "UV Ceti",
+                        "SystemAddress":  18263140476329,
+                        "DistanceFromArrivalLS":  0.000000,
+                        "StarType":  "M",
+                        "Subclass":  5,
+                        "StellarMass":  0.406250,
+                        "Radius":  407646848.000000,
+                        "AbsoluteMagnitude":  8.329605,
+                        "Age_MY":  5114,
+                        "SurfaceTemperature":  3371.000000,
+                        "Luminosity":  "V",
+                        "SemiMajorAxis":  785389363765.716553,
+                        "Eccentricity":  0.620000,
+                        "OrbitalInclination":  -12.877483,
+                        "Periapsis":  263.333118,
+                        "OrbitalPeriod":  2318804383.277893,
+                        "AscendingNode":  0.000000,
+                        "MeanAnomaly":  3.691975,
+                        "RotationPeriod":  167178.583303,
+                        "AxialTilt":  0.158271,
+                        "WasDiscovered":  true,
+                        "WasMapped":  false
+                    },
+                    {
+                        "timestamp":  "2024-04-17T02:17:59Z",
+                        "event":  "Scan",
+                        "ScanType":  "AutoScan",
+                        "BodyName":  "Flousop A A Belt Cluster 1",
+                        "BodyID":  6,
+                        "Parents":  [
+                                        {
+                                            "Ring":  5
+                                        },
+                                        {
+                                            "Star":  2
+                                        },
+                                        {
+                                            "Null":  1
+                                        },
+                                        {
+                                            "Null":  0
+                                        }
+                                    ],
+                        "StarSystem":  "Flousop",
+                        "SystemAddress":  7268024329641,
+                        "DistanceFromArrivalLS":  1.950770,
+                        "WasDiscovered":  true,
+                        "WasMapped":  false
+                    },
+                    {
+                        "timestamp":  "2024-04-17T02:17:59Z",
+                        "event":  "Scan",
+                        "ScanType":  "AutoScan",
+                        "BodyName":  "Flousop A 1",
+                        "BodyID":  9,
+                        "Parents":  [
+                                        {
+                                            "Star":  2
+                                        },
+                                        {
+                                            "Null":  1
+                                        },
+                                        {
+                                            "Null":  0
+                                        }
+                                    ],
+                        "StarSystem":  "Flousop",
+                        "SystemAddress":  7268024329641,
+                        "DistanceFromArrivalLS":  13.656450,
+                        "TidalLock":  true,
+                        "TerraformState":  "",
+                        "PlanetClass":  "High metal content body",
+                        "Atmosphere":  "",
+                        "AtmosphereType":  "None",
+                        "Volcanism":  "",
+                        "MassEM":  0.003336,
+                        "Radius":  983403.437500,
+                        "SurfaceGravity":  1.374764,
+                        "SurfaceTemperature":  186.720871,
+                        "SurfacePressure":  0.000000,
+                        "Landable":  true,
+                        "Materials":  [
+                                          {
+                                              "Name":  "iron",
+                                              "Percent":  21.338755
+                                          },
+                                          {
+                                              "Name":  "nickel",
+                                              "Percent":  16.139740
+                                          },
+                                          {
+                                              "Name":  "sulphur",
+                                              "Percent":  15.044281
+                                          },
+                                          {
+                                              "Name":  "carbon",
+                                              "Percent":  12.650683
+                                          },
+                                          {
+                                              "Name":  "chromium",
+                                              "Percent":  9.596747
+                                          },
+                                          {
+                                              "Name":  "manganese",
+                                              "Percent":  8.812688
+                                          },
+                                          {
+                                              "Name":  "phosphorus",
+                                              "Percent":  8.099184
+                                          },
+                                          {
+                                              "Name":  "vanadium",
+                                              "Percent":  5.240056
+                                          },
+                                          {
+                                              "Name":  "tin",
+                                              "Percent":  1.382828
+                                          },
+                                          {
+                                              "Name":  "mercury",
+                                              "Percent":  0.931828
+                                          },
+                                          {
+                                              "Name":  "technetium",
+                                              "Percent":  0.763201
+                                          }
+                                      ],
+                        "Composition":  {
+                                            "Ice":  0.000000,
+                                            "Rock":  0.667549,
+                                            "Metal":  0.332451
+                                        },
+                        "SemiMajorAxis":  4094659090.042114,
+                        "Eccentricity":  0.000358,
+                        "OrbitalInclination":  0.015667,
+                        "Periapsis":  98.955610,
+                        "OrbitalPeriod":  273259.866238,
+                        "AscendingNode":  19.087066,
+                        "MeanAnomaly":  67.607063,
+                        "RotationPeriod":  273260.177151,
+                        "AxialTilt":  0.317558,
+                        "WasDiscovered":  true,
+                        "WasMapped":  true
+                    },
+                    {
+                        "timestamp":  "2024-04-17T02:17:59Z",
+                        "event":  "Scan",
+                        "ScanType":  "AutoScan",
+                        "BodyName":  "Flousop A A Belt Cluster 2",
+                        "BodyID":  7,
+                        "Parents":  [
+                                        {
+                                            "Ring":  5
+                                        },
+                                        {
+                                            "Star":  2
+                                        },
+                                        {
+                                            "Null":  1
+                                        },
+                                        {
+                                            "Null":  0
+                                        }
+                                    ],
+                        "StarSystem":  "Flousop",
+                        "SystemAddress":  7268024329641,
+                        "DistanceFromArrivalLS":  2.089881,
+                        "WasDiscovered":  true,
+                        "WasMapped":  false
+                    },
+                    {
+                        "timestamp":  "2024-04-17T02:17:59Z",
+                        "event":  "Scan",
+                        "ScanType":  "AutoScan",
+                        "BodyName":  "Flousop A",
+                        "BodyID":  2,
+                        "Parents":  [
+                                        {
+                                            "Null":  1
+                                        },
+                                        {
+                                            "Null":  0
+                                        }
+                                    ],
+                        "StarSystem":  "Flousop",
+                        "SystemAddress":  7268024329641,
+                        "DistanceFromArrivalLS":  0.000000,
+                        "StarType":  "M",
+                        "Subclass":  5,
+                        "StellarMass":  0.273438,
+                        "Radius":  314978624.000000,
+                        "AbsoluteMagnitude":  14.761642,
+                        "Age_MY":  10264,
+                        "SurfaceTemperature":  2580.000000,
+                        "Luminosity":  "V",
+                        "SemiMajorAxis":  48857166767.120361,
+                        "Eccentricity":  0.039505,
+                        "OrbitalInclination":  -5.551116,
+                        "Periapsis":  228.455153,
+                        "OrbitalPeriod":  68233804.106712,
+                        "AscendingNode":  140.011150,
+                        "MeanAnomaly":  62.177892,
+                        "RotationPeriod":  157440.482709,
+                        "AxialTilt":  0.000000,
+                        "Rings":  [
+                                      {
+                                          "Name":  "Flousop A A Belt",
+                                          "RingClass":  "eRingClass_MetalRich",
+                                          "MassMT":  65326000000000,
+                                          "InnerRad":  498220000,
+                                          "OuterRad":  1566200000
+                                      }
+                                  ],
+                        "WasDiscovered":  true,
+                        "WasMapped":  false
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Scan"
+}

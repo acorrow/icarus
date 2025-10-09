@@ -1,0 +1,44 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.9747908-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T02:25:00Z",
+                        "event":  "FetchRemoteModule",
+                        "StorageSlot":  200,
+                        "StoredItem":  "$int_cargorack_size6_class1_name;",
+                        "StoredItem_Localised":  "Cargo Rack",
+                        "ServerId":  128064343,
+                        "TransferCost":  100,
+                        "TransferTime":  430,
+                        "Ship":  "krait_mkii",
+                        "ShipID":  11
+                    },
+                    {
+                        "timestamp":  "2025-09-24T16:50:07Z",
+                        "event":  "FetchRemoteModule",
+                        "StorageSlot":  98,
+                        "StoredItem":  "$hpt_mininglaser_turret_medium_name;",
+                        "StoredItem_Localised":  "Mining Laser",
+                        "ServerId":  128740820,
+                        "TransferCost":  127,
+                        "TransferTime":  405,
+                        "Ship":  "type9_military",
+                        "ShipID":  18
+                    },
+                    {
+                        "timestamp":  "2025-09-29T17:48:35Z",
+                        "event":  "FetchRemoteModule",
+                        "StorageSlot":  578,
+                        "StoredItem":  "$int_shieldgenerator_size4_class1_name;",
+                        "StoredItem_Localised":  "Shield Generator",
+                        "ServerId":  128064273,
+                        "TransferCost":  100,
+                        "TransferTime":  493,
+                        "Ship":  "type9",
+                        "ShipID":  22
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "FetchRemoteModule"
+}

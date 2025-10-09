@@ -1,0 +1,61 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0319717-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T20:02:49Z",
+                        "event":  "MarketSell",
+                        "MarketID":  3228884736,
+                        "Type":  "rhodplumsite",
+                        "Count":  6,
+                        "SellPrice":  224337,
+                        "TotalSale":  1346022,
+                        "AvgPricePaid":  0
+                    },
+                    {
+                        "timestamp":  "2025-09-23T00:33:42Z",
+                        "event":  "MarketSell",
+                        "MarketID":  3228884736,
+                        "Type":  "battleweapons",
+                        "Type_Localised":  "Battle Weapons",
+                        "Count":  157,
+                        "SellPrice":  6288,
+                        "TotalSale":  987216,
+                        "AvgPricePaid":  6391
+                    },
+                    {
+                        "timestamp":  "2025-09-23T00:57:32Z",
+                        "event":  "MarketSell",
+                        "MarketID":  3228884736,
+                        "Type":  "gold",
+                        "Count":  2,
+                        "SellPrice":  51075,
+                        "TotalSale":  102150,
+                        "AvgPricePaid":  0
+                    },
+                    {
+                        "timestamp":  "2025-09-24T06:55:57Z",
+                        "event":  "MarketSell",
+                        "MarketID":  3228867072,
+                        "Type":  "lowtemperaturediamond",
+                        "Type_Localised":  "Low Temp. Diamonds",
+                        "Count":  15,
+                        "SellPrice":  195338,
+                        "TotalSale":  2930070,
+                        "AvgPricePaid":  0
+                    },
+                    {
+                        "timestamp":  "2025-09-24T12:35:22Z",
+                        "event":  "MarketSell",
+                        "MarketID":  3228867072,
+                        "Type":  "hydrogenperoxide",
+                        "Type_Localised":  "Hydrogen Peroxide",
+                        "Count":  1,
+                        "SellPrice":  2848,
+                        "TotalSale":  2848,
+                        "AvgPricePaid":  0
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "MarketSell"
+}

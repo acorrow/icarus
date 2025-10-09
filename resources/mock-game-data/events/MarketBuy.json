@@ -1,0 +1,57 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0299731-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T20:04:37Z",
+                        "event":  "MarketBuy",
+                        "MarketID":  3228884736,
+                        "Type":  "battleweapons",
+                        "Type_Localised":  "Battle Weapons",
+                        "Count":  157,
+                        "BuyPrice":  6391,
+                        "TotalCost":  1003387
+                    },
+                    {
+                        "timestamp":  "2025-09-28T03:03:25Z",
+                        "event":  "MarketBuy",
+                        "MarketID":  4208917763,
+                        "Type":  "palladium",
+                        "Count":  8,
+                        "BuyPrice":  4828,
+                        "TotalCost":  38624
+                    },
+                    {
+                        "timestamp":  "2025-09-28T04:35:13Z",
+                        "event":  "MarketBuy",
+                        "MarketID":  3228901376,
+                        "Type":  "militarygradefabrics",
+                        "Type_Localised":  "Military Grade Fabrics",
+                        "Count":  288,
+                        "BuyPrice":  1101,
+                        "TotalCost":  317088
+                    },
+                    {
+                        "timestamp":  "2025-09-28T04:49:53Z",
+                        "event":  "MarketBuy",
+                        "MarketID":  4220248323,
+                        "Type":  "progenitorcells",
+                        "Type_Localised":  "Progenitor Cells",
+                        "Count":  304,
+                        "BuyPrice":  5583,
+                        "TotalCost":  1697232
+                    },
+                    {
+                        "timestamp":  "2025-09-28T04:57:30Z",
+                        "event":  "MarketBuy",
+                        "MarketID":  3228901376,
+                        "Type":  "militarygradefabrics",
+                        "Type_Localised":  "Military Grade Fabrics",
+                        "Count":  304,
+                        "BuyPrice":  1101,
+                        "TotalCost":  334704
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "MarketBuy"
+}

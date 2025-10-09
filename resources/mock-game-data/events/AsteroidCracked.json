@@ -1,0 +1,33 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:52.8887806-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T07:08:10Z",
+                        "event":  "AsteroidCracked",
+                        "Body":  "WISE 1506+7027 1 A Ring"
+                    },
+                    {
+                        "timestamp":  "2025-09-25T14:30:09Z",
+                        "event":  "AsteroidCracked",
+                        "Body":  "WISE 1506+7027 2 A Ring"
+                    },
+                    {
+                        "timestamp":  "2025-09-25T16:03:57Z",
+                        "event":  "AsteroidCracked",
+                        "Body":  "WISE 1506+7027 1 A Ring"
+                    },
+                    {
+                        "timestamp":  "2025-09-25T16:19:12Z",
+                        "event":  "AsteroidCracked",
+                        "Body":  "WISE 1506+7027 1 A Ring"
+                    },
+                    {
+                        "timestamp":  "2025-09-25T20:05:42Z",
+                        "event":  "AsteroidCracked",
+                        "Body":  "LHS 71 A 2 A Ring"
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "AsteroidCracked"
+}

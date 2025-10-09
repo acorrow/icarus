@@ -1,0 +1,44 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1262449-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-28T06:21:02Z",
+                        "event":  "SAAScanComplete",
+                        "BodyName":  "LHS 71 A 2 A Ring",
+                        "SystemAddress":  6406044390098,
+                        "BodyID":  28,
+                        "ProbesUsed":  1,
+                        "EfficiencyTarget":  0
+                    },
+                    {
+                        "timestamp":  "2025-09-29T05:18:18Z",
+                        "event":  "SAAScanComplete",
+                        "BodyName":  "WISE J004945 6 A Ring",
+                        "SystemAddress":  5364951042888,
+                        "BodyID":  14,
+                        "ProbesUsed":  1,
+                        "EfficiencyTarget":  0
+                    },
+                    {
+                        "timestamp":  "2025-09-30T03:18:55Z",
+                        "event":  "SAAScanComplete",
+                        "BodyName":  "WISE J004945 6 A Ring",
+                        "SystemAddress":  5364951042888,
+                        "BodyID":  14,
+                        "ProbesUsed":  1,
+                        "EfficiencyTarget":  0
+                    },
+                    {
+                        "timestamp":  "2025-10-07T04:48:33Z",
+                        "event":  "SAAScanComplete",
+                        "BodyName":  "LFT 65 4 A Ring",
+                        "SystemAddress":  3102853810539,
+                        "BodyID":  21,
+                        "ProbesUsed":  1,
+                        "EfficiencyTarget":  0
+                    }
+                ],
+    "sampleCount":  4,
+    "eventType":  "SAAScanComplete"
+}

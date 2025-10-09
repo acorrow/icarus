@@ -1,0 +1,23 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.2050381-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-25T04:54:02Z",
+                        "event":  "WingInvite",
+                        "Name":  "BIM TIQUI"
+                    },
+                    {
+                        "timestamp":  "2025-09-27T03:31:14Z",
+                        "event":  "WingInvite",
+                        "Name":  "BIM TIQUI"
+                    },
+                    {
+                        "timestamp":  "2025-09-30T02:46:43Z",
+                        "event":  "WingInvite",
+                        "Name":  "BIM TIQUI"
+                    }
+                ],
+    "sampleCount":  3,
+    "eventType":  "WingInvite"
+}

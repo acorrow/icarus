@@ -1,0 +1,58 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.1626929-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2025-09-22T05:05:48Z",
+                        "event":  "ShipyardSwap",
+                        "ShipType":  "type9",
+                        "ShipType_Localised":  "Type-9 Heavy",
+                        "ShipID":  16,
+                        "StoreOldShip":  "Krait_MkII",
+                        "StoreShipID":  11,
+                        "MarketID":  3228867072
+                    },
+                    {
+                        "timestamp":  "2025-09-23T00:57:47Z",
+                        "event":  "ShipyardSwap",
+                        "ShipType":  "krait_mkii",
+                        "ShipType_Localised":  "Krait Mk II",
+                        "ShipID":  11,
+                        "StoreOldShip":  "Type9",
+                        "StoreShipID":  16,
+                        "MarketID":  3228884736
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:36:09Z",
+                        "event":  "ShipyardSwap",
+                        "ShipType":  "type9",
+                        "ShipType_Localised":  "Type-9 Heavy",
+                        "ShipID":  16,
+                        "StoreOldShip":  "Krait_MkII",
+                        "StoreShipID":  11,
+                        "MarketID":  3228884736
+                    },
+                    {
+                        "timestamp":  "2025-09-23T15:44:13Z",
+                        "event":  "ShipyardSwap",
+                        "ShipType":  "krait_mkii",
+                        "ShipType_Localised":  "Krait Mk II",
+                        "ShipID":  11,
+                        "StoreOldShip":  "Type9",
+                        "StoreShipID":  16,
+                        "MarketID":  3228884736
+                    },
+                    {
+                        "timestamp":  "2025-09-24T03:38:37Z",
+                        "event":  "ShipyardSwap",
+                        "ShipType":  "type9",
+                        "ShipType_Localised":  "Type-9 Heavy",
+                        "ShipID":  16,
+                        "StoreOldShip":  "Krait_MkII",
+                        "StoreShipID":  11,
+                        "MarketID":  3228884736
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "ShipyardSwap"
+}

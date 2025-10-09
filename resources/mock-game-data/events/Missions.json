@@ -1,0 +1,73 @@
+﻿{
+    "extractedAt":  "2025-10-08T22:22:53.0573012-04:00",
+    "description":  "Mock data extracted from real Elite Dangerous journal logs",
+    "samples":  [
+                    {
+                        "timestamp":  "2023-10-15T22:35:38Z",
+                        "event":  "Missions",
+                        "Active":  [
+
+                                   ],
+                        "Failed":  [
+
+                                   ],
+                        "Complete":  [
+
+                                     ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:22:29Z",
+                        "event":  "Missions",
+                        "Active":  [
+
+                                   ],
+                        "Failed":  [
+
+                                   ],
+                        "Complete":  [
+
+                                     ]
+                    },
+                    {
+                        "timestamp":  "2023-12-24T01:36:55Z",
+                        "event":  "Missions",
+                        "Active":  [
+
+                                   ],
+                        "Failed":  [
+
+                                   ],
+                        "Complete":  [
+
+                                     ]
+                    },
+                    {
+                        "timestamp":  "2023-12-29T20:00:25Z",
+                        "event":  "Missions",
+                        "Active":  [
+
+                                   ],
+                        "Failed":  [
+
+                                   ],
+                        "Complete":  [
+
+                                     ]
+                    },
+                    {
+                        "timestamp":  "2024-01-07T17:42:56Z",
+                        "event":  "Missions",
+                        "Active":  [
+
+                                   ],
+                        "Failed":  [
+
+                                   ],
+                        "Complete":  [
+
+                                     ]
+                    }
+                ],
+    "sampleCount":  5,
+    "eventType":  "Missions"
+}
