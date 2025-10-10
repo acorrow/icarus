@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, useContext, Fragment, memo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, useContext, Fragment, memo } from 'react'
 import animateTableEffect from 'lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from 'lib/socket'
 import { InaraPanelNavItems } from 'lib/navigation-items'
@@ -16,6 +16,8 @@ import {
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from 'lib/station-icons'
 import { getInaraStrings, getInaraString } from 'lib/inara-addon'
+import { normaliseName, normaliseCommodityKey, normaliseFactionKey, NON_COMMODITY_KEYS } from 'lib/normalization'
+import { fetchWithCache, clearCache } from 'lib/inara-request-cache'
 import Layout from 'components/layout'
 import Panel from 'components/panel'
 import Icons from 'lib/icons'
@@ -468,8 +470,6 @@ const renderCommodityRowStyleArrowWithText = (direction, options = {}) => {
   )
 }
 
-const renderCommodityRowStyleArrowWIthText = renderCommodityRowStyleArrowWithText
-
   const renderCommodityRow = (direction, { variant = 'default' } = {}) => {
     const isOutbound = direction === 'outbound'
     const commodityDisplay = isOutbound ? outboundCommodityDisplay : returnCommodityDisplay
@@ -873,19 +873,6 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
   )
 })
 
-function normaliseName (value) {
-  return typeof value === 'string' ? value.trim().toLowerCase() : ''
-}
-
-function normaliseCommodityKey (value) {
-  if (!value) return ''
-  const cleaned = typeof value === 'string' ? value.trim() : String(value)
-  return cleaned
-    .toLowerCase()
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]/g, '')
-}
-
 const MISSIONS_CACHE_KEY = 'icarus.inaraMiningMissions.v1'
 const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = {
@@ -1010,10 +997,6 @@ function isSameMarketEntry (a, b) {
     return stationA === stationB
   }
   return false
-}
-
-function normaliseFactionKey(value) {
-  return typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : ''
 }
 
 function formatReputationPercent(value) {
@@ -2616,9 +2599,10 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
   )
 }
 
-function CargoHoldPanel ({ onStatusChange = () => {} }) {
+function CommoditiesPanel ({ onStatusChange = () => {} }) {
   const { connected, ready } = useSocket()
   const { currentSystem } = useSystemSelector({ autoSelectCurrent: true })
+  const thresholdSettings = useContext(InaraThresholdSettingsContext)
   const [ship, setShip] = useState(null)
   const [cargo, setCargo] = useState([])
   const [status, setStatus] = useState('idle')
@@ -4029,6 +4013,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
   const [routes, setRoutes] = useState([])
   const [status, setStatus] = useState('idle')
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [retryAttempt, setRetryAttempt] = useState(0)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [shipStatus, setShipStatus] = useState(null)
@@ -4374,7 +4359,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
     }
   }, [filterRoutes, sortRoutes])
 
-  const refreshRoutes = useCallback(targetSystem => {
+  const refreshRoutes = useCallback((targetSystem, { forceRefresh = false } = {}) => {
     const trimmedTargetSystem = typeof targetSystem === 'string' ? targetSystem.trim() : ''
 
     if (!trimmedTargetSystem) {
@@ -4436,12 +4421,20 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       return
     }
 
-    fetch('/api/inara-trade-routes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    // Reset retry counter
+    setRetryAttempt(0)
+
+    // Use cached fetch with 10-minute TTL, 500ms debounce, and retry logic
+    fetchWithCache('/api/inara-trade-routes', payload, {
+      ttl: 10 * 60 * 1000, // 10 minutes
+      debounce: hasExistingResults && !forceRefresh ? 500 : 0, // Debounce filter changes, but not initial load or force refresh
+      forceRefresh,
+      maxRetries: 3,
+      onRetry: (attempt, error, delay) => {
+        setRetryAttempt(attempt)
+        setMessage(`Retrying... (attempt ${attempt}/3, waiting ${Math.round(delay / 1000)}s)`)
+      }
     })
-      .then(res => res.json())
       .then(data => {
         const nextRoutes = Array.isArray(data?.routes)
           ? data.routes
@@ -4452,12 +4445,24 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
         applyResults(nextRoutes, { error: data?.error, message: data?.message })
       })
       .catch(err => {
-        setError(err.message || 'Unable to fetch trade routes.')
+        const errorMessage = err.message || 'Unable to fetch trade routes.'
+        const isNetworkError = errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')
+        const detailedError = isNetworkError
+          ? 'Network error: Unable to reach INARA API. Check your connection and try again.'
+          : `INARA API error: ${errorMessage}`
+
+        setError(detailedError)
         setMessage('')
         setRoutes([])
         setRawRoutes([])
         setStatus('error')
         setLastUpdatedAt(null)
+
+        console.error('[TradeRoutes] Fetch failed:', {
+          system: trimmedTargetSystem,
+          filters,
+          error: err
+        })
       })
       .finally(() => {
         setIsRefreshing(false)
@@ -7380,7 +7385,7 @@ export default function InaraStatusPage () {
   const inaraTabs = useMemo(() => {
     const panelItems = [
       { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
-      { name: 'Cargo Hold', icon: 'cargo', active: activeTab === 'cargoHold', onClick: () => setActiveTab('cargoHold') },
+      { name: 'Commodities', icon: 'cargo', active: activeTab === 'commodities', onClick: () => setActiveTab('commodities') },
       { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
       { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
       { name: 'Pirate Radio', icon: 'signal', active: activeTab === 'pirateRadio', onClick: () => setActiveTab('pirateRadio') }
@@ -7409,8 +7414,8 @@ export default function InaraStatusPage () {
                 <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
                   <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
                 </div>
-                <div style={{ display: activeTab === 'cargoHold' ? 'block' : 'none' }}>
-                  <CargoHoldPanel />
+                <div style={{ display: activeTab === 'commodities' ? 'block' : 'none' }}>
+                  <CommoditiesPanel />
                 </div>
                 <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
                   <MissionsPanel />
@@ -7433,7 +7438,7 @@ export default function InaraStatusPage () {
 
 export {
   TradeRoutesPanel,
-  CargoHoldPanel,
+  CommoditiesPanel,
   MissionsPanel,
   PristineMiningPanel
 }

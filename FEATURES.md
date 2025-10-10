@@ -93,6 +93,97 @@ Comprehensive mock data has been extracted from real game logs for offline devel
 
 ## INARA Feature Mapping
 
+## Modular Card Components – Unified Visual Design
+
+**Overview**: The INARA workspace uses modular card components (StationCard, CommodityCard, PlanetCard) to display location and commodity data across multiple features (Trade Routes, Commodities, Mining Missions). These cards have been refactored to use shared CSS classes from Trade Route Context styling for visual consistency across all INARA panels.
+
+**Design System**:
+- All cards import styles from `cards.module.css` (shared card-specific CSS module)
+- Trade Route Context visual style ported to modular card classes
+- Cards are self-contained, reusable components with no page-level CSS dependencies
+- Consistent layout structure: header (badges), body (icon + text), metrics row (key-value pairs)
+- Hover and selected states for interactive feedback
+
+**Components**:
+
+1. **StationCard** (`src/client/components/cards/station-card.js`)
+   - Uses `.stationCard` base class with variant/state modifiers
+   - Layout: header badge, large icon (60-72px), station/system/faction/economy text, metrics row
+   - Props: `stationName`, `systemName`, `stationType`, `factionName`, `economy`, `iconColor`, `distanceLy`, `distanceLs`, `factionStanding`, `variant` (origin/destination), `isSelected`, `onClick`
+   - Supports gradient styling via `variant` prop for visual differentiation
+   - Icon color can be customized or derived from faction standing
+   - Interactive states: hover (lift + enhanced shadow), selected (accent border + glow)
+
+2. **CommodityCard** (`src/client/components/cards/commodity-card.js`)
+   - Uses `.commodityCard` base class with variant/state modifiers
+   - Layout: header (price/quantity), body (icon + name/meta), footnote (symbol/update time)
+   - Props: `commodityName`, `commoditySymbol`, `category`, `price`, `galacticAverage`, `quantity`, `updatedAt`, `variant` (outbound/return), `isSelected`, `onClick`
+   - Supports gradient overlays via `variant` prop (outbound = green tint, return = accent tint)
+   - Calculates price difference from galactic average automatically
+   - Interactive states: hover (lift + enhanced shadow), selected (accent border + glow)
+
+3. **PlanetCard** (`src/client/components/cards/planet-card.js`)
+   - Uses `.stationCard` base class (planets treated as location entities)
+   - Layout: header badge, large icon, planet/system/type text, metrics row (distance + power play)
+   - Props: `planetName`, `systemName`, `planetType`, `iconColor`, `distanceLy`, `distanceLs`, `powerPlay`, `variant`, `isSelected`, `onClick`
+   - Reuses station styling for visual consistency across location-based entities
+   - Power play info styled with success color for allied factions
+   - Interactive states: hover (lift + enhanced shadow), selected (accent border + glow)
+
+**Grid Layouts**:
+- Commodity grids use `.commodityGrid` from `cards.module.css` (responsive auto-fit, 240px min)
+- Station grids use custom `.stationGrid` from page-specific CSS (380px min)
+- Both grids are responsive with single-column fallback on mobile
+
+**CSS Architecture**:
+- ✅ `cards.module.css` - Shared card styles (station, commodity, planet, grids)
+- ❌ `station-card.module.css` (removed - consolidated into cards.module.css)
+- ❌ `commodity-card.module.css` (removed - consolidated into cards.module.css)
+- ❌ `planet-card.module.css` (removed - consolidated into cards.module.css)
+
+**Usage Example** (Commodities page):
+```javascript
+import { StationCard, CommodityCard } from 'components/cards'
+import styles from './commodities.module.css'
+
+// Commodity grid (using page-specific grid style)
+<div className={styles.commodityGrid}>
+  {commodities.map(commodity => (
+    <CommodityCard
+      commodityName={commodity.name}
+      price={commodity.bestPrice}
+      quantity={commodity.quantity}
+      isSelected={selectedCommodity?.key === commodity.key}
+      onClick={() => handleClick(commodity)}
+    />
+  ))}
+</div>
+
+// Station grid (using page-specific grid style)
+<div className={styles.stationGrid}>
+  <StationCard
+    stationName="Galileo"
+    systemName="Sol"
+    stationType="Coriolis"
+    distanceLy={0}
+    distanceLs={3.5}
+    variant="origin"
+    onClick={() => handleStationClick()}
+  />
+</div>
+```
+
+**Design Rationale**:
+- Cards are fully self-contained with icon rendering, text sanitization, and interactive handlers
+- Shared CSS reduces duplication and ensures visual consistency across features
+- Component props are flexible enough for different use cases (trading, mining, cargo management)
+- Icon colors can be customized per-card or derived from contextual data (faction standing, etc.)
+- Cards work standalone or in grids, making them portable across INARA panels
+
+**Future Extensibility**:
+- New card variants can be added via CSS modifiers (e.g., `.tradeRouteContextStationCardWarning`)
+- Grid layouts can be swapped without changing card components
+- Cards can be used in other features (Missions, Engineering, Exploration) with minimal customization
 
 ## Trade Route Table Modular Display & Responsive Grid
 

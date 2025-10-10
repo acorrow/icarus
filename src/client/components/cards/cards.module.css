@@ -1,0 +1,322 @@
+/**
+ * Shared Card Component Styles
+ *
+ * This module contains shared styles for all card components (Station, Commodity, Planet).
+ * These styles are imported from the Trade Route Context design system but are maintained
+ * separately to keep card components modular and reusable.
+ *
+ * DO NOT import page-level CSS into these components.
+ * This file should be the single source of card styling.
+ */
+
+/* ===== Station Card Styles ===== */
+
+.stationCard {
+  position: relative;
+  display: flex;
+  outline: 5px solid var(--color-primary);
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: clamp(1.25rem, 3vw, 1.65rem);
+  border-radius: 1rem;
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--inara-color-primary) 24%, transparent) 0%,
+      color-mix(in srgb, var(--inara-color-primary-dark) 62%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 42%, transparent);
+  box-shadow: 0 1.5rem 2.75rem color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.stationCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2rem 3.5rem color-mix(in srgb, var(--inara-color-primary) 32%, transparent);
+}
+
+.stationCardSelected {
+  border: 2px solid var(--inara-accent);
+  box-shadow: 0 1.5rem 2.75rem color-mix(in srgb, var(--inara-accent) 38%, transparent),
+              0 0 0 2px color-mix(in srgb, var(--inara-accent) 22%, transparent);
+}
+
+.stationCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 70%;
+  height: 70%;
+  pointer-events: none;
+  opacity: 0.35;
+  z-index: 0;
+}
+
+.stationCardOrigin::before {
+  background: radial-gradient(circle at 15% 15%,
+      color-mix(in srgb, var(--inara-color-success) 32%, transparent) 0%,
+      transparent 60%);
+}
+
+.stationCardDestination::before {
+  background: radial-gradient(circle at 85% 15%,
+      color-mix(in srgb, var(--inara-accent) 35%, transparent) 0%,
+      transparent 60%);
+}
+
+.stationCardHeader {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 1.5rem;
+}
+
+.stationCardBadge {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--inara-color-primary) 30%, transparent);
+  color: var(--inara-ink);
+  font-weight: 700;
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary-light) 45%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary-light) 22%, transparent);
+}
+
+.stationCardBody {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(1rem, 3vw, 1.4rem);
+}
+
+.stationCardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(3.75rem, 7vw, 4.5rem);
+  height: clamp(3.75rem, 7vw, 4.5rem);
+  flex-shrink: 0;
+}
+
+.stationCardText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.stationCardName {
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  font-weight: 700;
+  color: var(--inara-ink);
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.stationCardSystem {
+  font-size: clamp(1rem, 3vw, 1.15rem);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--inara-ink) 85%, transparent);
+  line-height: 1.3;
+}
+
+.stationCardFaction,
+.stationCardEconomy {
+  font-size: 0.9rem;
+  color: var(--inara-subdued);
+  line-height: 1.4;
+}
+
+.stationCardMetrics {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.7rem, 2vw, 1rem);
+}
+
+.stationCardMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stationCardMetricLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--inara-muted);
+}
+
+.stationCardMetricValue {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--inara-ink);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary-light) 32%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary-light) 18%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Commodity Card Styles ===== */
+
+.commodityCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--inara-color-primary-dark) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inara-color-primary) 35%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.commodityCard:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary) 28%, transparent),
+              0 0.5rem 1.5rem color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
+}
+
+.commodityCardSelected {
+  border: 2px solid var(--inara-accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-accent) 32%, transparent),
+              0 0 0 2px color-mix(in srgb, var(--inara-accent) 22%, transparent);
+}
+
+.commodityCard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg,
+      transparent 0%,
+      color-mix(in srgb, var(--inara-color-primary-light) 24%, transparent) 55%,
+      transparent 100%);
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.commodityCardOutbound::after {
+  background: linear-gradient(120deg,
+      transparent 0%,
+      color-mix(in srgb, var(--inara-color-success) 32%, transparent) 55%,
+      transparent 100%);
+}
+
+.commodityCardReturn::after {
+  background: linear-gradient(120deg,
+      transparent 0%,
+      color-mix(in srgb, var(--inara-accent) 38%, transparent) 55%,
+      transparent 100%);
+}
+
+.commodityCardHeader {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.commodityCardPrice {
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--inara-ink) 82%, transparent);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.commodityCardBody {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.commodityCardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--inara-color-primary) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary-light) 45%, transparent);
+  flex-shrink: 0;
+}
+
+.commodityCardText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.commodityCardName {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--inara-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.commodityCardMeta {
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--inara-color-success) 70%, transparent);
+  font-weight: 500;
+}
+
+.commodityCardFootnote {
+  position: relative;
+  z-index: 1;
+  font-size: 0.75rem;
+  color: var(--inara-subdued);
+}
+
+/* ===== Shared Grid Layouts ===== */
+
+.commodityGrid {
+  display: grid;
+  gap: clamp(0.85rem, 3vw, 1.35rem);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+/* ===== Responsive Adjustments ===== */
+
+@media (max-width: 900px) {
+  .stationCardBody {
+    gap: clamp(0.7rem, 2vw, 1rem);
+  }
+
+  .stationCardIcon {
+    width: clamp(3.1rem, 12vw, 3.9rem);
+    height: clamp(3.1rem, 12vw, 3.9rem);
+  }
+}
+
+@media (max-width: 720px) {
+  .stationCardMetrics {
+    gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+
+  .commodityGrid {
+    grid-template-columns: 1fr;
+  }
+}

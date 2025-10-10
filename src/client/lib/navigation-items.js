@@ -99,9 +99,9 @@ function InaraWorkspaceNavItems (activePanel) {
       url: '/inara/trade-routes'
     },
     {
-      name: 'Cargo',
+      name: 'Commodities',
       icon: 'cargo',
-      url: '/inara/cargo'
+      url: '/inara/commodities'
     },
     {
       name: 'Mining Missions',
