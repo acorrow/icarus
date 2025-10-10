@@ -33,15 +33,16 @@ StationIcon.propTypes = {
 /**
  * StationCard - Modular station display component
  *
- * Matches the exact visual style of Trade Route Context station cards.
+ * Large card style with colored icon spanning all text rows.
  * Uses shared CSS classes from cards.module.css for modular styling.
  *
  * Layout:
- * - Large icon on left (60-72px, colored)
- * - Station name (large, bold)
- * - System name below
- * - Faction/economy info
- * - Badge-style metrics (system distance, orbital distance, faction standing)
+ * - Large icon on left (60-72px, colored by faction standing)
+ * - Station name (large, bold) - Row 1
+ * - System name below (medium) - Row 2
+ * - Distance metrics (color-coded) - Row 3
+ * - Faction/economy info displayed
+ * - Card wrapper with primary color styling
  *
  * @param {object} props
  * @param {string} props.stationName - Name of the station

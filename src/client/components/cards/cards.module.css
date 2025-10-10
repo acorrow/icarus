@@ -14,7 +14,6 @@
 .stationCard {
   position: relative;
   display: flex;
-  outline: 5px solid var(--color-primary);
   flex-direction: column;
   gap: 1.15rem;
   padding: clamp(1.25rem, 3vw, 1.65rem);

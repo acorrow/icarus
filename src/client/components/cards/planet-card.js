@@ -60,9 +60,11 @@ PlanetIcon.propTypes = {
  * Planets are treated as location entities similar to stations.
  *
  * Layout:
- * - Header with optional badge
- * - Body: icon + planet name/system/type
- * - Metrics: distance info, power play
+ * - Large icon on left (60-72px)
+ * - Planet name (large, bold)
+ * - System name below
+ * - Distance metrics
+ * - Card wrapper with primary color styling
  *
  * @param {object} props
  * @param {string} props.planetName - Name of the planet
