@@ -405,7 +405,7 @@ function parseCommoditySearchResults (html) {
     const stationLink = locationCell.find('a[href*="/elite/station-market/"]').first()
     const stationHref = stationLink.attr('href') || ''
     const stationUrl = stationHref ? `${INARA_BASE_URL}${stationHref}` : null
-    const stationName = cleanText(stationLink.find('.standardcase').text().replace(/\|$/, '')) || null
+    const stationName = cleanText(stationLink.find('.standardcase').text()).replace(/\|+$/, '') || null
     const systemName = cleanText(stationLink.find('.uppercase').text()) || null
 
     const padText = cleanText($(cells[1]).text()) || null

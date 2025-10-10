@@ -8,6 +8,7 @@ import { formatCredits } from 'lib/inara-formatters'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
 import { normaliseCommodityKey, NON_COMMODITY_KEYS } from 'lib/normalization'
 import { fetchWithCache } from 'lib/inara-request-cache'
+import { getDistanceSeverityColor, getStationDistanceSeverityColor } from 'lib/distance-colors'
 import styles from './commodities.module.css'
 
 export default function InaraCommoditiesPage () {
@@ -62,6 +63,34 @@ export default function InaraCommoditiesPage () {
       setCargo(inventory)
     } catch (err) {
       console.error('Failed to refresh ship status', err)
+    }
+  }), [])
+
+  // Listen for location changes to update distances
+  useEffect(() => eventListener('Location', async () => {
+    try {
+      const system = await sendEvent('getCurrentSystem')
+      setCurrentSystem(system)
+      // Trigger re-fetch of valuations to get updated distances
+      const shipStatus = await sendEvent('getShipStatus')
+      const inventory = Array.isArray(shipStatus?.cargo?.inventory)
+        ? shipStatus.cargo.inventory
+        : []
+      if (inventory.length > 0) {
+        setCargo([...inventory]) // Force update to trigger valuation refresh
+      }
+    } catch (err) {
+      console.error('Failed to refresh location', err)
+    }
+  }), [])
+
+  // Listen for FSD jumps
+  useEffect(() => eventListener('FSDJump', async () => {
+    try {
+      const system = await sendEvent('getCurrentSystem')
+      setCurrentSystem(system)
+    } catch (err) {
+      console.error('Failed to refresh system after jump', err)
     }
   }), [])
 
@@ -239,6 +268,7 @@ export default function InaraCommoditiesPage () {
             stationName,
             systemName,
             stationType: listing.stationType || '',
+            stationUrl: listing.stationUrl || null,
             distanceLy: listing.distanceLy,
             distanceLs: listing.distanceLs,
             commodities: [],
@@ -270,6 +300,89 @@ export default function InaraCommoditiesPage () {
       .slice(0, 10) // Top 10 stations
   }, [commodities])
 
+  // Fetch station details with political data
+  const [stationDetails, setStationDetails] = useState(new Map())
+  const [stationDetailsLoading, setStationDetailsLoading] = useState(false)
+
+  useEffect(() => {
+    if (!optimalStations || optimalStations.length === 0) {
+      setStationDetails(new Map())
+      return
+    }
+
+    // Extract station URLs that need details
+    const stationsToFetch = optimalStations
+      .filter(station => station.stationUrl && !stationDetails.has(station.stationUrl))
+      .map(station => ({ stationUrl: station.stationUrl }))
+
+    if (stationsToFetch.length === 0) return
+
+    setStationDetailsLoading(true)
+
+    ;(async () => {
+      try {
+        const response = await fetch('/api/inara-station-detail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stations: stationsToFetch })
+        })
+
+        if (!response.ok) {
+          throw new Error(`Station detail fetch failed: ${response.status}`)
+        }
+
+        const data = await response.json()
+
+        if (data.success && Array.isArray(data.stations)) {
+          const newDetails = new Map(stationDetails)
+          data.stations.forEach(detail => {
+            if (detail.url) {
+              newDetails.set(detail.url, detail)
+              
+              // Also set with station-market URL variant for matching
+              const marketUrl = detail.url.replace('/station/', '/station-market/')
+              if (marketUrl !== detail.url) {
+                newDetails.set(marketUrl, detail)
+              }
+            }
+          })
+          console.log('✅ Loaded station details for', data.stations.length, 'stations')
+          setStationDetails(newDetails)
+        }
+      } catch (error) {
+        console.error('❌ Failed to fetch station details:', error)
+      } finally {
+        setStationDetailsLoading(false)
+      }
+    })()
+  }, [optimalStations])
+
+  // Enhance stations with political data
+  const enhancedStations = useMemo(() => {
+    return optimalStations.map(station => {
+      const detail = station.stationUrl ? stationDetails.get(station.stationUrl) : null
+      
+      if (!detail) {
+        // Fallback to current system data if no station detail available
+        return {
+          ...station,
+          allegiance: currentSystem?.allegiance || null,
+          government: currentSystem?.government || null,
+          powerplay: currentSystem?.controllingPower || null
+        }
+      }
+
+      return {
+        ...station,
+        allegiance: detail.allegiance || null,
+        government: detail.government || null,
+        powerplay: detail.powerplay || null,
+        controllingFaction: detail.controllingFaction || null,
+        economy: detail.economy || null
+      }
+    })
+  }, [optimalStations, stationDetails, currentSystem])
+
   const handleCommodityClick = useCallback((commodity) => {
     setSelectedCommodity(prev => prev?.key === commodity.key ? null : commodity)
   }, [])
@@ -286,19 +399,39 @@ export default function InaraCommoditiesPage () {
     <Layout connected={connected} active={active} ready={ready} loader={status === 'loading'}>
       <Panel layout='full-width' scrollable navigation={InaraWorkspaceNavItems('Commodities')}>
         <div className={styles.commoditiesPage}>
-          {/* Header with total valuation */}
+          {/* Header with cargo progress and total valuation */}
           <div className={styles.commoditiesHeader}>
-            <h1 className={styles.commoditiesTitle}>Commodities</h1>
+            {ship?.cargo && (
+              <div className={styles.cargoProgress}>
+                <div className={styles.cargoProgressLabel}>
+                  <span className={styles.cargoProgressCount}>
+                    {ship.cargo.count ?? 0}
+                  </span>
+                  <span className={styles.cargoProgressSeparator}>/</span>
+                  <span className={styles.cargoProgressCapacity}>
+                    {ship.cargo.capacity ?? 0}
+                  </span>
+                  <span className={styles.cargoProgressUnit}> t</span>
+                  {ship.cargo.count > 0 && ship.cargo.count < ship.cargo.capacity && (
+                    <span className={styles.cargoProgressFree}>
+                      · {ship.cargo.capacity - ship.cargo.count} t free
+                    </span>
+                  )}
+                </div>
+                <div className={styles.cargoProgressBar}>
+                  <div 
+                    className={styles.cargoProgressFill}
+                    style={{ 
+                      width: `${((ship.cargo.count ?? 0) / (ship.cargo.capacity ?? 1)) * 100}%` 
+                    }}
+                  />
+                </div>
+              </div>
+            )}
             {hasCommodities && (
-              <div className={styles.commoditiesTotals}>
-                <div className={styles.totalCard}>
-                  <div className={styles.totalLabel}>Best Total Value</div>
-                  <div className={styles.totalValue}>{formatCredits(totals.best)}</div>
-                </div>
-                <div className={styles.totalCard}>
-                  <div className={styles.totalLabel}>Total Cargo</div>
-                  <div className={styles.totalValue}>{totals.cargoCount} t</div>
-                </div>
+              <div className={styles.bestValueDisplay}>
+                <div className={styles.bestValueLabel}>Best Total Value</div>
+                <div className={styles.bestValueAmount}>{formatCredits(totals.best)}</div>
               </div>
             )}
           </div>
@@ -323,19 +456,29 @@ export default function InaraCommoditiesPage () {
               <section className={styles.commoditiesSection}>
                 <h2 className={styles.sectionTitle}>Your Cargo ({commodities.length} items)</h2>
                 <div className={styles.commodityGrid}>
-                  {commodities.map(commodity => (
-                    <CommodityCard
-                      key={commodity.key}
-                      commodityName={commodity.name}
-                      commoditySymbol={commodity.symbol}
-                      category={commodity.category}
-                      price={commodity.bestPrice}
-                      quantity={commodity.quantity}
-                      updatedAt={commodity.updatedAt}
-                      isSelected={selectedCommodity?.key === commodity.key}
-                      onClick={() => handleCommodityClick(commodity)}
-                    />
-                  ))}
+                  {commodities.map(commodity => {
+                    // Get best station info from INARA listings
+                    const bestListing = commodity.inaraListings && commodity.inaraListings.length > 0
+                      ? commodity.inaraListings[0]
+                      : null
+                    
+                    return (
+                      <CommodityCard
+                        key={commodity.key}
+                        commodityName={commodity.name}
+                        commoditySymbol={commodity.symbol}
+                        category={commodity.category}
+                        price={commodity.bestPrice}
+                        stationName={bestListing?.stationName}
+                        systemName={bestListing?.systemName}
+                        quantity={commodity.quantity}
+                        updatedAt={commodity.updatedAt}
+                        mode="large"
+                        isSelected={selectedCommodity?.key === commodity.key}
+                        onClick={() => handleCommodityClick(commodity)}
+                      />
+                    )
+                  })}
                 </div>
               </section>
 
@@ -346,30 +489,43 @@ export default function InaraCommoditiesPage () {
                   <p className={styles.sectionDescription}>
                     Top stations to visit for maximum profit, ordered by total cargo value
                   </p>
-                  <div className={styles.stationGrid}>
-                    {optimalStations.map((station, index) => (
-                      <div key={`${station.systemName}-${station.stationName}`} className={styles.stationCardWrapper}>
-                        <div className={styles.stationRank}>#{index + 1}</div>
-                        <StationCard
-                          stationName={station.stationName}
-                          systemName={station.systemName}
-                          stationType={station.stationType}
-                          distanceLy={station.distanceLy}
-                          distanceLs={station.distanceLs}
-                          onClick={() => handleStationClick(station)}
-                        />
-                        <div className={styles.stationSummary}>
-                          <div className={styles.stationMetric}>
-                            <span className={styles.stationMetricLabel}>Total Value:</span>
-                            <span className={styles.stationMetricValue}>{formatCredits(station.totalValue)}</span>
+                  <div className={styles.stationList}>
+                    {enhancedStations.map((station, index) => {
+                      const jumpRange = ship?.maxJumpRange || ship?.unladenJumpRange || null
+                      const systemDistanceColor = getDistanceSeverityColor(station.distanceLy, jumpRange)
+                      const stationDistanceColor = getStationDistanceSeverityColor(station.distanceLs)
+                      
+                      return (
+                        <div key={`${station.systemName}-${station.stationName}`} className={styles.stationListItem}>
+                          <div className={styles.stationListRank}>
+                            <div className={styles.stationRankNumber}>#{index + 1}</div>
+                            <div className={styles.stationProfitInfo}>
+                              <div className={styles.stationProfitLabel}>Total Value</div>
+                              <div className={styles.stationProfitValue}>{formatCredits(station.totalValue)}</div>
+                              <div className={styles.stationCargoLabel}>
+                                {station.totalQuantity} t · {station.commodities.length} items
+                              </div>
+                            </div>
                           </div>
-                          <div className={styles.stationMetric}>
-                            <span className={styles.stationMetricLabel}>Cargo:</span>
-                            <span className={styles.stationMetricValue}>{station.totalQuantity} t ({station.commodities.length} items)</span>
+                          <div className={styles.stationListCard}>
+                            <StationCard
+                              stationName={station.stationName}
+                              systemName={station.systemName}
+                              stationType={station.stationType}
+                              distanceLy={station.distanceLy}
+                              distanceLs={station.distanceLs}
+                              distanceLyColor={systemDistanceColor}
+                              distanceLsColor={stationDistanceColor}
+                              allegiance={station.allegiance}
+                              government={station.government}
+                              powerplay={station.powerplay}
+                              fillSpace={true}
+                              onClick={() => handleStationClick(station)}
+                            />
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </section>
               )}
@@ -381,16 +537,24 @@ export default function InaraCommoditiesPage () {
                     Best Sell Locations for {selectedCommodity.name}
                   </h2>
                   <div className={styles.stationGrid}>
-                    {selectedCommodity.inaraListings.slice(0, 5).map((listing, index) => (
-                      <StationCard
-                        key={`${listing.systemName}-${listing.stationName}-${index}`}
-                        stationName={listing.stationName}
-                        systemName={listing.systemName}
-                        stationType={listing.stationType}
-                        distanceLy={listing.distanceLy}
-                        distanceLs={listing.distanceLs}
-                      />
-                    ))}
+                    {selectedCommodity.inaraListings.slice(0, 5).map((listing, index) => {
+                      const jumpRange = ship?.maxJumpRange || ship?.unladenJumpRange || null
+                      const systemDistanceColor = getDistanceSeverityColor(listing.distanceLy, jumpRange)
+                      const stationDistanceColor = getStationDistanceSeverityColor(listing.distanceLs)
+                      
+                      return (
+                        <StationCard
+                          key={`${listing.systemName}-${listing.stationName}-${index}`}
+                          stationName={listing.stationName}
+                          systemName={listing.systemName}
+                          stationType={listing.stationType}
+                          distanceLy={listing.distanceLy}
+                          distanceLs={listing.distanceLs}
+                          distanceLyColor={systemDistanceColor}
+                          distanceLsColor={stationDistanceColor}
+                        />
+                      )
+                    })}
                   </div>
                 </section>
               )}

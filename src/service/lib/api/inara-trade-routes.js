@@ -108,7 +108,7 @@ function parseFirstNumber(text) {
 function parseStationLink($, container) {
   const anchor = container.find('a[href*="/elite/station-market/"]').first()
   if (!anchor.length) return null
-  const stationName = cleanText(anchor.find('.standardcase').text()).replace(/\|$/, '').trim()
+  const stationName = cleanText(anchor.find('.standardcase').text()).replace(/\|+$/, '')
   const systemName = cleanText(anchor.find('.uppercase').text())
   const href = anchor.attr('href') || ''
   const idMatch = href.match(/station-market\/(\d+)/)

@@ -28,7 +28,6 @@
 }
 
 .stationCard:hover {
-  transform: translateY(-2px);
   box-shadow: 0 2rem 3.5rem color-mix(in srgb, var(--inara-color-primary) 32%, transparent);
 }
 
@@ -186,7 +185,6 @@
 }
 
 .commodityCard:hover {
-  transform: translateY(-2px);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inara-color-primary) 28%, transparent),
               0 0.5rem 1.5rem color-mix(in srgb, var(--inara-color-primary) 18%, transparent);
 }
@@ -317,5 +315,402 @@
 
   .commodityGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Vibrant Station Card Styles (Waylon's Rampage Style) ===== */
+
+/**
+ * Vibrant Card Container
+ * Matches the colorful, tightly aligned style with orange border
+ */
+.stationCardVibrant {
+  background: rgba(20, 16, 32, 0.95);
+  border: 3px solid #ff9100;
+  border-radius: 18px;
+  padding: 20px 20px 16px 20px;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(255, 145, 0, 0.25),
+              inset 0 0 0 1px rgba(255, 145, 0, 0.15);
+  /* Ensure consistent sizing */
+  min-height: fit-content;
+  height: 100%;
+}
+
+.stationCardVibrant:hover {
+  border-color: #ffaa00;
+  box-shadow: 0 12px 32px rgba(255, 145, 0, 0.35),
+              inset 0 0 0 1px rgba(255, 145, 0, 0.25);
+  /* Remove transform for static cards */
+}
+
+.stationCardFillSpace {
+  width: 100%;
+  height: 100%;
+}
+
+.stationCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+/**
+ * Icon and Text Row
+ * Horizontal layout with icon on left, text on right
+ */
+.stationCardRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.stationCardIconVibrant {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+/**
+ * Text Stack
+ * Station name, system, type, faction stacked vertically
+ */
+.stationCardTextVibrant {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stationCardNameVibrant {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.stationCardSystemVibrant {
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.01em;
+}
+
+.stationCardTypeVibrant {
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.stationCardFactionVibrant {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #00ffb3;
+  letter-spacing: 0.01em;
+  margin-top: 2px;
+}
+
+/**
+ * Metrics Row
+ * Pill-shaped containers for distance and standing
+ */
+.stationCardMetricsVibrant {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.stationCardMetricPill {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.stationCardMetricLabelVibrant {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stationCardMetricValueVibrant {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+/**
+ * Responsive Adjustments for Vibrant Cards
+ */
+@media (max-width: 900px) {
+  .stationCardVibrant {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .stationCardRow {
+    gap: 12px;
+  }
+
+  .stationCardIconVibrant {
+    width: 60px;
+    height: 60px;
+  }
+
+  .stationCardNameVibrant {
+    font-size: 1.5rem;
+  }
+
+  .stationCardSystemVibrant {
+    font-size: 0.9rem;
+  }
+
+  .stationCardMetricsVibrant {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 720px) {
+  .stationCardVibrant {
+    padding: 14px;
+  }
+
+  .stationCardIconVibrant {
+    width: 56px;
+    height: 56px;
+  }
+
+  .stationCardNameVibrant {
+    font-size: 1.35rem;
+  }
+
+  .stationCardMetricsVibrant {
+    gap: 8px;
+  }
+
+  .stationCardMetricPill {
+    flex: 1 1 calc(50% - 8px);
+  }
+}
+
+/* ===== Vibrant Commodity Card Styles ===== */
+
+/**
+ * Commodity Card - Matches StationCard vibrant style
+ * Supports Small, Large, and Inline modes
+ */
+
+/* Base card styles (Small and Large modes) */
+.commodityCardSmall,
+.commodityCardLarge {
+  background: rgba(20, 16, 32, 0.95);
+  border: 3px solid #ff9100;
+  border-radius: 18px;
+  padding: 16px 16px 16px 20px;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(255, 145, 0, 0.25),
+              inset 0 0 0 1px rgba(255, 145, 0, 0.15);
+  min-height: fit-content;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.commodityCardSmall:hover,
+.commodityCardLarge:hover {
+  border-color: #ffaa00;
+  box-shadow: 0 12px 32px rgba(255, 145, 0, 0.35),
+              inset 0 0 0 1px rgba(255, 145, 0, 0.25);
+}
+
+.commodityCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.commodityCardRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.commodityCardIconVibrant {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  padding: 4px;
+}
+
+.commodityCardTextVibrant {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.commodityCardNameVibrant {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.commodityCardQuantity {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.commodityCardPriceRow,
+.commodityCardLocationRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 145, 0, 0.2);
+}
+
+.commodityCardPriceLabel,
+.commodityCardLocationLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.commodityCardPriceValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.commodityCardPriceMeta {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+.commodityCardLocationValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+}
+
+.commodityCardLocationMeta {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+/* Inline mode: single row */
+.commodityCardInline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: rgba(20, 16, 32, 0.7);
+  border: 2px solid rgba(255, 145, 0, 0.4);
+  border-radius: 12px;
+  min-height: fit-content;
+}
+
+.commodityCardInline:hover {
+  background: rgba(20, 16, 32, 0.9);
+  border-color: rgba(255, 145, 0, 0.6);
+}
+
+.commodityCardIconInline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.commodityCardNameInline {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  flex: 1;
+  min-width: 0;
+}
+
+.commodityCardPriceInline {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  min-width: 120px;
+  text-align: right;
+}
+
+.commodityCardLocationInline {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  min-width: 200px;
+  text-align: right;
+}
+
+/* Responsive adjustments for commodity cards */
+@media (max-width: 900px) {
+  .commodityCardSmall,
+  .commodityCardLarge {
+    padding: 14px;
+  }
+
+  .commodityCardNameVibrant {
+    font-size: 1.1rem;
+  }
+
+  .commodityCardPriceValue {
+    font-size: 1.35rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .commodityCardInline {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .commodityCardPriceInline,
+  .commodityCardLocationInline {
+    min-width: auto;
+    flex: 1 1 45%;
   }
 }

@@ -150,6 +150,7 @@ function setupApiRoutes (app) {
   app.use('/api/inara-pristine-mining', require('./lib/api/inara-pristine-mining'))
   app.use('/api/inara-search', require('./lib/api/inara-search'))
   app.use('/api/inara-websearch', require('./lib/api/inara-websearch'))
+  app.use('/api/inara-station-detail', require('./lib/api/inara-station-detail'))
   
   // Ship and token endpoints
   app.use('/api/shipyard-list', require('./lib/api/shipyard-list'))
