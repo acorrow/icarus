@@ -112,6 +112,11 @@ function InaraWorkspaceNavItems (activePanel) {
       name: 'Mining Locations',
       icon: 'planet-ringed',
       url: '/inara/mining-locations'
+    },
+    {
+      name: 'Media Terminal',
+      icon: 'radio',
+      url: '/inara/media-terminal'
     }
   ]
 
