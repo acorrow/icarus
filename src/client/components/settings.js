@@ -104,7 +104,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         <h2 className='modal-dialog__title'>Settings</h2>
         <hr />
         <div className='secondary-navigation modal-dialog__navigation'>
-          {SettingsNavItems(activeSettingsPanel, uiConfig.exposeFeatureFlags).map(item =>
+          {SettingsNavItems(activeSettingsPanel, uiConfig.exposeFeatureFlags, featureFlags.icarusEnableMediaPlayer).map(item =>
             <Fragment key={item.name}>
               <button
                 tabIndex='2'
@@ -131,6 +131,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         {activeSettingsPanel === 'Sounds' && <SoundSettings visible={visible} />}
         {activeSettingsPanel === 'Feature Flags' && <FeatureFlagSettings />}
         {activeSettingsPanel === 'INARA' && featureFlags.icarusEnableInaraSettings && <InaraSettings />}
+        {activeSettingsPanel === 'Media Terminal' && featureFlags.icarusEnableMediaPlayer && <MediaTerminalSettings />}
         <div className='modal-dialog__footer'>
           <hr style={{ margin: '1rem 0 .5rem 0' }} />
           <button className='float-right' onClick={toggleVisible}>
@@ -685,6 +686,199 @@ const loadColorSettings = () => {
     console.error('Unable to read color settings from localStorage', err)
     return loadDefaultColorSettings()
   }
+}
+
+function MediaTerminalSettings () {
+  const STORAGE_KEY = 'icarus_media_terminal_streams'
+  const DEFAULT_STREAMS = [
+    { num: '01', name: 'NASA TV', url: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8' },
+    { num: '02', name: 'ABC NEWS', url: 'https://content.uplynk.com/channel/3324f2467c414329b3b0cc5cd987b6be.m3u8' },
+    { num: '03', name: 'Red Bull TV', url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8' },
+    { num: '04', name: 'Bloomberg TV', url: 'https://bloomberg.com/media-manifest/streams/phoenix-us.m3u8' },
+    { num: '05', name: 'CBS NEWS', url: 'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8' },
+    { num: '06', name: 'CGTN', url: 'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8' },
+    { num: '07', name: 'RT News', url: 'https://rt-glb.rttv.com/live/rtnews/playlist.m3u8' },
+    { num: '08', name: 'Al Jazeera', url: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' }
+  ]
+
+  const [streams, setStreams] = useState(DEFAULT_STREAMS)
+  const [editingIndex, setEditingIndex] = useState(null)
+  const [editForm, setEditForm] = useState({ num: '', name: '', url: '' })
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setStreams(parsed)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load media terminal streams:', err)
+      }
+    }
+  }, [])
+
+  const handleSave = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(streams))
+        setSaved(true)
+        setTimeout(() => setSaved(false), 1500)
+        // Dispatch event to notify CrtTvTuner component
+        window.dispatchEvent(new CustomEvent('mediaStreamsUpdated', { detail: streams }))
+      } catch (err) {
+        console.error('Failed to save media terminal streams:', err)
+      }
+    }
+  }
+
+  const handleReset = () => {
+    setStreams(DEFAULT_STREAMS)
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_STREAMS))
+        window.dispatchEvent(new CustomEvent('mediaStreamsUpdated', { detail: DEFAULT_STREAMS }))
+      } catch (err) {
+        console.error('Failed to reset media terminal streams:', err)
+      }
+    }
+  }
+
+  const handleEdit = (index) => {
+    setEditingIndex(index)
+    setEditForm({ ...streams[index] })
+  }
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null)
+    setEditForm({ num: '', name: '', url: '' })
+  }
+
+  const handleSaveEdit = () => {
+    if (!editForm.num || !editForm.name || !editForm.url) {
+      return
+    }
+    const newStreams = [...streams]
+    newStreams[editingIndex] = { ...editForm }
+    setStreams(newStreams)
+    setEditingIndex(null)
+    setEditForm({ num: '', name: '', url: '' })
+  }
+
+  const handleAdd = () => {
+    const nextNum = String(streams.length + 1).padStart(2, '0')
+    setStreams([...streams, { num: nextNum, name: '', url: '' }])
+    setEditingIndex(streams.length)
+    setEditForm({ num: nextNum, name: '', url: '' })
+  }
+
+  const handleDelete = (index) => {
+    const newStreams = streams.filter((_, i) => i !== index)
+    setStreams(newStreams)
+    if (editingIndex === index) {
+      setEditingIndex(null)
+      setEditForm({ num: '', name: '', url: '' })
+    }
+  }
+
+  return (
+    <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
+      <h3 className='text-primary'>Media Terminal Stream Configuration</h3>
+      <p className='text-muted'>
+        Configure HLS video streams for the Media Terminal CRT TV tuner. Each stream requires a channel number, name, and HLS URL (.m3u8).
+      </p>
+      
+      <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
+        <button onClick={handleAdd} style={{ fontSize: '1rem' }}>
+          Add Stream
+        </button>
+        <button onClick={handleSave} style={{ fontSize: '1rem' }}>
+          {saved ? 'Saved!' : 'Save All'}
+        </button>
+        <button onClick={handleReset} style={{ fontSize: '1rem' }}>
+          Reset to Defaults
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {streams.map((stream, index) => (
+          <div
+            key={index}
+            style={{
+              border: '1px solid rgba(245, 241, 255, 0.16)',
+              borderRadius: '0.5rem',
+              padding: '1rem',
+              background: 'rgba(28, 22, 51, 0.6)'
+            }}
+          >
+            {editingIndex === index ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+                  <span className='text-muted'>Channel Number</span>
+                  <input
+                    type='text'
+                    value={editForm.num}
+                    onChange={(e) => setEditForm({ ...editForm, num: e.target.value })}
+                    placeholder='01'
+                    maxLength='2'
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+                  <span className='text-muted'>Channel Name</span>
+                  <input
+                    type='text'
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    placeholder='NASA TV'
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+                  <span className='text-muted'>HLS Stream URL</span>
+                  <input
+                    type='url'
+                    value={editForm.url}
+                    onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
+                    placeholder='https://example.com/stream.m3u8'
+                  />
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={handleSaveEdit} style={{ fontSize: '0.95rem' }}>
+                    Save
+                  </button>
+                  <button onClick={handleCancelEdit} style={{ fontSize: '0.95rem' }}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '1rem', flexWrap: 'wrap' }}>
+                  <h4 className='text-primary' style={{ margin: 0 }}>
+                    Channel {stream.num}: {stream.name || '(Unnamed)'}
+                  </h4>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => handleEdit(index)} style={{ fontSize: '0.9rem', padding: '0.25rem 0.75rem' }}>
+                      Edit
+                    </button>
+                    <button onClick={() => handleDelete(index)} style={{ fontSize: '0.9rem', padding: '0.25rem 0.75rem' }}>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+                <p className='text-muted' style={{ marginTop: '.5rem', marginBottom: 0, wordBreak: 'break-all' }}>
+                  {stream.url || '(No URL)'}
+                </p>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 const loadDefaultColorSettings = () => {

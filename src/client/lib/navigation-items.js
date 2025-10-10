@@ -166,7 +166,7 @@ function EngineeringPanelNavItems (activePanel) {
   return navigationItems
 }
 
-function SettingsNavItems (activePanel, exposeFeatureFlags = false) {
+function SettingsNavItems (activePanel, exposeFeatureFlags = false, exposeMediaTerminal = false) {
   const navigationItems = [
     {
       name: 'Theme',
@@ -182,6 +182,13 @@ function SettingsNavItems (activePanel, exposeFeatureFlags = false) {
     navigationItems.push({
       name: 'Feature Flags',
       icon: 'settings'
+    })
+  }
+  
+  if (exposeMediaTerminal) {
+    navigationItems.push({
+      name: 'Media Terminal',
+      icon: 'radio'
     })
   }
   

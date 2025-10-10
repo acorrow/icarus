@@ -3,6 +3,7 @@ const {
   isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
   isInaraSettingsEnabled,
+  isMediaPlayerEnabled,
   _private: featureFlagInternals
 } = require('../../../shared/feature-flags.js')
 
@@ -35,6 +36,13 @@ const FLAG_DEFINITIONS = [
     label: 'INARA Settings',
     description: 'Enables the INARA integration settings panel in the application settings.',
     resolver: isInaraSettingsEnabled,
+    defaultValue: false
+  },
+  {
+    key: 'icarusEnableMediaPlayer',
+    label: 'Media Terminal',
+    description: 'Enables the Media Terminal with CRT TV tuner and stream configuration.',
+    resolver: isMediaPlayerEnabled,
     defaultValue: false
   }
 ]

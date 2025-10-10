@@ -12,27 +12,56 @@ function normalizeFlagValue (value) {
 
 function resolveFlag (primaryKey, env = process.env) {
   if (!env) return false
+  
+  // Try exact match first (e.g., icarusInaraTokenCurrencyEnabled)
   if (Object.prototype.hasOwnProperty.call(env, primaryKey)) {
     const parsed = normalizeFlagValue(env[primaryKey])
     if (parsed !== null) return parsed
   }
+  
+  // Try SCREAMING_SNAKE_CASE (e.g., ICARUS_INARA_TOKEN_CURRENCY_ENABLED)
+  const screamingSnakeCase = primaryKey
+    .replace(/([A-Z])/g, '_$1')
+    .toUpperCase()
+    .replace(/^_/, '')
+  if (screamingSnakeCase !== primaryKey && Object.prototype.hasOwnProperty.call(env, screamingSnakeCase)) {
+    const parsed = normalizeFlagValue(env[screamingSnakeCase])
+    if (parsed !== null) return parsed
+  }
+  
+  // Try simple UPPERCASE as final fallback (e.g., ICARUSINARATOKENCURRENCYENABLED)
   const fallbackKey = primaryKey.toUpperCase()
-  if (fallbackKey !== primaryKey && Object.prototype.hasOwnProperty.call(env, fallbackKey)) {
+  if (fallbackKey !== primaryKey && fallbackKey !== screamingSnakeCase && Object.prototype.hasOwnProperty.call(env, fallbackKey)) {
     const parsed = normalizeFlagValue(env[fallbackKey])
     if (parsed !== null) return parsed
   }
+  
   return false
 }
 
 function hasFlagKey (primaryKey, env = process.env) {
   if (!env) return false
+  
+  // Check exact match
   if (Object.prototype.hasOwnProperty.call(env, primaryKey)) {
     return true
   }
-  const fallbackKey = primaryKey.toUpperCase()
-  if (fallbackKey !== primaryKey && Object.prototype.hasOwnProperty.call(env, fallbackKey)) {
+  
+  // Check SCREAMING_SNAKE_CASE
+  const screamingSnakeCase = primaryKey
+    .replace(/([A-Z])/g, '_$1')
+    .toUpperCase()
+    .replace(/^_/, '')
+  if (screamingSnakeCase !== primaryKey && Object.prototype.hasOwnProperty.call(env, screamingSnakeCase)) {
     return true
   }
+  
+  // Check simple UPPERCASE as fallback
+  const fallbackKey = primaryKey.toUpperCase()
+  if (fallbackKey !== primaryKey && fallbackKey !== screamingSnakeCase && Object.prototype.hasOwnProperty.call(env, fallbackKey)) {
+    return true
+  }
+  
   return false
 }
 
@@ -55,10 +84,15 @@ function isInaraSettingsEnabled (env = process.env) {
   return resolveFlag('icarusEnableInaraSettings', env)
 }
 
+function isMediaPlayerEnabled (env = process.env) {
+  return resolveFlag('icarusEnableMediaPlayer', env)
+}
+
 module.exports = {
   isInaraTokenCurrencyEnabled,
   isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
   isInaraSettingsEnabled,
+  isMediaPlayerEnabled,
   _private: { normalizeFlagValue, resolveFlag, hasFlagKey }
 }

@@ -15,8 +15,8 @@ const CrtTvTuner = () => {
     { num: "13", name: "WING BEACON", type: "wing" }
   ]
 
-  // Stream Channels (real content - shown when overlay is OFF)
-  const STREAM_CHANNELS = [
+  // Default Stream Channels (real content - shown when overlay is OFF)
+  const DEFAULT_STREAM_CHANNELS = [
     { num: "01", name: "NASA TV", url: "https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8" },
     { num: "02", name: "ABC NEWS", url: "https://content.uplynk.com/channel/3324f2467c414329b3b0cc5cd987b6be.m3u8" },
     { num: "03", name: "Red Bull TV", url: "https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8" },
@@ -26,6 +26,26 @@ const CrtTvTuner = () => {
     { num: "07", name: "RT News", url: "https://rt-glb.rttv.com/live/rtnews/playlist.m3u8" },
     { num: "08", name: "Al Jazeera", url: "https://live-hls-web-aje.getaj.net/AJE/index.m3u8" }
   ]
+
+  // Load stream channels from localStorage or use defaults
+  const loadStreamChannels = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('icarus_media_terminal_streams')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load custom streams, using defaults:', err)
+      }
+    }
+    return DEFAULT_STREAM_CHANNELS
+  }
+
+  const [streamChannels, setStreamChannels] = useState(loadStreamChannels())
 
   // ASCII Art Library
   const ASCII_ART = [
@@ -644,14 +664,14 @@ Encryption: MILITARY GRADE
         setTerminalContent('')
         initializeTerminal(channelType)
       } else {
-        setActiveChannels(STREAM_CHANNELS)
+        setActiveChannels(streamChannels)
         stopMessageLoop()
         
-        if (currentChannelIndex >= STREAM_CHANNELS.length) {
+        if (currentChannelIndex >= streamChannels.length) {
           setCurrentChannelIndex(0)
         }
         
-        const channel = STREAM_CHANNELS[currentChannelIndex >= STREAM_CHANNELS.length ? 0 : currentChannelIndex]
+        const channel = streamChannels[currentChannelIndex >= streamChannels.length ? 0 : currentChannelIndex]
         if (channel.url) {
           loadHLSStream(channel.url)
           if (isPlaying) {
@@ -664,8 +684,8 @@ Encryption: MILITARY GRADE
         }
       }
       
-      const degreesPerChannel = 360 / (newOverlayActive ? DISPLAY_CHANNELS : STREAM_CHANNELS).length
-      setChannelRotation((currentChannelIndex >= (newOverlayActive ? DISPLAY_CHANNELS : STREAM_CHANNELS).length ? 0 : currentChannelIndex) * degreesPerChannel)
+      const degreesPerChannel = 360 / (newOverlayActive ? DISPLAY_CHANNELS : streamChannels).length
+      setChannelRotation((currentChannelIndex >= (newOverlayActive ? DISPLAY_CHANNELS : streamChannels).length ? 0 : currentChannelIndex) * degreesPerChannel)
       
       return newOverlayActive
     })
@@ -750,6 +770,29 @@ Encryption: MILITARY GRADE
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight
     }
   }, [terminalContent])
+
+  // Listen for stream configuration updates from Settings
+  useEffect(() => {
+    const handleStreamsUpdate = (event) => {
+      if (event.detail && Array.isArray(event.detail)) {
+        setStreamChannels(event.detail)
+        // If currently on stream channels and index is out of bounds, reset to 0
+        if (!isOverlayActive && currentChannelIndex >= event.detail.length) {
+          setCurrentChannelIndex(0)
+        }
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mediaStreamsUpdated', handleStreamsUpdate)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('mediaStreamsUpdated', handleStreamsUpdate)
+      }
+    }
+  }, [isOverlayActive, currentChannelIndex])
 
   useEffect(() => {
     const channelType = DISPLAY_CHANNELS[currentChannelIndex]?.type || 'galnet'
