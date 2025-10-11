@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git log:*)",
       "Read(//c/Users/Adam/Pictures/**)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(npm run build:client:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Hls from 'hls.js'
+import { useSocket, sendEvent, eventListener } from 'lib/socket'
 import styles from './CrtTvTuner.module.css'
 
 const CrtTvTuner = () => {
+  const { connected, ready } = useSocket()
+  const [ship, setShip] = useState(null)
+  const [cmdrStatus, setCmdrStatus] = useState(null)
   // Display Channels (Elite Dangerous themed - shown when overlay is ON)
   const DISPLAY_CHANNELS = [
     { num: "02", name: "STATION SERVICES", type: "station" },
@@ -47,54 +51,117 @@ const CrtTvTuner = () => {
 
   const [streamChannels, setStreamChannels] = useState(loadStreamChannels())
 
-  // ASCII Art Library
+  // ASCII Art Library - Improved and larger
   const ASCII_ART = [
-    `    /\\
-   /  \\
-  /____\\
- /      \\
-/        \\
- ANACONDA`,
-    `  ___
- /   \\
-|  o  |
- \\___/
-COBRA MK III`,
-    `   __/\\__
-  /      \\
- |   ||   |
-  \\__||__/
-FEDERAL CORVETTE`,
-    `    _____
-   /     \\
-  | O   O |
-   \\_____/
-  SIDEWINDER`,
-    `  /======\\
- |  ====  |
- |  ====  |
-  \\======/
-TYPE-9 HEAVY`,
-    `    /^\\
-   /   \\
-  | * * |
-   \\___/
- VULTURE`,
-    `  ********
- *  ____  *
-*  /    \\  *
- * |    | *
-  *\\____/*
-   ******
-CORIOLIS STATION`,
-    `    |||
-   |||||
-  |||||||
- |||||||||
-  |||||||
-   |||||
-    |||
-FSD JUMP`
+    `
+    ╔═══════════════════════════════════════════════════════════╗
+    ║                    ANACONDA CLASS                         ║
+    ║                                                           ║
+    ║                         /\\                                ║
+    ║                        /  \\                               ║
+    ║                       /____\\                              ║
+    ║                      /██████\\                             ║
+    ║                     /████████\\                            ║
+    ║                    /██████████\\                           ║
+    ║                   /████████████\\                          ║
+    ║                  /██████████████\\                         ║
+    ║                 /════════════════\\                        ║
+    ║                /══════════════════\\                       ║
+    ║               /════════════════════\\                      ║
+    ║              /══════════════════════\\                     ║
+    ║                                                           ║
+    ║   Manufacturer: Faulcon DeLacy  |  Role: Multipurpose    ║
+    ║   Mass: 400T  |  Jump: 41.45Ly  |  Cost: 146,969,450 CR  ║
+    ╚═══════════════════════════════════════════════════════════╝
+    `,
+    `
+    ╔═══════════════════════════════════════════════════════════╗
+    ║                   FEDERAL CORVETTE                        ║
+    ║                                                           ║
+    ║              ╔════════════════════╗                       ║
+    ║              ║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║                       ║
+    ║           ═══╬════════════════════╬═══                    ║
+    ║          ║   ║    ╔═══════╗      ║   ║                   ║
+    ║          ║   ║    ║ █████ ║      ║   ║                   ║
+    ║          ║   ║    ║ █████ ║      ║   ║                   ║
+    ║          ║   ║    ╚═══════╝      ║   ║                   ║
+    ║           ═══╬════════════════════╬═══                    ║
+    ║              ║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║                       ║
+    ║              ╚════════════════════╝                       ║
+    ║               ║║              ║║                          ║
+    ║               ╚╝              ╚╝                          ║
+    ║                                                           ║
+    ║   Manufacturer: Core Dynamics  |  Role: Combat            ║
+    ║   Mass: 900T  |  Hardpoints: 7  |  Cost: 187,969,450 CR  ║
+    ╚═══════════════════════════════════════════════════════════╝
+    `,
+    `
+    ╔═══════════════════════════════════════════════════════════╗
+    ║                  KRAIT PHANTOM                            ║
+    ║                                                           ║
+    ║                    ╱▔▔▔▔▔▔▔▔╲                            ║
+    ║                   ╱  ▓▓▓▓▓▓  ╲                           ║
+    ║                  ╱   ▓▓██▓▓   ╲                          ║
+    ║                 ╱    ▓████▓    ╲                         ║
+    ║            ════╬═════╬════╬═════╬════                    ║
+    ║               ╱      ╲    ╱      ╲                       ║
+    ║              ║        ╲  ╱        ║                      ║
+    ║              ║         ╲╱         ║                      ║
+    ║               ╲                  ╱                       ║
+    ║                ╲________________╱                        ║
+    ║                 ║    ║  ║    ║                           ║
+    ║                 ╚════╝  ╚════╝                           ║
+    ║                                                           ║
+    ║   Manufacturer: Faulcon DeLacy  |  Role: Exploration     ║
+    ║   Mass: 270T  |  Jump: 60.64Ly  |  Cost: 37,472,252 CR   ║
+    ╚═══════════════════════════════════════════════════════════╝
+    `,
+    `
+    ╔═══════════════════════════════════════════════════════════╗
+    ║                  CORIOLIS STARPORT                        ║
+    ║                                                           ║
+    ║               ░░░░░██████████░░░░░                        ║
+    ║            ░░░░░░███████████████░░░░░░                   ║
+    ║          ░░░░░░██████████████████░░░░░░                  ║
+    ║        ░░░░░░████████████████████████░░░░░               ║
+    ║      ════════════════════════════════════════            ║
+    ║      ║  ┌───┐  ┌───┐  ┌───┐  ┌───┐  ┌───┐  ║            ║
+    ║      ║  │ ● │  │ ● │  │ ● │  │ ● │  │ ● │  ║            ║
+    ║      ║  └───┘  └───┘  └───┘  └───┘  └───┘  ║            ║
+    ║      ════════════════════════════════════════            ║
+    ║        ░░░░░░████████████████████████░░░░░               ║
+    ║          ░░░░░░██████████████████░░░░░░                  ║
+    ║            ░░░░░░███████████████░░░░░░                   ║
+    ║               ░░░░░██████████░░░░░                        ║
+    ║                                                           ║
+    ║   Type: Orbital Station  |  Pads: Large, Medium, Small   ║
+    ║   Services: Full  |  Population: 50M+  |  Rotating: Yes  ║
+    ╚═══════════════════════════════════════════════════════════╝
+    `,
+    `
+    ╔═══════════════════════════════════════════════════════════╗
+    ║                    FRAME SHIFT DRIVE                      ║
+    ║                                                           ║
+    ║                 ∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿                      ║
+    ║              ∿∿∿║║║║║║║║║║║║║║║║║║∿∿∿                   ║
+    ║            ∿∿∿  ║║║║║║║║║║║║║║║║║║  ∿∿∿                 ║
+    ║          ∿∿∿    ████████████████████    ∿∿∿             ║
+    ║        ∿∿∿      ║║║║║║║║║║║║║║║║║║      ∿∿∿           ║
+    ║      ∿∿∿        ████████████████████        ∿∿∿         ║
+    ║    ∿∿∿          ║║║║║║║║║║║║║║║║║║          ∿∿∿       ║
+    ║   ∿∿∿           ████████████████████           ∿∿∿      ║
+    ║    ∿∿∿          ║║║║║║║║║║║║║║║║║║          ∿∿∿       ║
+    ║      ∿∿∿        ████████████████████        ∿∿∿         ║
+    ║        ∿∿∿      ║║║║║║║║║║║║║║║║║║      ∿∿∿           ║
+    ║          ∿∿∿    ████████████████████    ∿∿∿             ║
+    ║            ∿∿∿  ║║║║║║║║║║║║║║║║║║  ∿∿∿                 ║
+    ║              ∿∿∿║║║║║║║║║║║║║║║║║║∿∿∿                   ║
+    ║                 ∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿                      ║
+    ║                                                           ║
+    ║             STATUS: CHARGING  |  RANGE: 15.23 Ly         ║
+    ║             JUMP SEQUENCE INITIATED - STAND BY           ║
+    ╚═══════════════════════════════════════════════════════════╝
+    `
   ]
 
   // State
@@ -102,11 +169,15 @@ FSD JUMP`
   const [channelRotation, setChannelRotation] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isOverlayActive, setIsOverlayActive] = useState(true)
+  const [showTerminal, setShowTerminal] = useState(true) // Terminal vs HLS player
+  const [isCrtEnabled, setIsCrtEnabled] = useState(true) // CRT effect on/off
   const [activeChannels, setActiveChannels] = useState(DISPLAY_CHANNELS)
   const [volumeRotation, setVolumeRotation] = useState(45)
   const [volumeDragging, setVolumeDragging] = useState(false)
   const [terminalContent, setTerminalContent] = useState('')
+  const [commandInput, setCommandInput] = useState('')
+  const [commandHistory, setCommandHistory] = useState([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
 
   // Refs
   const hlsRef = useRef(null)
@@ -114,8 +185,10 @@ FSD JUMP`
   const lastMouseAngleRef = useRef(0)
   const lastVolumeAngleRef = useRef(0)
   const terminalRef = useRef(null)
+  const commandInputRef = useRef(null)
   const isTypingRef = useRef(false)
   const isPausedRef = useRef(false)
+  const isSuspendedRef = useRef(false) // For suspending auto-messages
   const messageIntervalRef = useRef(null)
 
   // Message Generators
@@ -204,6 +277,115 @@ FSD JUMP`
         "MULTICREW REQUEST FROM CMDR VOIDRUNNER"
       ]
       return messages[Math.floor(Math.random() * messages.length)]
+    }
+  }
+
+  // Terminal Command Engine - Extensible for future features
+  const TERMINAL_COMMANDS = {
+    ascii: {
+      description: 'Display random Elite Dangerous ASCII art',
+      execute: async () => {
+        const art = ASCII_ART[Math.floor(Math.random() * ASCII_ART.length)]
+        await addMessage(`\n<span class="${styles.asciiArt}">${art}</span>\n`)
+        return true
+      }
+    },
+    help: {
+      description: 'Display available commands',
+      execute: async () => {
+        let helpText = '\n╔══════════════════════════════════════════════════════════╗\n'
+        helpText += '║              ICARUS TERMINAL - HELP MENU                 ║\n'
+        helpText += '╠══════════════════════════════════════════════════════════╣\n'
+        Object.keys(TERMINAL_COMMANDS).forEach(cmd => {
+          const padding = ' '.repeat(Math.max(0, 12 - cmd.length))
+          helpText += `║  ${cmd.toUpperCase()}${padding}- ${TERMINAL_COMMANDS[cmd].description.padEnd(40)} ║\n`
+        })
+        helpText += '╚══════════════════════════════════════════════════════════╝\n'
+        await addMessage(helpText)
+        return true
+      }
+    },
+    clear: {
+      description: 'Clear terminal screen',
+      execute: async () => {
+        setTerminalContent('')
+        const channelType = activeChannels[currentChannelIndex]?.type || 'galnet'
+        await initializeTerminal(channelType)
+        return true
+      }
+    },
+    status: {
+      description: 'Display terminal system status',
+      execute: async () => {
+        const timestamp = new Date().toLocaleString('en-US', {
+          hour12: false,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        })
+        let statusText = '\n╔══════════════════════════════════════════════════════════╗\n'
+        statusText += '║              ICARUS TERMINAL - SYSTEM STATUS             ║\n'
+        statusText += '╠══════════════════════════════════════════════════════════╣\n'
+        statusText += `║  Timestamp: ${timestamp.padEnd(43)}║\n`
+        statusText += `║  Channel: ${activeChannels[currentChannelIndex]?.name.padEnd(48)}║\n`
+        statusText += `║  Mode: Terminal                                          ║\n`
+        statusText += `║  CRT Effect: ${(isCrtEnabled ? 'ENABLED' : 'DISABLED').padEnd(43)}║\n`
+        statusText += `║  Commands Executed: ${commandHistory.length.toString().padEnd(35)}║\n`
+        statusText += '╚══════════════════════════════════════════════════════════╝\n'
+        await addMessage(statusText)
+        return true
+      }
+    }
+  }
+
+  const executeCommand = async (cmd) => {
+    const trimmedCmd = cmd.trim().toLowerCase()
+    if (!trimmedCmd) return
+
+    // Add to history
+    setCommandHistory(prev => [...prev, trimmedCmd])
+    setHistoryIndex(-1)
+
+    // Display command
+    await addMessage(`\n> ${cmd}\n`)
+
+    // Execute command
+    if (TERMINAL_COMMANDS[trimmedCmd]) {
+      await TERMINAL_COMMANDS[trimmedCmd].execute()
+    } else {
+      await addMessage(`ERROR: Unknown command '${cmd}'. Type 'HELP' for available commands.\n`)
+    }
+  }
+
+  const handleCommandSubmit = async (e) => {
+    if (e.key === 'Enter' && commandInput.trim()) {
+      const cmd = commandInput
+      setCommandInput('')
+      isSuspendedRef.current = true
+      await executeCommand(cmd)
+      isSuspendedRef.current = false
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (commandHistory.length > 0) {
+        const newIndex = historyIndex === -1 ? commandHistory.length - 1 : Math.max(0, historyIndex - 1)
+        setHistoryIndex(newIndex)
+        setCommandInput(commandHistory[newIndex])
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (historyIndex !== -1) {
+        const newIndex = historyIndex + 1
+        if (newIndex >= commandHistory.length) {
+          setHistoryIndex(-1)
+          setCommandInput('')
+        } else {
+          setHistoryIndex(newIndex)
+          setCommandInput(commandHistory[newIndex])
+        }
+      }
     }
   }
 
@@ -322,12 +504,34 @@ FSD JUMP`
     return snappedIndex * degreesPerChannel
   }
 
+  const getShortestRotationPath = (currentRotation, targetRotation) => {
+    // Normalize both angles to 0-360
+    const normalize = (angle) => ((angle % 360) + 360) % 360
+    const current = normalize(currentRotation)
+    const target = normalize(targetRotation)
+
+    // Calculate direct difference
+    let diff = target - current
+
+    // Find shortest path
+    if (diff > 180) {
+      diff -= 360
+    } else if (diff < -180) {
+      diff += 360
+    }
+
+    return current + diff
+  }
+
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
   // Terminal System
   const initializeTerminal = async (channelType) => {
     const channelNum = DISPLAY_CHANNELS.find(c => c.type === channelType)?.num || '03'
-    const header = `CMDR@ICARUS-TERMINAL:~$ INITIALIZING CHANNEL ${channelNum}
+    const shipModel = ship?.type || 'UNKNOWN'
+    const cmdrName = cmdrStatus?.name || 'CMDR'
+
+    const header = `${cmdrName}@${shipModel}:~$ INITIALIZING CHANNEL ${channelNum}
 
 ELITE DANGEROUS - COMM TERMINAL
 ================================
@@ -405,10 +609,12 @@ Encryption: MILITARY GRADE
 
   const addMessage = async (message) => {
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false })
+    const shipModel = ship?.type || 'UNKNOWN'
+    const cmdrName = cmdrStatus?.name || 'CMDR'
     let prefix = ''
     let text = message
     let speed = 15
-    
+
     if (message.includes('ENCRYPTED SIGNAL')) {
       prefix = ''
       speed = 3
@@ -418,15 +624,22 @@ Encryption: MILITARY GRADE
       speed = 5
       text = `\n<span class="${styles.dataBurst}">${message}</span>\n`
     } else if (message.startsWith('{')) {
-      prefix = `[${timestamp}] `
+      prefix = `${cmdrName}@${shipModel}:~$ `
       speed = 8
       text = `<span class="${styles.jsonData}">${message}</span>`
-    } else if (message.includes('▀') || message.includes('▄') || message.includes('█')) {
+    } else if (message.includes('▀') || message.includes('▄') || message.includes('█') || message.includes('╔') || message.includes('║')) {
       prefix = ''
       speed = 5
       text = `\n<span class="${styles.asciiArt}">${message}</span>\n`
+    } else if (message.startsWith('>')) {
+      // Command echo - no prefix
+      prefix = ''
+      speed = 10
+    } else if (message.startsWith('ERROR:')) {
+      prefix = `${cmdrName}@${shipModel}:~$ `
+      speed = 15
     } else {
-      prefix = `[${timestamp}] `
+      prefix = `${cmdrName}@${shipModel}:~$ `
       speed = 15
     }
 
@@ -436,15 +649,13 @@ Encryption: MILITARY GRADE
 
   const generateMessage = () => {
     const rand = Math.random()
-    
-    if (rand < 0.08) {
-      const art = ASCII_ART[Math.floor(Math.random() * ASCII_ART.length)]
-      return { content: art, pauseAfter: 2500 }
-    } else if (rand < 0.33) {
+
+    // Removed random ASCII art - now only via ASCII command
+    if (rand < 0.30) {
       return { content: generateEncryptedBurst(), pauseAfter: 2500 }
-    } else if (rand < 0.53) {
+    } else if (rand < 0.50) {
       return { content: generateDataBurst(), pauseAfter: 1500 }
-    } else if (rand < 0.78) {
+    } else if (rand < 0.75) {
       return { content: generateRandomJSON(), pauseAfter: 0 }
     } else {
       const channelType = activeChannels[currentChannelIndex]?.type || 'galnet'
@@ -454,11 +665,11 @@ Encryption: MILITARY GRADE
   }
 
   const processMessages = async () => {
-    if (isTypingRef.current) return
-    
+    if (isTypingRef.current || isSuspendedRef.current) return
+
     const message = generateMessage()
     await addMessage(message.content)
-    
+
     if (message.pauseAfter > 0) {
       isPausedRef.current = true
       await sleep(message.pauseAfter)
@@ -470,7 +681,7 @@ Encryption: MILITARY GRADE
     stopMessageLoop()
     processMessages()
     messageIntervalRef.current = setInterval(() => {
-      if (!isTypingRef.current && !isPausedRef.current) {
+      if (!isTypingRef.current && !isPausedRef.current && !isSuspendedRef.current) {
         processMessages()
       }
     }, 2000)
@@ -506,7 +717,7 @@ Encryption: MILITARY GRADE
       
       hlsRef.current.on(Hls.Events.MANIFEST_PARSED, () => {
         console.log('Stream manifest parsed')
-        if (isPlaying && !isOverlayActive) {
+        if (isPlaying && !showTerminal) {
           hlsVideoRef.current.play().catch(err => {
             console.log('Autoplay prevented:', err)
           })
@@ -528,7 +739,7 @@ Encryption: MILITARY GRADE
     } else if (hlsVideoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
       hlsVideoRef.current.src = url
       hlsVideoRef.current.addEventListener('loadedmetadata', () => {
-        if (isPlaying && !isOverlayActive) {
+        if (isPlaying && !showTerminal) {
           hlsVideoRef.current.play().catch(err => console.log('Play failed:', err))
         }
       })
@@ -552,15 +763,15 @@ Encryption: MILITARY GRADE
     const degreesPerChannel = 360 / activeChannels.length
     const normalizedRotation = ((channelRotation % 360) + 360) % 360
     const newIndex = Math.round(normalizedRotation / degreesPerChannel) % activeChannels.length
-    
+
     if (newIndex !== currentChannelIndex) {
       setCurrentChannelIndex(newIndex)
     }
-    
+
     const channel = activeChannels[newIndex]
 
     if (triggerCallback) {
-      if (isOverlayActive) {
+      if (showTerminal) {
         changeChannel(channel.type)
       } else {
         if (channel.url) {
@@ -578,14 +789,14 @@ Encryption: MILITARY GRADE
   // Event Handlers
   const handleChannelKnobMouseDown = (e) => {
     setIsDragging(true)
-    const knob = e.currentTarget.parentElement
+    const knob = e.currentTarget
     lastMouseAngleRef.current = getMouseAngle(e, knob)
     e.preventDefault()
   }
 
   const handleVolumeKnobMouseDown = (e) => {
     setVolumeDragging(true)
-    const knob = e.currentTarget.parentElement
+    const knob = e.currentTarget
     lastVolumeAngleRef.current = getMouseAngle(e, knob)
     e.preventDefault()
   }
@@ -593,9 +804,9 @@ Encryption: MILITARY GRADE
   const handlePlayPause = () => {
     setIsPlaying(prev => {
       const newPlaying = !prev
-      
+
       if (newPlaying) {
-        if (!isOverlayActive && hlsVideoRef.current && hlsVideoRef.current.src) {
+        if (!showTerminal && hlsVideoRef.current && hlsVideoRef.current.src) {
           hlsVideoRef.current.play().catch(err => {
             console.log('Play failed:', err)
             setIsPlaying(false)
@@ -606,7 +817,7 @@ Encryption: MILITARY GRADE
           hlsVideoRef.current.pause()
         }
       }
-      
+
       return newPlaying
     })
   }
@@ -615,7 +826,8 @@ Encryption: MILITARY GRADE
     const newIndex = (currentChannelIndex - 1 + activeChannels.length) % activeChannels.length
     setCurrentChannelIndex(newIndex)
     const degreesPerChannel = 360 / activeChannels.length
-    setChannelRotation(newIndex * degreesPerChannel)
+    const targetRotation = newIndex * degreesPerChannel
+    setChannelRotation(targetRotation)
     updateChannel(true)
   }
 
@@ -623,18 +835,20 @@ Encryption: MILITARY GRADE
     const newIndex = (currentChannelIndex + 1) % activeChannels.length
     setCurrentChannelIndex(newIndex)
     const degreesPerChannel = 360 / activeChannels.length
-    setChannelRotation(newIndex * degreesPerChannel)
+    const targetRotation = newIndex * degreesPerChannel
+    setChannelRotation(targetRotation)
     updateChannel(true)
   }
 
   const handlePlaylistItemClick = (index) => {
     setCurrentChannelIndex(index)
     const degreesPerChannel = 360 / activeChannels.length
-    setChannelRotation(index * degreesPerChannel)
-    
+    const targetRotation = index * degreesPerChannel
+    setChannelRotation(targetRotation)
+
     const channel = activeChannels[index]
-    
-    if (isOverlayActive) {
+
+    if (showTerminal) {
       changeChannel(channel.type)
     } else {
       if (channel.url) {
@@ -648,29 +862,31 @@ Encryption: MILITARY GRADE
     }
   }
 
-  const handleOverlayToggle = () => {
-    setIsOverlayActive(prev => {
-      const newOverlayActive = !prev
-      
-      if (newOverlayActive) {
+  const handleTerminalToggle = () => {
+    setShowTerminal(prev => {
+      const newShowTerminal = !prev
+
+      if (newShowTerminal) {
+        // Switch to Terminal mode
         setActiveChannels(DISPLAY_CHANNELS)
         stopHLSStream()
-        
+
         if (currentChannelIndex >= DISPLAY_CHANNELS.length) {
           setCurrentChannelIndex(0)
         }
-        
+
         const channelType = DISPLAY_CHANNELS[currentChannelIndex >= DISPLAY_CHANNELS.length ? 0 : currentChannelIndex].type
         setTerminalContent('')
         initializeTerminal(channelType)
       } else {
+        // Switch to Archived Transmissions (HLS) mode
         setActiveChannels(streamChannels)
         stopMessageLoop()
-        
+
         if (currentChannelIndex >= streamChannels.length) {
           setCurrentChannelIndex(0)
         }
-        
+
         const channel = streamChannels[currentChannelIndex >= streamChannels.length ? 0 : currentChannelIndex]
         if (channel.url) {
           loadHLSStream(channel.url)
@@ -683,38 +899,55 @@ Encryption: MILITARY GRADE
           }
         }
       }
-      
-      const degreesPerChannel = 360 / (newOverlayActive ? DISPLAY_CHANNELS : streamChannels).length
-      setChannelRotation((currentChannelIndex >= (newOverlayActive ? DISPLAY_CHANNELS : streamChannels).length ? 0 : currentChannelIndex) * degreesPerChannel)
-      
-      return newOverlayActive
+
+      const degreesPerChannel = 360 / (newShowTerminal ? DISPLAY_CHANNELS : streamChannels).length
+      setChannelRotation((currentChannelIndex >= (newShowTerminal ? DISPLAY_CHANNELS : streamChannels).length ? 0 : currentChannelIndex) * degreesPerChannel)
+
+      return newShowTerminal
     })
+  }
+
+  const handleCrtToggle = () => {
+    setIsCrtEnabled(prev => !prev)
   }
 
   // Effects
   useEffect(() => {
+    let channelKnobElement = null
+    let volumeKnobElement = null
+
     const handleMouseMove = (e) => {
       if (isDragging) {
-        const knob = document.querySelector(`.${styles.knob}`)
-        if (!knob) return
-        
-        const currentMouseAngle = getMouseAngle(e, knob)
+        if (!channelKnobElement) {
+          const knobs = document.querySelectorAll(`.${styles.knob}`)
+          channelKnobElement = knobs[0]
+        }
+        if (!channelKnobElement) return
+
+        const currentMouseAngle = getMouseAngle(e, channelKnobElement)
         const deltaAngle = normalizeAngle(currentMouseAngle - lastMouseAngleRef.current)
         const deltaDegrees = deltaAngle * (180 / Math.PI)
-        
-        setChannelRotation(prev => prev + deltaDegrees)
+
+        setChannelRotation(prev => {
+          const newRotation = prev + deltaDegrees
+          // Normalize to 0-360 range during drag to prevent accumulation
+          return ((newRotation % 360) + 360) % 360
+        })
         lastMouseAngleRef.current = currentMouseAngle
         e.preventDefault()
       }
-      
+
       if (volumeDragging) {
-        const knob = document.querySelectorAll(`.${styles.knob}`)[1]
-        if (!knob) return
-        
-        const currentAngle = getMouseAngle(e, knob)
+        if (!volumeKnobElement) {
+          const knobs = document.querySelectorAll(`.${styles.knob}`)
+          volumeKnobElement = knobs[1]
+        }
+        if (!volumeKnobElement) return
+
+        const currentAngle = getMouseAngle(e, volumeKnobElement)
         const deltaAngle = normalizeAngle(currentAngle - lastVolumeAngleRef.current)
         const deltaDegrees = deltaAngle * (180 / Math.PI)
-        
+
         setVolumeRotation(prev => {
           const newRotation = Math.max(-135, Math.min(135, prev + deltaDegrees))
           const volumePercent = (newRotation + 135) / 270
@@ -723,7 +956,7 @@ Encryption: MILITARY GRADE
           }
           return newRotation
         })
-        
+
         lastVolumeAngleRef.current = currentAngle
         e.preventDefault()
       }
@@ -732,11 +965,12 @@ Encryption: MILITARY GRADE
     const handleMouseUp = () => {
       if (isDragging) {
         setIsDragging(false)
-        const snappedRotation = snapToDetent(channelRotation)
+        const normalizedRotation = ((channelRotation % 360) + 360) % 360
+        const snappedRotation = snapToDetent(normalizedRotation)
         setChannelRotation(snappedRotation)
         updateChannel(true)
       }
-      
+
       if (volumeDragging) {
         setVolumeDragging(false)
       }
@@ -777,7 +1011,7 @@ Encryption: MILITARY GRADE
       if (event.detail && Array.isArray(event.detail)) {
         setStreamChannels(event.detail)
         // If currently on stream channels and index is out of bounds, reset to 0
-        if (!isOverlayActive && currentChannelIndex >= event.detail.length) {
+        if (!showTerminal && currentChannelIndex >= event.detail.length) {
           setCurrentChannelIndex(0)
         }
       }
@@ -792,7 +1026,26 @@ Encryption: MILITARY GRADE
         window.removeEventListener('mediaStreamsUpdated', handleStreamsUpdate)
       }
     }
-  }, [isOverlayActive, currentChannelIndex])
+  }, [showTerminal, currentChannelIndex])
+
+  // Fetch ship and commander status
+  useEffect(async () => {
+    if (!connected) return
+    setShip(await sendEvent('getShipStatus'))
+    setCmdrStatus(await sendEvent('getCmdrStatus'))
+  }, [connected, ready])
+
+  useEffect(() => eventListener('gameStateChange', async () => {
+    setShip(await sendEvent('getShipStatus'))
+    setCmdrStatus(await sendEvent('getCmdrStatus'))
+  }), [])
+
+  useEffect(() => eventListener('newLogEntry', async (log) => {
+    setShip(await sendEvent('getShipStatus'))
+    if (['Location', 'FSDJump'].includes(log.event)) {
+      setCmdrStatus(await sendEvent('getCmdrStatus'))
+    }
+  }), [])
 
   useEffect(() => {
     const channelType = DISPLAY_CHANNELS[currentChannelIndex]?.type || 'galnet'
@@ -810,20 +1063,34 @@ Encryption: MILITARY GRADE
         <div className={styles.crtFrame}>
           <div className={styles.powerIndicator}></div>
           <div className={styles.bezelFrame}>
-            <div className={`${styles.screenContainer} ${styles.crt}`}>
+            <div
+              className={`${styles.screenContainer} ${isCrtEnabled ? styles.crt : ''} ${showTerminal ? styles.aspectRatio43 : styles.aspectRatio169}`}
+            >
               <div className={styles.videoLayer}>
-                <video 
+                <video
                   ref={hlsVideoRef}
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />
               </div>
-              <div className={`${styles.overlayLayer} ${!isOverlayActive ? styles.hidden : ''}`}>
-                <div 
+              <div className={`${styles.overlayLayer} ${!showTerminal ? styles.hidden : ''}`}>
+                <div
                   ref={terminalRef}
-                  className={`${styles.terminalInterface} ${styles.crt}`}
+                  className={`${styles.terminalInterface} ${isCrtEnabled ? styles.crt : ''}`}
                 >
                   <span dangerouslySetInnerHTML={{ __html: terminalContent }} />
                   <span className={styles.terminalCursor}></span>
+                </div>
+                <div className={styles.terminalInputContainer}>
+                  <span className={styles.terminalPrompt}>{(cmdrStatus?.name || 'CMDR')}@{(ship?.type || 'UNKNOWN')}:~$</span>
+                  <input
+                    ref={commandInputRef}
+                    type="text"
+                    className={styles.terminalInput}
+                    value={commandInput}
+                    onChange={(e) => setCommandInput(e.target.value)}
+                    onKeyDown={handleCommandSubmit}
+                    placeholder="Enter command (type 'help' for commands)..."
+                  />
                 </div>
               </div>
             </div>
@@ -831,54 +1098,66 @@ Encryption: MILITARY GRADE
         </div>
 
         <div className={styles.controlsPanel}>
-          <div className={styles.knobContainer}>
-            <div className={styles.knobLabel}>FREQUENCY</div>
-            <div className={styles.channelControl}>
-              <button className={styles.channelBtn} onClick={handleChannelUp}>▲</button>
-              <div className={styles.knob}>
-                <div 
-                  className={styles.knobPointer}
-                  style={{ transform: `rotate(${channelRotation}deg)` }}
+          <div className={styles.controlGroup}>
+            <div className={styles.knobContainer}>
+              <div className={styles.knobLabel}>FREQUENCY</div>
+              <div className={styles.channelControl}>
+                <button className={styles.channelBtn} onClick={handleChannelUp}>▲</button>
+                <div
+                  className={styles.knob}
                   onMouseDown={handleChannelKnobMouseDown}
                   onTouchStart={handleChannelKnobMouseDown}
-                />
-              </div>
-              <button className={styles.channelBtn} onClick={handleChannelDown}>▼</button>
-            </div>
-          </div>
-
-          <div className={styles.knobContainer}>
-            <div className={styles.btnLabel}>PLAYBACK</div>
-            <div className={styles.playPauseBtn} onClick={handlePlayPause}>
-              <div className={styles.playIcon} style={{ display: isPlaying ? 'none' : 'flex' }}>
-                <div className={styles.playTriangle}></div>
-              </div>
-              <div className={styles.pauseIcon} style={{ display: isPlaying ? 'flex' : 'none' }}>
-                <div className={styles.pauseBar}></div>
-                <div className={styles.pauseBar}></div>
+                >
+                  <div
+                    className={styles.knobPointer}
+                    style={{ transform: `rotate(${channelRotation}deg)` }}
+                  />
+                </div>
+                <button className={styles.channelBtn} onClick={handleChannelDown}>▼</button>
               </div>
             </div>
-          </div>
 
-          <div className={styles.knobContainer}>
-            <div className={styles.knobLabel}>GAIN</div>
-            <div className={styles.knob}>
-              <div 
-                className={styles.knobPointer}
-                style={{ transform: `rotate(${volumeRotation}deg)` }}
+            <div className={styles.knobContainer}>
+              <div className={styles.knobLabel}>PLAYBACK</div>
+              <div className={styles.playPauseBtn} onClick={handlePlayPause}>
+                <div className={styles.playIcon} style={{ display: isPlaying ? 'none' : 'flex' }}>
+                  <div className={styles.playTriangle}></div>
+                </div>
+                <div className={styles.pauseIcon} style={{ display: isPlaying ? 'flex' : 'none' }}>
+                  <div className={styles.pauseBar}></div>
+                  <div className={styles.pauseBar}></div>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.knobContainer}>
+              <div className={styles.knobLabel}>GAIN</div>
+              <div
+                className={styles.knob}
                 onMouseDown={handleVolumeKnobMouseDown}
                 onTouchStart={handleVolumeKnobMouseDown}
-              />
+              >
+                <div
+                  className={styles.knobPointer}
+                  style={{ transform: `rotate(${volumeRotation}deg)` }}
+                />
+              </div>
             </div>
           </div>
 
-          <div className={styles.toggleContainer}>
-            <div className={styles.toggleLabel}>OVERLAY</div>
-            <div 
-              className={`${styles.toggleSwitch} ${isOverlayActive ? styles.active : ''}`}
-              onClick={handleOverlayToggle}
-            >
-              <div className={styles.toggleSlider}></div>
+          <div className={styles.controlGroup}>
+            <div className={styles.toggleContainer}>
+              <div className={styles.toggleLabel}>CRT STABIL</div>
+              <div className={styles.toggleSwitch} onClick={handleCrtToggle}>
+                <div className={`${styles.toggleSlider} ${isCrtEnabled ? styles.active : ''}`}></div>
+              </div>
+            </div>
+
+            <div className={styles.toggleContainer}>
+              <div className={styles.toggleLabel}>{showTerminal ? 'TERMINAL' : 'ARCHIVED'}</div>
+              <div className={styles.toggleSwitch} onClick={handleTerminalToggle}>
+                <div className={`${styles.toggleSlider} ${showTerminal ? styles.active : ''}`}></div>
+              </div>
             </div>
           </div>
         </div>
@@ -887,7 +1166,7 @@ Encryption: MILITARY GRADE
       <div className={styles.sideSection}>
         <div className={styles.playlistPanel}>
           <div className={styles.playlistHeader}>
-            {isOverlayActive ? 'CHANNELS' : 'STREAMS'}
+            {showTerminal ? 'CHANNELS' : 'STREAMS'}
           </div>
           <div className={styles.playlistItems}>
             {activeChannels.map((channel, index) => (
@@ -898,7 +1177,7 @@ Encryption: MILITARY GRADE
               >
                 <div className={styles.playlistItemTitle}>{channel.name}</div>
                 <div className={styles.playlistItemDuration}>
-                  {isOverlayActive ? `LIVE • Channel ${channel.num}` : `Stream • ${channel.num}`}
+                  {showTerminal ? `LIVE • Channel ${channel.num}` : `Stream • ${channel.num}`}
                 </div>
               </div>
             ))}
