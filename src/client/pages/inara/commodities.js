@@ -9,6 +9,7 @@ import { sanitizeInaraText } from 'lib/sanitize-inara-text'
 import { normaliseCommodityKey, NON_COMMODITY_KEYS } from 'lib/normalization'
 import { fetchWithCache } from 'lib/inara-request-cache'
 import { getDistanceSeverityColor, getStationDistanceSeverityColor } from 'lib/distance-colors'
+import { planOptimalRoute } from '../../../shared/route-planner'
 import styles from './commodities.module.css'
 
 export default function InaraCommoditiesPage () {
@@ -19,6 +20,9 @@ export default function InaraCommoditiesPage () {
   const [valuationData, setValuationData] = useState({ results: [], metadata: {} })
   const [selectedCommodity, setSelectedCommodity] = useState(null)
   const [currentSystem, setCurrentSystem] = useState(null)
+  const [plannedRoute, setPlannedRoute] = useState(null)
+  const [newCalculatedRoute, setNewCalculatedRoute] = useState(null)
+  const [isInHypershift, setIsInHypershift] = useState(false)
 
   // Load ship status and cargo
   useEffect(() => {
@@ -39,13 +43,14 @@ export default function InaraCommoditiesPage () {
     })()
   }, [connected, ready])
 
-  // Load current system
+  // Load current system and station
   useEffect(() => {
     if (!connected) return
     (async () => {
       try {
         const system = await sendEvent('getCurrentSystem')
         setCurrentSystem(system)
+        console.log('[Commodities] Current system:', system?.name, 'Docked:', system?.docked, 'Station:', system?.station)
       } catch (err) {
         console.error('Failed to load current system', err)
       }
@@ -89,9 +94,20 @@ export default function InaraCommoditiesPage () {
     try {
       const system = await sendEvent('getCurrentSystem')
       setCurrentSystem(system)
+      setIsInHypershift(false) // Exited hyperspace
     } catch (err) {
       console.error('Failed to refresh system after jump', err)
     }
+  }), [])
+
+  // Listen for FSD start (entering hypershift)
+  useEffect(() => eventListener('StartJump', () => {
+    setIsInHypershift(true)
+  }), [])
+
+  // Listen for FSD exit (supercruise drop)
+  useEffect(() => eventListener('SupercruiseExit', () => {
+    setIsInHypershift(false)
   }), [])
 
   // Fetch commodity valuations from INARA
@@ -391,6 +407,83 @@ export default function InaraCommoditiesPage () {
     console.log('Station clicked:', station)
   }, [])
 
+  // Auto-calculate route when cargo changes (but not during hypershift)
+  useEffect(() => {
+    if (isInHypershift) {
+      console.log('[Auto Route] Skipping calculation - in hypershift mode')
+      return
+    }
+
+    if (!enhancedStations || enhancedStations.length === 0) {
+      setNewCalculatedRoute(null)
+      return
+    }
+
+    const maxJumpRange = ship?.maxJumpRange || ship?.unladenJumpRange || 30
+    const routePlan = planOptimalRoute({
+      stations: enhancedStations,
+      currentPosition: currentSystem?.position,
+      currentSystemName: currentSystem?.name,
+      maxJumpRange
+    })
+
+    console.log('[Auto Route] Calculated route:', routePlan)
+
+    // If there's no active planned route yet, set it automatically
+    if (!plannedRoute) {
+      setPlannedRoute(routePlan)
+      setNewCalculatedRoute(null)
+    } else {
+      // Compare routes to see if they're different
+      const isDifferent = !routesAreEqual(plannedRoute, routePlan)
+      if (isDifferent) {
+        console.log('[Auto Route] Detected different route')
+        setNewCalculatedRoute(routePlan)
+      } else {
+        setNewCalculatedRoute(null)
+      }
+    }
+  }, [enhancedStations, ship, currentSystem, isInHypershift, plannedRoute])
+
+  // Compare two routes to see if they're the same
+  const routesAreEqual = (route1, route2) => {
+    if (!route1 || !route2) return false
+    if (route1.route.length !== route2.route.length) return false
+
+    return route1.route.every((station, index) => {
+      const other = route2.route[index]
+      return station.stationName === other.stationName &&
+             station.systemName === other.systemName
+    })
+  }
+
+  const handlePlanRoute = useCallback(() => {
+    if (!enhancedStations || enhancedStations.length === 0) {
+      console.warn('[Route Planner] No stations available to plan route')
+      return
+    }
+
+    const maxJumpRange = ship?.maxJumpRange || ship?.unladenJumpRange || 30
+    const routePlan = planOptimalRoute({
+      stations: enhancedStations,
+      currentPosition: currentSystem?.position,
+      currentSystemName: currentSystem?.name,
+      maxJumpRange
+    })
+
+    console.log('[Route Planner] Planned route:', routePlan)
+    setPlannedRoute(routePlan)
+    setNewCalculatedRoute(null) // Clear any pending new route notification
+  }, [enhancedStations, ship, currentSystem])
+
+  const handleAcceptNewRoute = useCallback(() => {
+    if (newCalculatedRoute) {
+      console.log('[Route Planner] Accepting new route')
+      setPlannedRoute(newCalculatedRoute)
+      setNewCalculatedRoute(null)
+    }
+  }, [newCalculatedRoute])
+
   const hasCargo = cargo && cargo.length > 0
   const hasCommodities = commodities.length > 0
   const hasStations = optimalStations.length > 0
@@ -419,10 +512,10 @@ export default function InaraCommoditiesPage () {
                   )}
                 </div>
                 <div className={styles.cargoProgressBar}>
-                  <div 
+                  <div
                     className={styles.cargoProgressFill}
-                    style={{ 
-                      width: `${((ship.cargo.count ?? 0) / (ship.cargo.capacity ?? 1)) * 100}%` 
+                    style={{
+                      width: `${((ship.cargo.count ?? 0) / (ship.cargo.capacity ?? 1)) * 100}%`
                     }}
                   />
                 </div>
@@ -432,6 +525,74 @@ export default function InaraCommoditiesPage () {
               <div className={styles.bestValueDisplay}>
                 <div className={styles.bestValueLabel}>Best Total Value</div>
                 <div className={styles.bestValueAmount}>{formatCredits(totals.best)}</div>
+              </div>
+            )}
+
+            {/* Most Profitable Route - displayed below credit value */}
+            {plannedRoute && plannedRoute.route && plannedRoute.route.length > 0 && (
+              <div className={styles.mostProfitableRoute}>
+                <div className={styles.routeHeader}>
+                  <h3 className={styles.routeTitle}>Most Profitable Route</h3>
+                  <div className={styles.routeButtonGroup}>
+                    {newCalculatedRoute && (
+                      <button
+                        className={styles.newRouteNotification}
+                        onClick={handleAcceptNewRoute}
+                      >
+                        <span className={styles.newRouteIcon}>✨</span>
+                        More Effective Route Detected
+                      </button>
+                    )}
+                    <button
+                      className={styles.planRouteButton}
+                      onClick={handlePlanRoute}
+                      disabled={!ship?.maxJumpRange && !ship?.unladenJumpRange}
+                    >
+                      Recalculate Route
+                    </button>
+                  </div>
+                </div>
+                <div className={styles.routeStations}>
+                  {plannedRoute.route.map((station, index) => (
+                    <>
+                      <div key={`${station.systemName}-${station.stationName}`} className={styles.routeStation}>
+                        <div className={styles.routeStationName}>{station.stationName}</div>
+                        <div className={styles.routeStationSystem}>{station.systemName}</div>
+                        <div className={styles.routeStationDistance}>{station.jumpDistance?.toFixed(1)} Ly</div>
+                      </div>
+                      {index < plannedRoute.route.length - 1 && (
+                        <div key={`arrow-${index}`} className={styles.routeArrow}>→</div>
+                      )}
+                    </>
+                  ))}
+                </div>
+                <div className={styles.routeSummaryCompact}>
+                  <div className={styles.routeSummaryItem}>
+                    <span className={styles.routeSummaryLabel}>Distance:</span>
+                    <span className={styles.routeSummaryValue}>{plannedRoute.totalDistance.toFixed(2)} Ly</span>
+                  </div>
+                  <div className={styles.routeSummaryItem}>
+                    <span className={styles.routeSummaryLabel}>Value:</span>
+                    <span className={styles.routeSummaryValue}>{formatCredits(plannedRoute.totalValue)}</span>
+                  </div>
+                  <div className={styles.routeSummaryItem}>
+                    <span className={styles.routeSummaryLabel}>Efficiency:</span>
+                    <span className={styles.routeSummaryValue}>{formatCredits(plannedRoute.efficiency)}/Ly</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Show Plan Route button if no route exists yet */}
+            {!plannedRoute && hasStations && (
+              <div className={styles.planRoutePrompt}>
+                <button
+                  className={styles.planRouteButton}
+                  onClick={handlePlanRoute}
+                  disabled={!ship?.maxJumpRange && !ship?.unladenJumpRange}
+                >
+                  Plan Optimal Route
+                </button>
               </div>
             )}
           </div>
@@ -455,13 +616,13 @@ export default function InaraCommoditiesPage () {
               {/* Commodities List */}
               <section className={styles.commoditiesSection}>
                 <h2 className={styles.sectionTitle}>Your Cargo ({commodities.length} items)</h2>
-                <div className={styles.commodityGrid}>
+                <div className={styles.commodityList}>
                   {commodities.map(commodity => {
                     // Get best station info from INARA listings
                     const bestListing = commodity.inaraListings && commodity.inaraListings.length > 0
                       ? commodity.inaraListings[0]
                       : null
-                    
+
                     return (
                       <CommodityCard
                         key={commodity.key}
@@ -473,7 +634,7 @@ export default function InaraCommoditiesPage () {
                         systemName={bestListing?.systemName}
                         quantity={commodity.quantity}
                         updatedAt={commodity.updatedAt}
-                        mode="large"
+                        mode="inline"
                         isSelected={selectedCommodity?.key === commodity.key}
                         onClick={() => handleCommodityClick(commodity)}
                       />
@@ -485,26 +646,68 @@ export default function InaraCommoditiesPage () {
               {/* Optimal Unloading Plan */}
               {hasStations && (
                 <section className={styles.commoditiesSection}>
-                  <h2 className={styles.sectionTitle}>Optimal Unloading Plan</h2>
-                  <p className={styles.sectionDescription}>
-                    Top stations to visit for maximum profit, ordered by total cargo value
-                  </p>
+                  <div className={styles.sectionHeader}>
+                    <div>
+                      <h2 className={styles.sectionTitle}>Optimal Unloading Plan</h2>
+                      <p className={styles.sectionDescription}>
+                        {plannedRoute ? 'Optimized route for maximum profit with shortest jumps' : 'Top stations to visit for maximum profit, ordered by total cargo value'}
+                      </p>
+                    </div>
+                    <div className={styles.routeButtonGroup}>
+                      {newCalculatedRoute && (
+                        <button
+                          className={styles.newRouteNotification}
+                          onClick={handleAcceptNewRoute}
+                        >
+                          <span className={styles.newRouteIcon}>✨</span>
+                          More Effective Route Detected
+                        </button>
+                      )}
+                      <button
+                        className={styles.planRouteButton}
+                        onClick={handlePlanRoute}
+                        disabled={!ship?.maxJumpRange && !ship?.unladenJumpRange}
+                      >
+                        {plannedRoute ? 'Recalculate Route' : 'Plan Route'}
+                      </button>
+                    </div>
+                  </div>
                   <div className={styles.stationList}>
-                    {enhancedStations.map((station, index) => {
+                    {(plannedRoute?.route || enhancedStations).map((station, index) => {
                       const jumpRange = ship?.maxJumpRange || ship?.unladenJumpRange || null
-                      const systemDistanceColor = getDistanceSeverityColor(station.distanceLy, jumpRange)
+                      const isRouteMode = !!plannedRoute
+
+                      // In route mode, use jump distance; otherwise use distance from origin
+                      const displayDistance = isRouteMode ? station.jumpDistance : station.distanceLy
+                      const systemDistanceColor = getDistanceSeverityColor(displayDistance, jumpRange)
                       const stationDistanceColor = getStationDistanceSeverityColor(station.distanceLs)
-                      
+
+                      // Check if this is the current location
+                      const isCurrentLocation = currentSystem?.docked &&
+                        currentSystem?.station?.toLowerCase() === station.stationName?.toLowerCase() &&
+                        currentSystem?.name?.toLowerCase() === station.systemName?.toLowerCase()
+
                       return (
                         <div key={`${station.systemName}-${station.stationName}`} className={styles.stationListItem}>
                           <div className={styles.stationListRank}>
-                            <div className={styles.stationRankNumber}>#{index + 1}</div>
+                            <div className={styles.stationRankNumber}>
+                              {isRouteMode ? `Jump ${station.jumpNumber}` : `#${index + 1}`}
+                            </div>
                             <div className={styles.stationProfitInfo}>
-                              <div className={styles.stationProfitLabel}>Total Value</div>
-                              <div className={styles.stationProfitValue}>{formatCredits(station.totalValue)}</div>
+                              <div className={styles.stationProfitLabel}>
+                                {isRouteMode ? 'Cumulative' : 'Total Value'}
+                              </div>
+                              <div className={styles.stationProfitValue}>
+                                {formatCredits(isRouteMode ? station.cumulativeValue : station.totalValue)}
+                              </div>
                               <div className={styles.stationCargoLabel}>
                                 {station.totalQuantity} t · {station.commodities.length} items
                               </div>
+                              {isRouteMode && (
+                                <div className={styles.stationJumpInfo}>
+                                  {station.jumpDistance?.toFixed(2)} Ly · {station.cumulativeDistance?.toFixed(2)} Ly total
+                                </div>
+                              )}
                             </div>
                           </div>
                           <div className={styles.stationListCard}>
@@ -512,13 +715,14 @@ export default function InaraCommoditiesPage () {
                               stationName={station.stationName}
                               systemName={station.systemName}
                               stationType={station.stationType}
-                              distanceLy={station.distanceLy}
+                              distanceLy={displayDistance}
                               distanceLs={station.distanceLs}
                               distanceLyColor={systemDistanceColor}
                               distanceLsColor={stationDistanceColor}
                               allegiance={station.allegiance}
                               government={station.government}
                               powerplay={station.powerplay}
+                              isCurrentLocation={isCurrentLocation}
                               fillSpace={true}
                               onClick={() => handleStationClick(station)}
                             />
@@ -527,6 +731,27 @@ export default function InaraCommoditiesPage () {
                       )
                     })}
                   </div>
+                  {plannedRoute && plannedRoute.unreachable && plannedRoute.unreachable.length > 0 && (
+                    <div className={styles.unreachableWarning}>
+                      <strong>⚠ Unreachable Stations:</strong> {plannedRoute.unreachable.length} station(s) are beyond your ship's jump range ({ship?.maxJumpRange || ship?.unladenJumpRange} Ly)
+                    </div>
+                  )}
+                  {plannedRoute && (
+                    <div className={styles.routeSummary}>
+                      <div className={styles.routeSummaryItem}>
+                        <span className={styles.routeSummaryLabel}>Total Distance:</span>
+                        <span className={styles.routeSummaryValue}>{plannedRoute.totalDistance.toFixed(2)} Ly</span>
+                      </div>
+                      <div className={styles.routeSummaryItem}>
+                        <span className={styles.routeSummaryLabel}>Total Value:</span>
+                        <span className={styles.routeSummaryValue}>{formatCredits(plannedRoute.totalValue)}</span>
+                      </div>
+                      <div className={styles.routeSummaryItem}>
+                        <span className={styles.routeSummaryLabel}>Efficiency:</span>
+                        <span className={styles.routeSummaryValue}>{formatCredits(plannedRoute.efficiency)}/Ly</span>
+                      </div>
+                    </div>
+                  )}
                 </section>
               )}
 
@@ -541,7 +766,12 @@ export default function InaraCommoditiesPage () {
                       const jumpRange = ship?.maxJumpRange || ship?.unladenJumpRange || null
                       const systemDistanceColor = getDistanceSeverityColor(listing.distanceLy, jumpRange)
                       const stationDistanceColor = getStationDistanceSeverityColor(listing.distanceLs)
-                      
+
+                      // Check if this is the current location
+                      const isCurrentLocation = currentSystem?.docked &&
+                        currentSystem?.station?.toLowerCase() === listing.stationName?.toLowerCase() &&
+                        currentSystem?.name?.toLowerCase() === listing.systemName?.toLowerCase()
+
                       return (
                         <StationCard
                           key={`${listing.systemName}-${listing.stationName}-${index}`}
@@ -552,6 +782,7 @@ export default function InaraCommoditiesPage () {
                           distanceLs={listing.distanceLs}
                           distanceLyColor={systemDistanceColor}
                           distanceLsColor={stationDistanceColor}
+                          isCurrentLocation={isCurrentLocation}
                         />
                       )
                     })}

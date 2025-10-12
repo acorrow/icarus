@@ -81,6 +81,12 @@ class EventHandlers {
     this.eliteJson = eliteJson
 
     this.system = new System({ eliteLog })
+
+    // CRITICAL FIX: Share System instance globally to prevent dual instances
+    // This ensures both EventHandlers and /api/current-system use the same instance
+    global.SHARED_SYSTEM_INSTANCE = this.system
+    console.log('[EventHandlers] Registered shared System instance globally')
+
     this.shipStatus = new ShipStatus({ eliteLog, eliteJson })
     this.materials = new Materials({ eliteLog, eliteJson })
     this.engineers = new Engineers({ eliteLog, eliteJson })
@@ -144,6 +150,7 @@ class EventHandlers {
           }
         },
         getSystem: (args) => this.system.getSystem(args),
+        getCurrentSystem: () => this.system.getSystem(), // Alias for getSystem with no args (returns current system)
         getShipStatus: (args) => this.shipStatus.getShipStatus(args),
         getMaterials: (args) => this.materials.getMaterials(args),
         getInventory: (args) => this.inventory.getInventory(args),

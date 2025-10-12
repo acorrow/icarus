@@ -4,7 +4,8 @@
       "Bash(git log:*)",
       "Read(//c/Users/Adam/Pictures/**)",
       "Bash(git rm:*)",
-      "Bash(npm run build:client:*)"
+      "Bash(npm run build:client:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

@@ -89,7 +89,7 @@ export default function CommodityCard ({
   const normalizedSystem = sanitizeInaraText(systemName)
 
   const config = getCommodityIconConfig(category)
-  const icon = <CommodityIcon category={category} size={mode === 'inline' ? 32 : 48} color={config.color} />
+  const icon = <CommodityIcon category={category} size={mode === 'inline' ? 20 : 48} color={config.color} />
 
   const priceDisplay = priceText || (typeof price === 'number' ? formatCredits(price) : '')
   const updatedDisplay = updatedText || (updatedAt ? formatRelativeTime(updatedAt) : '')
@@ -139,7 +139,7 @@ export default function CommodityCard ({
     }
   }
 
-  // Inline mode: single row layout
+  // Inline mode: single row layout with all info
   if (mode === 'inline') {
     return (
       <div
@@ -159,16 +159,57 @@ export default function CommodityCard ({
             {priceDisplay}
           </div>
         )}
+        {hasQuantity && (
+          <div className={styles.commodityCardQuantityInline}>
+            {quantity.toLocaleString()} t
+          </div>
+        )}
         {locationDisplay && (
           <div className={styles.commodityCardLocationInline}>
             {locationDisplay}
+          </div>
+        )}
+        {metaText && (
+          <div className={styles.commodityCardMetaInline}>
+            {metaText}
           </div>
         )}
       </div>
     )
   }
 
-  // Small/Large modes: card layout
+  // Small mode: compact card layout (~half size of Large)
+  if (mode === 'small') {
+    return (
+      <div
+        className={containerClassNames.join(' ')}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        style={{ cursor: onClick ? 'pointer' : 'default' }}
+      >
+        <div className={styles.commodityCardContent}>
+          {/* Single compact row with icon, name, and price */}
+          <div className={styles.commodityCardRow}>
+            {icon && <div className={styles.commodityCardIconSmall}>{icon}</div>}
+            <div className={styles.commodityCardTextSmall}>
+              <div className={styles.commodityCardNameSmall}>
+                <CopyOnClick copyMessageKey='commodity'>{normalizedName}</CopyOnClick>
+              </div>
+              <div className={styles.commodityCardPriceSmall} style={priceColor ? { color: priceColor } : undefined}>
+                {priceDisplay}
+                {hasQuantity && <span className={styles.commodityCardQuantitySmall}> · {quantity.toLocaleString()} t</span>}
+                {metaText && <span className={styles.commodityCardMetaSmall}> · {metaText}</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Large mode: full card layout
   return (
     <div
       className={containerClassNames.join(' ')}
@@ -208,7 +249,7 @@ export default function CommodityCard ({
         )}
 
         {/* Row 3: Location (Large mode only) */}
-        {mode === 'large' && locationDisplay && (
+        {locationDisplay && (
           <div className={styles.commodityCardLocationRow}>
             <div className={styles.commodityCardLocationLabel}>LOCATION</div>
             <div className={styles.commodityCardLocationValue}>

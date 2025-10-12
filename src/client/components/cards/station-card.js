@@ -36,13 +36,10 @@ StationIcon.propTypes = {
  * Vibrant card style with data-driven colors based on distance and faction standing.
  * Uses shared CSS classes from cards.module.css for modular styling.
  *
- * Layout:
- * - Large icon on left (72px), colored by faction standing intensity
- * - Station name (large, bold) - Row 1
- * - System name below (medium) - Row 2
- * - Station type (small, muted) - Row 3
- * - Faction name (colored by standing) - Row 4
- * - Distance metrics (color-coded by severity) - Bottom row
+ * Modes:
+ * - Small: Icon + Name, Type, Distance (~half size of Large, compact)
+ * - Large: Icon + Name, System, Type, Faction, Distance metrics (detailed)
+ * - Inline: Icon + Name + System + Distance (single row, list view)
  *
  * Color System:
  * - Icon color: Derived from faction standing with intensity (rgba) based on reputation value (-100 to +100)
@@ -74,8 +71,10 @@ StationIcon.propTypes = {
  *   - label: Display text (e.g., "Allied", "Hostile")
  *   - color: CSS color for standing chip background
  *   - iconColor: CSS color for station icon (with alpha based on reputation)
+ * @param {string} props.mode - Display mode: 'small', 'large', or 'inline' (default: 'large')
  * @param {string} props.variant - 'origin' or 'destination' for gradient styling
  * @param {boolean} props.isSelected - Whether this station is selected/active
+ * @param {boolean} props.isCurrentLocation - Whether this is the player's current location
  * @param {boolean} props.fillSpace - Whether card should fill container width/height
  * @param {string} props.className - Additional CSS class
  * @param {function} props.onClick - Click handler
@@ -97,8 +96,10 @@ export default function StationCard ({
   distanceLyColor,
   distanceLsColor,
   factionStanding,
+  mode = 'large',
   variant,
   isSelected,
+  isCurrentLocation,
   fillSpace,
   className,
   onClick
@@ -112,23 +113,22 @@ export default function StationCard ({
   const normalizedPowerplay = sanitizeInaraText(powerplay)
 
   const iconName = stationIconFromType(stationType || '')
-  
+
   // Use data-driven icon color:
   // 1. Custom iconColor prop (highest priority)
   // 2. Faction standing iconColor (color with alpha based on reputation -100 to +100)
   // 3. Faction standing color (fallback if no iconColor)
   // 4. Default neutral gray
   const resolvedIconColor = iconColor || factionStanding?.iconColor || factionStanding?.color || '#7f8697'
-  
-  const icon = iconName ? (
-    <StationIcon icon={iconName} size={72} color={resolvedIconColor} />
-  ) : null
 
   const systemDistance = distanceLyText || (typeof distanceLy === 'number' ? formatSystemDistance(distanceLy) : '')
   const stationDistance = distanceLsText || (typeof distanceLs === 'number' ? formatStationDistance(distanceLs) : '')
 
   // Build container class names
-  const containerClassNames = [styles.stationCard, styles.stationCardVibrant]
+  const containerClassNames = [styles.stationCard]
+  if (mode === 'small') containerClassNames.push(styles.stationCardSmall)
+  if (mode === 'large') containerClassNames.push(styles.stationCardVibrant)
+  if (mode === 'inline') containerClassNames.push(styles.stationCardInline)
   if (isSelected) containerClassNames.push(styles.stationCardSelected)
   if (fillSpace) containerClassNames.push(styles.stationCardFillSpace)
   if (className) containerClassNames.push(className)
@@ -143,6 +143,83 @@ export default function StationCard ({
       onClick();
     }
   };
+
+  // Inline mode: single row layout
+  if (mode === 'inline') {
+    const icon = iconName ? (
+      <StationIcon icon={iconName} size={20} color={resolvedIconColor} />
+    ) : null
+
+    return (
+      <div
+        className={containerClassNames.join(' ')}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        style={{ cursor: onClick ? 'pointer' : 'default' }}
+      >
+        {icon && <div className={styles.stationCardIconInline}>{icon}</div>}
+        <div className={styles.stationCardNameInline}>
+          <CopyOnClick copyMessageKey='station'>{normalizedStationName}</CopyOnClick>
+        </div>
+        {normalizedSystemName && (
+          <div className={styles.stationCardSystemInline}>
+            {normalizedSystemName}
+          </div>
+        )}
+        {stationDistance && (
+          <div className={styles.stationCardDistanceInline} style={distanceLsColor ? { color: distanceLsColor } : undefined}>
+            {stationDistance}
+          </div>
+        )}
+        {normalizedStationType && (
+          <div className={styles.stationCardTypeInline}>
+            {normalizedStationType}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Small mode: compact card layout (~half size of Large)
+  if (mode === 'small') {
+    const icon = iconName ? (
+      <StationIcon icon={iconName} size={32} color={resolvedIconColor} />
+    ) : null
+
+    return (
+      <div
+        className={containerClassNames.join(' ')}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        style={{ cursor: onClick ? 'pointer' : 'default' }}
+      >
+        <div className={styles.stationCardContent}>
+          <div className={styles.stationCardRow}>
+            {icon && <div className={styles.stationCardIconSmall}>{icon}</div>}
+            <div className={styles.stationCardTextSmall}>
+              <div className={styles.stationCardNameSmall}>
+                <CopyOnClick copyMessageKey='station'>{normalizedStationName}</CopyOnClick>
+              </div>
+              <div className={styles.stationCardDetailsSmall}>
+                {normalizedStationType && <span>{normalizedStationType}</span>}
+                {normalizedStationType && stationDistance && <span> · </span>}
+                {stationDistance && <span style={distanceLsColor ? { color: distanceLsColor } : undefined}>{stationDistance}</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Large mode: full card layout
+  const icon = iconName ? (
+    <StationIcon icon={iconName} size={72} color={resolvedIconColor} />
+  ) : null
 
   return (
     <div
@@ -163,6 +240,14 @@ export default function StationCard ({
           <div className={styles.stationCardTextVibrant}>
             <div className={styles.stationCardNameVibrant}>
               <CopyOnClick copyMessageKey='station'>{normalizedStationName}</CopyOnClick>
+              {isCurrentLocation && (
+                <span
+                  className={styles.currentLocationIndicator}
+                  title="Your Current Location"
+                >
+                  {Icons.location}
+                </span>
+              )}
             </div>
             {normalizedSystemName && (
               <div className={styles.stationCardSystemVibrant}>
@@ -186,7 +271,7 @@ export default function StationCard ({
           {systemDistance && (
             <div className={styles.stationCardMetricPill}>
               <span className={styles.stationCardMetricLabelVibrant}>SYSTEM DISTANCE</span>
-              <span 
+              <span
                 className={styles.stationCardMetricValueVibrant}
                 style={distanceLyColor ? { color: distanceLyColor } : undefined}
               >
@@ -197,7 +282,7 @@ export default function StationCard ({
           {stationDistance && (
             <div className={styles.stationCardMetricPill}>
               <span className={styles.stationCardMetricLabelVibrant}>ORBITAL DISTANCE</span>
-              <span 
+              <span
                 className={styles.stationCardMetricValueVibrant}
                 style={distanceLsColor ? { color: distanceLsColor } : undefined}
               >
@@ -208,13 +293,13 @@ export default function StationCard ({
           {factionStanding && factionStanding.label && (
             <div className={styles.stationCardMetricPill}>
               <span className={styles.stationCardMetricLabelVibrant}>FACTION STANDING</span>
-              <span 
-                className={styles.stationCardMetricValueVibrant} 
-                style={factionStanding.color ? { 
-                  background: factionStanding.color, 
-                  color: '#fff', 
-                  borderRadius: '8px', 
-                  padding: '2px 12px' 
+              <span
+                className={styles.stationCardMetricValueVibrant}
+                style={factionStanding.color ? {
+                  background: factionStanding.color,
+                  color: '#fff',
+                  borderRadius: '8px',
+                  padding: '2px 12px'
                 } : undefined}
               >
                 {factionStanding.label}
@@ -268,8 +353,10 @@ StationCard.defaultProps = {
   distanceLyColor: null,
   distanceLsColor: null,
   factionStanding: null,
+  mode: 'large',
   variant: null,
   isSelected: false,
+  isCurrentLocation: false,
   fillSpace: false,
   className: '',
   onClick: null
@@ -297,8 +384,10 @@ StationCard.propTypes = {
     iconColor: PropTypes.string,
     className: PropTypes.string
   }),
+  mode: PropTypes.oneOf(['small', 'large', 'inline']),
   variant: PropTypes.oneOf(['origin', 'destination', null]),
   isSelected: PropTypes.bool,
+  isCurrentLocation: PropTypes.bool,
   fillSpace: PropTypes.bool,
   className: PropTypes.string,
   onClick: PropTypes.func

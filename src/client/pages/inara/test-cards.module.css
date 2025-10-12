@@ -1,0 +1,84 @@
+/* Test Page Layout */
+.testPage {
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.testPageTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--inara-ink);
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.02em;
+}
+
+.testPageDescription {
+  font-size: 1rem;
+  color: var(--inara-subdued);
+  margin: 0 0 3rem 0;
+  line-height: 1.5;
+}
+
+/* Test Section */
+.testSection {
+  margin-bottom: 3rem;
+  padding-bottom: 3rem;
+  border-bottom: 2px solid var(--inara-border-regular);
+}
+
+.testSection:last-child {
+  border-bottom: none;
+}
+
+.testSectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--inara-ink);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
+}
+
+.testSectionDescription {
+  font-size: 0.875rem;
+  color: var(--inara-muted);
+  margin: 0 0 1.5rem 0;
+}
+
+/* Grid Layout for Small/Large modes */
+.testGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+  justify-items: stretch;
+}
+
+/* List Layout for Inline mode */
+.testList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 800px;
+}
+
+/* State Labels */
+.stateLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--inara-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .testPage {
+    padding: 1rem;
+  }
+
+  .testGrid {
+    grid-template-columns: 1fr;
+  }
+}

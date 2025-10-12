@@ -34,17 +34,24 @@ function resolveLogDir () {
 let systemInitPromise = null
 
 async function ensureSystemInstance () {
+  // CRITICAL FIX: Use the shared System instance from EventHandlers if it exists
+  // This prevents dual System instances from getting out of sync
+  if (global.SHARED_SYSTEM_INSTANCE) {
+    console.log('[current-system] Using shared System instance from EventHandlers')
+    return global.SHARED_SYSTEM_INSTANCE
+  }
+
   if (global.ICARUS_SYSTEM_INSTANCE) return global.ICARUS_SYSTEM_INSTANCE
   if (systemInitPromise) return systemInitPromise
 
   systemInitPromise = (async () => {
     // CRITICAL: Use the global ELITE_LOG instance if it exists (loaded by main service with FORCE_MOCK_DATA support)
     let eliteLog = global.ELITE_LOG || global.ICARUS_ELITE_LOG
-    
+
     console.log('[current-system] ensureSystemInstance - global.ELITE_LOG exists:', !!global.ELITE_LOG)
     console.log('[current-system] ensureSystemInstance - global.ICARUS_ELITE_LOG exists:', !!global.ICARUS_ELITE_LOG)
     console.log('[current-system] ensureSystemInstance - using eliteLog:', !!eliteLog)
-    
+
     if (!eliteLog) {
       const logDir = resolveLogDir()
       console.log('[current-system] No global eliteLog found, creating new instance with logDir:', logDir)

@@ -24,6 +24,7 @@ import Icons from 'lib/icons'
 import TransferContextSummary from 'components/panels/inara/transfer-context-summary'
 import StationSummary, { StationIcon, DemandIndicator } from 'components/panels/inara/station-summary'
 import CommoditySummary, { CommodityIcon } from 'components/panels/inara/commodity-summary'
+import { PlanetCard } from 'components/cards'
 import CopyOnClick from 'components/copy-on-click'
 import PirateRadioPanel from 'components/panels/inara/pirate-radio'
 import NavigationInspectorPanel from 'components/panels/nav/navigation-inspector-panel'
@@ -5530,13 +5531,8 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
           </div>
           {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
         </div>
-        <div
-          className={`inara-panel-table pristine-mining__container${inspectorReserved ? ' pristine-mining__container--inspector' : ''}`}
-        >
-          <div
-            className={`scrollable pristine-mining__results${inspectorReserved ? ' pristine-mining__results--inspector' : ''}`}
-            style={TABLE_SCROLL_AREA_STYLE}
-          >
+        <div className='inara-panel-table pristine-mining__container'>
+          <div className='scrollable pristine-mining__results' style={TABLE_SCROLL_AREA_STYLE}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
@@ -5559,122 +5555,120 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
-            <div className={styles.dataTableContainer}>
-              <table className={styles.dataTable}>
-                <thead>
-                  <tr>
-                    <th>Body</th>
-                    <th>System</th>
-                    <th className='hidden-small text-right'>Body Distance</th>
-                    <th className='text-right'>Distance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {locations.map((location, index) => {
-                  const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
-                  const detailParts = []
-                  if (location.bodyType) detailParts.push(location.bodyType)
-                  if (location.ringType) detailParts.push(`${location.ringType} ring`)
-                  if (location.reservesLevel) detailParts.push(`${location.reservesLevel} reserves`)
-                  const detailText = detailParts.join(' · ')
-                  const bodyDistanceDisplay = formatStationDistance(location.bodyDistanceLs, location.bodyDistanceText)
-                  const distanceDisplay = formatSystemDistance(location.distanceLy, location.distanceText)
-                  const isExpanded = expandedLocationKey === key
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>
+              {locations.map((location, index) => {
+                const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
+                const detailParts = []
+                if (location.bodyType) detailParts.push(location.bodyType)
+                if (location.ringType) detailParts.push(`${location.ringType} ring`)
+                if (location.reservesLevel) detailParts.push(`${location.reservesLevel} reserves`)
+                const detailText = detailParts.join(' · ')
+                const bodyDistanceDisplay = formatStationDistance(location.bodyDistanceLs, location.bodyDistanceText)
+                const distanceDisplay = formatSystemDistance(location.distanceLy, location.distanceText)
+                const isExpanded = expandedLocationKey === key
 
-                  return (
-                    <Fragment key={key}>
-                      <tr
-                        className={`${styles.tableRowInteractive} ${isExpanded ? styles.tableRowExpanded : ''}`}
-                        data-inara-table-row='pending'
-                        role='button'
-                        tabIndex={0}
-                        aria-expanded={isExpanded}
-                        onClick={() => handleLocationToggle(location, key)}
-                        onKeyDown={event => handleLocationKeyDown(event, location, key)}
-                      >
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span className='inara-accent'>{location.body || '--'}</span>
-                            {detailText && (
-                              <span className={styles.tableSubtext}>{detailText}</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div className={`${styles.tableCellInline} text-no-wrap`}>
-                            {location.isTargetSystem
-                              ? (
-                                <i className='icon system-object-icon icarus-terminal-location-filled inara-accent' style={{ marginRight: '.5rem' }} />
-                                )
-                              : (
-                                <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--inara-subdued)' }} />
-                                )}
-                            <span className='inara-accent'>
-                              {location.system
-                                ? <CopyOnClick copyMessageKey='system'>{location.system}</CopyOnClick>
-                                : '--'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className={`hidden-small text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{bodyDistanceDisplay || '--'}</td>
-                        <td className={`text-right text-no-wrap ${styles.tableCellTop} ${styles.tableCellTight}`}>{distanceDisplay || '--'}</td>
-                      </tr>
-                      {isExpanded && (
-                        <tr className={`${styles.tableDetailRow} inara-table-detail-row`} data-inara-table-row='pending'>
-                          <td colSpan='4' style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(5, 8, 13, 0.85)', borderTop: '1px solid rgba(127, 233, 255, 0.18)' }}>
-                            <div className='pristine-mining__detail'>
-                              <div className='pristine-mining__detail-info'>
-                                <div className='pristine-mining__detail-summary'>
-                                  {detailText && <span>{detailText}</span>}
-                                  {bodyDistanceDisplay && <span>Body Distance: <span className='inara-accent'>{bodyDistanceDisplay}</span></span>}
-                                  {distanceDisplay && <span>System Distance: <span className='inara-accent'>{distanceDisplay}</span></span>}
-                                </div>
-                                {(location.systemUrl || location.bodyUrl) && (
-                                  <div className='pristine-mining__detail-links'>
-                                    {location.systemUrl && (
-                                      <span>INARA-linked system dossier</span>
-                                    )}
-                                    {location.bodyUrl && (
-                                      <span>INARA-linked body dossier</span>
-                                    )}
-                                  </div>
-                                )}
-                                {detailLoadingKey === key && (
-                                  <div className='pristine-mining__detail-status'>Loading system details...</div>
-                                )}
-                                {detailLoadingKey !== key && detailError && (
-                                  <div className='pristine-mining__detail-status pristine-mining__detail-status--error'>{detailError}</div>
-                                )}
-                              </div>
-                              <div className='pristine-mining__detail-artwork'>
-                                {detailLoadingKey !== key && !detailError && expandedSystemObject && (
-                                  <PristineMiningArtwork systemObject={expandedSystemObject} />
-                                )}
-                              </div>
+                return (
+                  <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div
+                      style={{ cursor: 'pointer', transition: 'opacity 0.2s ease', opacity: isExpanded ? 1 : 0.85 }}
+                      onClick={() => handleLocationToggle(location, key)}
+                      onKeyDown={event => handleLocationKeyDown(event, location, key)}
+                      role='button'
+                      tabIndex={0}
+                      aria-expanded={isExpanded}
+                    >
+                      <PlanetCard
+                        planetName={location.body}
+                        systemName={location.system}
+                        planetType={location.bodyType}
+                        distanceLs={location.bodyDistanceLs}
+                        distanceLsText={bodyDistanceDisplay}
+                        distanceLy={location.distanceLy}
+                        distanceLyText={distanceDisplay}
+                        mode='inline'
+                        isSelected={isExpanded}
+                      />
+                    </div>
+                    {isExpanded && (
+                      <div style={{
+                        padding: '1.5rem',
+                        background: 'rgba(5, 8, 13, 0.85)',
+                        border: '1px solid rgba(127, 233, 255, 0.18)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1.5rem'
+                      }}>
+                        <PlanetCard
+                          planetName={location.body}
+                          systemName={location.system}
+                          planetType={location.bodyType}
+                          distanceLs={location.bodyDistanceLs}
+                          distanceLsText={bodyDistanceDisplay}
+                          distanceLy={location.distanceLy}
+                          distanceLyText={distanceDisplay}
+                          mode='large'
+                        />
+                        {detailText && (
+                          <div style={{
+                            padding: '1rem',
+                            background: 'rgba(0, 0, 0, 0.3)',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255, 145, 0, 0.2)'
+                          }}>
+                            <div style={{
+                              fontSize: '0.7rem',
+                              fontWeight: 700,
+                              letterSpacing: '0.12em',
+                              textTransform: 'uppercase',
+                              color: 'rgba(255, 255, 255, 0.5)',
+                              marginBottom: '0.5rem'
+                            }}>
+                              RESERVE DETAILS
                             </div>
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
-                  )
-                })}
-                </tbody>
-              </table>
+                            <div style={{ fontSize: '0.9rem', color: 'var(--inara-accent)' }}>
+                              {detailText}
+                            </div>
+                          </div>
+                        )}
+                        {(location.systemUrl || location.bodyUrl) && (
+                          <div style={{
+                            padding: '1rem',
+                            background: 'rgba(0, 0, 0, 0.3)',
+                            borderRadius: '8px',
+                            fontSize: '0.85rem',
+                            color: 'rgba(255, 255, 255, 0.7)'
+                          }}>
+                            {location.systemUrl && <div>INARA-linked system dossier available</div>}
+                            {location.bodyUrl && <div>INARA-linked body dossier available</div>}
+                          </div>
+                        )}
+                        {detailLoadingKey === key && (
+                          <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--inara-accent)' }}>
+                            Loading system details...
+                          </div>
+                        )}
+                        {detailLoadingKey !== key && detailError && (
+                          <div style={{ textAlign: 'center', padding: '1rem', color: '#ff4d4f' }}>
+                            {detailError}
+                          </div>
+                        )}
+                        {detailLoadingKey !== key && !detailError && expandedSystemObject && (
+                          <div style={{
+                            padding: '1rem',
+                            background: 'rgba(0, 0, 0, 0.3)',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255, 145, 0, 0.2)'
+                          }}>
+                            <PristineMiningArtwork systemObject={expandedSystemObject} />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
-          )}
-        </div>
-        <div className={`pristine-mining__inspector${inspectorReserved ? ' pristine-mining__inspector--reserved' : ''}`}>
-          {inspectorReserved && detailLoadingKey === expandedLocationKey && (
-            <div className='pristine-mining__inspector-status'>Loading system details...</div>
-          )}
-          {inspectorReserved && detailLoadingKey !== expandedLocationKey && detailError && (
-            <div className='pristine-mining__inspector-status pristine-mining__inspector-status--error'>{detailError}</div>
-          )}
-          {inspectorVisible && (
-            <NavigationInspectorPanel
-              systemObject={expandedSystemObject}
-              setSystemObjectByName={handleInspectorSelection}
-            />
           )}
         </div>
         </div>
