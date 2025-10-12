@@ -31,11 +31,20 @@ eventHandlers.hostInfo = () => {
   const interfaces = Object.values(os.networkInterfaces())
     .filter(Boolean)
     .flat()
+
+  console.log('[hostInfo] All network interfaces:', interfaces.map(i => ({ address: i.address, family: i.family, internal: i.internal })))
+
   const interfaceUrls = interfaces
-    .filter(({ family, internal }) => family === 'IPv4' && !internal)
+    .filter(({ family, internal }) => (family === 'IPv4' || family === 4) && !internal)
     .map(({ address }) => `http://${address}:${PORT}`)
+
+  console.log('[hostInfo] Filtered IPv4 non-internal URLs:', interfaceUrls)
+
   const fallbackUrls = [`http://localhost:${PORT}`, `http://127.0.0.1:${PORT}`]
   const urls = [...new Set([...interfaceUrls, ...fallbackUrls])]
+
+  console.log('[hostInfo] Final URLs array:', urls)
+
   return { urls }
 }
 eventHandlers.getLoadingStatus = () => getLoadingStatus()

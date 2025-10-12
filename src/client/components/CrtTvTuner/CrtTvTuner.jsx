@@ -27,8 +27,7 @@ const CrtTvTuner = () => {
     { num: "04", name: "Bloomberg TV", url: "https://bloomberg.com/media-manifest/streams/phoenix-us.m3u8" },
     { num: "05", name: "CBS NEWS", url: "https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8" },
     { num: "06", name: "CGTN", url: "https://news.cgtn.com/resource/live/english/cgtn-news.m3u8" },
-    { num: "07", name: "RT News", url: "https://rt-glb.rttv.com/live/rtnews/playlist.m3u8" },
-    { num: "08", name: "Al Jazeera", url: "https://live-hls-web-aje.getaj.net/AJE/index.m3u8" }
+    { num: "07", name: "Al Jazeera", url: "https://live-hls-web-aje.getaj.net/AJE/index.m3u8" }
   ]
 
   // Load stream channels from localStorage or use defaults

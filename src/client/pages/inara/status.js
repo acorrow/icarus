@@ -1351,12 +1351,13 @@ function PristineMiningArtwork ({ systemObject }) {
 
   if (isBelt) {
     return (
-      <div className='pristine-mining__artwork pristine-mining__artwork--belt' aria-hidden='true'>
+      <div className='pristine-mining__artwork pristine-mining__artwork--belt' aria-hidden='true' style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <svg
         viewBox='0 0 1000 600'
         className='pristine-mining__artwork-svg pristine-mining__artwork-svg--belt'
         focusable='false'
         preserveAspectRatio='xMidYMid meet'
+        style={{ width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%' }}
       >
           <g className='pristine-mining__belt'>
             <ellipse className='pristine-mining__belt-ring pristine-mining__belt-ring--outer' cx='500' cy='300' rx='420' ry='160' />
@@ -1378,12 +1379,13 @@ function PristineMiningArtwork ({ systemObject }) {
   const ringMiddleRy = radius / 5
 
   return (
-    <div className='pristine-mining__artwork' aria-hidden='true'>
+    <div className='pristine-mining__artwork' aria-hidden='true' style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <svg
         viewBox='0 0 1000 1000'
         className='pristine-mining__artwork-svg'
         focusable='false'
         preserveAspectRatio='xMidYMid meet'
+        style={{ width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%' }}
       >
         <g className='system-map__system-object pristine-mining__artwork-object' {...dataAttributes}>
           {hasAtmosphere && (
@@ -5517,7 +5519,11 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
                         borderRadius: '12px',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '1.5rem'
+                        gap: '1.5rem',
+                        width: '100%',
+                        maxWidth: '100%',
+                        boxSizing: 'border-box',
+                        overflow: 'hidden'
                       }}>
                         <PlanetCard
                           planetName={location.body}

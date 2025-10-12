@@ -93,11 +93,11 @@ function InaraPanelNavItems (activePanel) {
 
 function InaraWorkspaceNavItems (activePanel) {
   const navigationItems = [
-    {
-      name: 'Trade Routes',
-      icon: 'route',
-      url: '/inara/trade-routes'
-    },
+    // {
+    //   name: 'Trade Routes',
+    //   icon: 'route',
+    //   url: '/inara/trade-routes'
+    // },
     {
       name: 'Route Scout',
       icon: 'system-orbits',
