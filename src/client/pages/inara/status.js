@@ -24,7 +24,7 @@ import Icons from 'lib/icons'
 import TransferContextSummary from 'components/panels/inara/transfer-context-summary'
 import StationSummary, { StationIcon, DemandIndicator } from 'components/panels/inara/station-summary'
 import CommoditySummary, { CommodityIcon } from 'components/panels/inara/commodity-summary'
-import { PlanetCard } from 'components/cards'
+import { PlanetCard, StationCard } from 'components/cards'
 import CopyOnClick from 'components/copy-on-click'
 import PirateRadioPanel from 'components/panels/inara/pirate-radio'
 import NavigationInspectorPanel from 'components/panels/nav/navigation-inspector-panel'
@@ -1151,7 +1151,7 @@ function getFactionStandingDisplay(factionName, standings) {
     baseColor = '#29f3c3'
   } else if (normalizedStanding === 'hostile') {
     className = styles.tableTextDanger
-    baseColor = '#ff5fc1'
+    baseColor = '#ff3333'
   } else if (normalizedStanding) {
     className = styles.tableTextNeutral
     baseColor = 'var(--inara-accent)'
@@ -1166,7 +1166,7 @@ function getFactionStandingDisplay(factionName, standings) {
 
   const reputationValue = clampReputationValue(info.reputation)
   if (reputationValue !== null) {
-    baseColor = reputationValue >= 0 ? '#29f3c3' : '#ff5fc1'
+    baseColor = reputationValue >= 0 ? '#29f3c3' : '#ff3333'
   }
 
   const iconColor = applyStandingColorIntensity(baseColor, reputationValue)
@@ -3631,11 +3631,13 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
                                 data-inara-table-row='visible'
                               >
                                 <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  <StationSummary
-                                    iconName={stationIcon}
-                                    name={listing.stationName || 'Unknown Station'}
-                                    system={listing.systemName || 'Unknown System'}
+                                  <StationCard
+                                    stationName={listing.stationName || 'Unknown Station'}
+                                    systemName={listing.systemName || 'Unknown System'}
                                     stationType={listing.stationType || ''}
+                                    distanceLsText={stationDistanceDisplay}
+                                    distanceLsColor={stationDistanceSeverity.color}
+                                    mode='small'
                                     isSelected={isSelected}
                                   />
                                 </td>
@@ -5009,66 +5011,25 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                         <span className={styles.tradeRouteContextBadgeDetail}>{originStationType}</span>
                       ) : null}
                     </div>
-                    <div className={styles.tradeRouteContextStationBody}>
-                      {routeContext.origin.iconName ? (
-                        <span className={styles.tradeRouteContextStationIconLarge}>
-                          <StationIcon
-                            icon={routeContext.origin.iconName}
-                            size='100%'
-                            color={originStandingDisplay.iconColor}
-                          />
-                        </span>
-                      ) : null}
-                      <div className={styles.tradeRouteContextStationText}>
-                        <span className={styles.tradeRouteContextStationName}>
-                          {routeContext.origin.station
-                            ? <CopyOnClick copyMessageKey='station'>{routeContext.origin.station}</CopyOnClick>
-                            : '--'}
-                        </span>
-                        <span className={styles.tradeRouteContextStationSystem}>
-                          {routeContext.origin.system
-                            ? <CopyOnClick copyMessageKey='system'>{routeContext.origin.system}</CopyOnClick>
-                            : '--'}
-                        </span>
-                        {originFactionName ? (
-                          <span className={styles.tradeRouteContextStationFaction}>{originFactionName}</span>
-                        ) : null}
-                        {originEconomy ? (
-                          <span className={styles.tradeRouteContextStationEconomy}>{originEconomy}</span>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className={styles.tradeRouteContextMetrics}>
-                      <div className={styles.tradeRouteContextMetric}>
-                        <span className={styles.tradeRouteContextMetricLabel}>System Distance</span>
-                        <span
-                          className={buildMetricChipClasses(originSystemDistanceVariant)}
-                          style={originSystemDistanceColor ? { '--chip-color': originSystemDistanceColor } : undefined}
-                        >
-                          {originSystemDistance.display || '--'}
-                        </span>
-                      </div>
-                      <div className={styles.tradeRouteContextMetric}>
-                        <span className={styles.tradeRouteContextMetricLabel}>Orbital Distance</span>
-                        <span
-                          className={buildMetricChipClasses(originStationDistanceVariant)}
-                          style={originStationSeverity.color ? { '--chip-color': originStationSeverity.color } : undefined}
-                        >
-                          {originStationDistance.display || '--'}
-                        </span>
-                      </div>
-                      {originStandingDisplay?.statusLabel ? (
-                        <div className={styles.tradeRouteContextMetric}>
-                          <span className={styles.tradeRouteContextMetricLabel}>Faction Standing</span>
-                          <span
-                            className={buildMetricChipClasses('neutral')}
-                            style={originStandingDisplay.color ? { '--chip-color': originStandingDisplay.color } : undefined}
-                          >
-                            {originStandingDisplay.statusLabel}
-                          </span>
-                        </div>
-                      ) : null}
-                    </div>
+                    <StationCard
+                      stationName={routeContext.origin.station}
+                      systemName={routeContext.origin.system}
+                      stationType={originStationType}
+                      factionName={originFactionName}
+                      economy={originEconomy}
+                      iconColor={originStandingDisplay.iconColor}
+                      distanceLyText={originSystemDistance.display}
+                      distanceLyColor={originSystemDistanceColor}
+                      distanceLsText={originStationDistance.display}
+                      distanceLsColor={originStationSeverity.color}
+                      factionStanding={originStandingDisplay?.statusLabel ? {
+                        label: originStandingDisplay.statusLabel,
+                        color: originStandingDisplay.color,
+                        iconColor: originStandingDisplay.iconColor
+                      } : null}
+                      mode='large'
+                      variant='origin'
+                    />
                   </div>
 
 
@@ -5135,66 +5096,25 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                         <span className={styles.tradeRouteContextBadgeDetail}>{destinationStationType}</span>
                       ) : null}
                     </div>
-                    <div className={styles.tradeRouteContextStationBody}>
-                      {routeContext.destination.iconName ? (
-                        <span className={styles.tradeRouteContextStationIconLarge}>
-                          <StationIcon
-                            icon={routeContext.destination.iconName}
-                            size='100%'
-                            color={destinationStandingDisplay.iconColor}
-                          />
-                        </span>
-                      ) : null}
-                      <div className={styles.tradeRouteContextStationText}>
-                        <span className={styles.tradeRouteContextStationName}>
-                          {routeContext.destination.station
-                            ? <CopyOnClick copyMessageKey='station'>{routeContext.destination.station}</CopyOnClick>
-                            : '--'}
-                        </span>
-                        <span className={styles.tradeRouteContextStationSystem}>
-                          {routeContext.destination.system
-                            ? <CopyOnClick copyMessageKey='system'>{routeContext.destination.system}</CopyOnClick>
-                            : '--'}
-                        </span>
-                        {destinationFactionName ? (
-                          <span className={styles.tradeRouteContextStationFaction}>{destinationFactionName}</span>
-                        ) : null}
-                        {destinationEconomy ? (
-                          <span className={styles.tradeRouteContextStationEconomy}>{destinationEconomy}</span>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className={styles.tradeRouteContextMetrics}>
-                      <div className={styles.tradeRouteContextMetric}>
-                        <span className={styles.tradeRouteContextMetricLabel}>System Distance</span>
-                        <span
-                          className={buildMetricChipClasses(destinationSystemDistanceVariant)}
-                          style={destinationSystemDistanceColor ? { '--chip-color': destinationSystemDistanceColor } : undefined}
-                        >
-                          {destinationSystemDistance.display || '--'}
-                        </span>
-                      </div>
-                      <div className={styles.tradeRouteContextMetric}>
-                        <span className={styles.tradeRouteContextMetricLabel}>Orbital Distance</span>
-                        <span
-                          className={buildMetricChipClasses(destinationStationDistanceVariant)}
-                          style={destinationStationSeverity.color ? { '--chip-color': destinationStationSeverity.color } : undefined}
-                        >
-                          {destinationStationDistance.display || '--'}
-                        </span>
-                      </div>
-                      {destinationStandingDisplay?.statusLabel ? (
-                        <div className={styles.tradeRouteContextMetric}>
-                          <span className={styles.tradeRouteContextMetricLabel}>Faction Standing</span>
-                          <span
-                            className={buildMetricChipClasses('neutral')}
-                            style={destinationStandingDisplay.color ? { '--chip-color': destinationStandingDisplay.color } : undefined}
-                          >
-                            {destinationStandingDisplay.statusLabel}
-                          </span>
-                        </div>
-                      ) : null}
-                    </div>
+                    <StationCard
+                      stationName={routeContext.destination.station}
+                      systemName={routeContext.destination.system}
+                      stationType={destinationStationType}
+                      factionName={destinationFactionName}
+                      economy={destinationEconomy}
+                      iconColor={destinationStandingDisplay.iconColor}
+                      distanceLyText={destinationSystemDistance.display}
+                      distanceLyColor={destinationSystemDistanceColor}
+                      distanceLsText={destinationStationDistance.display}
+                      distanceLsColor={destinationStationSeverity.color}
+                      factionStanding={destinationStandingDisplay?.statusLabel ? {
+                        label: destinationStandingDisplay.statusLabel,
+                        color: destinationStandingDisplay.color,
+                        iconColor: destinationStandingDisplay.iconColor
+                      } : null}
+                      mode='large'
+                      variant='destination'
+                    />
                   </div>
 
 
@@ -5608,6 +5528,8 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
                           distanceLy={location.distanceLy}
                           distanceLyText={distanceDisplay}
                           mode='large'
+                          fillSpace={true}
+                          planetImage={detailLoadingKey !== key && !detailError && expandedSystemObject ? <PristineMiningArtwork systemObject={expandedSystemObject} /> : null}
                         />
                         {detailText && (
                           <div style={{
@@ -5651,16 +5573,6 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
                         {detailLoadingKey !== key && detailError && (
                           <div style={{ textAlign: 'center', padding: '1rem', color: '#ff4d4f' }}>
                             {detailError}
-                          </div>
-                        )}
-                        {detailLoadingKey !== key && !detailError && expandedSystemObject && (
-                          <div style={{
-                            padding: '1rem',
-                            background: 'rgba(0, 0, 0, 0.3)',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255, 145, 0, 0.2)'
-                          }}>
-                            <PristineMiningArtwork systemObject={expandedSystemObject} />
                           </div>
                         )}
                       </div>

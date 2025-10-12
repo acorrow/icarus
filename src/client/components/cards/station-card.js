@@ -44,7 +44,7 @@ StationIcon.propTypes = {
  * Color System:
  * - Icon color: Derived from faction standing with intensity (rgba) based on reputation value (-100 to +100)
  *   - Friendly/Allied: #29f3c3 (cyan/green) with alpha based on reputation strength
- *   - Hostile: #ff5fc1 (magenta/pink) with alpha based on reputation strength
+ *   - Hostile: #ff3333 (red) with alpha based on reputation strength
  *   - Neutral: var(--inara-accent) (fallback)
  * - System distance color: Gradient from success (green) → info (cyan) → primary (blue) → danger (red)
  *   - Based on distance vs ship jump range (multipliers: 1x green, 3x red)
@@ -110,7 +110,13 @@ export default function StationCard ({
   const normalizedFactionName = sanitizeInaraText(factionName)
   const normalizedAllegiance = sanitizeInaraText(allegiance)
   const normalizedGovernment = sanitizeInaraText(government)
-  const normalizedPowerplay = sanitizeInaraText(powerplay)
+  // PowerPlay can be either a string or an object { power, state, isAllied, isHostile }
+  const powerplayIsObject = typeof powerplay === 'object' && powerplay !== null
+  const normalizedPowerplay = powerplayIsObject
+    ? `${sanitizeInaraText(powerplay.power)}${powerplay.state ? ' • ' + sanitizeInaraText(powerplay.state) : ''}`
+    : sanitizeInaraText(powerplay)
+  const powerplayIsAllied = powerplayIsObject && powerplay.isAllied === true
+  const powerplayIsHostile = powerplayIsObject && powerplay.isHostile === true
 
   const iconName = stationIconFromType(stationType || '')
 
@@ -165,7 +171,7 @@ export default function StationCard ({
         </div>
         {normalizedSystemName && (
           <div className={styles.stationCardSystemInline}>
-            {normalizedSystemName}
+            <CopyOnClick copyMessageKey='system'>{normalizedSystemName}</CopyOnClick>
           </div>
         )}
         {stationDistance && (
@@ -325,7 +331,10 @@ export default function StationCard ({
           {normalizedPowerplay && (
             <div className={styles.stationCardMetricPill}>
               <span className={styles.stationCardMetricLabelVibrant}>POWERPLAY</span>
-              <span className={styles.stationCardMetricValueVibrant}>
+              <span
+                className={styles.stationCardMetricValueVibrant}
+                style={{ color: powerplayIsAllied ? 'var(--color-success)' : powerplayIsHostile ? '#ff3333' : undefined }}
+              >
                 {normalizedPowerplay}
               </span>
             </div>
@@ -369,7 +378,15 @@ StationCard.propTypes = {
   factionName: PropTypes.string,
   allegiance: PropTypes.string,
   government: PropTypes.string,
-  powerplay: PropTypes.string,
+  powerplay: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.shape({
+      power: PropTypes.string,
+      state: PropTypes.string,
+      isAllied: PropTypes.bool,
+      isHostile: PropTypes.bool
+    })
+  ]),
   economy: PropTypes.string,
   iconColor: PropTypes.string,
   distanceLy: PropTypes.number,

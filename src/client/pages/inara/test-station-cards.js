@@ -38,8 +38,8 @@ const MOCK_HOSTILE_STATION = {
   distanceLsColor: '#ff9933', // Orange (far orbital distance)
   factionStanding: {
     label: 'Hostile',
-    color: 'rgba(255, 95, 193, 0.3)',
-    iconColor: 'rgba(255, 95, 193, 0.8)'
+    color: 'rgba(255, 51, 51, 0.3)',
+    iconColor: 'rgba(255, 51, 51, 0.8)'
   }
 }
 

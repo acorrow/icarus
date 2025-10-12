@@ -99,6 +99,11 @@ function InaraWorkspaceNavItems (activePanel) {
       url: '/inara/trade-routes'
     },
     {
+      name: 'Route Scout',
+      icon: 'system-orbits',
+      url: '/inara/route-scout'
+    },
+    {
       name: 'Commodities',
       icon: 'cargo',
       url: '/inara/commodities'
@@ -115,7 +120,7 @@ function InaraWorkspaceNavItems (activePanel) {
     },
     {
       name: 'Media Terminal',
-      icon: 'radio',
+      icon: 'signal',
       url: '/inara/media-terminal'
     }
   ]
@@ -188,7 +193,7 @@ function SettingsNavItems (activePanel, exposeFeatureFlags = false, exposeMediaT
   if (exposeMediaTerminal) {
     navigationItems.push({
       name: 'Media Terminal',
-      icon: 'radio'
+      icon: 'signal'
     })
   }
   

@@ -12,6 +12,8 @@ const MOCK_EARTHLIKE = {
   iconColor: '#29f3c3',
   distanceLy: 139.5,
   distanceLs: 7803,
+  distanceLyColor: '#00d9ff', // Cyan (moderate distance)
+  distanceLsColor: '#ffaa00', // Orange (moderate orbital distance)
   powerPlay: {
     power: 'Arissa Lavigny-Duval',
     state: 'Control',
@@ -26,6 +28,8 @@ const MOCK_WATER_WORLD = {
   iconColor: '#00a8ff',
   distanceLy: 2845.7,
   distanceLs: 45234,
+  distanceLyColor: '#ff3366', // Red (very far system)
+  distanceLsColor: '#ff6633', // Red-orange (very far orbital)
   powerPlay: {
     power: 'Edmund Mahon',
     state: 'Exploited',
@@ -39,7 +43,9 @@ const MOCK_GAS_GIANT = {
   planetType: 'Class II gas giant',
   iconColor: '#ff9933',
   distanceLy: 58.4,
-  distanceLs: 892
+  distanceLs: 892,
+  distanceLyColor: '#00ff66', // Green (close system)
+  distanceLsColor: '#00ff66' // Green (close orbital)
 }
 
 const MOCK_AMMONIA = {
@@ -48,7 +54,14 @@ const MOCK_AMMONIA = {
   planetType: 'Ammonia world',
   iconColor: '#cc66ff',
   distanceLy: 5892.3,
-  distanceLs: 128456
+  distanceLs: 128456,
+  distanceLyColor: '#ff0033', // Red (extremely far system)
+  distanceLsColor: '#ff0033', // Red (extremely far orbital)
+  powerPlay: {
+    power: 'Zachary Hudson',
+    state: 'Contested',
+    isHostile: true
+  }
 }
 
 export default function TestPlanetCardsPage () {

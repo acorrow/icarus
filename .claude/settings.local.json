@@ -5,7 +5,8 @@
       "Read(//c/Users/Adam/Pictures/**)",
       "Bash(git rm:*)",
       "Bash(npm run build:client:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(cards.module.css)"
     ],
     "deny": [],
     "ask": []

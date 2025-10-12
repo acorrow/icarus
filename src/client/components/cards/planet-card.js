@@ -73,10 +73,14 @@ PlanetIcon.propTypes = {
  * @param {number} props.distanceLs - Distance to planet in LS
  * @param {string} props.distanceLyText - Formatted distance to system text
  * @param {string} props.distanceLsText - Formatted distance to planet text
- * @param {object} props.powerPlay - PowerPlay info: { power, state, isAllied }
+ * @param {string} props.distanceLyColor - CSS color for system distance (LY)
+ * @param {string} props.distanceLsColor - CSS color for planet/orbital distance (LS)
+ * @param {string|element} props.planetImage - URL/path to planet image, or React element (e.g., SVG artwork) (displayed in Large mode with fillSpace)
+ * @param {object} props.powerPlay - PowerPlay info: { power, state, isAllied, isHostile }
  * @param {string} props.mode - Display mode: 'small', 'large', or 'inline' (default: 'large')
  * @param {string} props.variant - Visual variant (optional)
  * @param {boolean} props.isSelected - Whether this planet is selected/active
+ * @param {boolean} props.fillSpace - Whether card should fill container (enables planet image display in Large mode)
  * @param {string} props.className - Additional CSS class
  * @param {function} props.onClick - Click handler
  */
@@ -89,10 +93,14 @@ export default function PlanetCard ({
   distanceLs,
   distanceLyText,
   distanceLsText,
+  distanceLyColor,
+  distanceLsColor,
+  planetImage,
   powerPlay,
   mode = 'large',
   variant,
   isSelected,
+  fillSpace,
   className,
   onClick
 }) {
@@ -105,6 +113,7 @@ export default function PlanetCard ({
 
   const hasPowerPlay = powerPlay && (powerPlay.power || powerPlay.state)
   const powerPlayIsAllied = powerPlay?.isAllied === true
+  const powerPlayIsHostile = powerPlay?.isHostile === true
 
   // Build container class names using vibrant card styling
   const containerClassNames = [styles.planetCard]
@@ -112,6 +121,7 @@ export default function PlanetCard ({
   if (mode === 'large') containerClassNames.push(styles.planetCardLarge)
   if (mode === 'inline') containerClassNames.push(styles.planetCardInline)
   if (isSelected) containerClassNames.push(styles.planetCardSelected)
+  if (fillSpace) containerClassNames.push(styles.planetCardFillSpace)
   if (className) containerClassNames.push(className)
 
   const handleClick = () => {
@@ -143,7 +153,7 @@ export default function PlanetCard ({
         </div>
         {normalizedSystemName && (
           <div className={styles.planetCardSystemInline}>
-            {normalizedSystemName}
+            <CopyOnClick copyMessageKey='system'>{normalizedSystemName}</CopyOnClick>
           </div>
         )}
         {planetDistance && (
@@ -178,11 +188,13 @@ export default function PlanetCard ({
             <div className={styles.planetCardTextSmall}>
               <div className={styles.planetCardNameSmall}>
                 <CopyOnClick copyMessageKey='planet'>{normalizedPlanetName}</CopyOnClick>
+                {planetDistance && <span> · </span>}
+                {planetDistance && <span style={distanceLsColor ? { color: distanceLsColor } : undefined}>{planetDistance}</span>}
               </div>
               <div className={styles.planetCardDetailsSmall}>
                 {normalizedSystemName && <span>{normalizedSystemName}</span>}
-                {normalizedSystemName && planetDistance && <span> · </span>}
-                {planetDistance && <span>{planetDistance}</span>}
+                {normalizedSystemName && systemDistance && <span> · </span>}
+                {systemDistance && <span style={distanceLyColor ? { color: distanceLyColor } : undefined}>{systemDistance}</span>}
               </div>
             </div>
           </div>
@@ -229,13 +241,23 @@ export default function PlanetCard ({
             {systemDistance && (
               <div className={styles.planetCardMetricPill}>
                 <span className={styles.planetCardMetricLabelVibrant}>SYSTEM DISTANCE</span>
-                <span className={styles.planetCardMetricValueVibrant}>{systemDistance}</span>
+                <span
+                  className={styles.planetCardMetricValueVibrant}
+                  style={distanceLyColor ? { color: distanceLyColor } : undefined}
+                >
+                  {systemDistance}
+                </span>
               </div>
             )}
             {planetDistance && (
               <div className={styles.planetCardMetricPill}>
                 <span className={styles.planetCardMetricLabelVibrant}>ORBITAL DISTANCE</span>
-                <span className={styles.planetCardMetricValueVibrant}>{planetDistance}</span>
+                <span
+                  className={styles.planetCardMetricValueVibrant}
+                  style={distanceLsColor ? { color: distanceLsColor } : undefined}
+                >
+                  {planetDistance}
+                </span>
               </div>
             )}
             {hasPowerPlay && (
@@ -243,7 +265,7 @@ export default function PlanetCard ({
                 <span className={styles.planetCardMetricLabelVibrant}>POWER PLAY</span>
                 <span
                   className={styles.planetCardMetricValueVibrant}
-                  style={{ color: powerPlayIsAllied ? 'var(--color-success)' : undefined }}
+                  style={{ color: powerPlayIsAllied ? 'var(--color-success)' : powerPlayIsHostile ? '#ff3333' : undefined }}
                 >
                   {powerPlay.power && <span>{sanitizeInaraText(powerPlay.power)}</span>}
                   {powerPlay.power && powerPlay.state && <span> • </span>}
@@ -254,6 +276,19 @@ export default function PlanetCard ({
           </div>
         )}
       </div>
+      {fillSpace && planetImage && (
+        <div className={styles.planetCardImageContainer}>
+          {typeof planetImage === 'string' ? (
+            <img
+              src={planetImage}
+              alt={`${normalizedPlanetName} surface`}
+              className={styles.planetCardImage}
+            />
+          ) : (
+            planetImage
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -267,10 +302,14 @@ PlanetCard.defaultProps = {
   distanceLs: null,
   distanceLyText: '',
   distanceLsText: '',
+  distanceLyColor: null,
+  distanceLsColor: null,
+  planetImage: null,
   powerPlay: null,
   mode: 'large',
   variant: null,
   isSelected: false,
+  fillSpace: false,
   className: '',
   onClick: null
 }
@@ -284,14 +323,19 @@ PlanetCard.propTypes = {
   distanceLs: PropTypes.number,
   distanceLyText: PropTypes.string,
   distanceLsText: PropTypes.string,
+  distanceLyColor: PropTypes.string,
+  distanceLsColor: PropTypes.string,
+  planetImage: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
   powerPlay: PropTypes.shape({
     power: PropTypes.string,
     state: PropTypes.string,
-    isAllied: PropTypes.bool
+    isAllied: PropTypes.bool,
+    isHostile: PropTypes.bool
   }),
   mode: PropTypes.oneOf(['small', 'large', 'inline']),
   variant: PropTypes.string,
   isSelected: PropTypes.bool,
+  fillSpace: PropTypes.bool,
   className: PropTypes.string,
   onClick: PropTypes.func
 }
