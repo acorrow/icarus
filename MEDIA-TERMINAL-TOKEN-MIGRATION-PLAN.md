@@ -34,7 +34,9 @@ This document outlines the implementation plan for migrating the TOKEN/CURRENCY 
    - Window controls (minimize, maximize, close)
    - Status preview when compressed
 
-2. **TradeRoutesPanel** - Trade routes interface (can stay in FEATURES.md)
+2. **TradeRoutesPanel** - Trade routes interface (DEPRECATED - replaced by route-scout workspace)
+   - Will be deleted along with inara/status route
+   - Route Scout workspace (`/inara/route-scout`) is the current trade routes solution
 
 3. **PirateRadioPanel** - Pirate radio interface (TO BE REMOVED)
    - Located at `src/client/components/panels/inara/pirate-radio.js`
@@ -87,28 +89,29 @@ This document outlines the implementation plan for migrating the TOKEN/CURRENCY 
 
 ## Migration Strategy
 
-### Phase 1: Deprecate inara/status Route
+### Phase 1: Deprecate inara/status Route (UPDATED - No Extraction Needed)
 
 **Actions:**
 1. Remove route from navigation
-2. Remove `src/client/pages/inara/status.js`
+2. Remove `src/client/pages/inara/status.js` entirely (no extraction needed)
 3. Update `InaraPanelNavItems` to remove "Status" (src/client/lib/navigation-items.js:68-92)
-4. Preserve TradeRoutesPanel by extracting it to separate component
-5. Remove PirateRadioPanel entirely
-6. Clean up imports and references
+4. Remove PirateRadioPanel entirely
+5. Clean up imports and references
+
+**Note:** TradeRoutesPanel is deprecated and will be deleted. The Route Scout workspace (`/inara/route-scout`) is the current and maintained trade routes solution.
 
 **Files to Modify:**
 - `src/client/lib/navigation-items.js` - Remove "Status" from InaraPanelNavItems
-- `src/client/pages/inara/status.js` - DELETE (but extract TradeRoutesPanel first)
+
+**Files to DELETE:**
+- `src/client/pages/inara/status.js` - DELETE ENTIRELY (no extraction)
 - `src/client/components/panels/inara/pirate-radio.js` - DELETE
 - `src/client/__tests__/pirate-radio.test.js` - DELETE
-
-**Files to Create:**
-- `src/client/components/panels/inara/trade-routes-panel.js` - Extracted TradeRoutesPanel
 
 **Routing Changes:**
 - Remove `/inara/status` route entirely
 - All INARA features now live under `/inara` workspace tabs
+- Trade routes functionality lives in `/inara/route-scout`
 
 ---
 
@@ -564,17 +567,13 @@ Encryption: MILITARY GRADE
 
 ### Phase 0: Preparation (1 day)
 
-- [ ] Create this implementation plan
-- [ ] Update CLAUDE.md with plan reference
-- [ ] Review token logic in inara/status.js
-- [ ] Identify all token-related code to extract
+- [x] Create this implementation plan
+- [x] Update CLAUDE.md with plan reference
+- [x] Review token logic in inara/status.js
+- [x] Identify all token-related code to extract
 
-### Phase 1: Extract TradeRoutesPanel (1 day)
-
-- [ ] Create `src/client/components/panels/inara/trade-routes-panel.js`
-- [ ] Extract TradeRoutesPanel from `src/client/pages/inara/status.js`
-- [ ] Test TradeRoutesPanel in isolation
-- [ ] Update imports and references
+### Phase 1: REMOVED - No extraction needed
+TradeRoutesPanel is deprecated and replaced by Route Scout workspace. Will be deleted with inara/status route.
 
 ### Phase 2: Create Token Hooks & Components (2 days)
 
@@ -602,11 +601,11 @@ Encryption: MILITARY GRADE
 ### Phase 5: Deprecate inara/status (1 day)
 
 - [ ] Remove `/inara/status` route
-- [ ] Remove `src/client/pages/inara/status.js`
+- [ ] Remove `src/client/pages/inara/status.js` (DELETE ENTIRELY - TradeRoutesPanel deprecated)
 - [ ] Remove `src/client/components/panels/inara/pirate-radio.js`
 - [ ] Remove `src/client/__tests__/pirate-radio.test.js`
 - [ ] Remove "Status" from InaraPanelNavItems
-- [ ] Update FEATURES.md
+- [ ] Update FEATURES.md (confirm Route Scout is documented as trade routes solution)
 - [ ] Clean up unused imports
 
 ### Phase 6: Testing & Refinement (1-2 days)
@@ -622,12 +621,11 @@ Encryption: MILITARY GRADE
 ## File Deletion Checklist
 
 **Files to DELETE:**
-- [ ] `src/client/pages/inara/status.js` (after extracting TradeRoutesPanel and token logic)
+- [ ] `src/client/pages/inara/status.js` (DELETE ENTIRELY after extracting token logic - TradeRoutesPanel is deprecated)
 - [ ] `src/client/components/panels/inara/pirate-radio.js`
 - [ ] `src/client/__tests__/pirate-radio.test.js`
 
 **Files to CREATE:**
-- [ ] `src/client/components/panels/inara/trade-routes-panel.js`
 - [ ] `src/client/lib/hooks/useTokenBalance.js`
 - [ ] `src/client/lib/token-formatters.js`
 - [ ] `src/client/components/TokenBalanceDisplay/TokenBalanceDisplay.jsx`
@@ -646,7 +644,7 @@ Encryption: MILITARY GRADE
 ## Open Questions
 
 1. **TradeRoutesPanel Future:** Should TradeRoutesPanel stay as a standalone page or be integrated into another view?
-   - **Decision:** Extract to standalone component for now, keep in existing route structure
+   - **Decision:** DELETE - Route Scout workspace (`/inara/route-scout`) is the current trade routes solution
 
 2. **Token Display Size:** How large should the token display be in the control panel?
    - **Decision:** Compact display (similar to CRT STABIL toggle size) to fit in existing layout
@@ -673,6 +671,13 @@ Encryption: MILITARY GRADE
 - Designed token display integration
 - Planned terminal display improvements
 - Defined phased implementation
+
+### 2025-10-16 - Plan Update
+
+- **UPDATED:** Removed TradeRoutesPanel extraction (Phase 1 removed)
+- TradeRoutesPanel is deprecated - Route Scout workspace is the maintained solution
+- Simplified deletion: inara/status.js will be deleted entirely after token extraction
+- Updated file deletion checklist to reflect no TradeRoutesPanel extraction
 
 ---
 

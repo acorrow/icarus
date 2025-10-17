@@ -68,11 +68,6 @@ function NavPanelNavItems (activePanel, query) {
 function InaraPanelNavItems (activePanel) {
   const navigationItems = [
     {
-      name: 'Status',
-      icon: 'route',
-      url: '/inara/status'
-    },
-    {
       name: 'Search',
       icon: 'search',
       url: '/inara/search'
@@ -104,9 +99,19 @@ function InaraWorkspaceNavItems (activePanel) {
       url: '/inara/route-scout'
     },
     {
+      name: 'Search',
+      icon: 'search',
+      url: '/inara/search'
+    },
+    {
       name: 'Commodities',
       icon: 'cargo',
       url: '/inara/commodities'
+    },
+    {
+      name: 'Outfitting',
+      icon: 'wrench',
+      url: '/inara/outfitting'
     },
     {
       name: 'Mining Missions',

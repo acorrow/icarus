@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Hls from 'hls.js'
 import { useSocket, sendEvent, eventListener } from 'lib/socket'
+import { useTokenBalance } from 'lib/hooks/useTokenBalance'
+import { formatTokenAmount } from 'lib/token-formatters'
+import TokenBalanceDisplay from 'components/TokenBalanceDisplay/TokenBalanceDisplay'
 import styles from './CrtTvTuner.module.css'
 
 const CrtTvTuner = () => {
@@ -169,7 +172,7 @@ const CrtTvTuner = () => {
   const [isDragging, setIsDragging] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [showTerminal, setShowTerminal] = useState(true) // Terminal vs HLS player
-  const [isCrtEnabled, setIsCrtEnabled] = useState(true) // CRT effect on/off
+  const [isCrtEnabled, setIsCrtEnabled] = useState(true) // CRT effect on/off (true = effect ON, false = stabilized/OFF)
   const [activeChannels, setActiveChannels] = useState(DISPLAY_CHANNELS)
   const [volumeRotation, setVolumeRotation] = useState(45)
   const [volumeDragging, setVolumeDragging] = useState(false)
@@ -177,6 +180,55 @@ const CrtTvTuner = () => {
   const [commandInput, setCommandInput] = useState('')
   const [commandHistory, setCommandHistory] = useState([])
   const [historyIndex, setHistoryIndex] = useState(-1)
+
+  // Token transaction message handler
+  const addTokenTransactionMessage = async (entry) => {
+    if (!entry || !showTerminal) return
+
+    const { type, amount, balance, metadata = {} } = entry
+    const amountLabel = amount > 0 ? `+${formatTokenAmount(amount)}` : formatTokenAmount(amount)
+    const balanceLabel = formatTokenAmount(balance)
+
+    let prefix = ''
+    let message = ''
+    let colorClass = styles.tokenMessageCredit
+
+    if (type === 'spend') {
+      prefix = '>> TOKEN DEBIT'
+      colorClass = styles.tokenMessageDebit
+    } else if (metadata.jackpot) {
+      prefix = '>> JACKPOT PAYOUT'
+      colorClass = styles.tokenMessageJackpot
+    } else {
+      prefix = '>> TOKEN CREDIT'
+      colorClass = styles.tokenMessageCredit
+    }
+
+    message = `${prefix}: ${amountLabel} tokens\n`
+    message += `Current Balance: ${balanceLabel}\n`
+
+    if (metadata.reason) {
+      message += `Reason: ${metadata.reason}\n`
+    }
+
+    if (metadata.jackpot) {
+      message += `\nJACKPOT MULTIPLIER: ${metadata.multiplier || '??'}x\n`
+    }
+
+    await addMessage(`<span class="${colorClass}">${message}</span>`)
+  }
+
+  // Token balance hook
+  const {
+    tokenBalance,
+    tokenBalanceAnimated,
+    tokenLoading,
+    tokenActionPending,
+    balanceFlash,
+    triggerJackpot
+  } = useTokenBalance({
+    onTransaction: addTokenTransactionMessage
+  })
 
   // Refs
   const hlsRef = useRef(null)
@@ -452,33 +504,38 @@ const CrtTvTuner = () => {
     const hexChars = '0123456789ABCDEF'
     const symbols = '¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ'
     const extraGlyphs = '⌂⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌'
-    
+
     const allChars = glyphs + hexChars + symbols + extraGlyphs
-    const burstLength = Math.floor(Math.random() * 200) + 100
-    
+    const lines = Math.floor(Math.random() * 15) + 20 // 20-35 lines
+    const charsPerLine = 90 // Fill terminal width edge-to-edge
+
     let burst = ''
-    for (let i = 0; i < burstLength; i++) {
-      if (i % 40 === 0 && i > 0) burst += '\n'
-      burst += allChars[Math.floor(Math.random() * allChars.length)]
+    for (let line = 0; line < lines; line++) {
+      for (let i = 0; i < charsPerLine; i++) {
+        burst += allChars[Math.floor(Math.random() * allChars.length)]
+      }
+      if (line < lines - 1) burst += '\n'
     }
-    
+
     return `>> ENCRYPTED SIGNAL DETECTED <<\n${burst}\n>> END TRANSMISSION <<`
   }
 
   const generateDataBurst = () => {
-    const lines = Math.floor(Math.random() * 8) + 4
+    const lines = Math.floor(Math.random() * 20) + 25 // 25-45 lines
     let burst = '>> RAW DATA STREAM <<\n'
-    
+
     for (let i = 0; i < lines; i++) {
-      const addr = (i * 16).toString(16).toUpperCase().padStart(8, '0')
+      const addr = (i * 32).toString(16).toUpperCase().padStart(8, '0')
       burst += `0x${addr}: `
-      
-      for (let j = 0; j < 16; j++) {
-        burst += Math.floor(Math.random() * 256).toString(16).toUpperCase().padStart(2, '0') + ' '
+
+      // Generate 32 bytes per line to fill the width
+      for (let j = 0; j < 32; j++) {
+        burst += Math.floor(Math.random() * 256).toString(16).toUpperCase().padStart(2, '0')
+        if (j < 31) burst += ' '
       }
       burst += '\n'
     }
-    
+
     return burst + '>> END DATA <<'
   }
 
@@ -612,37 +669,37 @@ Encryption: MILITARY GRADE
     const cmdrName = cmdrStatus?.name || 'CMDR'
     let prefix = ''
     let text = message
-    let speed = 15
+    let speed = 0.1
 
     if (message.includes('ENCRYPTED SIGNAL')) {
       prefix = ''
-      speed = 3
+      speed = 0.05
       text = `\n<span class="${styles.encryptedSignal}">${message}</span>\n`
     } else if (message.includes('RAW DATA')) {
       prefix = ''
-      speed = 5
+      speed = 0.05
       text = `\n<span class="${styles.dataBurst}">${message}</span>\n`
     } else if (message.startsWith('{')) {
       prefix = `${cmdrName}@${shipModel}:~$ `
-      speed = 8
+      speed = 0.1
       text = `<span class="${styles.jsonData}">${message}</span>`
     } else if (message.includes('▀') || message.includes('▄') || message.includes('█') || message.includes('╔') || message.includes('║')) {
       prefix = ''
-      speed = 5
+      speed = 0.05
       text = `\n<span class="${styles.asciiArt}">${message}</span>\n`
     } else if (message.startsWith('>')) {
       // Command echo - no prefix
       prefix = ''
-      speed = 10
+      speed = 0.1
     } else if (message.startsWith('ERROR:')) {
       prefix = `${cmdrName}@${shipModel}:~$ `
-      speed = 15
+      speed = 0.1
     } else {
       prefix = `${cmdrName}@${shipModel}:~$ `
-      speed = 15
+      speed = 0.1
     }
 
-    const fullMessage = prefix + text + '\n'
+    const fullMessage = (prefix + text).trim() + '\n'
     await typeHTML(fullMessage, speed)
   }
 
@@ -910,6 +967,9 @@ Encryption: MILITARY GRADE
     setIsCrtEnabled(prev => !prev)
   }
 
+  // CRT Stabilization state: OFF = CRT effect ON (default), ON = CRT effect OFF
+  const isCrtStabilized = !isCrtEnabled
+
   // Effects
   useEffect(() => {
     let channelKnobElement = null
@@ -1148,7 +1208,7 @@ Encryption: MILITARY GRADE
             <div className={styles.toggleContainer}>
               <div className={styles.toggleLabel}>CRT STABIL</div>
               <div className={styles.toggleSwitch} onClick={handleCrtToggle}>
-                <div className={`${styles.toggleSlider} ${isCrtEnabled ? styles.active : ''}`}></div>
+                <div className={`${styles.toggleSlider} ${isCrtStabilized ? styles.active : ''}`}></div>
               </div>
             </div>
 
@@ -1158,6 +1218,15 @@ Encryption: MILITARY GRADE
                 <div className={`${styles.toggleSlider} ${showTerminal ? styles.active : ''}`}></div>
               </div>
             </div>
+
+            <TokenBalanceDisplay
+              balance={tokenBalance}
+              balanceAnimated={tokenBalanceAnimated}
+              loading={tokenLoading}
+              actionPending={tokenActionPending}
+              balanceFlash={balanceFlash}
+              onTriggerJackpot={triggerJackpot}
+            />
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Layout from 'components/layout'
 import Panel from 'components/panel'
 import { useSocket } from 'lib/socket'
-import { InaraPanelNavItems } from 'lib/navigation-items'
+import { InaraWorkspaceNavItems } from 'lib/navigation-items'
 
 export default function InaraOutfittingPage () {
   const { connected, active, ready } = useSocket()
@@ -10,7 +10,7 @@ export default function InaraOutfittingPage () {
 
   return (
     <Layout connected={connected} active={active} ready={ready} loader={status === 'loading'}>
-      <Panel layout='full-width' scrollable navigation={InaraPanelNavItems('Outfitting')}>
+      <Panel layout='full-width' scrollable navigation={InaraWorkspaceNavItems('Outfitting')}>
         <div style={{ padding: '2rem' }}>
           <h2>Outfitting Search</h2>
           <p className='text-muted' style={{ marginTop: '1rem' }}>

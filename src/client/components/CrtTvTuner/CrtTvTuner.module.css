@@ -780,3 +780,37 @@
     font-size: 18px;
   }
 }
+
+/* Token Transaction Messages */
+.tokenMessageCredit {
+  color: rgb(100, 250, 100);
+  text-shadow: 0 0 8px rgba(100, 250, 100, 0.6);
+  font-weight: bold;
+  opacity: 0.95;
+}
+
+.tokenMessageDebit {
+  color: rgb(250, 150, 100);
+  text-shadow: 0 0 8px rgba(250, 150, 100, 0.6);
+  font-weight: bold;
+  opacity: 0.95;
+}
+
+.tokenMessageJackpot {
+  color: rgb(250, 200, 50);
+  text-shadow: 0 0 10px rgba(250, 200, 50, 0.8);
+  font-weight: bold;
+  opacity: 1;
+  animation: jackpotPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes jackpotPulse {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(250, 200, 50, 0.8);
+  }
+  50% {
+    opacity: 0.8;
+    text-shadow: 0 0 15px rgba(250, 200, 50, 1);
+  }
+}

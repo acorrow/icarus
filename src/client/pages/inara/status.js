@@ -26,7 +26,6 @@ import StationSummary, { StationIcon, DemandIndicator } from 'components/panels/
 import CommoditySummary, { CommodityIcon } from 'components/panels/inara/commodity-summary'
 import { PlanetCard, StationCard } from 'components/cards'
 import CopyOnClick from 'components/copy-on-click'
-import PirateRadioPanel from 'components/panels/inara/pirate-radio'
 import NavigationInspectorPanel from 'components/panels/nav/navigation-inspector-panel'
 import styles from '../inara-workspace.module.css'
 
@@ -7299,8 +7298,7 @@ export default function InaraStatusPage () {
       { name: 'Trade Routes', icon: 'route', active: activeTab === 'tradeRoutes', onClick: () => setActiveTab('tradeRoutes') },
       { name: 'Commodities', icon: 'cargo', active: activeTab === 'commodities', onClick: () => setActiveTab('commodities') },
       { name: 'Missions', icon: 'asteroid-base', active: activeTab === 'missions', onClick: () => setActiveTab('missions') },
-      { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') },
-      { name: 'Pirate Radio', icon: 'signal', active: activeTab === 'pirateRadio', onClick: () => setActiveTab('pirateRadio') }
+      { name: 'Pristine Mining Locations', icon: 'planet-ringed', active: activeTab === 'pristineMining', onClick: () => setActiveTab('pristineMining') }
     ]
     const sharedNavItems = InaraPanelNavItems('Status').filter(item => item.name !== 'Status')
     return [...panelItems, ...sharedNavItems]
@@ -7334,9 +7332,6 @@ export default function InaraStatusPage () {
                 </div>
                 <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
                   <PristineMiningPanel />
-                </div>
-                <div style={{ display: activeTab === 'pirateRadio' ? 'block' : 'none' }}>
-                  <PirateRadioPanel />
                 </div>
               </div>
             </div>

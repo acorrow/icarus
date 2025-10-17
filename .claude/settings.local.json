@@ -6,7 +6,13 @@
       "Bash(git rm:*)",
       "Bash(npm run build:client:*)",
       "Bash(node:*)",
-      "Bash(cards.module.css)"
+      "Bash(cards.module.css)",
+      "Bash(git checkout:*)",
+      "Bash(awk:*)",
+      "Bash(npm run dev)",
+      "Bash(netstat:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

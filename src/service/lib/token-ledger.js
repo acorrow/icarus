@@ -320,6 +320,14 @@ class TokenLedger {
       await this._persistState()
     }
 
+    // Safety check: if balance is extremely negative, reset to initial
+    const snapshot = await this.getSnapshot()
+    if (snapshot.balance < -50000000) {
+      console.warn(`[TokenLedger] Balance extremely negative (${snapshot.balance}), resetting to initial balance ${this.initialBalance}`)
+      this._state.balance = this.initialBalance
+      await this._persistState()
+    }
+
     return this.getSnapshot()
   }
 
