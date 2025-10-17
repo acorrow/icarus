@@ -1,0 +1,150 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-10-17T00:00:00Z",
+  "categories": {
+    "ships": {
+      "small": [
+        { "id": "128049249", "name": "Sidewinder", "class": null, "rating": null },
+        { "id": "128049255", "name": "Eagle", "class": null, "rating": null },
+        { "id": "128672138", "name": "Imperial Eagle", "class": null, "rating": null },
+        { "id": "128049261", "name": "Hauler", "class": null, "rating": null },
+        { "id": "128049267", "name": "Adder", "class": null, "rating": null },
+        { "id": "128049273", "name": "Viper Mk III", "class": null, "rating": null },
+        { "id": "128672255", "name": "Viper Mk IV", "class": null, "rating": null },
+        { "id": "128049279", "name": "Cobra Mk III", "class": null, "rating": null },
+        { "id": "128672262", "name": "Cobra Mk IV", "class": null, "rating": null }
+      ],
+      "medium": [
+        { "id": "128049285", "name": "Type-6 Transporter", "class": null, "rating": null },
+        { "id": "128049291", "name": "Asp Explorer", "class": null, "rating": null },
+        { "id": "128672276", "name": "Asp Scout", "class": null, "rating": null },
+        { "id": "128049297", "name": "Vulture", "class": null, "rating": null },
+        { "id": "128049303", "name": "Type-7 Transporter", "class": null, "rating": null },
+        { "id": "128049309", "name": "Federal Dropship", "class": null, "rating": null },
+        { "id": "128049315", "name": "Federal Assault Ship", "class": null, "rating": null },
+        { "id": "128049321", "name": "Federal Gunship", "class": null, "rating": null },
+        { "id": "128049327", "name": "Diamondback Scout", "class": null, "rating": null },
+        { "id": "128671831", "name": "Diamondback Explorer", "class": null, "rating": null },
+        { "id": "128672145", "name": "Imperial Courier", "class": null, "rating": null },
+        { "id": "128672152", "name": "Keelback", "class": null, "rating": null },
+        { "id": "128049333", "name": "Python", "class": null, "rating": null },
+        { "id": "128816567", "name": "Krait Mk II", "class": null, "rating": null },
+        { "id": "128816574", "name": "Krait Phantom", "class": null, "rating": null },
+        { "id": "128915979", "name": "Mamba", "class": null, "rating": null }
+      ],
+      "large": [
+        { "id": "128049339", "name": "Type-9 Heavy", "class": null, "rating": null },
+        { "id": "128049345", "name": "Type-10 Defender", "class": null, "rating": null },
+        { "id": "128049351", "name": "Anaconda", "class": null, "rating": null },
+        { "id": "128049357", "name": "Federal Corvette", "class": null, "rating": null },
+        { "id": "128049363", "name": "Imperial Cutter", "class": null, "rating": null },
+        { "id": "128672269", "name": "Imperial Clipper", "class": null, "rating": null },
+        { "id": "128049369", "name": "Beluga Liner", "class": null, "rating": null },
+        { "id": "128049375", "name": "Orca", "class": null, "rating": null }
+      ]
+    },
+    "hardpoints": {
+      "weapons": [
+        { "id": "128049381", "name": "Pulse Laser", "class": 1, "rating": "F" },
+        { "id": "128049387", "name": "Beam Laser", "class": 1, "rating": "E" },
+        { "id": "128049393", "name": "Burst Laser", "class": 1, "rating": "E" },
+        { "id": "128049399", "name": "Multi-Cannon", "class": 1, "rating": "F" },
+        { "id": "128049405", "name": "Cannon", "class": 1, "rating": "D" },
+        { "id": "128049411", "name": "Fragment Cannon", "class": 1, "rating": "E" },
+        { "id": "128049417", "name": "Rail Gun", "class": 1, "rating": "D" },
+        { "id": "128049423", "name": "Plasma Accelerator", "class": 2, "rating": "C" },
+        { "id": "128049429", "name": "Seeker Missile Rack", "class": 1, "rating": "B" },
+        { "id": "128049435", "name": "Torpedo Pylon", "class": 1, "rating": "I" },
+        { "id": "128049441", "name": "Mine Launcher", "class": 1, "rating": "I" }
+      ],
+      "utilities": [
+        { "id": "128049447", "name": "Shield Booster", "class": 0, "rating": "E" },
+        { "id": "128049453", "name": "Chaff Launcher", "class": 0, "rating": "I" },
+        { "id": "128049459", "name": "Heat Sink Launcher", "class": 0, "rating": "I" },
+        { "id": "128049465", "name": "Point Defence", "class": 0, "rating": "I" },
+        { "id": "128049471", "name": "Electronic Countermeasure", "class": 0, "rating": "F" },
+        { "id": "128049477", "name": "Kill Warrant Scanner", "class": 0, "rating": "E" },
+        { "id": "128662530", "name": "Wake Scanner", "class": 0, "rating": "E" }
+      ]
+    },
+    "core_internal": {
+      "powerPlant": [
+        { "id": "128064033", "name": "Power Plant", "class": 2, "rating": "E" }
+      ],
+      "thrusters": [
+        { "id": "128064034", "name": "Thrusters", "class": 2, "rating": "E" }
+      ],
+      "frameShiftDrive": [
+        { "id": "128064035", "name": "Frame Shift Drive", "class": 2, "rating": "E" }
+      ],
+      "lifeSupport": [
+        { "id": "128064036", "name": "Life Support", "class": 1, "rating": "E" }
+      ],
+      "powerDistributor": [
+        { "id": "128064037", "name": "Power Distributor", "class": 1, "rating": "E" }
+      ],
+      "sensors": [
+        { "id": "128064038", "name": "Sensors", "class": 1, "rating": "E" }
+      ],
+      "fuelTank": [
+        { "id": "128064039", "name": "Fuel Tank", "class": 1, "rating": "C" }
+      ]
+    },
+    "optional_internal": {
+      "fighterHangar": [
+        { "id": "102604", "name": "Fighter Hangar", "class": 5, "rating": "D" },
+        { "id": "102605", "name": "Fighter Hangar", "class": 6, "rating": "D" },
+        { "id": "102606", "name": "Fighter Hangar", "class": 7, "rating": "D" }
+      ],
+      "fuelScoop": [
+        { "id": "128666644", "name": "Fuel Scoop", "class": 1, "rating": "E" },
+        { "id": "128666645", "name": "Fuel Scoop", "class": 2, "rating": "E" },
+        { "id": "128666646", "name": "Fuel Scoop", "class": 3, "rating": "E" },
+        { "id": "128666647", "name": "Fuel Scoop", "class": 4, "rating": "E" },
+        { "id": "128666648", "name": "Fuel Scoop", "class": 5, "rating": "E" },
+        { "id": "128666649", "name": "Fuel Scoop", "class": 6, "rating": "E" },
+        { "id": "128666650", "name": "Fuel Scoop", "class": 7, "rating": "E" },
+        { "id": "128666651", "name": "Fuel Scoop", "class": 8, "rating": "E" }
+      ],
+      "shieldGenerator": [
+        { "id": "128064041", "name": "Shield Generator", "class": 1, "rating": "E" },
+        { "id": "128064042", "name": "Shield Generator", "class": 2, "rating": "E" },
+        { "id": "128064043", "name": "Shield Generator", "class": 3, "rating": "E" },
+        { "id": "128064044", "name": "Shield Generator", "class": 4, "rating": "E" },
+        { "id": "128064045", "name": "Shield Generator", "class": 5, "rating": "E" },
+        { "id": "128064046", "name": "Shield Generator", "class": 6, "rating": "E" },
+        { "id": "128064047", "name": "Shield Generator", "class": 7, "rating": "E" },
+        { "id": "128064048", "name": "Shield Generator", "class": 8, "rating": "E" }
+      ],
+      "cargoRack": [
+        { "id": "128064049", "name": "Cargo Rack", "class": 1, "rating": "E" },
+        { "id": "128064050", "name": "Cargo Rack", "class": 2, "rating": "E" },
+        { "id": "128064051", "name": "Cargo Rack", "class": 3, "rating": "E" },
+        { "id": "128064052", "name": "Cargo Rack", "class": 4, "rating": "E" },
+        { "id": "128064053", "name": "Cargo Rack", "class": 5, "rating": "E" },
+        { "id": "128064054", "name": "Cargo Rack", "class": 6, "rating": "E" },
+        { "id": "128064055", "name": "Cargo Rack", "class": 7, "rating": "E" },
+        { "id": "128064056", "name": "Cargo Rack", "class": 8, "rating": "E" }
+      ],
+      "collectorLimpet": [
+        { "id": "128671249", "name": "Collector Limpet Controller", "class": 1, "rating": "E" },
+        { "id": "128671250", "name": "Collector Limpet Controller", "class": 3, "rating": "B" },
+        { "id": "128671251", "name": "Collector Limpet Controller", "class": 5, "rating": "A" },
+        { "id": "128671252", "name": "Collector Limpet Controller", "class": 7, "rating": "E" }
+      ],
+      "prospectorLimpet": [
+        { "id": "128671229", "name": "Prospector Limpet Controller", "class": 1, "rating": "E" },
+        { "id": "128671230", "name": "Prospector Limpet Controller", "class": 3, "rating": "A" },
+        { "id": "128671231", "name": "Prospector Limpet Controller", "class": 5, "rating": "A" }
+      ],
+      "detailedSurfaceScanner": [
+        { "id": "128662520", "name": "Detailed Surface Scanner", "class": 1, "rating": "I" }
+      ],
+      "planetaryVehicleHangar": [
+        { "id": "128672317", "name": "Planetary Vehicle Hangar", "class": 2, "rating": "G" },
+        { "id": "128672318", "name": "Planetary Vehicle Hangar", "class": 4, "rating": "G" },
+        { "id": "128672319", "name": "Planetary Vehicle Hangar", "class": 6, "rating": "G" }
+      ]
+    }
+  }
+}
