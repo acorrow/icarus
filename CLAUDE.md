@@ -285,11 +285,23 @@ function normaliseName(value) {
 - Document INARA scraper architecture and mock data strategy
 - Maintain canonical mapping of feature names to implementation files
 
+**Feature-Specific Implementation Plans:**
+For complex features requiring multi-phase implementation, create a dedicated plan document:
+- Create `{FEATURE}-PLAN.md` in project root (e.g., `OUTFITTING-PLAN.md`)
+- Include: Overview, technical challenges, architecture, testing strategy, phased implementation, changelog, progress tracking
+- **CRITICAL:** Keep plan documents up to date as implementation progresses
+- Update changelog and progress sections after each work session
+- Reference plan documents in commit messages and pull requests
+
 See `FEATURES.md` for detailed documentation of:
 - INARA workspace features (ROUTESCOUT, CARGO_LEDGER, MISSION_BEACON, etc.)
 - Token currency system
 - Mock data mode
 - Scraper engine architecture
+
+Active feature plans:
+- `OUTFITTING-PLAN.md` - INARA outfitting search implementation (web scraper + API)
+- `MEDIA-TERMINAL-TOKEN-MIGRATION-PLAN.md` - Token feature migration to Media Terminal + deprecate inara/status route
 
 ## Important Files to Reference
 
