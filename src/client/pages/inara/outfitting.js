@@ -440,34 +440,45 @@ export default function InaraOutfittingPage () {
 
             {results.length > 0 && (
               <>
-                <p className='text-primary' style={{ marginBottom: '1rem' }}>
-                  Found {results.length} station{results.length !== 1 ? 's' : ''} within {filters.maxDistanceLy} Ly of {filters.systemName}
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-                  {results.map((station, index) => {
-                    const systemDistanceColor = getDistanceSeverityColor(station.distanceLy, shipJumpRange)
-                    const stationDistanceColor = getStationDistanceSeverityColor(station.distanceLs)
-
-                    const isCurrentLocation = currentSystem?.docked &&
-                      currentSystem?.station?.toLowerCase() === station.stationName?.toLowerCase() &&
-                      currentSystem?.name?.toLowerCase() === station.systemName?.toLowerCase()
-
-                    return (
-                      <StationCard
-                        key={`${station.systemName}-${station.stationName}-${index}`}
-                        stationName={station.stationName}
-                        systemName={station.systemName}
-                        stationType={station.stationType}
-                        distanceLy={station.distanceLy}
-                        distanceLs={station.distanceLs}
-                        distanceLyColor={systemDistanceColor}
-                        distanceLsColor={stationDistanceColor}
-                        isCurrentLocation={isCurrentLocation}
-                        mode='large'
-                      />
-                    )
-                  })}
+                <div className='section-heading' style={{ marginBottom: '1rem' }}>
+                  <h4 className='section-heading__text'>
+                    Found {results.length} station{results.length !== 1 ? 's' : ''} within {filters.maxDistanceLy} Ly of {filters.systemName}
+                  </h4>
                 </div>
+                <table className='table--interactive table--animated'>
+                  <tbody>
+                    {results.map((station, index) => {
+                      const systemDistanceColor = getDistanceSeverityColor(station.distanceLy, shipJumpRange)
+                      const stationDistanceColor = getStationDistanceSeverityColor(station.distanceLs)
+
+                      const isCurrentLocation = currentSystem?.docked &&
+                        currentSystem?.station?.toLowerCase() === station.stationName?.toLowerCase() &&
+                        currentSystem?.name?.toLowerCase() === station.systemName?.toLowerCase()
+
+                      return (
+                        <tr
+                          key={`${station.systemName}-${station.stationName}-${index}`}
+                          tabIndex={2}
+                          className='table__row--highlight-primary-hover'
+                        >
+                          <td style={{ padding: '0.5rem 1rem' }}>
+                            <StationCard
+                              stationName={station.stationName}
+                              systemName={station.systemName}
+                              stationType={station.stationType}
+                              distanceLy={station.distanceLy}
+                              distanceLs={station.distanceLs}
+                              distanceLyColor={systemDistanceColor}
+                              distanceLsColor={stationDistanceColor}
+                              isCurrentLocation={isCurrentLocation}
+                              mode='inline'
+                            />
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </>
             )}
           </>

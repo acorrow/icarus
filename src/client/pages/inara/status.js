@@ -5476,54 +5476,58 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
             </div>
           )}
           {status === 'populated' && locations.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>
-              {locations.map((location, index) => {
-                const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
-                const detailParts = []
-                if (location.bodyType) detailParts.push(location.bodyType)
-                if (location.ringType) detailParts.push(`${location.ringType} ring`)
-                if (location.reservesLevel) detailParts.push(`${location.reservesLevel} reserves`)
-                const detailText = detailParts.join(' · ')
-                const bodyDistanceDisplay = formatStationDistance(location.bodyDistanceLs, location.bodyDistanceText)
-                const distanceDisplay = formatSystemDistance(location.distanceLy, location.distanceText)
-                const isExpanded = expandedLocationKey === key
+            <div style={{ padding: '0 1rem' }}>
+              <table className='table--interactive table--animated'>
+                <tbody>
+                  {locations.map((location, index) => {
+                    const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
+                    const detailParts = []
+                    if (location.bodyType) detailParts.push(location.bodyType)
+                    if (location.ringType) detailParts.push(`${location.ringType} ring`)
+                    if (location.reservesLevel) detailParts.push(`${location.reservesLevel} reserves`)
+                    const detailText = detailParts.join(' · ')
+                    const bodyDistanceDisplay = formatStationDistance(location.bodyDistanceLs, location.bodyDistanceText)
+                    const distanceDisplay = formatSystemDistance(location.distanceLy, location.distanceText)
+                    const isExpanded = expandedLocationKey === key
 
-                return (
-                  <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <div
-                      style={{ cursor: 'pointer', transition: 'opacity 0.2s ease', opacity: isExpanded ? 1 : 0.85 }}
-                      onClick={() => handleLocationToggle(location, key)}
-                      onKeyDown={event => handleLocationKeyDown(event, location, key)}
-                      role='button'
-                      tabIndex={0}
-                      aria-expanded={isExpanded}
-                    >
-                      <PlanetCard
-                        planetName={location.body}
-                        systemName={location.system}
-                        planetType={location.bodyType}
-                        distanceLs={location.bodyDistanceLs}
-                        distanceLsText={bodyDistanceDisplay}
-                        distanceLy={location.distanceLy}
-                        distanceLyText={distanceDisplay}
-                        mode='inline'
-                        isSelected={isExpanded}
-                      />
-                    </div>
-                    {isExpanded && (
-                      <div style={{
-                        padding: '1.5rem',
-                        background: 'rgba(5, 8, 13, 0.85)',
-                        border: '1px solid rgba(127, 233, 255, 0.18)',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '1.5rem',
-                        width: '100%',
-                        maxWidth: '100%',
-                        boxSizing: 'border-box',
-                        overflow: 'hidden'
-                      }}>
+                    return (
+                      <Fragment key={key}>
+                        <tr
+                          tabIndex={2}
+                          className={isExpanded ? 'table__row--highlighted' : 'table__row--highlight-primary-hover'}
+                          onClick={() => handleLocationToggle(location, key)}
+                          onKeyDown={event => handleLocationKeyDown(event, location, key)}
+                        >
+                          <td style={{ padding: '0.5rem 1rem' }}>
+                            <PlanetCard
+                              planetName={location.body}
+                              systemName={location.system}
+                              planetType={location.bodyType}
+                              distanceLs={location.bodyDistanceLs}
+                              distanceLsText={bodyDistanceDisplay}
+                              distanceLy={location.distanceLy}
+                              distanceLyText={distanceDisplay}
+                              mode='inline'
+                              isSelected={isExpanded}
+                            />
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr>
+                            <td style={{ padding: '0 1rem 1rem 1rem' }}>
+                              <div style={{
+                                padding: '1.5rem',
+                                background: 'rgba(5, 8, 13, 0.85)',
+                                border: '1px solid rgba(127, 233, 255, 0.18)',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1.5rem',
+                                width: '100%',
+                                maxWidth: '100%',
+                                boxSizing: 'border-box',
+                                overflow: 'hidden'
+                              }}>
                         <PlanetCard
                           planetName={location.body}
                           systemName={location.system}
@@ -5580,11 +5584,15 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
                             {detailError}
                           </div>
                         )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

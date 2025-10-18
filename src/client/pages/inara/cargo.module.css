@@ -1,0 +1,266 @@
+/* Cargo Page - Modern INARA Styling */
+
+.cargoPage {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.cargoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.cargoHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--inara-ink);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  font-size: 0.95rem;
+  color: var(--inara-muted);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Cargo Progress Section */
+.cargoProgressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid var(--inara-border-regular);
+}
+
+.cargoProgressLabel {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--inara-ink);
+}
+
+.cargoProgressCount {
+  color: var(--inara-accent);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.cargoProgressSeparator {
+  color: var(--inara-muted);
+  font-weight: 400;
+}
+
+.cargoProgressCapacity {
+  color: var(--inara-subdued);
+  font-weight: 600;
+}
+
+.cargoProgressUnit {
+  color: var(--inara-subdued);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.cargoProgressFree {
+  color: var(--inara-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.cargoProgressBar {
+  position: relative;
+  width: 100%;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--inara-border-soft);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.cargoProgressFill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 6px;
+  transition: width 0.4s ease;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 12px rgba(0, 150, 255, 0.4);
+}
+
+/* Content */
+.cargoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--inara-ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* Cargo List */
+.cargoList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cargoItem {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--inara-border-soft);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.cargoItem:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--inara-border-regular);
+  transform: translateX(4px);
+}
+
+.cargoItemQuantity {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--inara-accent);
+  min-width: 80px;
+  text-align: right;
+  letter-spacing: -0.02em;
+}
+
+.cargoItemDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cargoItemName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.cargoItemMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+}
+
+.cargoItemBadgeMission {
+  padding: 0.25rem 0.75rem;
+  background: linear-gradient(135deg, rgba(0, 150, 255, 0.2) 0%, rgba(0, 100, 200, 0.2) 100%);
+  border: 1px solid rgba(0, 150, 255, 0.5);
+  border-radius: 6px;
+  color: var(--color-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.7rem;
+}
+
+.cargoItemBadgeStolen {
+  padding: 0.25rem 0.75rem;
+  background: linear-gradient(135deg, rgba(255, 90, 0, 0.2) 0%, rgba(200, 50, 0, 0.2) 100%);
+  border: 1px solid rgba(255, 90, 0, 0.5);
+  border-radius: 6px;
+  color: #ff5a00;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.7rem;
+}
+
+.cargoItemDescription {
+  color: var(--inara-muted);
+  font-style: italic;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.emptyState p {
+  font-size: 1.1rem;
+  color: var(--inara-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+/* Footer */
+.cargoFooter {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--inara-border-soft);
+  text-align: center;
+}
+
+.timestamp {
+  font-size: 0.875rem;
+  color: var(--inara-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cargoPage {
+    padding: 1rem;
+  }
+
+  .cargoItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .cargoItemQuantity {
+    min-width: auto;
+    text-align: left;
+  }
+
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+}
