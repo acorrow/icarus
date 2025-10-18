@@ -83,84 +83,76 @@ function parseOutfittingSearchResults(html, options = {}) {
     itemName = headerText.replace(/nearest/i, '').trim()
   }
 
-  // Find all result rows - INARA uses various table structures
-  // Look for rows in the main results table
-  $('table.tablesorter tbody tr, .searchresult').each((i, el) => {
+  // Find all result rows - INARA uses table with class "tablesortercollapsed"
+  // Table structure: Station | Allegiance | Pad | St dist | Distance | Updated
+  $('table tr').each((i, el) => {
     try {
       const $row = $(el)
 
-      // Skip header rows and empty rows
+      // Skip header rows
       if ($row.find('th').length > 0) return
-      if ($row.find('td').length < 3) return
 
       const cells = $row.find('td')
       if (cells.length === 0) return
 
-      // Try to extract station information
-      // Pattern 1: Station link in first cell
-      let stationLink = $row.find('a[href*="/station/"]').first()
-      if (!stationLink.length) {
-        stationLink = $row.find('a[href*="/starport/"]').first()
-      }
+      // Cell 0: Station (contains station link and system name)
+      const firstCell = $(cells[0])
+      const stationLink = firstCell.find('a[href*="/station/"]').first()
 
       if (!stationLink.length) return // Skip if no station found
 
-      const stationName = cleanText(stationLink.text())
+      // Extract station name and system name from first cell
+      // Format: "StationName | SystemName"
+      const cellText = cleanText(firstCell.text())
+      const parts = cellText.split('|').map(s => s.trim())
+
+      const stationName = parts[0] || cleanText(stationLink.text())
+      const systemName = parts[1] || null
       const stationUrl = stationLink.attr('href') || null
 
-      // Extract system name (usually in same cell or next cell)
-      const systemLink = $row.find('a[href*="/starsystem/"]').first()
-      const systemName = systemLink.length ? cleanText(systemLink.text()) : null
+      // Cell 1: Allegiance (optional)
+      const allegiance = cells.length > 1 ? cleanText($(cells[1]).text()) : null
 
-      // Extract distances (usually in specific columns)
-      let distanceLy = null
+      // Cell 2: Pad size (L, M, S)
+      let landingPadSize = 'Unknown'
+      if (cells.length > 2) {
+        const padText = cleanText($(cells[2]).text()).toUpperCase()
+        if (padText === 'L') landingPadSize = 'Large'
+        else if (padText === 'M') landingPadSize = 'Medium'
+        else if (padText === 'S') landingPadSize = 'Small'
+      }
+
+      // Cell 3: Station distance (Ls)
       let distanceLs = null
-
-      cells.each((idx, cell) => {
-        const cellText = cleanText($(cell).text())
-        if (cellText.includes('Ly') && !distanceLy) {
-          distanceLy = parseDistanceLy(cellText)
-        }
-        if (cellText.includes('Ls') && !distanceLs) {
-          distanceLs = parseDistanceLs(cellText)
-        }
-      })
-
-      // Extract station type (usually in a specific cell or icon attribute)
-      let stationType = null
-      const typeCell = $row.find('.station-type, [data-type]').first()
-      if (typeCell.length) {
-        stationType = cleanText(typeCell.text()) || typeCell.attr('data-type') || null
+      if (cells.length > 3) {
+        const distText = cleanText($(cells[3]).text())
+        distanceLs = parseDistanceLs(distText)
       }
 
-      // If no type found, look for icon titles
-      const iconTitle = $row.find('img[title]').first().attr('title')
-      if (!stationType && iconTitle) {
-        stationType = iconTitle
+      // Cell 4: System distance (Ly)
+      let distanceLy = null
+      if (cells.length > 4) {
+        const distText = cleanText($(cells[4]).text())
+        distanceLy = parseDistanceLy(distText)
       }
 
-      // Extract price if available
-      let price = null
-      const priceMatch = $row.text().match(/(\d{1,3}(?:,\d{3})*)\s*CR/i)
-      if (priceMatch) {
-        price = parseNumber(priceMatch[1])
-      }
-
-      // Extract stock/quantity if available
-      let stock = null
-      const stockMatch = $row.text().match(/stock[:\s]+(\d+)/i)
-      if (stockMatch) {
-        stock = parseNumber(stockMatch[1])
-      }
-
-      // Extract last updated timestamp
+      // Cell 5: Updated timestamp
       let updatedAt = null
-      const ageText = $row.find('.minor, .age, [data-age]').first().text()
-      if (ageText) {
+      if (cells.length > 5) {
+        const ageText = cleanText($(cells[5]).text())
         updatedAt = parseTimestamp(ageText) || ageText
       }
 
-      const landingPadSize = parseLandingPadSize(stationType)
+      // Extract station type from icon/image if available
+      let stationType = 'Unknown'
+      const stationIcon = firstCell.find('img').first()
+      if (stationIcon.length) {
+        stationType = stationIcon.attr('title') || stationIcon.attr('alt') || 'Unknown'
+      }
+
+      // Price and stock not typically shown in nearest-outfitting results
+      const price = null
+      const stock = null
 
       const result = {
         stationName,

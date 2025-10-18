@@ -12,7 +12,17 @@
       "Bash(npm run dev)",
       "Bash(netstat:*)",
       "Bash(ls:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm run dev:web:*)",
+      "Bash(curl:*)",
+      "Bash(git stash:*)",
+      "Bash(tasklist:*)",
+      "Bash(taskkill:*)",
+      "Bash(npm run serve:export:*)",
+      "Bash(findstr:*)",
+      "Read(//e/**)",
+      "Bash(timeout /t 10)",
+      "Bash(npm ls:*)"
     ],
     "deny": [],
     "ask": []

@@ -105,8 +105,14 @@ export default class MyApp extends App {
         if (event.key === 'color-settings') { loadColorSettings() }
       })
 
+      document.addEventListener('keydown', handleKeyPress)
+    }
+  }
+
+  componentDidMount() {
+    if (typeof window !== 'undefined') {
       // Update theme settings (and save them) when sync message received
-      eventListener('syncMessage', (event) => {
+      this.cleanupSyncListener = eventListener('syncMessage', (event) => {
         if (event.name === 'colorSettings') {
           const colorSettings = event.message
           document.documentElement.style.setProperty('--color-primary-r', colorSettings.primaryColor.r)
@@ -120,9 +126,13 @@ export default class MyApp extends App {
           saveColorSettings()
         }
       })
+    }
+  }
 
-      document.addEventListener('keydown', handleKeyPress)
-    } 
+  componentWillUnmount() {
+    if (this.cleanupSyncListener) {
+      this.cleanupSyncListener()
+    }
   }
 
   render () {

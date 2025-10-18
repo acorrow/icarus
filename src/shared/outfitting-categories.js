@@ -6,17 +6,9 @@ const OUTFITTING_CATEGORIES = {
     label: 'Ships',
     icon: 'ship',
     subcategories: {
-      small: {
-        label: 'Small Ships',
-        description: 'Small landing pad ships'
-      },
-      medium: {
-        label: 'Medium Ships',
-        description: 'Medium landing pad ships'
-      },
-      large: {
-        label: 'Large Ships',
-        description: 'Large landing pad ships'
+      all: {
+        label: 'All Ships',
+        description: 'All available ships'
       }
     }
   },
@@ -26,16 +18,16 @@ const OUTFITTING_CATEGORIES = {
     subcategories: {
       weapons: {
         label: 'Weapons',
-        description: 'Lasers, cannons, missiles, and other weapons'
+        description: 'Beam lasers, multi-cannons, missiles, and other weapons'
       },
       utilities: {
-        label: 'Utilities',
-        description: 'Shield boosters, chaff, heat sinks, scanners'
+        label: 'Utility Mounts',
+        description: 'Scanners, shield boosters, chaff, heat sinks, ECM'
       }
     }
   },
   core_internal: {
-    label: 'Core Internal',
+    label: 'Core Internal Modules',
     icon: 'engineering',
     subcategories: {
       powerPlant: {
@@ -56,7 +48,7 @@ const OUTFITTING_CATEGORIES = {
       },
       powerDistributor: {
         label: 'Power Distributor',
-        description: 'Manages power allocation'
+        description: 'Manages power allocation to SYS/ENG/WEP'
       },
       sensors: {
         label: 'Sensors',
@@ -69,7 +61,7 @@ const OUTFITTING_CATEGORIES = {
     }
   },
   optional_internal: {
-    label: 'Optional Internal',
+    label: 'Optional Internal Modules',
     icon: 'cargo',
     subcategories: {
       fighterHangar: {
@@ -82,27 +74,43 @@ const OUTFITTING_CATEGORIES = {
       },
       shieldGenerator: {
         label: 'Shield Generators',
-        description: 'Primary shield systems'
+        description: 'Standard shield systems'
+      },
+      biWeaveShield: {
+        label: 'Bi-Weave Shields',
+        description: 'Fast-recharge shield generators'
       },
       cargoRack: {
         label: 'Cargo Racks',
         description: 'Cargo capacity expansion'
       },
       collectorLimpet: {
-        label: 'Collector Limpets',
-        description: 'Automated cargo collection'
+        label: 'Collector Limpet Controllers',
+        description: 'Automated cargo collection drones'
       },
       prospectorLimpet: {
-        label: 'Prospector Limpets',
+        label: 'Prospector Limpet Controllers',
         description: 'Asteroid analysis drones'
       },
-      detailedSurfaceScanner: {
-        label: 'Detailed Surface Scanner',
-        description: 'Surface mapping tools'
+      passengerCabin: {
+        label: 'Passenger Cabins',
+        description: 'Economy, business, first class, and luxury cabins'
       },
-      planetaryVehicleHangar: {
-        label: 'SRV Hangars',
-        description: 'Planetary vehicle storage'
+      refinery: {
+        label: 'Refineries',
+        description: 'Ore processing modules'
+      },
+      srvHangar: {
+        label: 'Planetary Vehicle Hangars',
+        description: 'SRV surface vehicle storage'
+      },
+      afmu: {
+        label: 'Auto Field-Maintenance Units',
+        description: 'Module repair systems'
+      },
+      other: {
+        label: 'Other Modules',
+        description: 'Hull reinforcement, module reinforcement, and specialty modules'
       }
     }
   }
