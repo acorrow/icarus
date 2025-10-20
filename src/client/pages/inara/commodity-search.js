@@ -13,6 +13,7 @@ export default function InaraCommoditySearchPage () {
   const [status, setStatus] = useState('idle')
   const [currentSystem, setCurrentSystem] = useState(null)
   const [shipJumpRange, setShipJumpRange] = useState(null)
+  const [shipLandingPadSize, setShipLandingPadSize] = useState('any')
   const [commodityDatabase, setCommodityDatabase] = useState(null)
   const [filters, setFilters] = useState({
     systemName: '',
@@ -21,6 +22,7 @@ export default function InaraCommoditySearchPage () {
   })
   const [results, setResults] = useState([])
   const [expandedCategories, setExpandedCategories] = useState(new Set(['metals']))
+  const [searchFilter, setSearchFilter] = useState('')
 
   // Breadcrumb navigation state
   const [selectedCategory, setSelectedCategory] = useState(null)
@@ -41,7 +43,21 @@ export default function InaraCommoditySearchPage () {
     })()
   }, [])
 
-  // Load current system on mount (non-blocking - page still works without it)
+  // Auto-expand all categories when filtering
+  useEffect(() => {
+    if (searchFilter && commodityDatabase) {
+      // Expand all categories with matches
+      const allCategories = Object.keys(commodityDatabase.categories).filter(key => {
+        const filtered = commodityDatabase.categories[key].commodities.filter(c =>
+          c.name.toLowerCase().includes(searchFilter.toLowerCase())
+        )
+        return filtered.length > 0
+      })
+      setExpandedCategories(new Set(allCategories))
+    }
+  }, [searchFilter, commodityDatabase])
+
+  // Load current system and ship on mount (non-blocking - page still works without it)
   useEffect(() => {
     if (!connected || !ready) return
 
@@ -60,6 +76,26 @@ export default function InaraCommoditySearchPage () {
         } else if (shipStatus?.unladenJumpRange) {
           setShipJumpRange(shipStatus.unladenJumpRange)
         }
+
+        // Get ship landing pad size
+        let padSize = 'any'
+        if (shipStatus?.shipType) {
+          const shipType = shipStatus.shipType.toLowerCase()
+          // Large ships (require large pads)
+          if (['anaconda', 'beluga', 'corvette', 'cutter', 'type-9', 'type-10'].some(s => shipType.includes(s))) {
+            padSize = 'large'
+          }
+          // Medium ships
+          else if (['python', 'krait', 'chieftain', 'crusader', 'challenger', 'asp', 'type-6', 'type-7', 'keelback', 'federal'].some(s => shipType.includes(s))) {
+            padSize = 'medium'
+          }
+          // Small ships
+          else {
+            padSize = 'small'
+          }
+        }
+        setShipLandingPadSize(padSize)
+        setFilters(prev => ({ ...prev, landingPadSize: padSize }))
       } catch (err) {
         console.error('Failed to load current system:', err)
       }
@@ -87,12 +123,15 @@ export default function InaraCommoditySearchPage () {
   const handleCommodityClick = (commodity) => {
     setSelectedCommodity(commodity)
     setResults([])
-    // Note: Do NOT auto-search - let user click the Search button manually
+    // Auto-search when commodity is selected (if system is available)
+    if (filters.systemName) {
+      performSearch(commodity)
+    }
   }
 
-  const handleSearchClick = () => {
+  const handleRefreshClick = () => {
     if (selectedCommodity && filters.systemName) {
-      performSearch(selectedCommodity)
+      performSearch(selectedCommodity, true) // Force refresh
     }
   }
 
@@ -156,10 +195,31 @@ export default function InaraCommoditySearchPage () {
                        'categories'
 
   return (
-    <Layout connected={connected} active={active} ready={ready} loader={status === 'loading'}>
+    <Layout connected={connected} active={active} ready={ready}>
       <Panel layout='full-width' scrollable navigation={InaraWorkspaceNavItems('Commodity Search')}>
         <h2>Commodity Search</h2>
         <h3 className='text-primary'>Find where to buy commodities</h3>
+
+        {/* Loading overlay - shows over content without destroying it */}
+        {status === 'loading' && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div className='loader' />
+              <p className='text-primary' style={{ marginTop: '1rem' }}>Searching INARA...</p>
+            </div>
+          </div>
+        )}
 
         {/* Breadcrumbs */}
         <div style={{ marginTop: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -194,23 +254,23 @@ export default function InaraCommoditySearchPage () {
 
         {/* Filter Form */}
         {currentLevel !== 'categories' && (
-          <form style={{ marginTop: '0.5rem', marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ marginTop: '0.5rem', marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <label className='text-primary' style={{ fontSize: '0.875rem', marginBottom: '0.25rem' }}>
                 Near star system
               </label>
               <input
                 type='text'
-                value={filters.systemName}
-                onChange={(e) => setFilters(prev => ({ ...prev, systemName: e.target.value }))}
-                placeholder='Current system'
+                value={filters.systemName || 'Loading...'}
+                readOnly
                 style={{
                   padding: '0.5rem',
-                  background: 'var(--color-background-panel-translucent)',
-                  border: '1px solid var(--color-primary-dark)',
-                  color: 'var(--color-primary)',
+                  background: 'var(--color-background-panel)',
+                  border: '1px solid var(--color-muted)',
+                  color: 'var(--color-muted)',
                   borderRadius: '2px',
-                  minWidth: '200px'
+                  minWidth: '200px',
+                  cursor: 'not-allowed'
                 }}
               />
             </div>
@@ -236,26 +296,40 @@ export default function InaraCommoditySearchPage () {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <label className='text-primary' style={{ fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                Landing pad
+                Landing pad (your ship: {shipLandingPadSize})
               </label>
-              <select
-                value={filters.landingPadSize}
-                onChange={(e) => setFilters(prev => ({ ...prev, landingPadSize: e.target.value }))}
+              <input
+                type='text'
+                value={filters.landingPadSize.charAt(0).toUpperCase() + filters.landingPadSize.slice(1)}
+                readOnly
                 style={{
                   padding: '0.5rem',
-                  background: 'var(--color-background-panel-translucent)',
-                  border: '1px solid var(--color-primary-dark)',
-                  color: 'var(--color-primary)',
-                  borderRadius: '2px'
+                  background: 'var(--color-background-panel)',
+                  border: '1px solid var(--color-muted)',
+                  color: 'var(--color-muted)',
+                  borderRadius: '2px',
+                  cursor: 'not-allowed',
+                  width: '120px'
+                }}
+              />
+            </div>
+            {status === 'ready' && results.length > 0 && (
+              <button
+                onClick={handleRefreshClick}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'var(--color-primary)',
+                  color: 'var(--color-background)',
+                  border: 'none',
+                  borderRadius: '2px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
                 }}
               >
-                <option value='any'>Any</option>
-                <option value='small'>Small</option>
-                <option value='medium'>Medium</option>
-                <option value='large'>Large</option>
-              </select>
-            </div>
-          </form>
+                Refresh Results
+              </button>
+            )}
+          </div>
         )}
 
         {/* Level 1: Categories */}
@@ -265,13 +339,51 @@ export default function InaraCommoditySearchPage () {
               <p className='text-info'>Loading commodity database...</p>
             ) : (
               <>
-                <p className='text-primary'>
-                  Browse {commodityDatabase.totalCategories} categories ({commodityDatabase.totalCommodities} total commodities)
-                </p>
+                <div style={{ marginBottom: '1rem' }}>
+                  <input
+                    type='text'
+                    value={searchFilter}
+                    onChange={(e) => setSearchFilter(e.target.value)}
+                    placeholder='Filter commodities... (e.g. "alloy", "gold", "tritium")'
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      background: 'var(--color-background-panel-translucent)',
+                      border: '1px solid var(--color-primary-dark)',
+                      color: 'var(--color-primary)',
+                      borderRadius: '2px',
+                      fontSize: '1rem'
+                    }}
+                  />
+                  {searchFilter && (
+                    <p className='text-muted' style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>
+                      Filtering by: "{searchFilter}" - {(() => {
+                        let count = 0
+                        Object.values(commodityDatabase.categories).forEach(category => {
+                          category.commodities.forEach(commodity => {
+                            if (commodity.name.toLowerCase().includes(searchFilter.toLowerCase())) {
+                              count++
+                            }
+                          })
+                        })
+                        return count
+                      })()} matches
+                    </p>
+                  )}
+                </div>
 
                 {Object.entries(commodityDatabase.categories).map(([categoryKey, category]) => {
               const isExpanded = expandedCategories.has(categoryKey)
-              const totalCommodities = category.commodities?.length || 0
+
+              // Filter commodities based on search
+              const filteredCommodities = searchFilter
+                ? category.commodities.filter(c => c.name.toLowerCase().includes(searchFilter.toLowerCase()))
+                : category.commodities
+
+              const totalCommodities = filteredCommodities.length
+
+              // Skip category if no matches
+              if (searchFilter && totalCommodities === 0) return null
 
               return (
                 <div key={categoryKey} style={{ marginTop: '1rem' }}>
@@ -286,28 +398,65 @@ export default function InaraCommoditySearchPage () {
                     <div style={{ marginTop: '0.5rem' }}>
                       <table className='table--interactive table--animated'>
                         <tbody>
-                          <tr
-                            tabIndex={2}
-                            className='table__row--highlight-primary-hover'
-                            onClick={() => handleCategoryClick(categoryKey)}
-                          >
-                            <td className='text-center text-info' style={{ width: '1rem' }}>
-                              <i
-                                className='icon icarus-terminal-cargo'
-                                style={{ position: 'relative', top: '.15rem' }}
-                              />
-                            </td>
-                            <td>
-                              <h4>{category.label}</h4>
-                              <h4 className='text-muted visible-medium'>{totalCommodities} commodities</h4>
-                            </td>
-                            <td className='text-right hidden-medium'>
-                              <h4 className='text-muted'>{totalCommodities} commodities</h4>
-                            </td>
-                            <td className='text-center' style={{ width: '1rem' }}>
-                              <i className='icon icarus-terminal-chevron-right' style={{ fontSize: '1rem' }} />
-                            </td>
-                          </tr>
+                          {searchFilter ? (
+                            // When filtering, show individual commodities directly
+                            filteredCommodities.map((commodity, index) => (
+                              <tr
+                                key={`${commodity.id}-${index}`}
+                                tabIndex={2}
+                                className='table__row--highlight-primary-hover'
+                                onClick={() => {
+                                  setSelectedCategory(categoryKey)
+                                  handleCommodityClick(commodity)
+                                }}
+                              >
+                                <td className='text-center text-info' style={{ width: '1rem' }}>
+                                  <i
+                                    className='icon icarus-terminal-cargo'
+                                    style={{ position: 'relative', top: '.15rem' }}
+                                  />
+                                </td>
+                                <td>
+                                  <h4>{commodity.name}</h4>
+                                  {commodity.avgPrice && (
+                                    <h4 className='text-muted visible-medium'>Avg: {formatCredits(commodity.avgPrice)}</h4>
+                                  )}
+                                </td>
+                                <td className='text-right hidden-medium'>
+                                  {commodity.avgPrice && (
+                                    <h4 className='text-muted'>Avg: {formatCredits(commodity.avgPrice)}</h4>
+                                  )}
+                                </td>
+                                <td className='text-center' style={{ width: '1rem' }}>
+                                  <i className='icon icarus-terminal-chevron-right' style={{ fontSize: '1rem' }} />
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            // When not filtering, show category row
+                            <tr
+                              tabIndex={2}
+                              className='table__row--highlight-primary-hover'
+                              onClick={() => handleCategoryClick(categoryKey)}
+                            >
+                              <td className='text-center text-info' style={{ width: '1rem' }}>
+                                <i
+                                  className='icon icarus-terminal-cargo'
+                                  style={{ position: 'relative', top: '.15rem' }}
+                                />
+                              </td>
+                              <td>
+                                <h4>{category.label}</h4>
+                                <h4 className='text-muted visible-medium'>{totalCommodities} commodities</h4>
+                              </td>
+                              <td className='text-right hidden-medium'>
+                                <h4 className='text-muted'>{totalCommodities} commodities</h4>
+                              </td>
+                              <td className='text-center' style={{ width: '1rem' }}>
+                                <i className='icon icarus-terminal-chevron-right' style={{ fontSize: '1rem' }} />
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -323,40 +472,6 @@ export default function InaraCommoditySearchPage () {
         {/* Level 2: Commodities within category */}
         {currentLevel === 'commodities' && !isLoadingDatabase && (
           <>
-            {selectedCommodity && (
-              <div style={{ marginBottom: '1rem', padding: '1rem', background: 'var(--color-background-panel-translucent)', border: '1px solid var(--color-primary-dark)', borderRadius: '2px' }}>
-                <h4 className='text-primary' style={{ marginBottom: '0.5rem' }}>
-                  Selected: {selectedCommodity.name}
-                  {selectedCommodity.avgPrice && (
-                    <span className='text-muted' style={{ marginLeft: '0.5rem' }}>
-                      (Avg: {formatCredits(selectedCommodity.avgPrice)})
-                    </span>
-                  )}
-                </h4>
-                <button
-                  onClick={handleSearchClick}
-                  disabled={!filters.systemName || status === 'loading'}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    background: filters.systemName ? 'var(--color-primary)' : 'var(--color-muted)',
-                    color: filters.systemName ? 'var(--color-background)' : 'var(--color-text-muted)',
-                    border: 'none',
-                    borderRadius: '2px',
-                    cursor: filters.systemName ? 'pointer' : 'not-allowed',
-                    fontWeight: 'bold',
-                    fontSize: '1rem'
-                  }}
-                >
-                  {status === 'loading' ? 'Searching...' : 'Search INARA'}
-                </button>
-                {!filters.systemName && (
-                  <p className='text-muted' style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>
-                    Enter a reference system above to enable search
-                  </p>
-                )}
-              </div>
-            )}
-
             <table className='table--interactive table--animated'>
               <tbody>
                 {(commodityDatabase.categories[selectedCategory]?.commodities || []).map((commodity, index) => (

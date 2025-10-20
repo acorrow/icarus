@@ -9,278 +9,1218 @@
       "label": "Chemicals",
       "icon": "cargo",
       "commodities": [
-        { "id": "82", "name": "Explosives", "symbol": "explosives", "avgPrice": 261 },
-        { "id": "83", "name": "Hydrogen Fuel", "symbol": "hydrogenfuel", "avgPrice": 110 },
-        { "id": "84", "name": "Mineral Oil", "symbol": "mineraloil", "avgPrice": 181 },
-        { "id": "85", "name": "Nerve Agents", "symbol": "nerveagents", "avgPrice": 3154 },
-        { "id": "86", "name": "Pesticides", "symbol": "pesticides", "avgPrice": 241 },
-        { "id": "87", "name": "Surface Stabilisers", "symbol": "surfacestabilisers", "avgPrice": 467 },
-        { "id": "88", "name": "Synthetic Reagents", "symbol": "syntheticreagents", "avgPrice": 6675 },
-        { "id": "89", "name": "Water", "symbol": "water", "avgPrice": 120 }
+        {
+          "id": "3",
+          "name": "Explosives",
+          "symbol": "explosives",
+          "avgPrice": 261
+        },
+        {
+          "id": "4",
+          "name": "Hydrogen Fuel",
+          "symbol": "hydrogenfuel",
+          "avgPrice": 110
+        },
+        {
+          "id": "5",
+          "name": "Mineral Oil",
+          "symbol": "mineraloil",
+          "avgPrice": 181
+        },
+        {
+          "id": "96",
+          "name": "Nerve Agents",
+          "symbol": "nerveagents",
+          "avgPrice": 3154
+        },
+        {
+          "id": "6",
+          "name": "Pesticides",
+          "symbol": "pesticides",
+          "avgPrice": 241
+        },
+        {
+          "id": "97",
+          "name": "Surface Stabilisers",
+          "symbol": "surfacestabilisers",
+          "avgPrice": 467
+        },
+        {
+          "id": "98",
+          "name": "Synthetic Reagents",
+          "symbol": "syntheticreagents",
+          "avgPrice": 6675
+        },
+        {
+          "id": "139",
+          "name": "Water",
+          "symbol": "water",
+          "avgPrice": 120
+        }
       ]
     },
     "consumer_items": {
       "label": "Consumer Items",
       "icon": "cargo",
       "commodities": [
-        { "id": "90", "name": "Clothing", "symbol": "clothing", "avgPrice": 285 },
-        { "id": "91", "name": "Consumer Technology", "symbol": "consumertechnology", "avgPrice": 6769 },
-        { "id": "92", "name": "Domestic Appliances", "symbol": "domesticappliances", "avgPrice": 487 },
-        { "id": "93", "name": "Evacuation Shelter", "symbol": "evacuationshelter", "avgPrice": 343 },
-        { "id": "94", "name": "Survival Equipment", "symbol": "survivalequipment", "avgPrice": 485 }
+        {
+          "id": "7",
+          "name": "Clothing",
+          "symbol": "clothing",
+          "avgPrice": 285
+        },
+        {
+          "id": "8",
+          "name": "Consumer Technology",
+          "symbol": "consumertechnology",
+          "avgPrice": 6769
+        },
+        {
+          "id": "9",
+          "name": "Domestic Appliances",
+          "symbol": "domesticappliances",
+          "avgPrice": 487
+        },
+        {
+          "id": "99",
+          "name": "Evacuation Shelter",
+          "symbol": "evacuationshelter",
+          "avgPrice": 343
+        },
+        {
+          "id": "164",
+          "name": "Survival Equipment",
+          "symbol": "survivalequipment",
+          "avgPrice": 485
+        }
       ]
     },
     "foods": {
       "label": "Foods",
       "icon": "cargo",
       "commodities": [
-        { "id": "95", "name": "Algae", "symbol": "algae", "avgPrice": 137 },
-        { "id": "96", "name": "Animal Meat", "symbol": "animalmeat", "avgPrice": 1292 },
-        { "id": "97", "name": "Coffee", "symbol": "coffee", "avgPrice": 1279 },
-        { "id": "98", "name": "Fish", "symbol": "fish", "avgPrice": 406 },
-        { "id": "99", "name": "Food Cartridges", "symbol": "foodcartridges", "avgPrice": 105 },
-        { "id": "100", "name": "Fruit and Vegetables", "symbol": "fruitandvegetables", "avgPrice": 312 },
-        { "id": "101", "name": "Grain", "symbol": "grain", "avgPrice": 210 },
-        { "id": "102", "name": "Synthetic Meat", "symbol": "syntheticmeat", "avgPrice": 271 },
-        { "id": "103", "name": "Tea", "symbol": "tea", "avgPrice": 1467 }
+        {
+          "id": "15",
+          "name": "Algae",
+          "symbol": "algae",
+          "avgPrice": 137
+        },
+        {
+          "id": "16",
+          "name": "Animal Meat",
+          "symbol": "animalmeat",
+          "avgPrice": 1292
+        },
+        {
+          "id": "17",
+          "name": "Coffee",
+          "symbol": "coffee",
+          "avgPrice": 1279
+        },
+        {
+          "id": "18",
+          "name": "Fish",
+          "symbol": "fish",
+          "avgPrice": 406
+        },
+        {
+          "id": "19",
+          "name": "Food Cartridges",
+          "symbol": "foodcartridges",
+          "avgPrice": 105
+        },
+        {
+          "id": "20",
+          "name": "Fruit and Vegetables",
+          "symbol": "fruitandvegetables",
+          "avgPrice": 312
+        },
+        {
+          "id": "21",
+          "name": "Grain",
+          "symbol": "grain",
+          "avgPrice": 210
+        },
+        {
+          "id": "23",
+          "name": "Synthetic Meat",
+          "symbol": "syntheticmeat",
+          "avgPrice": 271
+        },
+        {
+          "id": "22",
+          "name": "Tea",
+          "symbol": "tea",
+          "avgPrice": 1467
+        }
       ]
     },
     "industrial_materials": {
       "label": "Industrial Materials",
       "icon": "cargo",
       "commodities": [
-        { "id": "104", "name": "Ceramic Composites", "symbol": "ceramiccomposites", "avgPrice": 232 },
-        { "id": "105", "name": "CMM Composite", "symbol": "cmmcomposite", "avgPrice": 3132 },
-        { "id": "106", "name": "Cooling Hoses", "symbol": "coolinghoses", "avgPrice": 403 },
-        { "id": "107", "name": "Insulating Membrane", "symbol": "insulatingmembrane", "avgPrice": 7837 },
-        { "id": "108", "name": "Meta-Alloys", "symbol": "metaalloys", "avgPrice": 88148 },
-        { "id": "109", "name": "Micro-Weave Cooling Hoses", "symbol": "microweavecoolinghoses", "avgPrice": 2228 },
-        { "id": "110", "name": "Neofabric Insulation", "symbol": "neofabricinsulation", "avgPrice": 2769 },
-        { "id": "111", "name": "Polymers", "symbol": "polymers", "avgPrice": 171 },
-        { "id": "112", "name": "Semiconductors", "symbol": "semiconductors", "avgPrice": 967 },
-        { "id": "113", "name": "Superconductors", "symbol": "superconductors", "avgPrice": 6609 }
+        {
+          "id": "100",
+          "name": "Ceramic Composites",
+          "symbol": "ceramiccomposites",
+          "avgPrice": 232
+        },
+        {
+          "id": "140",
+          "name": "CMM Composite",
+          "symbol": "cmmcomposite",
+          "avgPrice": 3132
+        },
+        {
+          "id": "106",
+          "name": "Cooling Hoses",
+          "symbol": "coolinghoses",
+          "avgPrice": 403
+        },
+        {
+          "id": "141",
+          "name": "Insulating Membrane",
+          "symbol": "insulatingmembrane",
+          "avgPrice": 7837
+        },
+        {
+          "id": "101",
+          "name": "Meta-Alloys",
+          "symbol": "metaalloys",
+          "avgPrice": 88148
+        },
+        {
+          "id": "109",
+          "name": "Micro-Weave Cooling Hoses",
+          "symbol": "microweavecoolinghoses",
+          "avgPrice": 2228
+        },
+        {
+          "id": "183",
+          "name": "Neofabric Insulation",
+          "symbol": "neofabricinsulation",
+          "avgPrice": 2769
+        },
+        {
+          "id": "26",
+          "name": "Polymers",
+          "symbol": "polymers",
+          "avgPrice": 171
+        },
+        {
+          "id": "28",
+          "name": "Semiconductors",
+          "symbol": "semiconductors",
+          "avgPrice": 967
+        },
+        {
+          "id": "27",
+          "name": "Superconductors",
+          "symbol": "superconductors",
+          "avgPrice": 6609
+        }
       ]
     },
     "legal_drugs": {
       "label": "Legal Drugs",
       "icon": "cargo",
       "commodities": [
-        { "id": "114", "name": "Beer", "symbol": "beer", "avgPrice": 186 },
-        { "id": "115", "name": "Bootleg Liquor", "symbol": "bootlegliquor", "avgPrice": 855 },
-        { "id": "116", "name": "Liquor", "symbol": "liquor", "avgPrice": 587 },
-        { "id": "117", "name": "Narcotics", "symbol": "narcotics", "avgPrice": 1394 },
-        { "id": "118", "name": "Tobacco", "symbol": "tobacco", "avgPrice": 5035 },
-        { "id": "119", "name": "Wine", "symbol": "wine", "avgPrice": 260 }
+        {
+          "id": "10",
+          "name": "Beer",
+          "symbol": "beer",
+          "avgPrice": 186
+        },
+        {
+          "id": "95",
+          "name": "Bootleg Liquor",
+          "symbol": "bootlegliquor",
+          "avgPrice": 855
+        },
+        {
+          "id": "11",
+          "name": "Liquor",
+          "symbol": "liquor",
+          "avgPrice": 587
+        },
+        {
+          "id": "12",
+          "name": "Narcotics",
+          "symbol": "narcotics",
+          "avgPrice": 1394
+        },
+        {
+          "id": "13",
+          "name": "Tobacco",
+          "symbol": "tobacco",
+          "avgPrice": 5035
+        },
+        {
+          "id": "14",
+          "name": "Wine",
+          "symbol": "wine",
+          "avgPrice": 260
+        }
       ]
     },
     "machinery": {
       "label": "Machinery",
       "icon": "cargo",
       "commodities": [
-        { "id": "120", "name": "Articulation Motors", "symbol": "articulationmotors", "avgPrice": 4997 },
-        { "id": "121", "name": "Atmospheric Processors", "symbol": "atmosphericextractors", "avgPrice": 357 },
-        { "id": "122", "name": "Building Fabricators", "symbol": "buildingfabricators", "avgPrice": 1074 },
-        { "id": "123", "name": "Crop Harvesters", "symbol": "cropharvesters", "avgPrice": 2307 },
-        { "id": "124", "name": "Emergency Power Cells", "symbol": "powergenerators", "avgPrice": 1011 },
-        { "id": "125", "name": "Exhaust Manifold", "symbol": "exhaustmanifold", "avgPrice": 479 },
-        { "id": "126", "name": "Geological Equipment", "symbol": "geologicalequipment", "avgPrice": 1661 },
-        { "id": "127", "name": "Heatsink Interlink", "symbol": "heatsinkinterlink", "avgPrice": 729 },
-        { "id": "128", "name": "HN Shock Mount", "symbol": "hnshockmount", "avgPrice": 406 },
-        { "id": "129", "name": "Marine Equipment", "symbol": "marineequipment", "avgPrice": 3916 },
-        { "id": "130", "name": "Microbial Furnaces", "symbol": "microbialfurnaces", "avgPrice": 236 },
-        { "id": "131", "name": "Mineral Extractors", "symbol": "mineralextractors", "avgPrice": 443 },
-        { "id": "132", "name": "Modular Terminals", "symbol": "modularterminals", "avgPrice": 6704 },
-        { "id": "133", "name": "Power Converter", "symbol": "powerconverter", "avgPrice": 246 },
-        { "id": "134", "name": "Power Generators", "symbol": "powergenerators", "avgPrice": 458 },
-        { "id": "135", "name": "Power Transfer Bus", "symbol": "powertransferbus", "avgPrice": 603 },
-        { "id": "136", "name": "Radiation Baffle", "symbol": "radiationbaffle", "avgPrice": 383 },
-        { "id": "137", "name": "Reinforced Mounting Plate", "symbol": "reinforcedmountingplate", "avgPrice": 1074 },
-        { "id": "138", "name": "Skimmer Components", "symbol": "skimmercomponents", "avgPrice": 1008 },
-        { "id": "139", "name": "Thermal Cooling Units", "symbol": "thermalcoolingunits", "avgPrice": 256 },
-        { "id": "140", "name": "Water Purifiers", "symbol": "waterpurifiers", "avgPrice": 258 }
+        {
+          "id": "182",
+          "name": "Articulation Motors",
+          "symbol": "articulationmotors",
+          "avgPrice": 4997
+        },
+        {
+          "id": "87",
+          "name": "Atmospheric Processors",
+          "symbol": "atmosphericextractors",
+          "avgPrice": 357
+        },
+        {
+          "id": "102",
+          "name": "Building Fabricators",
+          "symbol": "buildingfabricators",
+          "avgPrice": 1074
+        },
+        {
+          "id": "29",
+          "name": "Crop Harvesters",
+          "symbol": "cropharvesters",
+          "avgPrice": 2307
+        },
+        {
+          "id": "158",
+          "name": "Emergency Power Cells",
+          "symbol": "powergenerators",
+          "avgPrice": 1011
+        },
+        {
+          "id": "159",
+          "name": "Exhaust Manifold",
+          "symbol": "exhaustmanifold",
+          "avgPrice": 479
+        },
+        {
+          "id": "103",
+          "name": "Geological Equipment",
+          "symbol": "geologicalequipment",
+          "avgPrice": 1661
+        },
+        {
+          "id": "151",
+          "name": "Heatsink Interlink",
+          "symbol": "heatsinkinterlink",
+          "avgPrice": 729
+        },
+        {
+          "id": "150",
+          "name": "HN Shock Mount",
+          "symbol": "hnshockmount",
+          "avgPrice": 406
+        },
+        {
+          "id": "86",
+          "name": "Marine Equipment",
+          "symbol": "marineequipment",
+          "avgPrice": 3916
+        },
+        {
+          "id": "85",
+          "name": "Microbial Furnaces",
+          "symbol": "microbialfurnaces",
+          "avgPrice": 236
+        },
+        {
+          "id": "31",
+          "name": "Mineral Extractors",
+          "symbol": "mineralextractors",
+          "avgPrice": 443
+        },
+        {
+          "id": "181",
+          "name": "Modular Terminals",
+          "symbol": "modularterminals",
+          "avgPrice": 6704
+        },
+        {
+          "id": "153",
+          "name": "Power Converter",
+          "symbol": "powerconverter",
+          "avgPrice": 246
+        },
+        {
+          "id": "83",
+          "name": "Power Generators",
+          "symbol": "powergenerators",
+          "avgPrice": 458
+        },
+        {
+          "id": "161",
+          "name": "Power Transfer Bus",
+          "symbol": "powertransferbus",
+          "avgPrice": 603
+        },
+        {
+          "id": "162",
+          "name": "Radiation Baffle",
+          "symbol": "radiationbaffle",
+          "avgPrice": 383
+        },
+        {
+          "id": "163",
+          "name": "Reinforced Mounting Plate",
+          "symbol": "reinforcedmountingplate",
+          "avgPrice": 1074
+        },
+        {
+          "id": "104",
+          "name": "Skimmer Components",
+          "symbol": "skimmercomponents",
+          "avgPrice": 1008
+        },
+        {
+          "id": "105",
+          "name": "Thermal Cooling Units",
+          "symbol": "thermalcoolingunits",
+          "avgPrice": 256
+        },
+        {
+          "id": "82",
+          "name": "Water Purifiers",
+          "symbol": "waterpurifiers",
+          "avgPrice": 258
+        }
       ]
     },
     "medicines": {
       "label": "Medicines",
       "icon": "cargo",
       "commodities": [
-        { "id": "141", "name": "Advanced Medicines", "symbol": "advancedmedicines", "avgPrice": 1259 },
-        { "id": "142", "name": "Agri-Medicines", "symbol": "agriculturalmedicines", "avgPrice": 1038 },
-        { "id": "143", "name": "Basic Medicines", "symbol": "basicmedicines", "avgPrice": 279 },
-        { "id": "144", "name": "Combat Stabilisers", "symbol": "combatstabilisers", "avgPrice": 3505 },
-        { "id": "145", "name": "Performance Enhancers", "symbol": "performanceenhancers", "avgPrice": 6816 },
-        { "id": "146", "name": "Progenitor Cells", "symbol": "progenitorcells", "avgPrice": 6779 }
+        {
+          "id": "166",
+          "name": "Advanced Medicines",
+          "symbol": "advancedmedicines",
+          "avgPrice": 1259
+        },
+        {
+          "id": "1",
+          "name": "Agri-Medicines",
+          "symbol": "agriculturalmedicines",
+          "avgPrice": 1038
+        },
+        {
+          "id": "33",
+          "name": "Basic Medicines",
+          "symbol": "basicmedicines",
+          "avgPrice": 279
+        },
+        {
+          "id": "34",
+          "name": "Combat Stabilisers",
+          "symbol": "combatstabilisers",
+          "avgPrice": 3505
+        },
+        {
+          "id": "35",
+          "name": "Performance Enhancers",
+          "symbol": "performanceenhancers",
+          "avgPrice": 6816
+        },
+        {
+          "id": "36",
+          "name": "Progenitor Cells",
+          "symbol": "progenitorcells",
+          "avgPrice": 6779
+        }
       ]
     },
     "metals": {
       "label": "Metals",
       "icon": "cargo",
       "commodities": [
-        { "id": "1", "name": "Aluminium", "symbol": "aluminium", "avgPrice": 340 },
-        { "id": "2", "name": "Beryllium", "symbol": "beryllium", "avgPrice": 8288 },
-        { "id": "3", "name": "Bismuth", "symbol": "bismuth", "avgPrice": 2284 },
-        { "id": "4", "name": "Cobalt", "symbol": "cobalt", "avgPrice": 647 },
-        { "id": "5", "name": "Copper", "symbol": "copper", "avgPrice": 481 },
-        { "id": "6", "name": "Gallium", "symbol": "gallium", "avgPrice": 5135 },
-        { "id": "7", "name": "Gold", "symbol": "gold", "avgPrice": 9401 },
-        { "id": "8", "name": "Hafnium 178", "symbol": "hafnium178", "avgPrice": 69098 },
-        { "id": "9", "name": "Indium", "symbol": "indium", "avgPrice": 5925 },
-        { "id": "10", "name": "Lithium", "symbol": "lithium", "avgPrice": 1596 },
-        { "id": "11", "name": "Osmium", "symbol": "osmium", "avgPrice": 7591 },
-        { "id": "12", "name": "Palladium", "symbol": "palladium", "avgPrice": 13298 },
-        { "id": "13", "name": "Platinum", "symbol": "platinum", "avgPrice": 19279 },
-        { "id": "14", "name": "Praseodymium", "symbol": "praseodymium", "avgPrice": 7156 },
-        { "id": "15", "name": "Samarium", "symbol": "samarium", "avgPrice": 6330 },
-        { "id": "16", "name": "Silver", "symbol": "silver", "avgPrice": 4775 },
-        { "id": "17", "name": "Tantalum", "symbol": "tantalum", "avgPrice": 3962 },
-        { "id": "18", "name": "Thallium", "symbol": "thallium", "avgPrice": 3618 },
-        { "id": "19", "name": "Thorium", "symbol": "thorium", "avgPrice": 11513 },
-        { "id": "20", "name": "Titanium", "symbol": "titanium", "avgPrice": 1006 },
-        { "id": "21", "name": "Uranium", "symbol": "uranium", "avgPrice": 2705 }
+        {
+          "id": "37",
+          "name": "Aluminium",
+          "symbol": "aluminium",
+          "avgPrice": 340
+        },
+        {
+          "id": "38",
+          "name": "Beryllium",
+          "symbol": "beryllium",
+          "avgPrice": 8288
+        },
+        {
+          "id": "106",
+          "name": "Bismuth",
+          "symbol": "bismuth",
+          "avgPrice": 2284
+        },
+        {
+          "id": "39",
+          "name": "Cobalt",
+          "symbol": "cobalt",
+          "avgPrice": 647
+        },
+        {
+          "id": "40",
+          "name": "Copper",
+          "symbol": "copper",
+          "avgPrice": 481
+        },
+        {
+          "id": "41",
+          "name": "Gallium",
+          "symbol": "gallium",
+          "avgPrice": 5135
+        },
+        {
+          "id": "42",
+          "name": "Gold",
+          "symbol": "gold",
+          "avgPrice": 9401
+        },
+        {
+          "id": "124",
+          "name": "Hafnium 178",
+          "symbol": "hafnium178",
+          "avgPrice": 69098
+        },
+        {
+          "id": "43",
+          "name": "Indium",
+          "symbol": "indium",
+          "avgPrice": 5925
+        },
+        {
+          "id": "44",
+          "name": "Lithium",
+          "symbol": "lithium",
+          "avgPrice": 1596
+        },
+        {
+          "id": "72",
+          "name": "Osmium",
+          "symbol": "osmium",
+          "avgPrice": 7591
+        },
+        {
+          "id": "45",
+          "name": "Palladium",
+          "symbol": "palladium",
+          "avgPrice": 13298
+        },
+        {
+          "id": "81",
+          "name": "Platinum",
+          "symbol": "platinum",
+          "avgPrice": 19279
+        },
+        {
+          "id": "143",
+          "name": "Praseodymium",
+          "symbol": "praseodymium",
+          "avgPrice": 7156
+        },
+        {
+          "id": "142",
+          "name": "Samarium",
+          "symbol": "samarium",
+          "avgPrice": 6330
+        },
+        {
+          "id": "46",
+          "name": "Silver",
+          "symbol": "silver",
+          "avgPrice": 4775
+        },
+        {
+          "id": "47",
+          "name": "Tantalum",
+          "symbol": "tantalum",
+          "avgPrice": 3962
+        },
+        {
+          "id": "108",
+          "name": "Thallium",
+          "symbol": "thallium",
+          "avgPrice": 3618
+        },
+        {
+          "id": "109",
+          "name": "Thorium",
+          "symbol": "thorium",
+          "avgPrice": 11513
+        },
+        {
+          "id": "48",
+          "name": "Titanium",
+          "symbol": "titanium",
+          "avgPrice": 1006
+        },
+        {
+          "id": "50",
+          "name": "Uranium",
+          "symbol": "uranium",
+          "avgPrice": 2705
+        }
       ]
     },
     "minerals": {
       "label": "Minerals",
       "icon": "cargo",
       "commodities": [
-        { "id": "22", "name": "Alexandrite", "symbol": "alexandrite", "avgPrice": 248154 },
-        { "id": "23", "name": "Bauxite", "symbol": "bauxite", "avgPrice": 120 },
-        { "id": "24", "name": "Benitoite", "symbol": "benitoite", "avgPrice": 182773 },
-        { "id": "25", "name": "Bertrandite", "symbol": "bertrandite", "avgPrice": 2374 },
-        { "id": "26", "name": "Bromellite", "symbol": "bromellite", "avgPrice": 7062 },
-        { "id": "27", "name": "Coltan", "symbol": "coltan", "avgPrice": 1319 },
-        { "id": "28", "name": "Cryolite", "symbol": "cryolite", "avgPrice": 2266 },
-        { "id": "29", "name": "Gallite", "symbol": "gallite", "avgPrice": 1819 },
-        { "id": "30", "name": "Goslarite", "symbol": "goslarite", "avgPrice": 916 },
-        { "id": "31", "name": "Grandidierite", "symbol": "grandidierite", "avgPrice": 281016 },
-        { "id": "32", "name": "Indite", "symbol": "indite", "avgPrice": 2088 },
-        { "id": "33", "name": "Jadeite", "symbol": "jadeite", "avgPrice": 175265 },
-        { "id": "34", "name": "Lepidolite", "symbol": "lepidolite", "avgPrice": 544 },
-        { "id": "35", "name": "Lithium Hydroxide", "symbol": "lithiumhydroxide", "avgPrice": 5646 },
-        { "id": "36", "name": "Low Temperature Diamonds", "symbol": "lowtemperaturediamond", "avgPrice": 57445 },
-        { "id": "37", "name": "Methane Clathrate", "symbol": "methaneclathrate", "avgPrice": 629 },
-        { "id": "38", "name": "Methanol Monohydrate Crystals", "symbol": "methanolmonohydratecrystals", "avgPrice": 2282 },
-        { "id": "39", "name": "Moissanite", "symbol": "moissanite", "avgPrice": 8273 },
-        { "id": "40", "name": "Monazite", "symbol": "monazite", "avgPrice": 8497 },
-        { "id": "41", "name": "Musgravite", "symbol": "musgravite", "avgPrice": 300152 },
-        { "id": "42", "name": "Painite", "symbol": "painite", "avgPrice": 40508 },
-        { "id": "43", "name": "Pyrophyllite", "symbol": "pyrophyllite", "avgPrice": 1565 },
-        { "id": "44", "name": "Rhodplumsite", "symbol": "rhodplumsite", "avgPrice": 18040 },
-        { "id": "45", "name": "Rutile", "symbol": "rutile", "avgPrice": 299 },
-        { "id": "46", "name": "Serendibite", "symbol": "serendibite", "avgPrice": 217156 },
-        { "id": "47", "name": "Taaffeite", "symbol": "taaffeite", "avgPrice": 20696 },
-        { "id": "48", "name": "Tritium", "symbol": "tritium", "avgPrice": 50000 },
-        { "id": "49", "name": "Uraninite", "symbol": "uraninite", "avgPrice": 836 },
-        { "id": "50", "name": "Void Opals", "symbol": "voidopal", "avgPrice": 556774 }
+        {
+          "id": "10249",
+          "name": "Alexandrite",
+          "symbol": "alexandrite",
+          "avgPrice": 248154
+        },
+        {
+          "id": "51",
+          "name": "Bauxite",
+          "symbol": "bauxite",
+          "avgPrice": 120
+        },
+        {
+          "id": "10247",
+          "name": "Benitoite",
+          "symbol": "benitoite",
+          "avgPrice": 182773
+        },
+        {
+          "id": "52",
+          "name": "Bertrandite",
+          "symbol": "bertrandite",
+          "avgPrice": 2374
+        },
+        {
+          "id": "148",
+          "name": "Bromellite",
+          "symbol": "bromellite",
+          "avgPrice": 7062
+        },
+        {
+          "id": "55",
+          "name": "Coltan",
+          "symbol": "coltan",
+          "avgPrice": 1319
+        },
+        {
+          "id": "110",
+          "name": "Cryolite",
+          "symbol": "cryolite",
+          "avgPrice": 2266
+        },
+        {
+          "id": "56",
+          "name": "Gallite",
+          "symbol": "gallite",
+          "avgPrice": 1819
+        },
+        {
+          "id": "111",
+          "name": "Goslarite",
+          "symbol": "goslarite",
+          "avgPrice": 916
+        },
+        {
+          "id": "10248",
+          "name": "Grandidierite",
+          "symbol": "grandidierite",
+          "avgPrice": 281016
+        },
+        {
+          "id": "57",
+          "name": "Indite",
+          "symbol": "indite",
+          "avgPrice": 2088
+        },
+        {
+          "id": "168",
+          "name": "Jadeite",
+          "symbol": "jadeite",
+          "avgPrice": 175265
+        },
+        {
+          "id": "58",
+          "name": "Lepidolite",
+          "symbol": "lepidolite",
+          "avgPrice": 544
+        },
+        {
+          "id": "147",
+          "name": "Lithium Hydroxide",
+          "symbol": "lithiumhydroxide",
+          "avgPrice": 5646
+        },
+        {
+          "id": "144",
+          "name": "Low Temperature Diamonds",
+          "symbol": "lowtemperaturediamond",
+          "avgPrice": 57445
+        },
+        {
+          "id": "145",
+          "name": "Methane Clathrate",
+          "symbol": "methaneclathrate",
+          "avgPrice": 629
+        },
+        {
+          "id": "146",
+          "name": "Methanol Monohydrate Crystals",
+          "symbol": "methanolmonohydratecrystals",
+          "avgPrice": 2282
+        },
+        {
+          "id": "116",
+          "name": "Moissanite",
+          "symbol": "moissanite",
+          "avgPrice": 8273
+        },
+        {
+          "id": "10245",
+          "name": "Monazite",
+          "symbol": "monazite",
+          "avgPrice": 8497
+        },
+        {
+          "id": "10246",
+          "name": "Musgravite",
+          "symbol": "musgravite",
+          "avgPrice": 300152
+        },
+        {
+          "id": "84",
+          "name": "Painite",
+          "symbol": "painite",
+          "avgPrice": 40508
+        },
+        {
+          "id": "112",
+          "name": "Pyrophyllite",
+          "symbol": "pyrophyllite",
+          "avgPrice": 1565
+        },
+        {
+          "id": "10243",
+          "name": "Rhodplumsite",
+          "symbol": "rhodplumsite",
+          "avgPrice": 18040
+        },
+        {
+          "id": "59",
+          "name": "Rutile",
+          "symbol": "rutile",
+          "avgPrice": 299
+        },
+        {
+          "id": "10244",
+          "name": "Serendibite",
+          "symbol": "serendibite",
+          "avgPrice": 217156
+        },
+        {
+          "id": "120",
+          "name": "Taaffeite",
+          "symbol": "taaffeite",
+          "avgPrice": 20696
+        },
+        {
+          "id": "10269",
+          "name": "Tritium",
+          "symbol": "tritium",
+          "avgPrice": 50000
+        },
+        {
+          "id": "60",
+          "name": "Uraninite",
+          "symbol": "uraninite",
+          "avgPrice": 836
+        },
+        {
+          "id": "50",
+          "name": "Void Opals",
+          "symbol": "voidopal",
+          "avgPrice": 556774
+        }
       ]
     },
     "salvage": {
       "label": "Salvage",
       "icon": "cargo",
       "commodities": [
-        { "id": "147", "name": "AI Relics", "symbol": "airelics", "avgPrice": 138613 },
-        { "id": "148", "name": "Ancient Artefact", "symbol": "ancientartefact", "avgPrice": 8183 },
-        { "id": "149", "name": "Antimatter Containment Unit", "symbol": "antimattercontainmentunit", "avgPrice": 7654 },
-        { "id": "150", "name": "Antiquities", "symbol": "antiquities", "avgPrice": 128 },
-        { "id": "151", "name": "Assault Plans", "symbol": "assaultplans", "avgPrice": 3093 },
-        { "id": "152", "name": "Black Box", "symbol": "blackbox", "avgPrice": 6995 },
-        { "id": "153", "name": "Commercial Samples", "symbol": "commercialsamples", "avgPrice": 2966 },
-        { "id": "154", "name": "Data Core", "symbol": "datacore", "avgPrice": 2790 },
-        { "id": "155", "name": "Diplomatic Bag", "symbol": "diplomaticbag", "avgPrice": 2830 },
-        { "id": "156", "name": "Encrypted Correspondence", "symbol": "encryptedcorrespondence", "avgPrice": 3229 },
-        { "id": "157", "name": "Encrypted Data Storage", "symbol": "encrypteddatastorage", "avgPrice": 2811 },
-        { "id": "158", "name": "Experimental Chemicals", "symbol": "experimentalchemicals", "avgPrice": 3524 },
-        { "id": "159", "name": "Fossil Remnants", "symbol": "fossilremnants", "avgPrice": 916 },
-        { "id": "160", "name": "Gene Bank", "symbol": "genebank", "avgPrice": 4009 },
-        { "id": "161", "name": "Geological Samples", "symbol": "geologicalsamples", "avgPrice": 1013 },
-        { "id": "162", "name": "Hostages", "symbol": "hostages", "avgPrice": 2086 },
-        { "id": "163", "name": "Large Survey Data Cache", "symbol": "largesurveydatacache", "avgPrice": 3499 },
-        { "id": "164", "name": "Military Intelligence", "symbol": "militaryintelligence", "avgPrice": 2863 },
-        { "id": "165", "name": "Military Plans", "symbol": "militaryplans", "avgPrice": 3652 },
-        { "id": "166", "name": "Mysterious Idol", "symbol": "mysteriousidol", "avgPrice": 8052 },
-        { "id": "167", "name": "Occupied CryoPod", "symbol": "occupiedcryopod", "avgPrice": 2975 },
-        { "id": "168", "name": "Personal Effects", "symbol": "personaleffects", "avgPrice": 379 },
-        { "id": "169", "name": "Political Prisoner", "symbol": "politicalprisoner", "avgPrice": 2086 },
-        { "id": "170", "name": "Precious Gems", "symbol": "preciousgems", "avgPrice": 897 },
-        { "id": "171", "name": "Prohibited Research Materials", "symbol": "prohibitedresearchmaterials", "avgPrice": 3259 },
-        { "id": "172", "name": "Prototype Tech", "symbol": "prototypetech", "avgPrice": 8050 },
-        { "id": "173", "name": "Rebel Transmissions", "symbol": "rebeltransmissions", "avgPrice": 3097 },
-        { "id": "174", "name": "Salvageable Wreckage", "symbol": "salvageablewreckage", "avgPrice": 481 },
-        { "id": "175", "name": "Sap 8 Core Container", "symbol": "sap8corecontainer", "avgPrice": 50771 },
-        { "id": "176", "name": "Scientific Research", "symbol": "scientificresearch", "avgPrice": 2932 },
-        { "id": "177", "name": "Scientific Samples", "symbol": "scientificsamples", "avgPrice": 2758 },
-        { "id": "178", "name": "Small Survey Data Cache", "symbol": "smallsurveydatacache", "avgPrice": 2758 },
-        { "id": "179", "name": "Space Pioneer Relics", "symbol": "spacepioneerrelics", "avgPrice": 7783 },
-        { "id": "180", "name": "Tactical Data", "symbol": "tacticaldata", "avgPrice": 3097 },
-        { "id": "181", "name": "Technical Blueprints", "symbol": "technicalblueprints", "avgPrice": 3093 },
-        { "id": "182", "name": "Trade Data", "symbol": "tradedata", "avgPrice": 2651 },
-        { "id": "183", "name": "Trinkets of Hidden Fortune", "symbol": "trinketsofhiddenfortune", "avgPrice": 968 },
-        { "id": "184", "name": "Unstable Data Core", "symbol": "unstabledatacore", "avgPrice": 2790 },
-        { "id": "185", "name": "Wreckage Components", "symbol": "wreckagecomponents", "avgPrice": 481 }
+        {
+          "id": "89",
+          "name": "AI Relics",
+          "symbol": "airelics",
+          "avgPrice": 138613
+        },
+        {
+          "id": "121",
+          "name": "Ancient Artefact",
+          "symbol": "ancientartefact",
+          "avgPrice": 8183
+        },
+        {
+          "id": "10167",
+          "name": "Antimatter Containment Unit",
+          "symbol": "antimattercontainmentunit",
+          "avgPrice": 7654
+        },
+        {
+          "id": "91",
+          "name": "Antiquities",
+          "symbol": "antiquities",
+          "avgPrice": 128
+        },
+        {
+          "id": "169",
+          "name": "Assault Plans",
+          "symbol": "assaultplans",
+          "avgPrice": 3093
+        },
+        {
+          "id": "122",
+          "name": "Black Box",
+          "symbol": "blackbox",
+          "avgPrice": 6995
+        },
+        {
+          "id": "170",
+          "name": "Commercial Samples",
+          "symbol": "commercialsamples",
+          "avgPrice": 2966
+        },
+        {
+          "id": "10166",
+          "name": "Data Core",
+          "symbol": "datacore",
+          "avgPrice": 2790
+        },
+        {
+          "id": "171",
+          "name": "Diplomatic Bag",
+          "symbol": "diplomaticbag",
+          "avgPrice": 2830
+        },
+        {
+          "id": "172",
+          "name": "Encrypted Correspondence",
+          "symbol": "encryptedcorrespondence",
+          "avgPrice": 3229
+        },
+        {
+          "id": "173",
+          "name": "Encrypted Data Storage",
+          "symbol": "encrypteddatastorage",
+          "avgPrice": 2811
+        },
+        {
+          "id": "123",
+          "name": "Experimental Chemicals",
+          "symbol": "experimentalchemicals",
+          "avgPrice": 3524
+        },
+        {
+          "id": "10221",
+          "name": "Fossil Remnants",
+          "symbol": "fossilremnants",
+          "avgPrice": 916
+        },
+        {
+          "id": "10211",
+          "name": "Gene Bank",
+          "symbol": "genebank",
+          "avgPrice": 4009
+        },
+        {
+          "id": "174",
+          "name": "Geological Samples",
+          "symbol": "geologicalsamples",
+          "avgPrice": 1013
+        },
+        {
+          "id": "175",
+          "name": "Hostages",
+          "symbol": "hostages",
+          "avgPrice": 2086
+        },
+        {
+          "id": "125",
+          "name": "Large Survey Data Cache",
+          "symbol": "largesurveydatacache",
+          "avgPrice": 3499
+        },
+        {
+          "id": "126",
+          "name": "Military Intelligence",
+          "symbol": "militaryintelligence",
+          "avgPrice": 2863
+        },
+        {
+          "id": "127",
+          "name": "Military Plans",
+          "symbol": "militaryplans",
+          "avgPrice": 3652
+        },
+        {
+          "id": "10219",
+          "name": "Mysterious Idol",
+          "symbol": "mysteriousidol",
+          "avgPrice": 8052
+        },
+        {
+          "id": "167",
+          "name": "Occupied CryoPod",
+          "symbol": "occupiedcryopod",
+          "avgPrice": 2975
+        },
+        {
+          "id": "10159",
+          "name": "Personal Effects",
+          "symbol": "personaleffects",
+          "avgPrice": 379
+        },
+        {
+          "id": "169",
+          "name": "Political Prisoner",
+          "symbol": "politicalprisoner",
+          "avgPrice": 2086
+        },
+        {
+          "id": "10165",
+          "name": "Precious Gems",
+          "symbol": "preciousgems",
+          "avgPrice": 897
+        },
+        {
+          "id": "10220",
+          "name": "Prohibited Research Materials",
+          "symbol": "prohibitedresearchmaterials",
+          "avgPrice": 3259
+        },
+        {
+          "id": "130",
+          "name": "Prototype Tech",
+          "symbol": "prototypetech",
+          "avgPrice": 8050
+        },
+        {
+          "id": "132",
+          "name": "Rebel Transmissions",
+          "symbol": "rebeltransmissions",
+          "avgPrice": 3097
+        },
+        {
+          "id": "174",
+          "name": "Salvageable Wreckage",
+          "symbol": "salvageablewreckage",
+          "avgPrice": 481
+        },
+        {
+          "id": "175",
+          "name": "Sap 8 Core Container",
+          "symbol": "sap8corecontainer",
+          "avgPrice": 50771
+        },
+        {
+          "id": "178",
+          "name": "Scientific Research",
+          "symbol": "scientificresearch",
+          "avgPrice": 2932
+        },
+        {
+          "id": "179",
+          "name": "Scientific Samples",
+          "symbol": "scientificsamples",
+          "avgPrice": 2758
+        },
+        {
+          "id": "10208",
+          "name": "Small Survey Data Cache",
+          "symbol": "smallsurveydatacache",
+          "avgPrice": 2758
+        },
+        {
+          "id": "10164",
+          "name": "Space Pioneer Relics",
+          "symbol": "spacepioneerrelics",
+          "avgPrice": 7783
+        },
+        {
+          "id": "180",
+          "name": "Tactical Data",
+          "symbol": "tacticaldata",
+          "avgPrice": 3097
+        },
+        {
+          "id": "133",
+          "name": "Technical Blueprints",
+          "symbol": "technicalblueprints",
+          "avgPrice": 3093
+        },
+        {
+          "id": "134",
+          "name": "Trade Data",
+          "symbol": "tradedata",
+          "avgPrice": 2651
+        },
+        {
+          "id": "135",
+          "name": "Trinkets of Hidden Fortune",
+          "symbol": "trinketsofhiddenfortune",
+          "avgPrice": 968
+        },
+        {
+          "id": "176",
+          "name": "Unstable Data Core",
+          "symbol": "unstabledatacore",
+          "avgPrice": 2790
+        },
+        {
+          "id": "10207",
+          "name": "Wreckage Components",
+          "symbol": "wreckagecomponents",
+          "avgPrice": 481
+        }
       ]
     },
     "slaves": {
       "label": "Slaves",
       "icon": "cargo",
       "commodities": [
-        { "id": "186", "name": "Imperial Slaves", "symbol": "imperialslaves", "avgPrice": 15984 },
-        { "id": "187", "name": "Slaves", "symbol": "slaves", "avgPrice": 10584 }
+        {
+          "id": "49",
+          "name": "Imperial Slaves",
+          "symbol": "imperialslaves",
+          "avgPrice": 15984
+        },
+        {
+          "id": "53",
+          "name": "Slaves",
+          "symbol": "slaves",
+          "avgPrice": 10584
+        }
       ]
     },
     "technology": {
       "label": "Technology",
       "icon": "cargo",
       "commodities": [
-        { "id": "188", "name": "Advanced Catalysers", "symbol": "advancedcatalysers", "avgPrice": 2947 },
-        { "id": "189", "name": "Animal Monitors", "symbol": "animalmonitors", "avgPrice": 324 },
-        { "id": "190", "name": "Aquaponic Systems", "symbol": "aquaponicsystems", "avgPrice": 314 },
-        { "id": "191", "name": "Auto-Fabricators", "symbol": "autofabricators", "avgPrice": 3734 },
-        { "id": "192", "name": "Bioreducing Lichen", "symbol": "bioreducinglichen", "avgPrice": 998 },
-        { "id": "193", "name": "Computer Components", "symbol": "computercomponents", "avgPrice": 513 },
-        { "id": "194", "name": "H.E. Suits", "symbol": "hesuits", "avgPrice": 340 },
-        { "id": "195", "name": "Hardware Diagnostic Sensor", "symbol": "diagnosticsensor", "avgPrice": 4337 },
-        { "id": "196", "name": "Ion Distributor", "symbol": "iondistributor", "avgPrice": 1018 },
-        { "id": "197", "name": "Magnetic Emitter Field Coil", "symbol": "magneticemitterfieldcoil", "avgPrice": 1267 },
-        { "id": "198", "name": "Medical Diagnostic Equipment", "symbol": "medicaldiagnosticequipment", "avgPrice": 2848 },
-        { "id": "199", "name": "Micro Controllers", "symbol": "microcontrollers", "avgPrice": 3274 },
-        { "id": "200", "name": "Muon Imager", "symbol": "muonimager", "avgPrice": 6353 },
-        { "id": "201", "name": "Nanobreakers", "symbol": "nanobreakers", "avgPrice": 639 },
-        { "id": "202", "name": "Resonating Separators", "symbol": "resonatingseparators", "avgPrice": 5958 },
-        { "id": "203", "name": "Robotics", "symbol": "robotics", "avgPrice": 1856 },
-        { "id": "204", "name": "Structural Regulators", "symbol": "structuralregulators", "avgPrice": 1791 },
-        { "id": "205", "name": "Telemetry Suite", "symbol": "telemetrysuite", "avgPrice": 2080 }
+        {
+          "id": "61",
+          "name": "Advanced Catalysers",
+          "symbol": "advancedcatalysers",
+          "avgPrice": 2947
+        },
+        {
+          "id": "62",
+          "name": "Animal Monitors",
+          "symbol": "animalmonitors",
+          "avgPrice": 324
+        },
+        {
+          "id": "63",
+          "name": "Aquaponic Systems",
+          "symbol": "aquaponicsystems",
+          "avgPrice": 314
+        },
+        {
+          "id": "65",
+          "name": "Auto-Fabricators",
+          "symbol": "autofabricators",
+          "avgPrice": 3734
+        },
+        {
+          "id": "66",
+          "name": "Bioreducing Lichen",
+          "symbol": "bioreducinglichen",
+          "avgPrice": 998
+        },
+        {
+          "id": "67",
+          "name": "Computer Components",
+          "symbol": "computercomponents",
+          "avgPrice": 513
+        },
+        {
+          "id": "68",
+          "name": "H.E. Suits",
+          "symbol": "hesuits",
+          "avgPrice": 340
+        },
+        {
+          "id": "155",
+          "name": "Hardware Diagnostic Sensor",
+          "symbol": "diagnosticsensor",
+          "avgPrice": 4337
+        },
+        {
+          "id": "160",
+          "name": "Ion Distributor",
+          "symbol": "iondistributor",
+          "avgPrice": 1018
+        },
+        {
+          "id": "197",
+          "name": "Magnetic Emitter Field Coil",
+          "symbol": "magneticemitterfieldcoil",
+          "avgPrice": 1267
+        },
+        {
+          "id": "154",
+          "name": "Medical Diagnostic Equipment",
+          "symbol": "medicaldiagnosticequipment",
+          "avgPrice": 2848
+        },
+        {
+          "id": "156",
+          "name": "Micro Controllers",
+          "symbol": "microcontrollers",
+          "avgPrice": 3274
+        },
+        {
+          "id": "119",
+          "name": "Muon Imager",
+          "symbol": "muonimager",
+          "avgPrice": 6353
+        },
+        {
+          "id": "167",
+          "name": "Nanobreakers",
+          "symbol": "nanobreakers",
+          "avgPrice": 639
+        },
+        {
+          "id": "69",
+          "name": "Resonating Separators",
+          "symbol": "resonatingseparators",
+          "avgPrice": 5958
+        },
+        {
+          "id": "70",
+          "name": "Robotics",
+          "symbol": "robotics",
+          "avgPrice": 1856
+        },
+        {
+          "id": "117",
+          "name": "Structural Regulators",
+          "symbol": "structuralregulators",
+          "avgPrice": 1791
+        },
+        {
+          "id": "184",
+          "name": "Telemetry Suite",
+          "symbol": "telemetrysuite",
+          "avgPrice": 2080
+        }
       ]
     },
     "textiles": {
       "label": "Textiles",
       "icon": "cargo",
       "commodities": [
-        { "id": "206", "name": "Conductive Fabrics", "symbol": "conductivefabrics", "avgPrice": 507 },
-        { "id": "207", "name": "Leather", "symbol": "leather", "avgPrice": 192 },
-        { "id": "208", "name": "Military Grade Fabrics", "symbol": "militarygradefabrics", "avgPrice": 708 },
-        { "id": "209", "name": "Natural Fabrics", "symbol": "naturalfabrics", "avgPrice": 439 },
-        { "id": "210", "name": "Synthetic Fabrics", "symbol": "syntheticfabrics", "avgPrice": 211 }
+        {
+          "id": "165",
+          "name": "Conductive Fabrics",
+          "symbol": "conductivefabrics",
+          "avgPrice": 507
+        },
+        {
+          "id": "73",
+          "name": "Leather",
+          "symbol": "leather",
+          "avgPrice": 192
+        },
+        {
+          "id": "157",
+          "name": "Military Grade Fabrics",
+          "symbol": "militarygradefabrics",
+          "avgPrice": 708
+        },
+        {
+          "id": "74",
+          "name": "Natural Fabrics",
+          "symbol": "naturalfabrics",
+          "avgPrice": 439
+        },
+        {
+          "id": "75",
+          "name": "Synthetic Fabrics",
+          "symbol": "syntheticfabrics",
+          "avgPrice": 211
+        }
       ]
     },
     "waste": {
       "label": "Waste",
       "icon": "cargo",
       "commodities": [
-        { "id": "211", "name": "Biowaste", "symbol": "biowaste", "avgPrice": 63 },
-        { "id": "212", "name": "Chemical Waste", "symbol": "chemicalwaste", "avgPrice": 131 },
-        { "id": "213", "name": "Scrap", "symbol": "scrap", "avgPrice": 48 },
-        { "id": "214", "name": "Toxic Waste", "symbol": "toxicwaste", "avgPrice": 287 }
+        {
+          "id": "76",
+          "name": "Biowaste",
+          "symbol": "biowaste",
+          "avgPrice": 63
+        },
+        {
+          "id": "32",
+          "name": "Chemical Waste",
+          "symbol": "chemicalwaste",
+          "avgPrice": 131
+        },
+        {
+          "id": "77",
+          "name": "Scrap",
+          "symbol": "scrap",
+          "avgPrice": 48
+        },
+        {
+          "id": "54",
+          "name": "Toxic Waste",
+          "symbol": "toxicwaste",
+          "avgPrice": 287
+        }
       ]
     },
     "weapons": {
       "label": "Weapons",
       "icon": "cargo",
       "commodities": [
-        { "id": "215", "name": "Battle Weapons", "symbol": "battleweapons", "avgPrice": 7259 },
-        { "id": "216", "name": "Landmines", "symbol": "landmines", "avgPrice": 4602 },
-        { "id": "217", "name": "Non-Lethal Weapons", "symbol": "nonlethalweapons", "avgPrice": 1837 },
-        { "id": "218", "name": "Personal Weapons", "symbol": "personalweapons", "avgPrice": 4632 },
-        { "id": "219", "name": "Reactive Armour", "symbol": "reactivearmour", "avgPrice": 2113 }
+        {
+          "id": "88",
+          "name": "Battle Weapons",
+          "symbol": "battleweapons",
+          "avgPrice": 7259
+        },
+        {
+          "id": "118",
+          "name": "Landmines",
+          "symbol": "landmines",
+          "avgPrice": 4602
+        },
+        {
+          "id": "78",
+          "name": "Non-Lethal Weapons",
+          "symbol": "nonlethalweapons",
+          "avgPrice": 1837
+        },
+        {
+          "id": "79",
+          "name": "Personal Weapons",
+          "symbol": "personalweapons",
+          "avgPrice": 4632
+        },
+        {
+          "id": "80",
+          "name": "Reactive Armour",
+          "symbol": "reactivearmour",
+          "avgPrice": 2113
+        }
       ]
     }
   }

@@ -92,7 +92,7 @@ async function fetchCommoditySearch({ commodityId, commodityName, systemName, la
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'
       },
-      cacheTtlMs: 60 * 60 * 1000 // 1 hour cache for commodity searches (prices don't change often)
+      cacheTtlMs: 24 * 60 * 60 * 1000 // 24 hour cache for commodity searches (prices don't change often)
     })
 
     if (!response.ok) {
@@ -100,6 +100,7 @@ async function fetchCommoditySearch({ commodityId, commodityName, systemName, la
     }
 
     const html = await response.text()
+
     const parsed = commoditySearchScraper.parse(html, {
       commodityId,
       commodityName,
@@ -108,6 +109,7 @@ async function fetchCommoditySearch({ commodityId, commodityName, systemName, la
     })
 
     if (!commoditySearchScraper.validate(parsed)) {
+      logger.error('Validation failed for parsed commodity data')
       throw new Error('Invalid commodity search response from INARA')
     }
 

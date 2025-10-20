@@ -2465,13 +2465,6 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
         layout='full-width'
       >
         <div className={styles.tableSectionHeader}>
-          <h2>Mining Missions</h2>
-          <h3 className='text-primary'>
-            INARA decrypts volunteer manifests to shortlist mining opportunities aligned to your current system.
-          </h3>
-          <p className='text-primary'>
-            Availability signals originate from INARA contributors and may trail live mission boards.
-          </p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
@@ -4964,12 +4957,6 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
         layout='full-width'
       >
         <div >
-          <div >
-            <h2 id='trade-routes-filters-heading'>Trade Route Intelligence</h2>
-            <h3 className='text-primary'>
-              Plan efficient cargo loops tailored to your current ship.
-            </h3>
-          </div>
           <TradeRouteFilterPanel
             filters={filters}
             onFilterChange={setFilterValue}
@@ -5432,13 +5419,6 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
         layout='full-width'
       >
         <div className={styles.tableSectionHeader}>
-          <h2>Pristine Mining Locations</h2>
-          <h3 className='text-primary'>
-            INARA listens for rare reserve chatter across the network to pinpoint high-value extraction sites.
-          </h3>
-          <p className='text-primary'>
-            Geological echoes are sourced from volunteer INARA submissions and may lag in-system discoveries.
-          </p>
           <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
             <div>
               <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>

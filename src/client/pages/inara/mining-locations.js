@@ -12,6 +12,8 @@ export default function InaraMiningLocationsPage () {
   return (
     <Layout connected={connected} active={active} ready={ready} loader={miningStatus === 'loading'}>
       <Panel layout='full-width' scrollable navigation={InaraWorkspaceNavItems('Mining Locations')}>
+        <h2>Mining Locations</h2>
+        <h3 className='text-primary'>Find pristine mining rings</h3>
         <PristineMiningPanel onStatusChange={setMiningStatus} />
       </Panel>
     </Layout>

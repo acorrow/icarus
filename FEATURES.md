@@ -93,6 +93,85 @@ Comprehensive mock data has been extracted from real game logs for offline devel
 
 **Important**: "The INARA Page" in ICARUS Terminal refers to the UI surface (`src/client/pages/inara.js`) that **displays** data scraped from inara.cz. INARA itself is NOT part of ICARUS—it's an external data source.
 
+## INARA Page Style Guidelines
+
+**ALL INARA workspace pages MUST follow this consistent formatting pattern:**
+
+### Page Structure Template
+
+```jsx
+export default function InaraPageName() {
+  const { connected, active, ready } = useSocket()
+
+  return (
+    <Layout connected={connected} active={active} ready={ready} loader={status === 'loading'}>
+      <Panel layout='full-width' scrollable navigation={InaraWorkspaceNavItems('Page Name')}>
+        {/* REQUIRED: Page title (h2) */}
+        <h2>Page Title</h2>
+
+        {/* REQUIRED: Page subtitle (h3 with text-primary class) */}
+        <h3 className='text-primary'>Brief description of page purpose</h3>
+
+        {/* Page content */}
+      </Panel>
+    </Layout>
+  )
+}
+```
+
+### Style Requirements
+
+1. **Title (h2)**:
+   - Plain text, no inline styles
+   - Uses default h2 styling from global CSS
+   - Example: `<h2>Commodity Search</h2>`
+
+2. **Subtitle (h3)**:
+   - MUST use `className='text-primary'`
+   - Short, descriptive purpose statement
+   - Example: `<h3 className='text-primary'>Find where to buy commodities</h3>`
+
+3. **Consistency**:
+   - Every INARA page must have both title and subtitle
+   - No custom styling on title/subtitle elements
+   - Maintains visual hierarchy across all pages
+
+### Navigation Icon Rules
+
+**CRITICAL: Each page MUST have a unique icon in the navigation menu.**
+
+Current icon assignments (as of 2025-10-20):
+- Route Scout: `icon: 'system-orbits'`
+- Commodities: `icon: 'cargo'` (selling cargo)
+- Commodity Search: `icon: 'search'` (buying commodities)
+- Outfitting: `icon: 'wrench'`
+- Mining Missions: `icon: 'asteroid-base'`
+- Mining Locations: `icon: 'planet-ringed'`
+- Media Terminal: `icon: 'signal'`
+
+**When adding a new INARA page:**
+1. Choose a unique icon that isn't already used
+2. Icon should be semantically related to the page purpose
+3. Update this list in FEATURES.md
+4. Never reuse an icon from another active navigation item
+
+**Available icons** (check `src/client/public/icons/` for full list):
+- `route`, `map`, `station`, `ship`, `galaxy`, `shield`, `target`, etc.
+
+### Current INARA Pages (Updated 2025-10-20)
+
+| Page | Title | Subtitle | Icon | File |
+|------|-------|----------|------|------|
+| Route Scout | Route Scout | Find profitable trade routes | system-orbits | route-scout.js |
+| Commodities | Commodities | Find where to sell your cargo | cargo | commodities.js |
+| Commodity Search | Commodity Search | Find where to buy commodities | search | commodity-search.js |
+| Outfitting | Outfitting Search | Ships, modules and equipment | wrench | outfitting.js |
+| Mining Missions | Mining Missions | Find mining missions near you | asteroid-base | mining-missions.js |
+| Mining Locations | Mining Locations | Find pristine mining rings | planet-ringed | mining-locations.js |
+| Media Terminal | Media Terminal | Live channels and archived transmissions | signal | media-terminal.js |
+
+**Update this table whenever you add, remove, or modify an INARA page.**
+
 ## INARA Feature Mapping
 
 ## Modular Card Components – Unified Visual Design

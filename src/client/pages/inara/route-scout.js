@@ -12,6 +12,8 @@ export default function InaraRouteScoutPage () {
   return (
     <Layout connected={connected} active={active} ready={ready} loader={tradeRoutesStatus === 'loading'}>
       <Panel layout='full-width' scrollable navigation={InaraWorkspaceNavItems('Route Scout')}>
+        <h2>Route Scout</h2>
+        <h3 className='text-primary'>Find profitable trade routes</h3>
         <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
       </Panel>
     </Layout>

@@ -98,7 +98,7 @@ function parseCommoditySearchResults(html, options = {}) {
 
       // Cell 0: Station (contains station link and system name)
       const firstCell = $(cells[0])
-      const stationLink = firstCell.find('a[href*="/station/"]').first()
+      const stationLink = firstCell.find('a[href*="/station-market/"]').first()
 
       if (!stationLink.length) return // Skip if no station found
 
@@ -112,59 +112,52 @@ function parseCommoditySearchResults(html, options = {}) {
       const systemName = cleanStationName(parts[1] || '')
       const stationUrl = stationLink.attr('href') || null
 
-      // Cell 1: Allegiance (optional)
-      const allegiance = cells.length > 1 ? cleanText($(cells[1]).text()) : null
-
-      // Cell 2: Pad size (L, M, S)
+      // Cell 1: Pad size (L, M, S)
       let landingPadSize = 'Unknown'
-      if (cells.length > 2) {
-        const padText = cleanText($(cells[2]).text()).toUpperCase()
+      if (cells.length > 1) {
+        const padText = cleanText($(cells[1]).text()).toUpperCase()
         if (padText === 'L') landingPadSize = 'Large'
         else if (padText === 'M') landingPadSize = 'Medium'
         else if (padText === 'S') landingPadSize = 'Small'
       }
 
-      // Cell 3: Station distance (Ls)
+      // Cell 2: Station distance (Ls)
       let distanceLs = null
-      if (cells.length > 3) {
-        const distText = cleanText($(cells[3]).text())
+      if (cells.length > 2) {
+        const distText = cleanText($(cells[2]).text())
         distanceLs = parseDistanceLs(distText)
       }
 
-      // Cell 4: System distance (Ly)
+      // Cell 3: System distance (Ly)
       let distanceLy = null
-      if (cells.length > 4) {
-        const distText = cleanText($(cells[4]).text())
+      if (cells.length > 3) {
+        const distText = cleanText($(cells[3]).text())
         distanceLy = parseDistanceLy(distText)
       }
 
-      // Cell 5: Buy Price
+      // Cell 4: Supply (for "I want to buy") or Demand (for "I want to sell")
+      let supply = null
+      if (cells.length > 4) {
+        const supplyText = cleanText($(cells[4]).text())
+        supply = parseNumber(supplyText)
+      }
+
+      // Cell 5: Price (Buy price for "I want to buy", Sell price for "I want to sell")
       let buyPrice = null
       if (cells.length > 5) {
         const priceText = cleanText($(cells[5]).text())
         buyPrice = parseNumber(priceText)
       }
 
-      // Cell 6: Supply
-      let supply = null
-      if (cells.length > 6) {
-        const supplyText = cleanText($(cells[6]).text())
-        supply = parseNumber(supplyText)
-      }
-
-      // Cell 7: Demand
-      let demand = null
-      if (cells.length > 7) {
-        const demandText = cleanText($(cells[7]).text())
-        demand = parseNumber(demandText)
-      }
-
-      // Cell 8: Updated timestamp
+      // Cell 6: Updated timestamp
       let updatedAt = null
-      if (cells.length > 8) {
-        const ageText = cleanText($(cells[8]).text())
+      if (cells.length > 6) {
+        const ageText = cleanText($(cells[6]).text())
         updatedAt = parseTimestamp(ageText) || ageText
       }
+
+      // Note: Demand is not shown in commodity search results
+      let demand = null
 
       // Extract station type from icon/image if available
       let stationType = 'Unknown'

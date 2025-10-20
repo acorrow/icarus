@@ -491,6 +491,9 @@ export default function InaraCommoditiesPage () {
   return (
     <Layout connected={connected} active={active} ready={ready} loader={status === 'loading'}>
       <Panel layout='full-width' scrollable navigation={InaraWorkspaceNavItems('Commodities')}>
+        <h2>Commodities</h2>
+        <h3 className='text-primary'>Find where to sell your cargo</h3>
+
         <div className={styles.commoditiesPage}>
           {/* Header with cargo progress and total valuation */}
           <div className={styles.commoditiesHeader}>

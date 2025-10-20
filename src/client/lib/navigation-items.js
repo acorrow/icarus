@@ -99,18 +99,13 @@ function InaraWorkspaceNavItems (activePanel) {
       url: '/inara/route-scout'
     },
     {
-      name: 'Search',
-      icon: 'search',
-      url: '/inara/search'
-    },
-    {
       name: 'Commodities',
       icon: 'cargo',
       url: '/inara/commodities'
     },
     {
       name: 'Commodity Search',
-      icon: 'cargo',
+      icon: 'search',
       url: '/inara/commodity-search'
     },
     {
