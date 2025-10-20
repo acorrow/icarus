@@ -71,16 +71,18 @@ export default function InaraCommoditySearchPage () {
         }
 
         const shipStatus = await sendEvent('getShipStatus')
+
         if (shipStatus?.maxJumpRange) {
           setShipJumpRange(shipStatus.maxJumpRange)
         } else if (shipStatus?.unladenJumpRange) {
           setShipJumpRange(shipStatus.unladenJumpRange)
         }
 
-        // Get ship landing pad size
+        // Get ship landing pad size based on ship type
         let padSize = 'any'
-        if (shipStatus?.shipType) {
-          const shipType = shipStatus.shipType.toLowerCase()
+        if (shipStatus?.type) {
+          const shipType = shipStatus.type.toLowerCase()
+
           // Large ships (require large pads)
           if (['anaconda', 'beluga', 'corvette', 'cutter', 'type-9', 'type-10'].some(s => shipType.includes(s))) {
             padSize = 'large'
@@ -89,7 +91,7 @@ export default function InaraCommoditySearchPage () {
           else if (['python', 'krait', 'chieftain', 'crusader', 'challenger', 'asp', 'type-6', 'type-7', 'keelback', 'federal'].some(s => shipType.includes(s))) {
             padSize = 'medium'
           }
-          // Small ships
+          // Small ships (all other ships default to small)
           else {
             padSize = 'small'
           }
@@ -195,31 +197,10 @@ export default function InaraCommoditySearchPage () {
                        'categories'
 
   return (
-    <Layout connected={connected} active={active} ready={ready}>
+    <Layout connected={connected} active={active} ready={ready} loader={status === 'loading'}>
       <Panel layout='full-width' scrollable navigation={InaraWorkspaceNavItems('Commodity Search')}>
         <h2>Commodity Search</h2>
         <h3 className='text-primary'>Find where to buy commodities</h3>
-
-        {/* Loading overlay - shows over content without destroying it */}
-        {status === 'loading' && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.7)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div className='loader' />
-              <p className='text-primary' style={{ marginTop: '1rem' }}>Searching INARA...</p>
-            </div>
-          </div>
-        )}
 
         {/* Breadcrumbs */}
         <div style={{ marginTop: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -511,10 +492,6 @@ export default function InaraCommoditySearchPage () {
         {/* Level 3: Search Results */}
         {currentLevel === 'results' && (
           <>
-            {status === 'loading' && (
-              <p className='text-info'>Searching INARA...</p>
-            )}
-
             {status === 'error' && (
               <p className='text-danger'>Failed to search commodity. Please try again.</p>
             )}
@@ -525,10 +502,13 @@ export default function InaraCommoditySearchPage () {
 
             {results.length > 0 && (
               <>
-                <div className='section-heading' style={{ marginBottom: '1rem' }}>
+                <div className='section-heading' style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <h4 className='section-heading__text'>
                     Found {results.length} station{results.length !== 1 ? 's' : ''} within {filters.maxDistanceLy} Ly of {filters.systemName}
                   </h4>
+                  <span className='text-muted' style={{ fontSize: '0.875rem', fontStyle: 'italic' }}>
+                    Cached for 24 hours
+                  </span>
                 </div>
                 <table className='table--interactive table--animated'>
                   <thead>

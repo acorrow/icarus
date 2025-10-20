@@ -27,7 +27,11 @@
       "Bash(dir resourcesmock-game-datainara /B)",
       "Bash(timeout /t 5)",
       "Bash(del test-clean-station-name.js)",
-      "Bash(dir \"resources\\mock-game-data\\inara\" /B)"
+      "Bash(dir \"resources\\mock-game-data\\inara\" /B)",
+      "Bash(for file in src/client/pages/inara/{cargo,index,media-terminal,search}.js)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(sort -t: -k2 -rn)"
     ],
     "deny": [],
     "ask": []

@@ -136,6 +136,48 @@ export default function InaraPageName() {
    - No custom styling on title/subtitle elements
    - Maintains visual hierarchy across all pages
 
+### Loading States
+
+**CRITICAL: All INARA pages MUST use the full-page loader for async operations.**
+
+**Correct Pattern:**
+```jsx
+export default function InaraPageName() {
+  const { connected, active, ready } = useSocket()
+  const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'ready' | 'error'
+
+  return (
+    <Layout connected={connected} active={active} ready={ready} loader={status === 'loading'}>
+      {/* Page content */}
+    </Layout>
+  )
+}
+```
+
+**Rules:**
+1. **ALWAYS use `loader` prop on `<Layout>` component** for loading states
+2. **NEVER create custom loading overlays** with inline styles or z-index hacks
+3. **Status states:** Use string enums: `'idle' | 'loading' | 'ready' | 'error' | 'empty'`
+4. **Full-page spinner:** The Layout component handles the spinner UI consistently
+5. **Error/empty states:** Show inline messages AFTER loading completes
+6. **Consistency:** All INARA pages (Route Scout, Commodity Search, etc.) follow this pattern
+
+**Example (Route Scout):**
+```jsx
+const [tradeRoutesStatus, setTradeRoutesStatus] = useState('idle')
+return (
+  <Layout loader={tradeRoutesStatus === 'loading'}>
+    <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
+  </Layout>
+)
+```
+
+**Anti-patterns to avoid:**
+- ❌ Custom loading overlays with fixed positioning
+- ❌ Inline "Loading..." text without full-page spinner
+- ❌ Multiple loaders on the same page
+- ❌ Z-index manipulation for loading states
+
 ### Navigation Icon Rules
 
 **CRITICAL: Each page MUST have a unique icon in the navigation menu.**
