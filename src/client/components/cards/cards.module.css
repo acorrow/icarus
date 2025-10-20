@@ -599,20 +599,21 @@
   flex-direction: row !important;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px !important;
-  background: rgba(20, 16, 32, 0.4);
-  border: 1px solid rgba(255, 145, 0, 0.25);
-  border-radius: 6px;
-  min-height: 42px;
-  height: 42px;
-  transition: all 0.15s ease;
+  padding: 1rem 1.5rem !important;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--inara-border-soft);
+  border-radius: 8px;
+  min-height: auto;
+  height: auto;
+  transition: all 0.2s ease;
   overflow: visible !important;
   box-shadow: none !important;
 }
 
 .stationCardInline:hover {
-  background: rgba(20, 16, 32, 0.7);
-  border-color: rgba(255, 145, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--inara-border-regular);
+  transform: translateX(4px);
 }
 
 .stationCardIconInline {
@@ -632,39 +633,37 @@
 
 .stationCardNameInline {
   display: block !important;
-  font-size: 0.875rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #ffffff;
   flex: 1 1 auto;
   min-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .stationCardSystemInline {
   display: block !important;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--inara-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .stationCardDistanceInline {
   display: block !important;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--inara-subdued);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .stationCardTypeInline {
   display: block !important;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--inara-subdued);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -851,20 +850,21 @@
   flex-direction: row !important;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px !important;
-  background: rgba(20, 16, 32, 0.4);
-  border: 1px solid rgba(255, 145, 0, 0.25);
-  border-radius: 6px;
-  min-height: 42px;
-  height: 42px;
-  transition: all 0.15s ease;
+  padding: 1rem 1.5rem !important;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--inara-border-soft);
+  border-radius: 8px;
+  min-height: auto;
+  height: auto;
+  transition: all 0.2s ease;
   overflow: visible !important;
   box-shadow: none !important;
 }
 
 .commodityCardInline:hover {
-  background: rgba(20, 16, 32, 0.7);
-  border-color: rgba(255, 145, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--inara-border-regular);
+  transform: translateX(4px);
 }
 
 .commodityCardIconInline {
@@ -884,51 +884,47 @@
 
 .commodityCardNameInline {
   display: block !important;
-  font-size: 0.875rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #ffffff;
   flex: 1 1 auto;
   min-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .commodityCardPriceInline {
   display: block !important;
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #00ffb3;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--inara-accent);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .commodityCardQuantityInline {
   display: block !important;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--inara-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .commodityCardLocationInline {
   display: block !important;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--inara-subdued);
   white-space: nowrap;
   flex: 0 1 auto;
   min-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .commodityCardMetaInline {
   display: block !important;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--inara-subdued);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -1142,20 +1138,21 @@
   flex-direction: row !important;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px !important;
-  background: rgba(20, 16, 32, 0.4);
-  border: 1px solid rgba(255, 145, 0, 0.25);
-  border-radius: 6px;
-  min-height: 42px;
-  height: 42px;
-  transition: all 0.15s ease;
+  padding: 1rem 1.5rem !important;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--inara-border-soft);
+  border-radius: 8px;
+  min-height: auto;
+  height: auto;
+  transition: all 0.2s ease;
   overflow: visible !important;
   box-shadow: none !important;
 }
 
 .planetCardInline:hover {
-  background: rgba(20, 16, 32, 0.7);
-  border-color: rgba(255, 145, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--inara-border-regular);
+  transform: translateX(4px);
 }
 
 .planetCardIconInline {
@@ -1175,39 +1172,37 @@
 
 .planetCardNameInline {
   display: block !important;
-  font-size: 0.875rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #ffffff;
   flex: 1 1 auto;
   min-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .planetCardSystemInline {
   display: block !important;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--inara-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .planetCardDistanceInline {
   display: block !important;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--inara-subdued);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .planetCardTypeInline {
   display: block !important;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--inara-subdued);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -1464,20 +1459,21 @@
   flex-direction: row !important;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px !important;
-  background: rgba(20, 16, 32, 0.4);
-  border: 1px solid rgba(255, 145, 0, 0.25);
-  border-radius: 6px;
-  min-height: 42px;
-  height: 42px;
-  transition: all 0.15s ease;
+  padding: 1rem 1.5rem !important;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--inara-border-soft);
+  border-radius: 8px;
+  min-height: auto;
+  height: auto;
+  transition: all 0.2s ease;
   overflow: visible !important;
   box-shadow: none !important;
 }
 
 .systemCardInline:hover {
-  background: rgba(20, 16, 32, 0.7);
-  border-color: rgba(255, 145, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--inara-border-regular);
+  transform: translateX(4px);
 }
 
 .systemCardIconInline {
@@ -1497,30 +1493,28 @@
 
 .systemCardNameInline {
   display: block !important;
-  font-size: 0.875rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #ffffff;
   flex: 1 1 auto;
   min-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .systemCardDistanceInline {
   display: block !important;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--inara-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .systemCardAllegianceInline {
   display: block !important;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--inara-subdued);
   white-space: nowrap;
   flex-shrink: 0;
 }
