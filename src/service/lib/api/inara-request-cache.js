@@ -130,11 +130,11 @@ async function fetchWithInaraCache (url, options = {}) {
     }
 
     // Check file-based cache first
-    const cachedEntry = fileCache.getCachedResponse(url)
+    const cachedEntry = fileCache.getCachedResponse(url, ttlMs)
     if (cachedEntry && cachedEntry.status === 200) {
       const duration = Date.now() - startTime
       clearTimeout(timeoutWarning)
-      
+
       httpLogger.logRequestComplete({
         requestId,
         url,
@@ -146,7 +146,7 @@ async function fetchWithInaraCache (url, options = {}) {
         duration,
         fromCache: true
       })
-      
+
       return createCachedResponse(cachedEntry, true)
     }
 
@@ -160,7 +160,7 @@ async function fetchWithInaraCache (url, options = {}) {
         // Check if the in-flight response is still valid for caching
         const shouldCache = entry.status === 200
         if (shouldCache) {
-          fileCache.setCachedResponse(url, entry.status, entry.headers, entry.body)
+          fileCache.setCachedResponse(url, entry.status, entry.headers, entry.body, ttlMs)
         }
         
         httpLogger.logRequestComplete({
@@ -194,7 +194,7 @@ async function fetchWithInaraCache (url, options = {}) {
 
       // Cache successful responses to file
       if (response.status === 200) {
-        fileCache.setCachedResponse(url, response.status, headers, body)
+        fileCache.setCachedResponse(url, response.status, headers, body, ttlMs)
       }
 
       return record

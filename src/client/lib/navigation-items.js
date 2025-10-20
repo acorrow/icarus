@@ -109,6 +109,11 @@ function InaraWorkspaceNavItems (activePanel) {
       url: '/inara/commodities'
     },
     {
+      name: 'Commodity Search',
+      icon: 'cargo',
+      url: '/inara/commodity-search'
+    },
+    {
       name: 'Outfitting',
       icon: 'wrench',
       url: '/inara/outfitting'

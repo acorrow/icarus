@@ -29,12 +29,12 @@ function getCacheFilePath(url) {
   return path.join(cacheDir, cacheKey)
 }
 
-function isCacheValid(filePath) {
+function isCacheValid(filePath, ttlMs = THIRTY_MINUTES_MS) {
   try {
     const stats = fs.statSync(filePath)
     const now = Date.now()
     const fileAge = now - stats.mtime.getTime()
-    return fileAge <= THIRTY_MINUTES_MS
+    return fileAge <= ttlMs
   } catch (error) {
     // File doesn't exist or can't be read
     return false
@@ -58,14 +58,15 @@ function readCacheEntry(filePath) {
   }
 }
 
-function writeCacheEntry(url, status, headers, body) {
+function writeCacheEntry(url, status, headers, body, ttlMs = THIRTY_MINUTES_MS) {
   const filePath = getCacheFilePath(url)
   const entry = {
     url,
     status,
     headers: headers || {},
     body: body || '',
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    ttlMs // Store TTL for reference
   }
 
   try {
@@ -77,10 +78,10 @@ function writeCacheEntry(url, status, headers, body) {
   }
 }
 
-function getCachedResponse(url) {
+function getCachedResponse(url, ttlMs = THIRTY_MINUTES_MS) {
   const filePath = getCacheFilePath(url)
 
-  if (!isCacheValid(filePath)) {
+  if (!isCacheValid(filePath, ttlMs)) {
     return null
   }
 
@@ -92,13 +93,13 @@ function getCachedResponse(url) {
   return entry
 }
 
-function setCachedResponse(url, status, headers, body) {
+function setCachedResponse(url, status, headers, body, ttlMs = THIRTY_MINUTES_MS) {
   // Only cache successful responses
   if (status !== 200) {
     return false
   }
 
-  return writeCacheEntry(url, status, headers, body)
+  return writeCacheEntry(url, status, headers, body, ttlMs)
 }
 
 function clearExpiredCache() {

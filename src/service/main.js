@@ -40,6 +40,18 @@ const httpLogPath = httpLogger.getLogFilePath()
 console.log(`HTTP request logging enabled: ${httpLogPath}`)
 console.log('All HTTP requests to external services will be logged with verbose details.')
 
+// Log INARA cache status
+const inaraCache = require('./lib/api/inara-file-cache')
+const cacheStats = inaraCache.getCacheStats()
+const cacheDir = path.dirname(process.execPath || process.cwd())
+console.log(`\nINARA Cache Status:`)
+console.log(`  Location: ${cacheDir}/inara-cache/`)
+console.log(`  Total files: ${cacheStats.totalFiles}`)
+console.log(`  Valid (fresh): ${cacheStats.validFiles}`)
+console.log(`  Expired: ${cacheStats.expiredFiles}`)
+console.log(`  Total size: ${(cacheStats.totalSize / 1024).toFixed(2)} KB`)
+console.log(`  Cache persists between server restarts\n`)
+
 // Parse command line arguments
 const PORT = commandLineArgs.port || commandLineArgs.p || 3300 // Port to listen on
 const DEVELOPMENT = commandLineArgs.dev || false // Development mode
@@ -152,6 +164,7 @@ function setupApiRoutes (app) {
   app.use('/api/inara-websearch', require('./lib/api/inara-websearch'))
   app.use('/api/inara-station-detail', require('./lib/api/inara-station-detail'))
   app.use('/api/inara-outfitting-search', require('./lib/api/inara-outfitting-search'))
+  app.use('/api/inara-commodity-search', require('./lib/api/inara-commodity-search'))
   
   // Ship and token endpoints
   app.use('/api/shipyard-list', require('./lib/api/shipyard-list'))
