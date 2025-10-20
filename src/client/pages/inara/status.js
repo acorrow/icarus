@@ -2324,10 +2324,15 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
   }, [])
 
   const trimmedSystem = useMemo(() => {
+    console.log('[MissionsPanel] currentSystem =', currentSystem)
     if (typeof currentSystem?.name === 'string') {
       const value = currentSystem.name.trim()
-      if (value) return value
+      if (value) {
+        console.log('[MissionsPanel] Trimmed system:', value)
+        return value
+      }
     }
+    console.log('[MissionsPanel] No valid system name')
     return ''
   }, [currentSystem?.name])
 
@@ -2455,55 +2460,48 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
   }, [trimmedSystem])
 
   useEffect(() => {
+    console.log('[MissionsPanel] Render effect - Status:', status, 'Missions:', missions.length, 'Data:', missions.slice(0, 2))
     if (status !== 'populated' || !missions.length) return
     return animateTableEffect()
   }, [status, missions])
 
   return (
-    <section className={styles.tableSection}>
-      <Panel
-        layout='full-width'
-      >
-        <div className={styles.tableSectionHeader}>
-          <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-            <div>
-              <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-              <div className='inara-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
-            </div>
-            {sourceUrl && (
-              <div className='inara__data-source inara-muted'>
-                INARA intercept feed compiled from community relays.
-              </div>
-            )}
+    <section>
+      {displaySystemName && (
+        <div style={{ marginBottom: '1rem' }}>
+          <div className='section-heading'>
+            <h4 className='section-heading__text'>
+              Mining missions near <span className='text-primary'>{displaySystemName}</span>
+            </h4>
           </div>
-          {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
+          {sourceUrl && (
+            <p className='text-muted' style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              Data from INARA community relays
+            </p>
+          )}
         </div>
-        <div className='inara-panel-table'>
-          <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-            {displayMessage && status !== 'idle' && status !== 'loading' && (
-              <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
-                {displayMessage}
-              </div>
-            )}
-          {status === 'idle' && (
-            <div className={styles.tableIdleState}>
-              Waiting for current system information...
-            </div>
-          )}
-          {status === 'loading' && (
-            <div className={styles.tableIdleState}>Linking mission beacons…</div>
-          )}
-          {status === 'error' && !error && (
-            <div className={styles.tableErrorState}>Unable to load missions.</div>
-          )}
-          {status === 'empty' && (
-            <div className={styles.tableEmptyState}>
-              No mining missions located near {displaySystemName || 'your current system'}.
-            </div>
-          )}
-          {status === 'populated' && missions.length > 0 && (
-            <div className={styles.dataTableContainer}>
-              <table className={styles.dataTable}>
+      )}
+      {error && <p className='text-danger' style={{ marginBottom: '1rem' }}>{error}</p>}
+
+      <div style={{ overflowX: 'auto' }}>
+        {displayMessage && status !== 'idle' && status !== 'loading' && (
+          <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
+            {displayMessage}
+          </div>
+        )}
+        {status === 'idle' && (
+          <p className='text-muted'>Waiting for current system information...</p>
+        )}
+        {status === 'error' && !error && (
+          <p className='text-danger'>Unable to load missions.</p>
+        )}
+        {status === 'empty' && (
+          <p className='text-muted'>
+            No mining missions located near {displaySystemName || 'your current system'}.
+          </p>
+        )}
+        {status === 'populated' && missions.length > 0 && (
+          <table className='table--interactive table--animated'>
                 <thead>
                   <tr>
                   <th>Faction</th>
@@ -2540,29 +2538,29 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
                     .join(' · ') || undefined
 
                   return (
-                    <tr key={key} data-inara-table-row='pending'>
-                      <td className={`${styles.tableCellTop}`}>
+                    <tr key={key} tabIndex={0} className='table__row--highlight-primary-hover'>
+                      <td style={{ padding: '0.75rem 1rem' }}>
                         {mission.faction
                           ? (
                             <span className={standingClass} title={factionTitle}>{mission.faction}</span>
                             )
                           : '--'}
                       </td>
-                      <td className={styles.tableCellTop}>
-                        <div className={`${styles.tableCellInline} text-no-wrap`}>
+                      <td style={{ padding: '0.75rem 1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           {isTargetSystem
                             ? (
-                              <i className='icon system-object-icon icarus-terminal-location-filled text-secondary' style={{ marginRight: '.5rem' }} />
+                              <i className='icon icarus-terminal-location-filled text-secondary' />
                               )
                             : (
-                              <i className='icon system-object-icon icarus-terminal-location' style={{ marginRight: '.5rem', color: 'var(--inara-subdued)' }} />
+                              <i className='icon icarus-terminal-location' style={{ color: 'var(--color-muted)' }} />
                               )}
                           {mission.system
                             ? <CopyOnClick copyMessageKey='system'>{mission.system}</CopyOnClick>
                             : '--'}
                         </div>
                       </td>
-                      <td className={`${styles.tableCellTop} hidden-small text-right`}>
+                      <td className='hidden-small text-right' style={{ padding: '0.75rem 1rem' }}>
                         {distanceDisplay
                           ? (
                               <span style={distanceSeverity.color ? { color: distanceSeverity.color } : undefined}>
@@ -2571,7 +2569,7 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
                             )
                           : '--'}
                       </td>
-                      <td className={`${styles.tableCellTop} hidden-small text-right`}>
+                      <td className='hidden-small text-right' style={{ padding: '0.75rem 1rem' }}>
                         {updatedDisplay
                           ? (
                               <span style={updatedSeverity.color ? { color: updatedSeverity.color } : undefined}>
@@ -2584,12 +2582,9 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
                   )
                 })}
               </tbody>
-              </table>
-            </div>
+            </table>
           )}
-        </div>
-        </div>
-      </Panel>
+      </div>
     </section>
   )
 }
@@ -5414,50 +5409,43 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
   }, [handleLocationToggle])
 
   return (
-    <section className={styles.tableSection}>
-      <Panel
-        layout='full-width'
-      >
-        <div className={styles.tableSectionHeader}>
-          <div style={CURRENT_SYSTEM_CONTAINER_STYLE}>
-            <div>
-              <div style={CURRENT_SYSTEM_LABEL_STYLE}>Current System</div>
-              <div className='inara-accent' style={CURRENT_SYSTEM_NAME_STYLE}>{displaySystemName || 'Unknown'}</div>
-            </div>
-            {sourceUrl && (
-              <div className='inara__data-source inara-muted'>
-                INARA prospecting relays aligned with survey intel.
-              </div>
-            )}
+    <section>
+      {displaySystemName && (
+        <div style={{ marginBottom: '1rem' }}>
+          <div className='section-heading'>
+            <h4 className='section-heading__text'>
+              Pristine mining locations near <span className='text-primary'>{displaySystemName}</span>
+            </h4>
           </div>
-          {error && <div style={{ color: '#ff4d4f', textAlign: 'center', marginTop: '1rem' }}>{error}</div>}
+          {sourceUrl && (
+            <p className='text-muted' style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              Data from INARA survey intel
+            </p>
+          )}
         </div>
-        <div className='inara-panel-table pristine-mining__container'>
-          <div className='scrollable pristine-mining__results' style={TABLE_SCROLL_AREA_STYLE}>
+      )}
+      {error && <p className='text-danger' style={{ marginBottom: '1rem' }}>{error}</p>}
+
+      <div className='pristine-mining__container'>
+        <div className='pristine-mining__results' style={{ overflowX: 'auto' }}>
           {displayMessage && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>
               {displayMessage}
             </div>
           )}
-          {status === 'idle' && (
-            <div className={styles.tableIdleState}>
-              Waiting for current system information...
-            </div>
-          )}
-          {status === 'loading' && (
-            <div className={styles.tableIdleState}>Triangulating pristine reserves…</div>
-          )}
-          {status === 'error' && !error && (
-            <div className={styles.tableErrorState}>Unable to load pristine mining locations.</div>
-          )}
-          {status === 'empty' && (
-            <div className={styles.tableEmptyState}>
-              No pristine signatures detected near {displaySystemName || 'your current system'}.
-            </div>
-          )}
-          {status === 'populated' && locations.length > 0 && (
-            <div style={{ padding: '0 1rem' }}>
-              <table className='table--interactive table--animated'>
+        {status === 'idle' && (
+          <p className='text-muted'>Waiting for current system information...</p>
+        )}
+        {status === 'error' && !error && (
+          <p className='text-danger'>Unable to load pristine mining locations.</p>
+        )}
+        {status === 'empty' && (
+          <p className='text-muted'>
+            No pristine signatures detected near {displaySystemName || 'your current system'}.
+          </p>
+        )}
+        {status === 'populated' && locations.length > 0 && (
+          <table className='table--interactive table--animated'>
                 <tbody>
                   {locations.map((location, index) => {
                     const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
@@ -5573,11 +5561,9 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
                   })}
                 </tbody>
               </table>
-            </div>
           )}
         </div>
-        </div>
-      </Panel>
+      </div>
     </section>
   )
 }
