@@ -49,12 +49,49 @@ function parseDistance(text) {
 }
 
 /**
- * Clean text by removing extra whitespace
+ * Pattern for INARA artifact characters (square boxes, replacement chars, etc.)
+ * Includes unicode box drawing characters and replacement character
+ */
+const INARA_ARTIFACT_PATTERN = /[\u25A0-\u25AF\u25FB-\u25FE\uFFFD]/gu
+
+/**
+ * Clean text by removing extra whitespace and INARA artifacts
  * @param {string} value - Text to clean
  * @returns {string} Cleaned text
  */
 function cleanText(value) {
-  return (value || '').replace(/\s+/g, ' ').trim()
+  return (value || '')
+    .replace(INARA_ARTIFACT_PATTERN, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/**
+ * Clean station or system name by removing INARA metadata and artifacts
+ * INARA sometimes appends extra info to station/system names like:
+ * - "Station Name -20% Hardpoints"
+ * - "System Name +15% Modules"
+ * - Unicode box characters for station features (■, ▪, �)
+ *
+ * This function extracts just the core station/system name.
+ *
+ * @param {string} value - Raw station/system name from INARA
+ * @returns {string} Cleaned station/system name
+ */
+function cleanStationName(value) {
+  if (!value) return ''
+
+  const cleaned = String(value)
+    // Remove INARA artifact characters (unicode boxes, replacement chars)
+    .replace(INARA_ARTIFACT_PATTERN, '')
+    // Remove percentage-based metadata (e.g., "-20% Hardpoints", "+15% Modules")
+    // Matches: +/-digits% followed by word characters
+    .replace(/[+-]\d+%\s*\w+/g, '')
+    // Remove trailing/leading whitespace and collapse multiple spaces
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return cleaned
 }
 
 /**
@@ -152,14 +189,15 @@ const registry = new ScraperRegistry()
 module.exports = {
   ScraperRegistry,
   registry,
-  
+
   // Utility functions for scrapers
   parseNumber,
   parseDistance,
   cleanText,
+  cleanStationName,
   parseTimestamp,
   parseStationLink,
-  
+
   // Re-export cheerio load for convenience
   cheerioLoad: load
 }

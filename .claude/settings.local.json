@@ -22,7 +22,11 @@
       "Bash(findstr:*)",
       "Read(//e/**)",
       "Bash(timeout /t 10)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(dir /B \"resources\\mock-game-data\\inara\")",
+      "Bash(dir resourcesmock-game-datainara /B)",
+      "Bash(timeout /t 5)",
+      "Bash(del test-clean-station-name.js)"
     ],
     "deny": [],
     "ask": []

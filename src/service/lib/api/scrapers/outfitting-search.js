@@ -9,6 +9,7 @@ const {
   parseNumber,
   parseDistance,
   cleanText,
+  cleanStationName,
   parseTimestamp,
   parseStationLink,
   cheerioLoad
@@ -103,11 +104,13 @@ function parseOutfittingSearchResults(html, options = {}) {
 
       // Extract station name and system name from first cell
       // Format: "StationName | SystemName"
+      // Note: INARA may append metadata like "-20% Hardpoints" or unicode artifacts
       const cellText = cleanText(firstCell.text())
       const parts = cellText.split('|').map(s => s.trim())
 
-      const stationName = parts[0] || cleanText(stationLink.text())
-      const systemName = parts[1] || null
+      // Clean station and system names to remove INARA artifacts and metadata
+      const stationName = cleanStationName(parts[0] || stationLink.text())
+      const systemName = cleanStationName(parts[1] || '')
       const stationUrl = stationLink.attr('href') || null
 
       // Cell 1: Allegiance (optional)
@@ -147,7 +150,8 @@ function parseOutfittingSearchResults(html, options = {}) {
       let stationType = 'Unknown'
       const stationIcon = firstCell.find('img').first()
       if (stationIcon.length) {
-        stationType = stationIcon.attr('title') || stationIcon.attr('alt') || 'Unknown'
+        const rawType = stationIcon.attr('title') || stationIcon.attr('alt') || 'Unknown'
+        stationType = cleanText(rawType)
       }
 
       // Price and stock not typically shown in nearest-outfitting results
