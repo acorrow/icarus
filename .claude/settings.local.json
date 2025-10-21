@@ -31,7 +31,11 @@
       "Bash(for file in src/client/pages/inara/{cargo,index,media-terminal,search}.js)",
       "Bash(do echo \"=== $file ===\")",
       "Bash(done)",
-      "Bash(sort -t: -k2 -rn)"
+      "Bash(sort -t: -k2 -rn)",
+      "Bash(del:*)",
+      "Bash(if exist \"e:\\icarus\\test\\test-station-scraper.js\" del \"e:\\icarus\\test\\test-station-scraper.js\")",
+      "Bash(cmd /c \"del /F /Q e:\\icarus\\src\\client\\pages\\inara\\test-*.js\")",
+      "Bash(cmd /c \"cd /d e:\\icarus && del /F /Q test-scraper-parse.js test-commodity-search.js test-cell-0-debug.js test-explosives-fixed.js test-distance-parsing.js test-explosives-response.js test-table-headers.js test-scraper-debug.js 2>nul\")"
     ],
     "deny": [],
     "ask": []

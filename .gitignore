@@ -7,3 +7,8 @@ temp/
 .next
 *.log
 resources/cache/*
+
+# Test files (development only - do not commit)
+src/client/pages/**/test-*.js
+test-*.js
+scripts/test-*.js

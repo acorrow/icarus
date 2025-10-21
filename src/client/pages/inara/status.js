@@ -18,6 +18,7 @@ import { stationIconFromType, getStationIconName } from 'lib/station-icons'
 import { getInaraStrings, getInaraString } from 'lib/inara-addon'
 import { normaliseName, normaliseCommodityKey, normaliseFactionKey, NON_COMMODITY_KEYS } from 'lib/normalization'
 import { fetchWithCache, clearCache } from 'lib/inara-request-cache'
+import { getCachedMissions, setCachedMissions } from 'lib/inara/missions-cache'
 import Layout from 'components/layout'
 import Panel from 'components/panel'
 import Icons from 'lib/icons'
@@ -873,8 +874,6 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
   )
 })
 
-const MISSIONS_CACHE_KEY = 'icarus.inaraMiningMissions.v1'
-const MISSIONS_CACHE_LIMIT = 8
 const TABLE_SCROLL_AREA_STYLE = {
   overflowY: 'auto'
 }
@@ -882,79 +881,6 @@ const STATION_TABLE_SCROLL_AREA_STYLE = {
   minHeight: 'max(0px, calc(var(--inara-viewport-height, 100vh) - 340px))',
   maxHeight: 'max(0px, calc(var(--inara-viewport-height, 100vh) - 340px))',
   overflowY: 'auto'
-}
-
-function getMissionsCacheStorage () {
-  if (typeof window === 'undefined') {
-    return { entries: {} }
-  }
-
-  try {
-    const raw = window.localStorage.getItem(MISSIONS_CACHE_KEY)
-    if (!raw) return { entries: {} }
-    const parsed = JSON.parse(raw)
-    if (!parsed || typeof parsed !== 'object') return { entries: {} }
-    const entries = parsed.entries && typeof parsed.entries === 'object' ? parsed.entries : {}
-    return { entries }
-  } catch (err) {
-    return { entries: {} }
-  }
-}
-
-function saveMissionsCacheStorage (cache) {
-  if (typeof window === 'undefined') return
-  try {
-    window.localStorage.setItem(MISSIONS_CACHE_KEY, JSON.stringify(cache))
-  } catch (err) {
-    // Ignore storage write errors (e.g. quota exceeded or private mode)
-  }
-}
-
-function getCachedMissions (system) {
-  const key = normaliseName(system)
-  if (!key) return null
-
-  const cache = getMissionsCacheStorage()
-  const entry = cache.entries?.[key]
-  if (!entry || typeof entry !== 'object') return null
-
-  const missions = Array.isArray(entry.missions) ? entry.missions : []
-
-  return {
-    missions,
-    message: typeof entry.message === 'string' ? entry.message : '',
-    error: typeof entry.error === 'string' ? entry.error : '',
-    sourceUrl: typeof entry.sourceUrl === 'string' ? entry.sourceUrl : '',
-    timestamp: typeof entry.timestamp === 'number' ? entry.timestamp : null
-  }
-}
-
-function setCachedMissions (system, payload) {
-  if (typeof window === 'undefined') return
-
-  const key = normaliseName(system)
-  if (!key) return
-
-  const cache = getMissionsCacheStorage()
-  cache.entries = cache.entries || {}
-
-  cache.entries[key] = {
-    missions: Array.isArray(payload.missions) ? payload.missions : [],
-    message: typeof payload.message === 'string' ? payload.message : '',
-    error: typeof payload.error === 'string' ? payload.error : '',
-    sourceUrl: typeof payload.sourceUrl === 'string' ? payload.sourceUrl : '',
-    timestamp: Date.now()
-  }
-
-  const keys = Object.keys(cache.entries)
-  if (keys.length > MISSIONS_CACHE_LIMIT) {
-    keys.sort((a, b) => (cache.entries[b]?.timestamp || 0) - (cache.entries[a]?.timestamp || 0))
-    for (let i = MISSIONS_CACHE_LIMIT; i < keys.length; i++) {
-      delete cache.entries[keys[i]]
-    }
-  }
-
-  saveMissionsCacheStorage({ entries: cache.entries })
 }
 
 function findSystemObjectByName (systemData, name) {
@@ -1004,15 +930,6 @@ function formatReputationPercent(value) {
   const percentage = Math.round(value * 100)
   const sign = percentage > 0 ? '+' : ''
   return `${sign}${percentage}%`
-}
-
-function shouldDebugFactionStandings () {
-  if (typeof window === 'undefined') return false
-  try {
-    return window.localStorage.getItem('inaraDebugFactions') === 'true'
-  } catch (err) {
-    return false
-  }
 }
 
 let factionStandingsCache = null
@@ -1093,7 +1010,6 @@ function useFactionStandings() {
 
 function getFactionStandingDisplay(factionName, standings) {
   const key = normaliseFactionKey(factionName)
-  const debug = shouldDebugFactionStandings()
   const defaultResult = {
     info: null,
     className: null,
@@ -1106,32 +1022,12 @@ function getFactionStandingDisplay(factionName, standings) {
   }
 
   if (!key || !standings) {
-    if (debug && factionName) {
-      console.debug('[INARA] Faction lookup skipped', { factionName, key, hasStandings: !!standings })
-    }
     return defaultResult
   }
 
   const info = standings[key]
   if (!info) {
-    if (debug) {
-      console.debug('[INARA] Faction standing missing', {
-        factionName,
-        key,
-        availableCount: Object.keys(standings || {}).length
-      })
-    }
     return defaultResult
-  }
-
-  if (debug) {
-    console.debug('[INARA] Faction standing resolved', {
-      factionName,
-      key,
-      standing: info.standing,
-      relation: info.relation,
-      reputation: info.reputation
-    })
   }
 
   const relationLabel = typeof info.relation === 'string' && info.relation.trim()
@@ -2152,20 +2048,11 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   }, [])
 
   const fetchCurrentSystem = useCallback(({ allowAutoSelect = false } = {}) => {
-    console.log('[fetchCurrentSystem] Fetching current system from /api/current-system')
     fetch('/api/current-system')
-      .then(res => {
-        console.log('[fetchCurrentSystem] Response received, status:', res.status)
-        return res.json()
-      })
+      .then(res => res.json())
       .then(data => {
-        console.log('[fetchCurrentSystem] Data received:', data)
-        if (!isMounted.current) {
-          console.log('[fetchCurrentSystem] Component unmounted, ignoring data')
-          return
-        }
+        if (!isMounted.current) return
         setCurrentSystem(data.currentSystem)
-        console.log('[fetchCurrentSystem] Set current system to:', data.currentSystem?.name)
         const seen = new Set()
         const opts = []
         if (data.currentSystem?.name) {
@@ -2178,12 +2065,9 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
             seen.add(sys.name)
           }
         })
-        console.log('[fetchCurrentSystem] System options:', opts)
         setSystemOptions(opts)
         const shouldAutoSelect = allowAutoSelect && autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
-        console.log('[fetchCurrentSystem] Auto-select check:', { allowAutoSelect, autoSelectCurrent, autoSelectApplied: autoSelectApplied.current, hasName: !!data.currentSystem?.name, shouldAutoSelect })
         if (shouldAutoSelect) {
-          console.log('[fetchCurrentSystem] Auto-selecting system:', data.currentSystem.name)
           setSystemFromName(data.currentSystem.name)
           autoSelectApplied.current = true
         }
@@ -2324,15 +2208,12 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
   }, [])
 
   const trimmedSystem = useMemo(() => {
-    console.log('[MissionsPanel] currentSystem =', currentSystem)
     if (typeof currentSystem?.name === 'string') {
       const value = currentSystem.name.trim()
       if (value) {
-        console.log('[MissionsPanel] Trimmed system:', value)
         return value
       }
     }
-    console.log('[MissionsPanel] No valid system name')
     return ''
   }, [currentSystem?.name])
 
@@ -2460,7 +2341,6 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
   }, [trimmedSystem])
 
   useEffect(() => {
-    console.log('[MissionsPanel] Render effect - Status:', status, 'Missions:', missions.length, 'Data:', missions.slice(0, 2))
     if (status !== 'populated' || !missions.length) return
     return animateTableEffect()
   }, [status, missions])
@@ -2602,7 +2482,6 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
   const [commodityContext, setCommodityContext] = useState(null)
   const [stationSortField, setStationSortField] = useState('price')
   const [stationSortDirection, setStationSortDirection] = useState('desc')
-  // Removed usingMockCargo and setUsingMockCargo
   const tableContainerRef = useRef(null)
 
   useEffect(() => {
@@ -2702,8 +2581,6 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
       setValuation(prev => ({ ...prev, results: [] }))
       return
     }
-
-    // Removed mock cargo logic
 
     let cancelled = false
     setStatus('loading')
@@ -3697,7 +3574,6 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
                 ) : null}
 
                 {renderStatusBanner()}
-                {/* Removed mock cargo manifest notice */}
 
                 {status === 'ready' && hasCargo && hasDisplayableRows && (
                   <div className={styles.dataTableContainer} ref={tableContainerRef}>

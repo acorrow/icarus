@@ -667,3 +667,72 @@ See `resources/mock-game-data/README.md` for complete scraper engine documentati
   - Ensure animated feedback triggers for all relevant transaction types, including jackpot intercepts.
 
 Implementation notes and diagnostic steps for these features are maintained here to ensure CODEX agents and contributors have a canonical reference for frontend/backend sync, feature flag handling, and animated feedback logic.
+
+## Client-Side Utilities
+
+### Missions Cache (`src/client/lib/inara/missions-cache.js`)
+
+**Purpose:** Provides localStorage-based caching for INARA mining mission data with LRU (Least Recently Used) eviction.
+
+**Implementation:**
+- **Cache Key:** `icarus.inaraMiningMissions.v1`
+- **Cache Limit:** 8 star systems (configurable via `MISSIONS_CACHE_LIMIT`)
+- **Eviction Strategy:** LRU - when cache exceeds limit, oldest entries (by timestamp) are removed
+- **Persistence:** Browser localStorage (survives page reloads, per-origin)
+
+**Exports:**
+```javascript
+// Retrieve cached missions for a system
+getCachedMissions(system: string): Object | null
+
+// Store missions to cache with LRU eviction
+setCachedMissions(system: string, payload: Object): void
+```
+
+**Data Structure:**
+```javascript
+{
+  missions: Array,      // Array of mission objects
+  message: string,      // Optional message from API
+  error: string,        // Optional error message
+  sourceUrl: string,    // Source URL for data
+  timestamp: number     // Cache timestamp (Date.now())
+}
+```
+
+**Usage Pattern:**
+```javascript
+import { getCachedMissions, setCachedMissions } from 'lib/inara/missions-cache'
+
+// Check cache first
+const cached = getCachedMissions(systemName)
+if (cached) {
+  // Use cached data immediately, optionally refresh in background
+  setMissions(cached.missions)
+}
+
+// Fetch fresh data
+const response = await fetch('/api/inara-missions', { ... })
+const data = await response.json()
+
+// Update cache
+setCachedMissions(systemName, {
+  missions: data.missions,
+  message: data.message,
+  error: data.error,
+  sourceUrl: data.sourceUrl
+})
+```
+
+**Benefits:**
+- **Performance:** Instant display of previously-loaded systems
+- **Offline Support:** Cached data available without network
+- **User Experience:** Reduces perceived load time for frequently-visited systems
+- **Resource Management:** LRU eviction prevents unbounded cache growth
+
+**Implementation Notes:**
+- Extracted from `src/client/pages/inara/status.js` during 2025-10-21 cleanup
+- Previously inline (~85 lines), now modular and reusable
+- Includes comprehensive JSDoc documentation
+- Safe against localStorage quota exceeded (silently fails on write errors)
+- Returns empty cache object when localStorage unavailable (SSR-safe)
