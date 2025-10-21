@@ -4399,20 +4399,6 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       filters
     }
 
-    const shouldUseMockData = typeof window !== 'undefined' && window.localStorage.getItem('inaraUseMockData') === 'true'
-    if (shouldUseMockData) {
-      const mockRoutes = generateMockTradeRoutes({
-        systemName: trimmedTargetSystem,
-        cargoCapacity
-      })
-
-      applyResults(mockRoutes, {
-        message: 'Mock trade routes loaded via the Trade Route Layout Sandbox. Disable mock data in INARA settings to restore live results.'
-      })
-      setIsRefreshing(false)
-      return
-    }
-
     // Reset retry counter
     setRetryAttempt(0)
 
