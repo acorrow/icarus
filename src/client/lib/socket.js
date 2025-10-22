@@ -207,6 +207,11 @@ function handleSandboxEvent (name, message) {
 }
 
 function SocketProvider ({ children }) {
+  // Skip SSR - only run in browser
+  if (typeof window === 'undefined') {
+    return <SocketContext.Provider value={defaultSocketState}>{children}</SocketContext.Provider>
+  }
+
   const [socketState, setSocketState] = useState(defaultSocketState)
 
   useEffect(() => {
@@ -227,7 +232,13 @@ function SocketProvider ({ children }) {
   )
 }
 
-function useSocket () { return useContext(SocketContext) }
+function useSocket () {
+  // Return default state during SSR
+  if (typeof window === 'undefined') {
+    return defaultSocketState
+  }
+  return useContext(SocketContext)
+}
 
 function sendEvent (name, message = null) {
   if (isLayoutSandbox()) {

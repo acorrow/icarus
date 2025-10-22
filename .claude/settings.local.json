@@ -45,7 +45,8 @@
       "Bash(\".\\ICARUS Service.exe\" --help)",
       "Bash(\"e:\\icarus\\build\\bin\\ICARUS Service.exe\" --help)",
       "Bash(npm run build:*)",
-      "Bash(\"e:\\icarus\\build\\bin\\ICARUS Service.exe\" --version)"
+      "Bash(\"e:\\icarus\\build\\bin\\ICARUS Service.exe\" --version)",
+      "Bash(1)"
     ],
     "deny": [],
     "ask": []
