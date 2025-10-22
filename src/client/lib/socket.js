@@ -12,6 +12,8 @@ let socket = null // Store socket connection (defaults to null)
 let callbackHandlers = {} // Store callbacks waiting to be executed (pending response from server)
 let deferredEventQueue = [] // Store events waiting to be sent (used when server is not ready yet or offline)
 let recentBroadcastEvents = 0
+let retryCount = 0 // Track reconnection attempts for exponential backoff
+const MAX_RETRIES = 10 // Maximum retry attempts before giving up
 
 const defaultSocketState = {
   connected: false, // Boolean to indicate current connection status
@@ -111,6 +113,9 @@ function connect (setSocketState) {
   socket.onopen = async (e) => {
     socketDebugMessage('Connected to socket server')
 
+    // Reset retry count on successful connection
+    retryCount = 0
+
     setSocketState(prevState => ({
       ...prevState,
       active: socketRequestsPending(),
@@ -140,7 +145,7 @@ function connect (setSocketState) {
     // If we are fully loaded, then set 'ready' state to true, otherwise wait
     // until get a loadingProgress event that indicates the service is loaded
     const loadingStats = await sendEvent('getLoadingStatus')
-    if (loadingStats.loadingComplete) {
+    if (loadingStats && loadingStats.loadingComplete) {
       setSocketState(prevState => ({
         ...prevState,
         ready: true
@@ -156,7 +161,24 @@ function connect (setSocketState) {
       connected: false,
       ready: false
     }))
-    setTimeout(() => { connect(setSocketState) }, 5000)
+
+    // Exponential backoff with jitter: 1s, 2s, 4s, 8s, 16s, max 32s
+    if (retryCount < MAX_RETRIES) {
+      const backoff = Math.min(1000 * Math.pow(2, retryCount), 32000)
+      const jitter = Math.random() * 1000
+      const delay = backoff + jitter
+
+      retryCount++
+      socketDebugMessage(`Reconnecting in ${Math.round(delay / 1000)}s (attempt ${retryCount}/${MAX_RETRIES})`)
+
+      setTimeout(() => { connect(setSocketState) }, delay)
+    } else {
+      socketDebugMessage('Max reconnection attempts reached')
+      setSocketState(prevState => ({
+        ...prevState,
+        error: 'Connection failed after multiple attempts. Please refresh the page.'
+      }))
+    }
   }
 
   socket.onerror = function (err) {

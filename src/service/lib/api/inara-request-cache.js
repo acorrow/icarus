@@ -4,6 +4,7 @@ const fileCache = require('./inara-file-cache.js')
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000 // Keep for backward compatibility but use 30 minutes for INARA
 const MAX_CACHE_SIZE = 200 // Not used with file cache
+const REQUEST_TIMEOUT_MS = 30000 // 30 second timeout for all HTTP requests
 
 function getInFlightStore () {
   if (!global.__INARA_FETCH_INFLIGHT__) {
@@ -99,7 +100,7 @@ async function fetchWithInaraCache (url, options = {}) {
 
   try {
     if (method !== 'GET') {
-      const response = await fetch({ url, ...fetchOptions, method })
+      const response = await fetch({ url, ...fetchOptions, method, timeout: REQUEST_TIMEOUT_MS })
       const duration = Date.now() - startTime
       clearTimeout(timeoutWarning)
       
@@ -180,7 +181,7 @@ async function fetchWithInaraCache (url, options = {}) {
     }
 
     const fetchPromise = (async () => {
-      const response = await fetch({ url, ...fetchOptions, method: 'GET', responseType: 'text' })
+      const response = await fetch({ url, ...fetchOptions, method: 'GET', responseType: 'text', timeout: REQUEST_TIMEOUT_MS })
       const headers = normaliseHeaders(response.headers)
       const body = typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
       const record = {

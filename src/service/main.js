@@ -111,9 +111,14 @@ const tokenLedgerUserId = process.env.INARA_TOKEN_USER_ID || process.env.ICARUS_
 const tokenLedger = new TokenLedger({ userId: tokenLedgerUserId })
 global.TOKEN_LEDGER = tokenLedger
 
-// Initalise simple in-memory object cache (reset when program restarted)
+// Initalise LRU cache with eviction policy (reset when program restarted)
+const { LRUCache } = require('lru-cache')
 global.CACHE = {
-  SYSTEMS: {}
+  SYSTEMS: new LRUCache({
+    max: 500, // Maximum 500 systems cached
+    ttl: 1800000, // 30 minutes TTL
+    updateAgeOnGet: true // Reset TTL on access
+  })
 }
 
 // Don't load events till globals are set
@@ -132,7 +137,7 @@ function setupApiRoutes (app) {
   app.use((req, res, next) => {
     if (req.url.startsWith('/api/')) {
       logger.info('→ %s %s', req.method, req.url)
-      
+
       // Log response completion
       const originalEnd = res.end
       res.end = function(chunk, encoding) {
@@ -142,7 +147,26 @@ function setupApiRoutes (app) {
     }
     next()
   })
-  
+
+  // Add HTTP cache headers middleware for API routes
+  app.use((req, res, next) => {
+    if (req.url.startsWith('/api/')) {
+      // Set cache control headers (30 minutes for INARA data)
+      res.setHeader('Cache-Control', 'public, max-age=1800')
+      res.setHeader('Vary', 'Accept-Encoding')
+
+      // Only set Content-Type if not already set by route handler
+      const originalEnd = res.end
+      res.end = function(chunk, encoding) {
+        if (!res.getHeader('Content-Type')) {
+          res.setHeader('Content-Type', 'application/json; charset=utf-8')
+        }
+        originalEnd.call(this, chunk, encoding)
+      }
+    }
+    next()
+  })
+
   logger.info('Registering API routes...')
   
   // UI configuration endpoint
@@ -211,19 +235,64 @@ const webSocketServer = new WebSocket.Server({ server: httpServer })
 
 function webSocketDebugMessage () { /* console.log(...arguments) */ }
 
+// WebSocket message validation schema
+const Joi = require('joi')
+const messageSchema = Joi.object({
+  requestId: Joi.string().required(),
+  name: Joi.string().alphanum().max(100).required(),
+  message: Joi.object().unknown(true).allow(null).optional()
+}).max(3) // Only allow these 3 fields
+
 // Bind message event handler to WebSocket server before starting server
 webSocketServer.on('connection', socket => {
   webSocketDebugMessage('WebSocket connection open')
   socket.on('message', async (event) => {
-    const { requestId, name, message } = JSON.parse(event)
-    webSocketDebugMessage('WebSocket message received', name, event.toString())
-    if (eventHandlers[name]) {
-      try {
-        const data = await eventHandlers[name](message || {})
-        socket.send(JSON.stringify({ requestId, name, message: data }))
-      } catch (e) {
-        console.error('ERROR_SOCKET_NO_EVENT_HANDLER', name, e)
+    try {
+      // Convert Buffer to string if needed
+      const messageString = Buffer.isBuffer(event) ? event.toString('utf8') : event
+
+      // Validate message size (1MB max)
+      if (messageString.length > 1024 * 1024) {
+        logger.error('WebSocket message too large', { size: messageString.length })
+        socket.send(JSON.stringify({
+          error: 'Message too large (max 1MB)'
+        }))
+        return
       }
+
+      // Parse and validate message structure
+      const parsedData = JSON.parse(messageString)
+      const { error, value } = messageSchema.validate(parsedData)
+
+      if (error) {
+        // Silently ignore invalid messages (could be browser dev tools, ping frames, etc.)
+        // Only log if it looks like a real request attempt
+        if (parsedData && typeof parsedData === 'object' && Object.keys(parsedData).length > 0) {
+          webSocketDebugMessage('Ignoring invalid WebSocket message', { error: error.message, keys: Object.keys(parsedData) })
+        }
+        return
+      }
+
+      const { requestId, name, message } = value
+      webSocketDebugMessage('WebSocket message received', name, messageString)
+
+      if (eventHandlers[name]) {
+        try {
+          const data = await eventHandlers[name](message || {})
+          socket.send(JSON.stringify({ requestId, name, message: data }))
+        } catch (e) {
+          logger.error('Event handler error', { name, error: e.message })
+          socket.send(JSON.stringify({
+            requestId,
+            error: 'Event handler failed'
+          }))
+        }
+      }
+    } catch (e) {
+      logger.error('WebSocket message processing error', { error: e.message })
+      socket.send(JSON.stringify({
+        error: 'Failed to process message'
+      }))
     }
   })
 })
