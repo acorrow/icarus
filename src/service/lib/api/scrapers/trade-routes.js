@@ -11,7 +11,7 @@ const {
   cleanText,
   parseStationLink,
   cheerioLoad
-} = require('./scraper-engine.js')
+} = require('../scraper-engine.js')
 
 /**
  * Parse first number from text

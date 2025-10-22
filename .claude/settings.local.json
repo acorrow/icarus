@@ -37,7 +37,15 @@
       "Bash(cmd /c \"del /F /Q e:\\icarus\\src\\client\\pages\\inara\\test-*.js\")",
       "Bash(cmd /c \"cd /d e:\\icarus && del /F /Q test-scraper-parse.js test-commodity-search.js test-cell-0-debug.js test-explosives-fixed.js test-distance-parsing.js test-explosives-response.js test-table-headers.js test-scraper-debug.js 2>nul\")",
       "Bash(npm install:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm run test:scrapers:*)",
+      "Bash(dir:*)",
+      "Bash(npm run build:service:*)",
+      "Bash(\".\\ICARUS Service.exe\" --help)",
+      "Bash(\"e:\\icarus\\build\\bin\\ICARUS Service.exe\" --help)",
+      "Bash(npm run build:*)",
+      "Bash(\"e:\\icarus\\build\\bin\\ICARUS Service.exe\" --version)"
     ],
     "deny": [],
     "ask": []

@@ -8,7 +8,7 @@
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
-const { getScraper, runScraper, testScraper, getAllScrapers } = require('../lib/api/scraper-index.js')
+const { getScraper, runScraper, testScraper, getAllScrapers } = require('../src/service/lib/api/scraper-index.js')
 
 /**
  * Fetch HTML from a URL
