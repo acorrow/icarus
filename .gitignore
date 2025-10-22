@@ -12,3 +12,7 @@ resources/cache/*
 src/client/pages/**/test-*.js
 test-*.js
 scripts/test-*.js
+
+# Temporary/cached HTML files from INARA scraping
+test-*.html
+temp-*.html
