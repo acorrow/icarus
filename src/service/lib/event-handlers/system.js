@@ -77,8 +77,13 @@ class System {
   }
 
   async getSystem ({ name = null, useCache = true } = {}) {
-    const currentLocation = await this.getCurrentLocation()
-    console.log('[System.getSystem] currentLocation:', currentLocation?.name || 'UNKNOWN', 'docked:', !!currentLocation?.docked, 'station:', currentLocation?.station || 'N/A')
+    // OPTIMIZATION: Only fetch current location if no system name was provided
+    // This prevents unnecessary getCurrentLocation() calls when we already know which system to fetch
+    let currentLocation = null
+    if (!name || !name.trim()) {
+      currentLocation = await this.getCurrentLocation()
+      console.log('[System.getSystem] currentLocation:', currentLocation?.name || 'UNKNOWN', 'docked:', !!currentLocation?.docked, 'station:', currentLocation?.station || 'N/A')
+    }
 
     // If no system name was specified, get the star system the player is in
     const systemName = name?.trim() ?? currentLocation?.name ?? null

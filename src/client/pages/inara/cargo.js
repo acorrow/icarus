@@ -22,17 +22,23 @@ export default function InaraCargoPage () {
     setCargo(newShip?.cargo?.inventory ?? [])
   }, [connected, ready])
 
-  useEffect(() => eventListener('gameStateChange', async () => {
-    const newShip = await sendEvent('getShipStatus')
-    setShip(newShip)
-    setCargo(newShip?.cargo?.inventory ?? [])
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', async () => {
+      const newShip = await sendEvent('getShipStatus')
+      setShip(newShip)
+      setCargo(newShip?.cargo?.inventory ?? [])
+    })
+    return unsubscribe
+  }, [])
 
-  useEffect(() => eventListener('newLogEntry', async () => {
-    const newShip = await sendEvent('getShipStatus')
-    setShip(newShip)
-    setCargo(newShip?.cargo?.inventory ?? [])
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async () => {
+      const newShip = await sendEvent('getShipStatus')
+      setShip(newShip)
+      setCargo(newShip?.cargo?.inventory ?? [])
+    })
+    return unsubscribe
+  }, [])
 
   const cargoCount = ship?.cargo?.count ?? 0
   const cargoCapacity = ship?.cargo?.capacity ?? 0

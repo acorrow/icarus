@@ -372,11 +372,14 @@ function SoundSettings ({ visible }) {
   }, [visible])
 
   // Listen for changes to preferences triggered by other terminals
-  useEffect(() => eventListener('syncMessage', async (event) => {
-    if (event.name === 'preferences') {
-      setPreferences(await sendEvent('getPreferences'))
-    }
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('syncMessage', async (event) => {
+      if (event.name === 'preferences') {
+        setPreferences(await sendEvent('getPreferences'))
+      }
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>
@@ -450,14 +453,17 @@ function ThemeSettings () {
     return () => window.removeEventListener('storage', storageEventHandler)
   }, [])
 
-  useEffect(() => eventListener('syncMessage', async (event) => {
-    if (event.name === 'colorSettings') {
-      setPrimaryColor(getPrimaryColorAsHex())
-      setPrimaryColorModifier(getPrimaryColorModifier())
-      setSecondaryColor(getSecondaryColorAsHex())
-      setSecondaryColorModifier(getSecondaryColorModifier())
-    }
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('syncMessage', async (event) => {
+      if (event.name === 'colorSettings') {
+        setPrimaryColor(getPrimaryColorAsHex())
+        setPrimaryColorModifier(getPrimaryColorModifier())
+        setSecondaryColor(getSecondaryColorAsHex())
+        setSecondaryColorModifier(getSecondaryColorModifier())
+      }
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <div className='modal-dialog__panel modal-dialog__panel--with-navigation scrollable'>

@@ -32,12 +32,15 @@ export default function EngineeringEngineersPage () {
     setComponentReady(true)
   }, [connected, ready, router.isReady, query])
 
-  useEffect(() => eventListener('newLogEntry', async (log) => {
-    if (['Location', 'FSDJump'].includes(log.event)) {
-      const newSystem = await sendEvent('getSystem')
-      if (newSystem?.address) setCurrentSystem(newSystem)
-    }
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async (log) => {
+      if (['Location', 'FSDJump'].includes(log.event)) {
+        const newSystem = await sendEvent('getSystem')
+        if (newSystem?.address) setCurrentSystem(newSystem)
+      }
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <Layout connected={connected} active={active} ready={ready} loader={!componentReady}>

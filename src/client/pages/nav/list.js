@@ -80,25 +80,28 @@ export default function NavListPage () {
     setComponentReady(true)
   }, [connected, ready, router.isReady])
 
-  useEffect(() => eventListener('newLogEntry', async (log) => {
-    if (['Location', 'FSDJump'].includes(log.event)) {
-      const newSystem = await sendEvent('getSystem', { useCache: false })
-      if (!newSystem) return // If no result, don't update map
-      setSystemObject(null) // Clear selected object
-      setSystem(newSystem)
-    }
-    if (['FSSDiscoveryScan', 'FSSAllBodiesFound', 'SAASignalsFound', 'FSSBodySignals', 'Scan'].includes(log.event)) {
-      const newSystem = await sendEvent('getSystem', { name: system?.name, useCache: false })
-      // Update system object so NavigationInspectorPanel is also updated
-      if (newSystem) {
-        if (systemObject?.name) {
-          const newSystemObject = newSystem.objectsInSystem.filter(child => child.name.toLowerCase() === systemObject.name?.toLowerCase())[0]
-          setSystemObject(newSystemObject)
-        }
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async (log) => {
+      if (['Location', 'FSDJump'].includes(log.event)) {
+        const newSystem = await sendEvent('getSystem', { useCache: false })
+        if (!newSystem) return // If no result, don't update map
+        setSystemObject(null) // Clear selected object
         setSystem(newSystem)
       }
-    }
-  }), [system, systemObject])
+      if (['FSSDiscoveryScan', 'FSSAllBodiesFound', 'SAASignalsFound', 'FSSBodySignals', 'Scan'].includes(log.event)) {
+        const newSystem = await sendEvent('getSystem', { name: system?.name, useCache: false })
+        // Update system object so NavigationInspectorPanel is also updated
+        if (newSystem) {
+          if (systemObject?.name) {
+            const newSystemObject = newSystem.objectsInSystem.filter(child => child.name.toLowerCase() === systemObject.name?.toLowerCase())[0]
+            setSystemObject(newSystemObject)
+          }
+          setSystem(newSystem)
+        }
+      }
+    })
+    return unsubscribe
+  }, [system, systemObject])
 
   useEffect(() => {
     if (!router.isReady) return

@@ -54,17 +54,23 @@ export default function ShipStatusPage () {
     })
   }, [cmdrStatus])
 
-  useEffect(() => eventListener('gameStateChange', async () => {
-    setShip(await sendEvent('getShipStatus'))
-    setCmdrStatus(await sendEvent('getCmdrStatus'))
-  }), [])
-
-  useEffect(() => eventListener('newLogEntry', async (log) => {
-    setShip(await sendEvent('getShipStatus'))
-    if (['Location', 'FSDJump'].includes(log.event)) {
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', async () => {
+      setShip(await sendEvent('getShipStatus'))
       setCmdrStatus(await sendEvent('getCmdrStatus'))
-    }
-  }), [])
+    })
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async (log) => {
+      setShip(await sendEvent('getShipStatus'))
+      if (['Location', 'FSDJump'].includes(log.event)) {
+        setCmdrStatus(await sendEvent('getCmdrStatus'))
+      }
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <Layout connected={connected} active={active} ready={ready} className='ship-panel'>

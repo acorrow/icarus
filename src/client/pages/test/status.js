@@ -8,15 +8,21 @@ export default function StatusPage () {
     setCmdrStatus(await sendEvent('getCmdrStatus'))
   }, [])
 
-  useEffect(() => eventListener('newLogEntry', async (log) => {
-    if (['Location', 'FSDJump'].includes(log.event)) {
-      setCmdrStatus(await sendEvent('getCmdrStatus'))
-    }
-  }))
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async (log) => {
+      if (['Location', 'FSDJump'].includes(log.event)) {
+        setCmdrStatus(await sendEvent('getCmdrStatus'))
+      }
+    })
+    return unsubscribe
+  }, [])
 
-  useEffect(() => eventListener('gameStateChange', async (log) => {
-    setCmdrStatus(await sendEvent('getCmdrStatus'))
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', async (log) => {
+      setCmdrStatus(await sendEvent('getCmdrStatus'))
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <div style={{ padding: '1rem' }}>

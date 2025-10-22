@@ -42,20 +42,26 @@ export default function NavListPage () {
     setComponentReady(true)
   }, [connected, ready, router.isReady])
 
-  useEffect(() => eventListener('newLogEntry', async (log) => {
-    if (['Location', 'FSDJump'].includes(log.event)) {
-      const newNavRoute = await sendEvent('getNavRoute')
-      if (newNavRoute) setNavRoute(newNavRoute)
-    }
-  }))
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async (log) => {
+      if (['Location', 'FSDJump'].includes(log.event)) {
+        const newNavRoute = await sendEvent('getNavRoute')
+        if (newNavRoute) setNavRoute(newNavRoute)
+      }
+    })
+    return unsubscribe
+  }, [])
 
-  useEffect(() => eventListener('gameStateChange', async (log) => {
-    const newNavRoute = await sendEvent('getNavRoute')
-    // TODO Check destination system and only update navroute if different
-    // to current destination and if it is then execute setScrolled(false) so
-    // that the route scroll position will update
-    if (newNavRoute) setNavRoute(newNavRoute)
-  }))
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', async (log) => {
+      const newNavRoute = await sendEvent('getNavRoute')
+      // TODO Check destination system and only update navroute if different
+      // to current destination and if it is then execute setScrolled(false) so
+      // that the route scroll position will update
+      if (newNavRoute) setNavRoute(newNavRoute)
+    })
+    return unsubscribe
+  }, [])
 
   useEffect(() => {
     if (!router.isReady) return

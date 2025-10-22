@@ -21,17 +21,23 @@ export default function ShipCargoPage () {
     setCargo(newShip?.cargo?.inventory ?? [])
   }, [connected, ready])
 
-  useEffect(() => eventListener('gameStateChange', async () => {
-    const newShip = await sendEvent('getShipStatus')
-    setShip(newShip)
-    setCargo(newShip?.cargo?.inventory ?? [])
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', async () => {
+      const newShip = await sendEvent('getShipStatus')
+      setShip(newShip)
+      setCargo(newShip?.cargo?.inventory ?? [])
+    })
+    return unsubscribe
+  }, [])
 
-  useEffect(() => eventListener('newLogEntry', async () => {
-    const newShip = await sendEvent('getShipStatus')
-    setShip(newShip)
-    setCargo(newShip?.cargo?.inventory ?? [])
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async () => {
+      const newShip = await sendEvent('getShipStatus')
+      setShip(newShip)
+      setCargo(newShip?.cargo?.inventory ?? [])
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <Layout connected={connected} active={active} ready={ready}>

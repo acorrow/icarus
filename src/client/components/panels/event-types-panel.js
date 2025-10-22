@@ -19,9 +19,12 @@ export default function EventTypesPanel () {
     setGameEvents(gameEventsToArray(message.eventTypesLoaded))
   }, [connected])
 
-  useEffect(() => eventListener('loadingProgress', (message) => {
-    setGameEvents(gameEventsToArray(message.eventTypesLoaded))
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('loadingProgress', (message) => {
+      setGameEvents(gameEventsToArray(message.eventTypesLoaded))
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <table>

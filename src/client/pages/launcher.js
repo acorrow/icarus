@@ -87,12 +87,15 @@ export default function IndexPage () {
     }, 3000)
   }, [connected])
 
-  useEffect(() => eventListener('loadingProgress', (message) => {
-    setLoadingProgress(message)
-    if (message?.loadingComplete === true) {
-      setTimeout(() => { document.getElementById('loadingProgressBar').style.opacity = 0 }, 500)
-    }
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('loadingProgress', (message) => {
+      setLoadingProgress(message)
+      if (message?.loadingComplete === true) {
+        setTimeout(() => { document.getElementById('loadingProgressBar').style.opacity = 0 }, 500)
+      }
+    })
+    return unsubscribe
+  }, [])
 
   const browserAccessUrl = useMemo(() => {
     if (!hostInfo?.urls?.length) return undefined

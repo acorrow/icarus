@@ -58,57 +58,72 @@ export default function InaraCommoditiesPage () {
   }, [connected, ready])
 
   // Listen for cargo changes
-  useEffect(() => eventListener('gameStateChange', async () => {
-    try {
-      const shipStatus = await sendEvent('getShipStatus')
-      setShip(shipStatus)
-      const inventory = Array.isArray(shipStatus?.cargo?.inventory)
-        ? shipStatus.cargo.inventory
-        : []
-      setCargo(inventory)
-    } catch (err) {
-      console.error('Failed to refresh ship status', err)
-    }
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', async () => {
+      try {
+        const shipStatus = await sendEvent('getShipStatus')
+        setShip(shipStatus)
+        const inventory = Array.isArray(shipStatus?.cargo?.inventory)
+          ? shipStatus.cargo.inventory
+          : []
+        setCargo(inventory)
+      } catch (err) {
+        console.error('Failed to refresh ship status', err)
+      }
+    })
+    return unsubscribe
+  }, [])
 
   // Listen for location changes to update distances
-  useEffect(() => eventListener('Location', async () => {
-    try {
-      const system = await sendEvent('getCurrentSystem')
-      setCurrentSystem(system)
-      // Trigger re-fetch of valuations to get updated distances
-      const shipStatus = await sendEvent('getShipStatus')
-      const inventory = Array.isArray(shipStatus?.cargo?.inventory)
-        ? shipStatus.cargo.inventory
-        : []
-      if (inventory.length > 0) {
-        setCargo([...inventory]) // Force update to trigger valuation refresh
+  useEffect(() => {
+    const unsubscribe = eventListener('Location', async () => {
+      try {
+        const system = await sendEvent('getCurrentSystem')
+        setCurrentSystem(system)
+        // Trigger re-fetch of valuations to get updated distances
+        const shipStatus = await sendEvent('getShipStatus')
+        const inventory = Array.isArray(shipStatus?.cargo?.inventory)
+          ? shipStatus.cargo.inventory
+          : []
+        if (inventory.length > 0) {
+          setCargo([...inventory]) // Force update to trigger valuation refresh
+        }
+      } catch (err) {
+        console.error('Failed to refresh location', err)
       }
-    } catch (err) {
-      console.error('Failed to refresh location', err)
-    }
-  }), [])
+    })
+    return unsubscribe
+  }, [])
 
   // Listen for FSD jumps
-  useEffect(() => eventListener('FSDJump', async () => {
-    try {
-      const system = await sendEvent('getCurrentSystem')
-      setCurrentSystem(system)
-      setIsInHypershift(false) // Exited hyperspace
-    } catch (err) {
-      console.error('Failed to refresh system after jump', err)
-    }
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('FSDJump', async () => {
+      try {
+        const system = await sendEvent('getCurrentSystem')
+        setCurrentSystem(system)
+        setIsInHypershift(false) // Exited hyperspace
+      } catch (err) {
+        console.error('Failed to refresh system after jump', err)
+      }
+    })
+    return unsubscribe
+  }, [])
 
   // Listen for FSD start (entering hypershift)
-  useEffect(() => eventListener('StartJump', () => {
-    setIsInHypershift(true)
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('StartJump', () => {
+      setIsInHypershift(true)
+    })
+    return unsubscribe
+  }, [])
 
   // Listen for FSD exit (supercruise drop)
-  useEffect(() => eventListener('SupercruiseExit', () => {
-    setIsInHypershift(false)
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('SupercruiseExit', () => {
+      setIsInHypershift(false)
+    })
+    return unsubscribe
+  }, [])
 
   // Fetch commodity valuations from INARA
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback, useContext, Fragment, memo } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback, useContext, Fragment, memo } from 'react'
 import animateTableEffect from 'lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from 'lib/socket'
 import { InaraPanelNavItems } from 'lib/navigation-items'
@@ -91,6 +91,134 @@ const SHIP_STATUS_UPDATE_EVENTS = new Set([
 ])
 
 const LARGE_PAD_SIZE_VALUE = '3'
+
+// Context to share current system data across all components using useSystemSelector
+// This prevents duplicate API calls when multiple components need the same data
+const CurrentSystemContext = React.createContext(null)
+
+function CurrentSystemProvider ({ children }) {
+  const existingContext = useContext(CurrentSystemContext)
+  
+  // If we're already inside a provider, don't create a new one (avoid nested providers)
+  if (existingContext) {
+    return children
+  }
+
+  return <CurrentSystemProviderInner>{children}</CurrentSystemProviderInner>
+}
+
+function CurrentSystemProviderInner ({ children }) {
+  const [currentSystem, setCurrentSystem] = useState(null)
+  const [systemOptions, setSystemOptions] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const isMounted = useRef(true)
+  const fetchInProgress = useRef(false)
+  const lastFetchTime = useRef(0)
+  const pendingFetch = useRef(null)
+
+  useEffect(() => {
+    return () => { 
+      isMounted.current = false
+      if (pendingFetch.current) {
+        clearTimeout(pendingFetch.current)
+      }
+    }
+  }, [])
+
+  const fetchCurrentSystem = useCallback(() => {
+    // Prevent duplicate simultaneous fetches
+    if (fetchInProgress.current) return
+    
+    // Debounce: Don't fetch more than once per second
+    const now = Date.now()
+    const timeSinceLastFetch = now - lastFetchTime.current
+    if (timeSinceLastFetch < 1000) {
+      // Schedule a fetch for later if one isn't already scheduled
+      if (!pendingFetch.current) {
+        pendingFetch.current = setTimeout(() => {
+          pendingFetch.current = null
+          fetchCurrentSystem()
+        }, 1000 - timeSinceLastFetch)
+      }
+      return
+    }
+    
+    lastFetchTime.current = now
+    fetchInProgress.current = true
+    setIsLoading(true)
+    
+    fetch('/api/current-system')
+      .then(res => res.json())
+      .then(data => {
+        if (!isMounted.current) return
+        setCurrentSystem(data.currentSystem)
+        const seen = new Set()
+        const opts = []
+        if (data.currentSystem?.name) {
+          opts.push({ name: data.currentSystem.name, distance: 0 })
+          seen.add(data.currentSystem.name)
+        }
+        data.nearby?.forEach(sys => {
+          if (!seen.has(sys.name)) {
+            opts.push(sys)
+            seen.add(sys.name)
+          }
+        })
+        setSystemOptions(opts)
+      })
+      .catch((error) => {
+        console.error('[CurrentSystemProvider] Error fetching current system:', error)
+        if (!isMounted.current) return
+        setCurrentSystem(null)
+      })
+      .finally(() => {
+        fetchInProgress.current = false
+        setIsLoading(false)
+      })
+  }, [])
+
+  useEffect(() => {
+    fetchCurrentSystem()
+  }, [fetchCurrentSystem])
+
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', () => {
+      fetchCurrentSystem()
+    })
+    return unsubscribe
+  }, [fetchCurrentSystem])
+
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', log => {
+      if (!log?.event) return
+      if (['Location', 'FSDJump', 'CarrierJump'].includes(log.event)) {
+        fetchCurrentSystem()
+      }
+    })
+    return unsubscribe
+  }, [fetchCurrentSystem])
+
+  const value = useMemo(() => ({
+    currentSystem,
+    systemOptions,
+    isLoading,
+    refreshCurrentSystem: fetchCurrentSystem
+  }), [currentSystem, systemOptions, isLoading, fetchCurrentSystem])
+
+  return (
+    <CurrentSystemContext.Provider value={value}>
+      {children}
+    </CurrentSystemContext.Provider>
+  )
+}
+
+function useCurrentSystemContext () {
+  const context = useContext(CurrentSystemContext)
+  if (!context) {
+    throw new Error('useCurrentSystemContext must be used within CurrentSystemProvider')
+  }
+  return context
+}
 
 function LoadingSpinner ({ label, inline = false }) {
   return (
@@ -2020,13 +2148,11 @@ function buildRouteIdentity (route) {
 }
 
 function useSystemSelector ({ autoSelectCurrent = false } = {}) {
+  const { currentSystem, systemOptions, refreshCurrentSystem } = useCurrentSystemContext()
   const [systemSelection, setSystemSelection] = useState('')
   const [systemInput, setSystemInput] = useState('')
   const [system, setSystem] = useState('')
-  const [systemOptions, setSystemOptions] = useState([])
-  const [currentSystem, setCurrentSystem] = useState(null)
   const autoSelectApplied = useRef(false)
-  const isMounted = useRef(true)
 
   const setSystemFromName = useCallback((nextValue = '') => {
     const value = typeof nextValue === 'string' ? nextValue : ''
@@ -2044,55 +2170,12 @@ function useSystemSelector ({ autoSelectCurrent = false } = {}) {
   }, [currentSystem?.name, systemSelection, setSystemFromName])
 
   useEffect(() => {
-    return () => { isMounted.current = false }
-  }, [])
-
-  const fetchCurrentSystem = useCallback(({ allowAutoSelect = false } = {}) => {
-    fetch('/api/current-system')
-      .then(res => res.json())
-      .then(data => {
-        if (!isMounted.current) return
-        setCurrentSystem(data.currentSystem)
-        const seen = new Set()
-        const opts = []
-        if (data.currentSystem?.name) {
-          opts.push({ name: data.currentSystem.name, distance: 0 })
-          seen.add(data.currentSystem.name)
-        }
-        data.nearby?.forEach(sys => {
-          if (!seen.has(sys.name)) {
-            opts.push(sys)
-            seen.add(sys.name)
-          }
-        })
-        setSystemOptions(opts)
-        const shouldAutoSelect = allowAutoSelect && autoSelectCurrent && !autoSelectApplied.current && data.currentSystem?.name
-        if (shouldAutoSelect) {
-          setSystemFromName(data.currentSystem.name)
-          autoSelectApplied.current = true
-        }
-      })
-      .catch((error) => {
-        console.error('[fetchCurrentSystem] Error fetching current system:', error)
-        if (!isMounted.current) return
-        setCurrentSystem(null)
-      })
-  }, [autoSelectCurrent, setSystemFromName])
-
-  useEffect(() => {
-    fetchCurrentSystem({ allowAutoSelect: true })
-  }, [fetchCurrentSystem])
-
-  useEffect(() => eventListener('gameStateChange', () => {
-    fetchCurrentSystem({ allowAutoSelect: !autoSelectApplied.current })
-  }), [fetchCurrentSystem])
-
-  useEffect(() => eventListener('newLogEntry', log => {
-    if (!log?.event) return
-    if (['Location', 'FSDJump', 'CarrierJump'].includes(log.event)) {
-      fetchCurrentSystem({ allowAutoSelect: !autoSelectApplied.current })
-    }
-  }), [fetchCurrentSystem])
+    if (!autoSelectCurrent) return
+    if (autoSelectApplied.current) return
+    if (!currentSystem?.name) return
+    setSystemFromName(currentSystem.name)
+    autoSelectApplied.current = true
+  }, [autoSelectCurrent, currentSystem?.name, setSystemFromName])
 
   const handleSystemChange = e => {
     const nextValue = e.target.value
@@ -2555,25 +2638,31 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
     })()
   }, [connected, ready, applyCargoInventory])
 
-  useEffect(() => eventListener('gameStateChange', async () => {
-    try {
-      const shipStatus = await sendEvent('getShipStatus')
-      setShip(shipStatus)
-      applyCargoInventory(shipStatus?.cargo?.inventory)
-    } catch (err) {
-      console.error('Failed to refresh ship status after game state change', err)
-    }
-  }), [applyCargoInventory])
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', async () => {
+      try {
+        const shipStatus = await sendEvent('getShipStatus')
+        setShip(shipStatus)
+        applyCargoInventory(shipStatus?.cargo?.inventory)
+      } catch (err) {
+        console.error('Failed to refresh ship status after game state change', err)
+      }
+    })
+    return unsubscribe
+  }, [applyCargoInventory])
 
-  useEffect(() => eventListener('newLogEntry', async () => {
-    try {
-      const shipStatus = await sendEvent('getShipStatus')
-      setShip(shipStatus)
-      applyCargoInventory(shipStatus?.cargo?.inventory)
-    } catch (err) {
-      console.error('Failed to refresh ship status after new log entry', err)
-    }
-  }), [applyCargoInventory])
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async () => {
+      try {
+        const shipStatus = await sendEvent('getShipStatus')
+        setShip(shipStatus)
+        applyCargoInventory(shipStatus?.cargo?.inventory)
+      } catch (err) {
+        console.error('Failed to refresh ship status after new log entry', err)
+      }
+    })
+    return unsubscribe
+  }, [applyCargoInventory])
 
   useEffect(() => {
     if (!cargo || cargo.length === 0) {
@@ -3979,23 +4068,29 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
     syncShipFiltersWithShipStatus()
   }, [connected, ready, initialShipInfoLoaded, syncShipFiltersWithShipStatus])
 
-  useEffect(() => eventListener('gameStateChange', () => {
-    if (!connected) return
-    syncShipFiltersWithShipStatus()
-    refreshNavRoute()
-  }), [connected, syncShipFiltersWithShipStatus, refreshNavRoute])
-
-  useEffect(() => eventListener('newLogEntry', log => {
-    if (!connected) return
-    const eventName = typeof log?.event === 'string' ? log.event : ''
-    if (!eventName) return
-    if (SHIP_STATUS_UPDATE_EVENTS.has(eventName)) {
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', () => {
+      if (!connected) return
       syncShipFiltersWithShipStatus()
-    }
-    if (eventName === 'NavRoute' || eventName === 'Location' || eventName === 'FSDJump') {
       refreshNavRoute()
-    }
-  }), [connected, syncShipFiltersWithShipStatus, refreshNavRoute])
+    })
+    return unsubscribe
+  }, [connected, syncShipFiltersWithShipStatus, refreshNavRoute])
+
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', log => {
+      if (!connected) return
+      const eventName = typeof log?.event === 'string' ? log.event : ''
+      if (!eventName) return
+      if (SHIP_STATUS_UPDATE_EVENTS.has(eventName)) {
+        syncShipFiltersWithShipStatus()
+      }
+      if (eventName === 'NavRoute' || eventName === 'Location' || eventName === 'FSDJump') {
+        refreshNavRoute()
+      }
+    })
+    return unsubscribe
+  }, [connected, syncShipFiltersWithShipStatus, refreshNavRoute])
 
   const selectedSystemName = useMemo(() => {
     const manual = typeof selectedSystemValue === 'string' ? selectedSystemValue.trim() : ''
@@ -6757,10 +6852,13 @@ function InaraTerminalOverlay () {
     clearBalanceAnimation
   ])
 
-  useEffect(() => eventListener('newLogEntry', log => {
-    if (!log || typeof log !== 'object') return
-    recentLogRef.current = [log, ...recentLogRef.current].slice(0, 6)
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', log => {
+      if (!log || typeof log !== 'object') return
+      recentLogRef.current = [log, ...recentLogRef.current].slice(0, 6)
+    })
+    return unsubscribe
+  }, [])
 
   const advanceCadence = useCallback(() => {
     const state = cadenceRef.current
@@ -7146,42 +7244,70 @@ export default function InaraStatusPage () {
 
   return (
     <InaraThresholdSettingsContext.Provider value={thresholdSettings}>
-      <Layout connected={connected} active={socketActive} ready={ready} loader={loaderVisible} className={styles.inaraLayout}>
-        <Panel
-          layout='full-width'
-          scrollable
-          navigation={inaraTabs}
-          search={false}
-          className={styles.inaraPanel}
-        >
-          <div className={workspaceClassName}>
-            <div className={styles.shell}>
-              <div className={styles.tabPanels}>
-                <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
-                  <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
-                </div>
-                <div style={{ display: activeTab === 'commodities' ? 'block' : 'none' }}>
-                  <CommoditiesPanel />
-                </div>
-                <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
-                  <MissionsPanel />
-                </div>
-                <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
-                  <PristineMiningPanel />
+      <CurrentSystemProvider>
+        <Layout connected={connected} active={socketActive} ready={ready} loader={loaderVisible} className={styles.inaraLayout}>
+          <Panel
+            layout='full-width'
+            scrollable
+            navigation={inaraTabs}
+            search={false}
+            className={styles.inaraPanel}
+          >
+            <div className={workspaceClassName}>
+              <div className={styles.shell}>
+                <div className={styles.tabPanels}>
+                  <div style={{ display: activeTab === 'tradeRoutes' ? 'block' : 'none' }}>
+                    <TradeRoutesPanel onStatusChange={setTradeRoutesStatus} />
+                  </div>
+                  <div style={{ display: activeTab === 'commodities' ? 'block' : 'none' }}>
+                    <CommoditiesPanel />
+                  </div>
+                  <div style={{ display: activeTab === 'missions' ? 'block' : 'none' }}>
+                    <MissionsPanel />
+                  </div>
+                  <div style={{ display: activeTab === 'pristineMining' ? 'block' : 'none' }}>
+                    <PristineMiningPanel />
+                  </div>
                 </div>
               </div>
+              <InaraTerminalOverlay />
             </div>
-            <InaraTerminalOverlay />
-          </div>
-        </Panel>
-      </Layout>
+          </Panel>
+        </Layout>
+      </CurrentSystemProvider>
     </InaraThresholdSettingsContext.Provider>
   )
 }
 
+// Wrap exported panels with CurrentSystemProvider so they can be used standalone
+// in other pages (like route-scout.js) while sharing current system data
+const TradeRoutesPanelWrapped = (props) => (
+  <CurrentSystemProvider>
+    <TradeRoutesPanel {...props} />
+  </CurrentSystemProvider>
+)
+
+const CommoditiesPanelWrapped = (props) => (
+  <CurrentSystemProvider>
+    <CommoditiesPanel {...props} />
+  </CurrentSystemProvider>
+)
+
+const MissionsPanelWrapped = (props) => (
+  <CurrentSystemProvider>
+    <MissionsPanel {...props} />
+  </CurrentSystemProvider>
+)
+
+const PristineMiningPanelWrapped = (props) => (
+  <CurrentSystemProvider>
+    <PristineMiningPanel {...props} />
+  </CurrentSystemProvider>
+)
+
 export {
-  TradeRoutesPanel,
-  CommoditiesPanel,
-  MissionsPanel,
-  PristineMiningPanel
+  TradeRoutesPanelWrapped as TradeRoutesPanel,
+  CommoditiesPanelWrapped as CommoditiesPanel,
+  MissionsPanelWrapped as MissionsPanel,
+  PristineMiningPanelWrapped as PristineMiningPanel
 }

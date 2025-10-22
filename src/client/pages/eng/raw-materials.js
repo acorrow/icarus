@@ -17,11 +17,14 @@ export default function EngineeringMaterialsPage () {
     setMaterials(await sendEvent('getMaterials'))
   }, [connected, ready])
 
-  useEffect(() => eventListener('newLogEntry', async (log) => {
-    if (['Materials', 'MaterialCollected', 'MaterialDiscarded', 'MaterialTrade', 'EngineerCraft'].includes(log.event)) {
-      setMaterials(await sendEvent('getMaterials'))
-    }
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async (log) => {
+      if (['Materials', 'MaterialCollected', 'MaterialDiscarded', 'MaterialTrade', 'EngineerCraft'].includes(log.event)) {
+        setMaterials(await sendEvent('getMaterials'))
+      }
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <Layout connected={connected} active={active} ready={ready}>

@@ -19,13 +19,19 @@ export default function ShipInventoryPage () {
     setComponentReady(true)
   }, [connected, ready])
 
-  useEffect(() => eventListener('gameStateChange', async () => {
-    setInventory(await sendEvent('getInventory'))
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', async () => {
+      setInventory(await sendEvent('getInventory'))
+    })
+    return unsubscribe
+  }, [])
 
-  useEffect(() => eventListener('newLogEntry', async () => {
-    setInventory(await sendEvent('getInventory'))
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async () => {
+      setInventory(await sendEvent('getInventory'))
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <Layout connected={connected} active={active} ready={ready} loader={!componentReady}>

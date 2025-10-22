@@ -26,15 +26,18 @@ export default function LogPage () {
     setComponentReady(true)
   }, [connected, ready])
 
-  useEffect(() => eventListener('newLogEntry', async (newLogEntry) => {
-    setLogEntries(prevState => [newLogEntry, ...prevState])
-    // If no log row is currently selected (focus is not on a table row) then
-    // display the most recent log - otherwise leaves it displaying whatever is
-    // currently selected.
-    if (document.activeElement.tagName !== 'TR') {
-      setSelectedLogEntry(newLogEntry)
-    }
-  }), [])
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async (newLogEntry) => {
+      setLogEntries(prevState => [newLogEntry, ...prevState])
+      // If no log row is currently selected (focus is not on a table row) then
+      // display the most recent log - otherwise leaves it displaying whatever is
+      // currently selected.
+      if (document.activeElement.tagName !== 'TR') {
+        setSelectedLogEntry(newLogEntry)
+      }
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <Layout connected={connected} active={active} ready={ready && componentReady}>

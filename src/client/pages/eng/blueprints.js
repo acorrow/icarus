@@ -47,25 +47,31 @@ export default function EngineeringMaterialsPage () {
     if (newSystem?.address) setCurrentSystem(newSystem)
   }, [blueprints, query])
 
-  useEffect(() => eventListener('newLogEntry', async (log) => {
-    if (['Materials', 'MaterialCollected', 'MaterialDiscarded', 'MaterialTrade', 'EngineerCraft'].includes(log.event)) {
+  useEffect(() => {
+    const unsubscribe = eventListener('newLogEntry', async (log) => {
+      if (['Materials', 'MaterialCollected', 'MaterialDiscarded', 'MaterialTrade', 'EngineerCraft'].includes(log.event)) {
+        const newBlueprints = await sendEvent('getBlueprints')
+        setBlueprints(newBlueprints)
+        setBlueprintsApplied(newBlueprints.filter(b => b.appliedToModules.length > 0))
+        setBlueprintsNotApplied(newBlueprints.filter(b => b.appliedToModules.length === 0))
+      }
+      if (['Location', 'FSDJump'].includes(log.event)) {
+        const newSystem = await sendEvent('getSystem')
+        if (newSystem?.address) setCurrentSystem(newSystem)
+      }
+    })
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = eventListener('gameStateChange', async () => {
       const newBlueprints = await sendEvent('getBlueprints')
       setBlueprints(newBlueprints)
       setBlueprintsApplied(newBlueprints.filter(b => b.appliedToModules.length > 0))
       setBlueprintsNotApplied(newBlueprints.filter(b => b.appliedToModules.length === 0))
-    }
-    if (['Location', 'FSDJump'].includes(log.event)) {
-      const newSystem = await sendEvent('getSystem')
-      if (newSystem?.address) setCurrentSystem(newSystem)
-    }
-  }), [])
-
-  useEffect(() => eventListener('gameStateChange', async () => {
-    const newBlueprints = await sendEvent('getBlueprints')
-    setBlueprints(newBlueprints)
-    setBlueprintsApplied(newBlueprints.filter(b => b.appliedToModules.length > 0))
-    setBlueprintsNotApplied(newBlueprints.filter(b => b.appliedToModules.length === 0))
-  }), [])
+    })
+    return unsubscribe
+  }, [])
 
   return (
     <Layout connected={connected} active={active} ready={ready} loader={!componentReady}>
