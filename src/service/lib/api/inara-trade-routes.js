@@ -692,6 +692,63 @@ async function handler(req, res) {
       : null
     const selectedSystemName = selectedSystemData?.name || system
 
+    // PRE-FETCH OPTIMIZATION: Collect all unique systems and stations before enriching routes
+    // This dramatically reduces redundant API calls since routes often share the same systems/stations
+    logger.info('[trade-routes] Step 1/3: Collecting unique systems and stations...')
+    const uniqueSystemNames = new Set()
+    const uniqueStations = new Map() // key: "stationName|systemName"
+    
+    routes.forEach(route => {
+      if (route?.origin?.systemName) {
+        uniqueSystemNames.add(route.origin.systemName)
+        const originKey = `${route.origin.stationName}|${route.origin.systemName}`
+        if (!uniqueStations.has(originKey)) {
+          uniqueStations.set(originKey, {
+            stationName: route.origin.stationName,
+            systemName: route.origin.systemName
+          })
+        }
+      }
+      if (route?.destination?.systemName) {
+        uniqueSystemNames.add(route.destination.systemName)
+        const destKey = `${route.destination.stationName}|${route.destination.systemName}`
+        if (!uniqueStations.has(destKey)) {
+          uniqueStations.set(destKey, {
+            stationName: route.destination.stationName,
+            systemName: route.destination.systemName
+          })
+        }
+      }
+    })
+    
+    logger.info('[trade-routes] Found %d unique systems and %d unique stations', uniqueSystemNames.size, uniqueStations.size)
+    
+    // Pre-fetch all unique systems in parallel with batching to avoid overwhelming EDSM
+    logger.info('[trade-routes] Step 2/3: Pre-fetching %d unique systems...', uniqueSystemNames.size)
+    const BATCH_SIZE = 20 // Fetch 20 systems at a time to avoid overwhelming the API
+    const systemNameArray = Array.from(uniqueSystemNames)
+    const systemFetchStart = Date.now()
+    
+    for (let i = 0; i < systemNameArray.length; i += BATCH_SIZE) {
+      const batch = systemNameArray.slice(i, i + BATCH_SIZE)
+      const batchNum = Math.floor(i / BATCH_SIZE) + 1
+      const totalBatches = Math.ceil(systemNameArray.length / BATCH_SIZE)
+      logger.debug('[trade-routes] Fetching system batch %d/%d (%d systems)...', batchNum, totalBatches, batch.length)
+      await Promise.all(batch.map(name => getSystemData(name).catch(err => {
+        logger.warn('[trade-routes] Failed to fetch system %s: %s', name, err.message)
+        return null
+      })))
+    }
+    
+    const systemFetchElapsed = Date.now() - systemFetchStart
+    logger.info('[trade-routes] ✓ Pre-fetched %d systems in %dms (avg %dms per system)', 
+      uniqueSystemNames.size, 
+      systemFetchElapsed,
+      Math.round(systemFetchElapsed / uniqueSystemNames.size))
+    
+    // Pre-build station index from cache if available
+    ensureStationIndexFromGlobalCache()
+
     function formatPadSize(landingPads = {}) {
       if (landingPads.large) return 'Large'
       if (landingPads.medium) return 'Medium'
@@ -984,6 +1041,10 @@ async function handler(req, res) {
       return null
     }
 
+    // NOW enriching routes should be MUCH faster since all system data is already cached
+    logger.info('[trade-routes] Step 3/3: Enriching %d routes with cached data...', routes.length)
+    const enrichStart = Date.now()
+    
     const enrichedResults = await Promise.all(routes.map(async route => {
       if (!route || !route.origin || !route.destination) return route
       const [originLocal, destinationLocal] = await Promise.all([
@@ -1008,6 +1069,12 @@ async function handler(req, res) {
       logInaraTrade(`ROUTE_FACTION_DATA: ${routeLogParts.join(' ')}`)
       return enrichedRoute
     }))
+
+    const enrichElapsed = Date.now() - enrichStart
+    logger.info('[trade-routes] ✓ Enriched %d routes in %dms (avg %dms per route)', 
+      enrichedResults.length, 
+      enrichElapsed,
+      Math.round(enrichElapsed / enrichedResults.length))
 
     logInaraTrade(`RESPONSE: system=${system} url=${url} results=${enrichedResults.length}`)
     res.statusCode = 200; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ results: enrichedResults }))
