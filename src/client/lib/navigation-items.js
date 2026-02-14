@@ -123,11 +123,6 @@ function InaraWorkspaceNavItems (activePanel) {
       icon: 'planet-ringed',
       url: '/inara/mining-locations'
     },
-    {
-      name: 'Media Terminal',
-      icon: 'signal',
-      url: '/inara/media-terminal'
-    }
   ]
 
   navigationItems.forEach(item => {
@@ -176,7 +171,7 @@ function EngineeringPanelNavItems (activePanel) {
   return navigationItems
 }
 
-function SettingsNavItems (activePanel, exposeFeatureFlags = false, exposeMediaTerminal = false) {
+function SettingsNavItems (activePanel, exposeFeatureFlags = false) {
   const navigationItems = [
     {
       name: 'Theme',
@@ -185,6 +180,10 @@ function SettingsNavItems (activePanel, exposeFeatureFlags = false, exposeMediaT
     {
       name: 'Sounds',
       icon: 'sound'
+    },
+    {
+      name: 'YouTube Music',
+      icon: 'signal'
     }
   ]
   
@@ -192,13 +191,6 @@ function SettingsNavItems (activePanel, exposeFeatureFlags = false, exposeMediaT
     navigationItems.push({
       name: 'Feature Flags',
       icon: 'settings'
-    })
-  }
-  
-  if (exposeMediaTerminal) {
-    navigationItems.push({
-      name: 'Media Terminal',
-      icon: 'signal'
     })
   }
   

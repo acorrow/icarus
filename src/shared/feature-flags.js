@@ -84,15 +84,10 @@ function isInaraSettingsEnabled (env = process.env) {
   return resolveFlag('icarusEnableInaraSettings', env)
 }
 
-function isMediaPlayerEnabled (env = process.env) {
-  return resolveFlag('icarusEnableMediaPlayer', env)
-}
-
 module.exports = {
   isInaraTokenCurrencyEnabled,
   isInaraTokenJackpotEnabled,
   isTokenRecoveryCompatibilityEnabled,
   isInaraSettingsEnabled,
-  isMediaPlayerEnabled,
   _private: { normalizeFlagValue, resolveFlag, hasFlagKey }
 }

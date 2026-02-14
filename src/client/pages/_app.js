@@ -1,9 +1,32 @@
 import App from 'next/app'
+import { useState, useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { SocketProvider, eventListener } from 'lib/socket'
 import { loadColorSettings, saveColorSettings } from 'components/settings'
+import WinampBar from 'components/WinampBar/WinampBar'
 import '../public/fonts/icarus-terminal/icarus-terminal.css'
 import '../css/main.css'
+
+const YTMD_STORAGE_KEY = 'icarus_ytmd_enabled'
+
+function WinampBarWrapper () {
+  const [enabled, setEnabled] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const stored = localStorage.getItem(YTMD_STORAGE_KEY)
+      if (stored === 'true') setEnabled(true)
+    } catch (e) { /* ignore */ }
+
+    const handler = (e) => setEnabled(e.detail === true)
+    window.addEventListener('ytmdToggle', handler)
+    return () => window.removeEventListener('ytmdToggle', handler)
+  }, [])
+
+  if (!enabled) return null
+  return <WinampBar />
+}
 
 const handleKeyPress = (event) => {
   const element = document.activeElement.tagName
@@ -164,6 +187,7 @@ export default class MyApp extends App {
           </div>
         )}
         <Component {...pageProps} />
+        <WinampBarWrapper />
       </SocketProvider>
     )
   }

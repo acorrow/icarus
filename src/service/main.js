@@ -151,8 +151,14 @@ function setupApiRoutes (app) {
   // Add HTTP cache headers middleware for API routes
   app.use((req, res, next) => {
     if (req.url.startsWith('/api/')) {
-      // Set cache control headers (30 minutes for INARA data)
-      res.setHeader('Cache-Control', 'public, max-age=1800')
+      // YTMD endpoints are stateful — never cache
+      if (req.url.startsWith('/api/ytmd')) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+        res.setHeader('Pragma', 'no-cache')
+      } else {
+        // Set cache control headers (30 minutes for INARA data)
+        res.setHeader('Cache-Control', 'public, max-age=1800')
+      }
       res.setHeader('Vary', 'Accept-Encoding')
 
       // Only set Content-Type if not already set by route handler
@@ -193,6 +199,9 @@ function setupApiRoutes (app) {
   // Ship and token endpoints
   app.use('/api/shipyard-list', require('./lib/api/shipyard-list'))
   app.use('/api/token-currency', require('./lib/api/token-currency'))
+  
+  // YouTube Music Desktop App integration
+  app.use('/api/ytmd', require('./lib/api/ytmd'))
   
   logger.info('API routes registered successfully')
 }
@@ -356,6 +365,21 @@ async function startService () {
   }, 5 * 60 * 1000) // Clean every 5 minutes
 
   console.log('INARA file-based caching enabled with 30-minute TTL')
+
+  // Start YTMD real-time bridge if token exists
+  try {
+    const ytmdBridge = require('./lib/ytmd-realtime-bridge')
+    const { loadToken: loadYtmdToken } = require('./lib/api/ytmd')
+    const ytmdToken = loadYtmdToken()
+    if (ytmdToken) {
+      ytmdBridge.connect(ytmdToken)
+      console.log('[YTMD] Real-time bridge started (token found)')
+    } else {
+      console.log('[YTMD] No token found, real-time bridge not started. Pair via Settings → YouTube Music.')
+    }
+  } catch (error) {
+    console.warn('[YTMD] Failed to start real-time bridge:', error.message)
+  }
 
   httpServer.listen(PORT, () => {
     console.log(`Listening on port ${PORT}…`)

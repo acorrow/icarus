@@ -1,0 +1,803 @@
+/* ─────────────────────────────────────────────────────────────
+   WinampBar — Classic Winamp 2.x–inspired YouTube Music controller
+   Docked to viewport bottom, styled with ICARUS Terminal palette.
+
+   Visual Language:
+   • Beveled borders (light top-left, dark bottom-right) for raised panels
+   • Inverted bevels (dark top-left, light bottom-right) for sunken displays
+   • LED-amber text with glow on dark inset backgrounds
+   • Chunky metal transport buttons
+   • Groove-style seek bar with wedge handle
+   ───────────────────────────────────────────────────────────── */
+
+/* ── Winamp-specific color tokens ── */
+.bar {
+  --wa-bevel-light: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.55);
+  --wa-bevel-dark: rgba(0, 0, 0, 0.6);
+  --wa-bevel-mid: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.18);
+  --wa-pit-bg: #080400;
+  --wa-pit-border-dark: rgba(0, 0, 0, 0.7);
+  --wa-pit-border-light: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.22);
+  --wa-led: rgb(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b));
+  --wa-led-dim: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.12);
+  --wa-led-glow: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.45);
+  --wa-btn-face: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.10);
+  --wa-btn-hover: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.20);
+  --wa-btn-active: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.30);
+}
+
+/* ── bar shell ── */
+
+.bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  font-family: 'Jura', 'Courier New', monospace;
+  user-select: none;
+
+  border-top: 2px solid var(--wa-bevel-light);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(var(--color-primary-dark-r), var(--color-primary-dark-g), var(--color-primary-dark-b), 0.97) 0%,
+      rgba(0, 0, 0, 0.99) 100%
+    );
+  box-shadow:
+    0 -2px 20px rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.10),
+    inset 0 1px 0 rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.06);
+  backdrop-filter: blur(8px);
+  animation: winampSlideUp 0.35s ease-out;
+}
+
+@keyframes winampSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── Title bar (thin decorative strip) ── */
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 18px;
+  padding: 0 10px;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.25) 0%,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.06) 50%,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.25) 100%
+  );
+  border-bottom: 1px solid var(--wa-bevel-dark);
+}
+
+.titleText {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--wa-led);
+  opacity: 0.7;
+}
+
+.titleControls {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.titleBtn {
+  width: 16px;
+  height: 12px;
+  border: 1px solid var(--wa-bevel-light);
+  background: var(--wa-btn-face);
+  color: var(--wa-led);
+  font-size: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.titleBtn:hover {
+  background: var(--wa-btn-hover);
+}
+
+/* ── Main body ── */
+
+.body {
+  display: flex;
+  gap: 14px;
+  padding: 8px 16px 12px 16px;
+  align-items: stretch;
+}
+
+/* ── Album art (large, left column) ── */
+
+.artCol {
+  flex: 0 0 120px;
+  width: 120px;
+  height: 120px;
+  border: 2px solid;
+  border-color: var(--wa-pit-border-dark) var(--wa-pit-border-light) var(--wa-pit-border-light) var(--wa-pit-border-dark);
+  background: var(--wa-pit-bg);
+  overflow: hidden;
+  position: relative;
+}
+
+.artImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.artEmpty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wa-led);
+  opacity: 0.15;
+  font-size: 3rem;
+}
+
+/* ── Center column (display + seek + buttons) ── */
+
+.centerCol {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* ── LED display panel (sunken recess with scanlines) ── */
+
+.display {
+  border: 2px solid;
+  border-color: var(--wa-pit-border-dark) var(--wa-pit-border-light) var(--wa-pit-border-light) var(--wa-pit-border-dark);
+  background: var(--wa-pit-bg);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 54px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* CRT scanline overlay */
+.display::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Time display (LED segment style) */
+.timeDisplay {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 2.4rem;
+  font-weight: bold;
+  letter-spacing: 0.14em;
+  color: var(--wa-led);
+  text-shadow:
+    0 0 10px var(--wa-led-glow),
+    0 0 25px var(--wa-led-dim),
+    0 0 40px rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.08);
+  white-space: nowrap;
+  flex: 0 0 auto;
+  position: relative;
+  line-height: 1;
+  z-index: 2;
+}
+
+/* Ghost "88:88" behind time for LED segment effect */
+.timeGhost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--wa-led-dim);
+  text-shadow: none;
+  pointer-events: none;
+}
+
+/* Blink when paused */
+.timeBlink {
+  animation: ledBlink 1s step-end infinite;
+}
+
+@keyframes ledBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+
+/* Scrolling track info in display */
+.displayInfo {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 2;
+}
+
+.ticker {
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--wa-led);
+  text-shadow:
+    0 0 8px var(--wa-led-glow),
+    0 0 20px rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.15);
+  text-transform: uppercase;
+  /* No fade mask — full text visible */
+}
+
+.tickerScroll {
+  display: inline-block;
+  animation: tickerMarquee 18s linear infinite;
+}
+
+@keyframes tickerMarquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.displayMeta {
+  font-size: 0.85rem;
+  color: var(--wa-led);
+  opacity: 0.5;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bitrate / connection indicators in display */
+.displayIndicators {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.indicatorLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--wa-led);
+  opacity: 0.35;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.indicatorLabelActive {
+  opacity: 0.9;
+  text-shadow: 0 0 4px var(--wa-led-glow);
+}
+
+/* ── Seek / position bar (grooved track + wedge handle) ── */
+
+.seekRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.seekTime {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', monospace;
+  color: var(--wa-led);
+  opacity: 0.7;
+  min-width: 38px;
+  text-align: center;
+  letter-spacing: 0.06em;
+}
+
+.seekBar {
+  flex: 1;
+  height: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+  position: relative;
+}
+
+.seekTrack {
+  width: 100%;
+  height: 8px;
+  border: 1px solid;
+  border-color: var(--wa-pit-border-dark) var(--wa-pit-border-light) var(--wa-pit-border-light) var(--wa-pit-border-dark);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.06) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.seekFill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.35) 0%,
+    var(--wa-led) 100%
+  );
+  transition: width 0.3s linear;
+  box-shadow: 0 0 6px var(--wa-led-glow);
+}
+
+/* Wedge handle on seek bar */
+.seekHandle {
+  position: absolute;
+  top: 0px;
+  width: 16px;
+  height: 18px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: none;
+}
+
+.seekHandle::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 16px 8px 0 8px;
+  border-color: var(--wa-led) transparent transparent transparent;
+  filter: drop-shadow(0 0 4px var(--wa-led-glow));
+}
+
+/* ── Transport buttons row ── */
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.transportCluster {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 0 0 auto;
+}
+
+.tBtn {
+  border: 2px solid;
+  border-color: var(--wa-bevel-light) var(--wa-bevel-dark) var(--wa-bevel-dark) var(--wa-bevel-light);
+  background: var(--wa-btn-face);
+  color: var(--color-info);
+  cursor: pointer;
+  font-size: 1.3rem;
+  width: 48px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.1s;
+  position: relative;
+}
+
+.tBtn:hover {
+  background: var(--wa-btn-hover);
+}
+
+.tBtn:active {
+  border-color: var(--wa-bevel-dark) var(--wa-bevel-light) var(--wa-bevel-light) var(--wa-bevel-dark);
+  background: var(--wa-btn-active);
+}
+
+.tBtnPlay {
+  width: 58px;
+  height: 38px;
+  font-size: 1.5rem;
+  color: var(--wa-led);
+}
+
+/* ── Shuffle / repeat / like cluster ── */
+
+.modeCluster {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 10px;
+}
+
+.modeBtn {
+  border: 1px solid var(--wa-bevel-mid);
+  background: none;
+  color: var(--color-info);
+  opacity: 0.45;
+  cursor: pointer;
+  font-size: 1.1rem;
+  width: 36px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: opacity 0.1s, border-color 0.15s, background 0.1s;
+}
+
+.modeBtn:hover {
+  opacity: 0.85;
+  background: var(--wa-btn-face);
+  border-color: var(--wa-bevel-light);
+}
+
+.modeBtn:active {
+  background: var(--wa-btn-active);
+}
+
+.modeBtnActive {
+  opacity: 1;
+  color: var(--wa-led);
+  border-color: var(--wa-bevel-light);
+  text-shadow: 0 0 6px var(--wa-led-glow);
+}
+
+.liked {
+  color: var(--color-success) !important;
+  opacity: 1 !important;
+}
+
+.disliked {
+  color: var(--color-danger) !important;
+  opacity: 1 !important;
+}
+
+/* ── Volume (right-side cluster) ── */
+
+.volCluster {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.volLabel {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--wa-led);
+  opacity: 0.4;
+}
+
+.volSlider {
+  width: 110px;
+  height: 14px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  outline: none;
+  cursor: pointer;
+  border: none;
+  position: relative;
+}
+
+.volSlider::-webkit-slider-runnable-track {
+  height: 8px;
+  border: 1px solid;
+  border-color: var(--wa-pit-border-dark) var(--wa-pit-border-light) var(--wa-pit-border-light) var(--wa-pit-border-dark);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.06) 100%
+  );
+}
+
+.volSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 16px;
+  margin-top: -5px;
+  border: 1px solid;
+  border-color: var(--wa-bevel-light) var(--wa-bevel-dark) var(--wa-bevel-dark) var(--wa-bevel-light);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.5) 0%,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.2) 100%
+  );
+  cursor: pointer;
+}
+
+.volSlider::-moz-range-track {
+  height: 8px;
+  border: 1px solid;
+  border-color: var(--wa-pit-border-dark) var(--wa-pit-border-light) var(--wa-pit-border-light) var(--wa-pit-border-dark);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.06) 100%
+  );
+}
+
+.volSlider::-moz-range-thumb {
+  width: 18px;
+  height: 16px;
+  border: 1px solid;
+  border-color: var(--wa-bevel-light) var(--wa-bevel-dark) var(--wa-bevel-dark) var(--wa-bevel-light);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.5) 0%,
+    rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.2) 100%
+  );
+  cursor: pointer;
+}
+
+/* ── End cluster (queue / unpair) ── */
+
+.endCluster {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ── Connection dot ── */
+
+.connDot {
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  opacity: 0.5;
+  margin-left: 4px;
+}
+
+.connLive {
+  background: var(--color-success);
+  opacity: 1;
+  box-shadow: 0 0 4px var(--color-success);
+}
+
+/* ══════════════════════════════════════════════════════
+   Status / auth / error states (pre-pair view)
+   ══════════════════════════════════════════════════════ */
+
+.statusBody {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  min-height: 50px;
+}
+
+.statusMsg {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  color: var(--color-info);
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.errorMsg {
+  font-size: 0.72rem;
+  color: var(--color-danger);
+  margin-left: 8px;
+}
+
+.miniBtn {
+  border: 2px solid;
+  border-color: var(--wa-bevel-light) var(--wa-bevel-dark) var(--wa-bevel-dark) var(--wa-bevel-light);
+  background: var(--wa-btn-face);
+  color: var(--wa-led);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 4px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: inherit;
+  transition: background 0.1s;
+}
+
+.miniBtn:hover {
+  background: var(--wa-btn-hover);
+}
+
+.miniBtn:active {
+  border-color: var(--wa-bevel-dark) var(--wa-bevel-light) var(--wa-bevel-light) var(--wa-bevel-dark);
+  background: var(--wa-btn-active);
+}
+
+.miniBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pairingCodeDisplay {
+  font-size: 1.4rem;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 0.3em;
+  color: var(--wa-led);
+  text-shadow: 0 0 8px var(--wa-led-glow);
+  background: var(--wa-pit-bg);
+  border: 2px solid;
+  border-color: var(--wa-pit-border-dark) var(--wa-pit-border-light) var(--wa-pit-border-light) var(--wa-pit-border-dark);
+  padding: 4px 16px;
+}
+
+/* ══════════════════════════════════════════════════════
+   Queue panel (expands upward above bar)
+   ══════════════════════════════════════════════════════ */
+
+.queuePanel {
+  max-height: 280px;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--wa-bevel-dark);
+  padding: 6px 12px 4px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wa-led) transparent;
+}
+
+.queueHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.queueTitle {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--wa-led);
+  text-transform: uppercase;
+}
+
+.queueCount {
+  font-size: 0.62rem;
+  color: var(--color-info);
+  opacity: 0.45;
+}
+
+.queueList {
+  display: flex;
+  flex-direction: column;
+}
+
+.queueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 4px;
+  font-size: 0.72rem;
+  color: var(--color-info);
+  opacity: 0.55;
+  border-left: 2px solid transparent;
+  transition: opacity 0.1s;
+}
+
+.queueRow:hover {
+  opacity: 0.9;
+  background: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.06);
+}
+
+.queueRowActive {
+  opacity: 1;
+  color: var(--color-secondary);
+  border-left-color: var(--wa-led);
+}
+
+.queueNum {
+  flex: 0 0 22px;
+  text-align: right;
+  opacity: 0.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.queueTrack {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.queueArtist {
+  flex: 0 1 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.5;
+}
+
+.queueDur {
+  flex: 0 0 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.4;
+}
+
+/* ══════════════════════════════════════════════════════
+   Responsive
+   ══════════════════════════════════════════════════════ */
+
+@media only screen and (max-width: 799px) {
+  .artCol {
+    flex: 0 0 80px;
+    width: 80px;
+    height: 80px;
+  }
+
+  .modeCluster .modeBtn:not(.modeBtnActive) {
+    display: none;
+  }
+
+  .volLabel {
+    display: none;
+  }
+
+  .volSlider {
+    width: 50px;
+  }
+
+  .queueArtist {
+    display: none;
+  }
+
+  .displayIndicators {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 599px) {
+  .artCol {
+    display: none;
+  }
+
+  .volCluster {
+    display: none;
+  }
+
+  .endCluster {
+    display: none;
+  }
+
+  .timeDisplay {
+    font-size: 1.6rem;
+  }
+
+  .ticker {
+    font-size: 1rem;
+  }
+
+  .tBtn {
+    width: 38px;
+    height: 28px;
+    font-size: 1rem;
+  }
+
+  .tBtnPlay {
+    width: 46px;
+    height: 30px;
+    font-size: 1.2rem;
+  }
+}
