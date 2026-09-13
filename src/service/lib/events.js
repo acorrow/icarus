@@ -49,6 +49,115 @@ eventHandlers.hostInfo = () => {
 }
 eventHandlers.getLoadingStatus = () => getLoadingStatus()
 eventHandlers.syncMessage = (message) => broadcastEvent('syncMessage', message)
+eventHandlers.copyToClipboard = async (message) => {
+  const text = typeof message === 'string' ? message : message?.text
+  if (text) {
+    const { copyToOsClipboard } = require('./api/remote-action')
+    await copyToOsClipboard(text)
+  }
+  return { success: true, text }
+}
+
+// ── Combat Zone detection ──────────────────────────────────
+// Track whether the player is currently in a combat zone.
+// We detect entry via SupercruiseDestinationDrop with Warzone signal types,
+// and exit via SupercruiseEntry, FSDJump, or docking.
+let inCombatZone = false
+
+const COMBAT_ZONE_SIGNALS = [
+  '$warzone_pointrace_low;',
+  '$warzone_pointrace_med;',
+  '$warzone_pointrace_high;',
+  '$warzone_tg;',
+  '$multiplayer_scenario78_title;',
+  '$multiplayer_scenario79_title;',
+  '$multiplayer_scenario80_title;'
+]
+
+function isCombatZoneSignal (type) {
+  if (!type) return false
+  const t = type.trim().toLowerCase()
+  return COMBAT_ZONE_SIGNALS.some(sig => t.includes(sig) || t.includes('warzone') || t.includes('conflict zone'))
+}
+
+function handleCombatZoneDetection (log) {
+  if (!log?.event) return
+
+  const event = log.event
+
+  // Entering a combat zone: dropped from supercruise into a warzone signal
+  if (event === 'SupercruiseDestinationDrop') {
+    const isWarzone = isCombatZoneSignal(log.Type) || isCombatZoneSignal(log.Type_Localised)
+    console.log(`[CZ-DETECT] SupercruiseDestinationDrop Type="${log.Type}" Type_Localised="${log.Type_Localised}" isWarzone=${isWarzone} inCombatZone=${inCombatZone}`)
+    if (isWarzone) {
+      if (!inCombatZone) {
+        inCombatZone = true
+        console.log('[CZ-DETECT] >>> ENTERING COMBAT ZONE — broadcasting combatZoneStateChange')
+        broadcastEvent('combatZoneStateChange', { inCombatZone: true, type: log.Type_Localised || log.Type })
+      }
+      return
+    }
+  }
+
+  // FactionKillBond confirms active combat zone participation
+  if (event === 'FactionKillBond') {
+    if (!inCombatZone) {
+      inCombatZone = true
+      console.log('[CZ-DETECT] >>> FactionKillBond — entering combat zone')
+      broadcastEvent('combatZoneStateChange', { inCombatZone: true, type: 'Conflict Zone' })
+    }
+    return
+  }
+
+  // Leaving combat zone: entering supercruise, jumping, or docking
+  if (['SupercruiseEntry', 'FSDJump', 'Docked', 'DockingGranted'].includes(event)) {
+    if (inCombatZone) {
+      inCombatZone = false
+      console.log(`[CZ-DETECT] <<< LEAVING COMBAT ZONE (${event}) — broadcasting combatZoneStateChange`)
+      broadcastEvent('combatZoneStateChange', { inCombatZone: false })
+    }
+  }
+}
+
+/**
+ * After initial loading, check if the player is currently in a combat zone.
+ * We look at the single-instance events to see if the most recent
+ * SupercruiseDestinationDrop was into a warzone, and whether SupercruiseEntry
+ * or FSDJump happened AFTER that (which would mean they left).
+ */
+async function checkInitialCombatZoneState () {
+  try {
+    const dropEvent = await eliteLog.getEvent('SupercruiseDestinationDrop')
+    console.log('[CZ-DETECT] Initial check — last SupercruiseDestinationDrop:', dropEvent ? `Type="${dropEvent.Type}" at ${dropEvent.timestamp}` : 'none found')
+    if (!dropEvent) return
+
+    const isWarzone = isCombatZoneSignal(dropEvent.Type) || isCombatZoneSignal(dropEvent.Type_Localised)
+    if (!isWarzone) return
+
+    // Check if they left the CZ after dropping in
+    const dropTime = Date.parse(dropEvent.timestamp)
+    const exitEvents = ['SupercruiseEntry', 'FSDJump', 'Docked']
+    let leftAfterDrop = false
+
+    for (const exitEventName of exitEvents) {
+      const exitEvent = await eliteLog.getEvent(exitEventName)
+      if (exitEvent && Date.parse(exitEvent.timestamp) > dropTime) {
+        leftAfterDrop = true
+        break
+      }
+    }
+
+    if (!leftAfterDrop) {
+      inCombatZone = true
+      console.log('[CZ-DETECT] Initial state: player appears to be in a combat zone:', dropEvent.Type_Localised || dropEvent.Type)
+      broadcastEvent('combatZoneStateChange', { inCombatZone: true, type: dropEvent.Type_Localised || dropEvent.Type })
+    } else {
+      console.log('[CZ-DETECT] Initial state: player is NOT in a combat zone (left after last drop)')
+    }
+  } catch (err) {
+    console.error('[CZ-DETECT] Error checking initial combat zone state:', err.message)
+  }
+}
 
 // TODO Define these in another file / merge with eventHandlers before porting
 // over existing event handlers from the internal build
@@ -124,6 +233,7 @@ const logEventCallback = (log) => {
   if (!loadingInProgress) {
     broadcastEvent('newLogEntry', log)
     logEventHandler(log)
+    handleCombatZoneDetection(log)
   }
 }
 
@@ -160,6 +270,10 @@ async function init ({ days = 7 } = {}) {
   // Broadcast gameStateChange so UI components know to fetch current system
   broadcastEvent('gameStateChange')
   gameStateChangeHandler()
+
+  // After loading, check if the player is currently in a combat zone
+  // by examining the most recent relevant events
+  checkInitialCombatZoneState()
 
   return getLoadingStatus()
 }

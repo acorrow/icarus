@@ -3,8 +3,9 @@ const fs = require('fs')
 const os = require('os')
 const EliteLog = require('../elite-log.js')
 const { appendInaraLogEntry } = require('./inara-log-utils.js')
+const { getUserDataPath } = require('../user-data.js')
 
-const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
+const logPath = getUserDataPath('logs', 'inara-trade-routes.log')
 
 function logFactionStandings (entry) {
   appendInaraLogEntry(logPath, entry)
@@ -134,7 +135,8 @@ function extractFactionRecords (snapshot) {
   function normaliseCandidate (candidate) {
     if (!candidate || typeof candidate !== 'object') return null
 
-    const relation = typeof candidate.Relation === 'string' ? candidate.Relation.trim()
+    const relation = typeof candidate.Relation === 'string'
+      ? candidate.Relation.trim()
       : (typeof candidate.PlayerRelation === 'string' ? candidate.PlayerRelation.trim() : null)
 
     const reputationRaw = typeof candidate.MyReputation === 'number'

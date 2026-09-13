@@ -31,7 +31,7 @@ const NAV_BUTTONS = [
     name: 'INARA',
     abbr: 'Inara',
     path: '/inara'
-  },
+  }
 ]
 
 export default function Header ({ connected, active }) {

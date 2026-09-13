@@ -1,14 +1,19 @@
 // API route to serve shipyard.json for client-side fetch
-const path = require('path')
-const fs = require('fs')
+let shipyardDataJson = null
+try {
+  const data = require('../../data/edcd/fdevids/shipyard.json')
+  shipyardDataJson = JSON.stringify(data)
+} catch (e) {}
 
-module.exports = function handler(req, res) {
-  const filePath = path.join(process.cwd(), 'src/service/data/edcd/fdevids/shipyard.json')
+module.exports = function handler (req, res) {
   try {
-    const data = fs.readFileSync(filePath, 'utf8')
+    if (!shipyardDataJson) {
+      const data = require('../../data/edcd/fdevids/shipyard.json')
+      shipyardDataJson = JSON.stringify(data)
+    }
     res.setHeader('Content-Type', 'application/json')
     res.statusCode = 200
-    res.end(data)
+    res.end(shipyardDataJson)
   } catch (err) {
     res.statusCode = 500
     res.setHeader('Content-Type', 'application/json')

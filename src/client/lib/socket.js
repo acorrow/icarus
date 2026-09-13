@@ -3,9 +3,7 @@ import { createContext, useState, useContext, useEffect } from 'react'
 import notification from 'lib/notification'
 import {
   getMockShipStatus,
-  getMockSystemData,
-  getMockTokenBalanceSnapshot,
-  getMockTokenLedger
+  getMockSystemData
 } from './inara-mock-data'
 
 let socket = null // Store socket connection (defaults to null)
@@ -50,7 +48,12 @@ function connect (setSocketState) {
   callbackHandlers = {}
   deferredEventQueue = []
 
-  socket = new WebSocket('ws://' + window.location.host)
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const wsHost = (window.location.port === '3000')
+    ? `${window.location.hostname}:3300`
+    : window.location.host
+
+  socket = new WebSocket(`${wsProtocol}//${wsHost}`)
   socket.onmessage = (event) => {
     const { requestId, name, message } = JSON.parse(event.data)
     // Invoke callback to handler (if there is one)
@@ -142,15 +145,24 @@ function connect (setSocketState) {
       }
     }
 
-    // If we are fully loaded, then set 'ready' state to true, otherwise wait
-    // until get a loadingProgress event that indicates the service is loaded
-    const loadingStats = await sendEvent('getLoadingStatus')
-    if (loadingStats && loadingStats.loadingComplete) {
-      setSocketState(prevState => ({
-        ...prevState,
-        ready: true
-      }))
-    }
+    // Mark connected and ready once socket is open
+    setSocketState(prevState => ({
+      ...prevState,
+      active: socketRequestsPending(),
+      connected: true,
+      ready: true
+    }))
+
+    // Check loading status if available
+    try {
+      const loadingStats = await sendEvent('getLoadingStatus')
+      if (loadingStats && typeof loadingStats.loadingComplete === 'boolean') {
+        setSocketState(prevState => ({
+          ...prevState,
+          ready: loadingStats.loadingComplete
+        }))
+      }
+    } catch (e) {}
   }
   socket.onclose = (e) => {
     socket = null
@@ -197,10 +209,6 @@ function handleSandboxEvent (name, message) {
       return getMockSystemData(message?.name)
     case 'getLoadingStatus':
       return { loadingComplete: true }
-    case 'getTokenBalance':
-      return getMockTokenBalanceSnapshot()
-    case 'getTokenLedger':
-      return getMockTokenLedger(message)
     default:
       return null
   }

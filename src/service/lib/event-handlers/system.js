@@ -103,7 +103,7 @@ class System {
     // so is okay to use them as a key.
     if (!global.CACHE.SYSTEMS[systemName.toLowerCase()] || useCache === false) {
       console.log('[System.getSystem] System not in cache or useCache=false, fetching from EDSM:', systemName)
-      
+
       // OPTIMIZATION: When using mock data, skip EDSM calls and create minimal system object
       if (process.env.FORCE_MOCK_DATA === 'true') {
         console.log('[System.getSystem] FORCE_MOCK_DATA enabled, creating minimal system object without EDSM call')
@@ -128,7 +128,7 @@ class System {
         console.log('[System.getSystem] Created and cached minimal system for:', systemName)
         return minimalSystem
       }
-      
+
       // Get system from EDSM
       const system = await EDSM.system(systemName)
 
@@ -145,7 +145,7 @@ class System {
             biological: 0,
             human: 0
           }
-          
+
           // Merge in body signal scan data
           const FSSBodySignals = await this.eliteLog._query({ event: 'FSSBodySignals', BodyName: body.name }, 1)
           if (FSSBodySignals[0]?.Signals) {
@@ -202,7 +202,6 @@ class System {
         }
       }
 
-
       // Generate map data from the system data
       const systemMap = new SystemMap(system)
 
@@ -217,7 +216,7 @@ class System {
 
     // Determine how many bodies we actaully know of in the current system, and
     // how many we think there are based on FSS Discovery Scan
-    let numberOfBodiesFound = cacheResponse?.bodies?.length ?? 0
+    const numberOfBodiesFound = cacheResponse?.bodies?.length ?? 0
     let numberOfBodiesInSystem = numberOfBodiesFound // We start with this value (until we know otherwise)
     let scanPercentComplete = null
 
@@ -262,7 +261,6 @@ class System {
         scanPercentComplete,
         _cacheTimestamp: new Date().toISOString()
       }
-
     } else {
       // Handle if this is not the system the player is currently in
       return {

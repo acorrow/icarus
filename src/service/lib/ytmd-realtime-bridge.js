@@ -1,10 +1,10 @@
 /**
  * YTMD Real-Time Bridge
- * 
+ *
  * Connects to the YTMD Companion Server via Socket.IO and relays
  * state-update events to all ICARUS Terminal WebSocket clients via
  * the global BROADCAST_EVENT mechanism.
- * 
+ *
  * This runs as a singleton managed by the service — it connects when
  * a valid token exists and the feature is enabled, and disconnects
  * when the token is cleared or the feature is disabled.

@@ -172,8 +172,8 @@ function NavigationTableRow ({ stars, systemObject, depth = 0, setSystemObject }
           <i className={iconClass} />
           {systemObject.label
             ? <>
-                <span className='visible-medium'>{systemObject.label}</span>
-                <span className='hidden-medium'>{systemObject.name}</span>
+              <span className='visible-medium'>{systemObject.label}</span>
+              <span className='hidden-medium'>{systemObject.name}</span>
               </>
             : systemObject.name}
           <span className={systemObject.isLandable ? 'text-secondary' : ''}>
@@ -190,14 +190,14 @@ function NavigationTableRow ({ stars, systemObject, depth = 0, setSystemObject }
             {systemObject?.subType?.toLowerCase()?.includes('with life') && <i className='float-right icon icarus-terminal-planet-life' />}
             {systemObject?.signals?.biological > 0 && <i className='float-right icon icarus-terminal-plant' />}
             {systemObject.rings && <i className='float-right icon icarus-terminal-planet-ringed' />}
-            {(systemObject?.subType?.toLowerCase() === 'earth-like world'
-              || systemObject?.subType?.toLowerCase() === 'water world'
-              || systemObject?.subType?.toLowerCase() === 'ammonia world'
-              || (systemObject.terraformingState && systemObject.terraformingState !== 'Not terraformable' && systemObject.terraformingState !== 'Terraformed')
-              || systemObject?.subType?.toLowerCase()?.includes('class ii gas giant')
-              || systemObject?.subType?.toLowerCase() === 'metal rich'
-            )
-              && <i className='float-right text-success icon icarus-terminal-credits' />}
+            {(systemObject?.subType?.toLowerCase() === 'earth-like world' ||
+              systemObject?.subType?.toLowerCase() === 'water world' ||
+              systemObject?.subType?.toLowerCase() === 'ammonia world' ||
+              (systemObject.terraformingState && systemObject.terraformingState !== 'Not terraformable' && systemObject.terraformingState !== 'Terraformed') ||
+              systemObject?.subType?.toLowerCase()?.includes('class ii gas giant') ||
+              systemObject?.subType?.toLowerCase() === 'metal rich'
+            ) &&
+              <i className='float-right text-success icon icarus-terminal-credits' />}
           </span>
         </div>
       </td>

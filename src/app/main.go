@@ -231,12 +231,27 @@ func createNativeWindow(LAUNCHER_WINDOW_TITLE string, url string, width int32, h
 	webViewInstance.Run()
 }
 
+var (
+	modUser32             = windows.NewLazySystemDLL("user32.dll")
+	procMonitorFromWindow = modUser32.NewProc("MonitorFromWindow")
+	procGetMonitorInfoW   = modUser32.NewProc("GetMonitorInfoW")
+)
+
+type monitorInfoStruct struct {
+	cbSize    uint32
+	rcMonitor win.RECT
+	rcWork    win.RECT
+	dwFlags   uint32
+}
+
 func bindFunctionsToWebView(w webview.WebView) {
 	hwndPtr := w.Window()
 	hwnd := win.HWND(hwndPtr)
 
 	var isFullScreen = false
 	var isPinned = false
+	var savedWindowRect win.RECT
+	var savedWindowStyle int32
 	defaultWindowStyle := win.GetWindowLong(hwnd, win.GWL_STYLE)
 
 	w.Bind("icarusTerminal_version", func() string {
@@ -299,38 +314,66 @@ func bindFunctionsToWebView(w webview.WebView) {
 	})
 
 	w.Bind("icarusTerminal_toggleFullScreen", func() bool {
-		// FIXME Always go fullscreen on main monitor.
-		// If the window is on a second monitor, it should go fullscreen on that
-		// display instead. See the following URL for example of how to handle
-		// https://docs.microsoft.com/en-us/windows/win32/gdi/positioning-objects-on-a-multiple-display-setup
-		screenWidth := int32(win.GetSystemMetrics(win.SM_CXSCREEN))
-		screenHeight := int32(win.GetSystemMetrics(win.SM_CYSCREEN))
-		windowX := int32((screenWidth / 2) - (windowWidth / 2))
-		windowY := int32((screenHeight / 2) - (windowHeight / 2))
-
 		if isFullScreen {
-			// Restore default window style and position
-			// TODO Should restore to window size and location before window was set
-			// to full screen (currently just resets to what it thinks is best)
-			win.SetWindowLong(hwnd, win.GWL_STYLE, defaultWindowStyle)
-			win.MoveWindow(hwnd, windowX, windowY, windowWidth, windowHeight, true)
+			// Restore default/saved window style and position
+			targetStyle := defaultWindowStyle
+			if savedWindowStyle != 0 {
+				targetStyle = savedWindowStyle
+			}
+			win.SetWindowLong(hwnd, win.GWL_STYLE, targetStyle)
+
+			if savedWindowRect.Right > savedWindowRect.Left && savedWindowRect.Bottom > savedWindowRect.Top {
+				prevWidth := savedWindowRect.Right - savedWindowRect.Left
+				prevHeight := savedWindowRect.Bottom - savedWindowRect.Top
+				win.SetWindowPos(hwnd, win.HWND_NOTOPMOST, savedWindowRect.Left, savedWindowRect.Top, prevWidth, prevHeight, win.SWP_FRAMECHANGED|win.SWP_SHOWWINDOW)
+			} else {
+				screenWidth := int32(win.GetSystemMetrics(win.SM_CXSCREEN))
+				screenHeight := int32(win.GetSystemMetrics(win.SM_CYSCREEN))
+				windowX := int32((screenWidth / 2) - (windowWidth / 2))
+				windowY := int32((screenHeight / 2) - (windowHeight / 2))
+				win.MoveWindow(hwnd, windowX, windowY, windowWidth, windowHeight, true)
+			}
 			isFullScreen = false
 		} else {
-			// Set to fullscreen and remove window border
+			// Save current rect & style before entering fullscreen
+			win.GetWindowRect(hwnd, &savedWindowRect)
+			savedWindowStyle = win.GetWindowLong(hwnd, win.GWL_STYLE)
+
+			// Get current monitor info where window is located
+			var mi monitorInfoStruct
+			mi.cbSize = uint32(unsafe.Sizeof(mi))
+			const MONITOR_DEFAULTTONEAREST = 2
+
+			hMonitor, _, _ := procMonitorFromWindow.Call(uintptr(hwnd), uintptr(MONITOR_DEFAULTTONEAREST))
+			var monitorRect win.RECT
+			gotMonitor := false
+
+			if hMonitor != 0 {
+				ret, _, _ := procGetMonitorInfoW.Call(hMonitor, uintptr(unsafe.Pointer(&mi)))
+				if ret != 0 {
+					monitorRect = mi.rcMonitor
+					gotMonitor = true
+				}
+			}
+
+			if !gotMonitor {
+				// Fallback to primary screen
+				monitorRect.Left = 0
+				monitorRect.Top = 0
+				monitorRect.Right = int32(win.GetSystemMetrics(win.SM_CXSCREEN))
+				monitorRect.Bottom = int32(win.GetSystemMetrics(win.SM_CYSCREEN))
+			}
+
+			// Set borderless fullscreen style
 			newWindowStyle := defaultWindowStyle &^ (win.WS_CAPTION | win.WS_THICKFRAME | win.WS_MINIMIZEBOX | win.WS_MAXIMIZEBOX | win.WS_SYSMENU)
 			win.SetWindowLong(hwnd, win.GWL_STYLE, newWindowStyle)
 
-			win.SetWindowPos(hwnd, 0, 0, 0, screenWidth, screenHeight, win.SWP_FRAMECHANGED)
+			targetX := monitorRect.Left
+			targetY := monitorRect.Top
+			targetWidth := monitorRect.Right - monitorRect.Left
+			targetHeight := monitorRect.Bottom - monitorRect.Top
 
-			// TODO Implement full screen mode that respects multi monitor setups
-			// const MONITOR_CENTER = 0x0001 // center rect to monitor
-			// const MONITOR_CLIP = 0x0000 // clip rect to monitor
-			// const MONITOR_WORKAREA = 0x0002 // use monitor work area
-			// const MONITOR_AREA = 0x0000 // use monitor entire area
-			// var rc win.RECT;
-			// win.GetWindowRect(hwnd, &rc);
-			// ClipOrCenterRectToMonitor(&rc, MONITOR_AREA);
-			// win.SetWindowPos(hwnd, 0, rc.Left, rc.Top, 0, 0, win.SWP_NOSIZE | win.SWP_NOZORDER | win.SWP_NOACTIVATE | win.SWP_FRAMECHANGED);
+			win.SetWindowPos(hwnd, win.HWND_TOP, targetX, targetY, targetWidth, targetHeight, win.SWP_FRAMECHANGED|win.SWP_SHOWWINDOW)
 
 			isPinned = false
 			isFullScreen = true

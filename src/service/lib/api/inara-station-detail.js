@@ -1,24 +1,18 @@
 const logger = require('../logger.js')
 const {
-  extractStationId,
   fetchStationDetail,
   fetchMultipleStationDetails
 } = require('./inara-station-details.js')
-
-function sendJson(res, statusCode, payload) {
-  res.statusCode = statusCode
-  res.setHeader('Content-Type', 'application/json')
-  res.end(JSON.stringify(payload))
-}
+const { sendJson } = require('./scraper-shared.js')
 
 /**
  * Handler for /api/inara-station-detail
  * Supports both single and batch station detail requests
- * 
+ *
  * Single request: POST with { stationId } or { stationUrl }
  * Batch request: POST with { stations: [{ stationId }] }
  */
-async function handler(req, res) {
+async function handler (req, res) {
   if (req.method !== 'POST') {
     return sendJson(res, 405, { error: 'Method not allowed' })
   }
@@ -41,7 +35,7 @@ async function handler(req, res) {
   }
 }
 
-async function handleSingleRequest(req, res, body) {
+async function handleSingleRequest (req, res, body) {
   const { stationId, stationUrl } = body
 
   if (!stationId && !stationUrl) {
@@ -67,7 +61,7 @@ async function handleSingleRequest(req, res, body) {
   })
 }
 
-async function handleBatchRequest(req, res, body) {
+async function handleBatchRequest (req, res, body) {
   const { stations } = body
 
   if (!Array.isArray(stations) || stations.length === 0) {

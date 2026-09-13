@@ -47,19 +47,19 @@ const ROOT_OUTPUT_DATA_DIR = path.join('src', 'service', 'data')
 
 function fdevids () {
   return new Promise((resolve, reject) => {
-      // This a sync task, as codexArticles depends on it's output
-      // Data from https://github.com/EDCD/FDevIDs
-      const dataDir = 'edcd/fdevids'
-      fs.mkdirSync(`${ROOT_OUTPUT_DATA_DIR}/${dataDir}`, { recursive: true })
-      glob(`${ROOT_INPUT_DATA_DIR}/${dataDir}/*.csv`, {}, async (error, files) => {
-        if (error) return console.error(error)
-        for (const pathToFile of files) {
-          const jsonOutput = await csv().fromFile(pathToFile)
-          const basename = path.basename(pathToFile, '.csv')
-          fs.writeFileSync(`${ROOT_OUTPUT_DATA_DIR}/${dataDir}/${basename}.json`, JSON.stringify(jsonOutput, null, 2))
-        }
-        resolve()
-      })
+    // This a sync task, as codexArticles depends on it's output
+    // Data from https://github.com/EDCD/FDevIDs
+    const dataDir = 'edcd/fdevids'
+    fs.mkdirSync(`${ROOT_OUTPUT_DATA_DIR}/${dataDir}`, { recursive: true })
+    glob(`${ROOT_INPUT_DATA_DIR}/${dataDir}/*.csv`, {}, async (error, files) => {
+      if (error) return console.error(error)
+      for (const pathToFile of files) {
+        const jsonOutput = await csv().fromFile(pathToFile)
+        const basename = path.basename(pathToFile, '.csv')
+        fs.writeFileSync(`${ROOT_OUTPUT_DATA_DIR}/${dataDir}/${basename}.json`, JSON.stringify(jsonOutput, null, 2))
+      }
+      resolve()
+    })
   })
 }
 
@@ -243,7 +243,6 @@ function materialUses () {
   fs.writeFileSync(`${ROOT_OUTPUT_DATA_DIR}/material-uses.json`, JSON.stringify(materialUses, null, 2))
 }
 
-
 async function codexArticles () {
   const pathToFile = path.join(RESOURCES_DIR, 'data', 'fandom', 'elite_dangerousfandomcom-20220527-wikidump', 'elite_dangerousfandomcom-20220527-current.xml')
   const xml = fs.readFileSync(pathToFile).toString()
@@ -320,7 +319,7 @@ async function codexArticles () {
     )
 
     // Experiment at extracting information about promiment systems
-    //if (rawText.includes('| power      = ')) console.log(title.trim(), '-', text.split("\n")?.[0]?.replace(/[ ]{2,}/img, ' ')?.trim())
+    // if (rawText.includes('| power      = ')) console.log(title.trim(), '-', text.split("\n")?.[0]?.replace(/[ ]{2,}/img, ' ')?.trim())
 
     response.push({
       id,
@@ -398,7 +397,7 @@ async function codexArticles () {
     if (!commodity.description || commodity.description == '') console.warn(`Warning: Commodity "${commodity.symbol}" has no description`)
   })
 
-  const allCommoditiesSortedList = {} 
+  const allCommoditiesSortedList = {}
   Object.keys(allCommodities).sort().forEach(k => allCommoditiesSortedList[k] = allCommodities[k])
 
   fs.writeFileSync(`${ROOT_OUTPUT_DATA_DIR}/commodity-descriptions.json`, JSON.stringify(commodityDescriptions, null, 2))

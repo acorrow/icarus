@@ -103,11 +103,10 @@ export default function NavMapPage () {
 
   useEffect(() => {
     const unsubscribe = eventListener('gameStateChange', async (log) => {
-      //setCmdrStatus(await sendEvent('getCmdrStatus'))
+      // setCmdrStatus(await sendEvent('getCmdrStatus'))
     })
     return unsubscribe
   }, [])
-  
 
   useEffect(() => {
     if (!router.isReady) return
@@ -124,7 +123,7 @@ export default function NavMapPage () {
   return (
     <Layout connected={connected} active={active} ready={ready} loader={!componentReady}>
       <Panel layout='full-width' navigation={NavPanelNavItems('Map', query)} search={search} exit={system?.isCurrentLocation === false ? () => getSystem() : null}>
-        <NavigationSystemMapPanel system={system} systemObject={systemObject} setSystemObject={setSystemObject} getSystem={getSystem} cmdrStatus={cmdrStatus} rescanSystem={rescanSystem} rescanInProgress={rescanInProgress}/>
+        <NavigationSystemMapPanel system={system} systemObject={systemObject} setSystemObject={setSystemObject} getSystem={getSystem} cmdrStatus={cmdrStatus} rescanSystem={rescanSystem} rescanInProgress={rescanInProgress} />
         <NavigationInspectorPanel systemObject={systemObject} setSystemObjectByName={setSystemObjectByName} />
       </Panel>
     </Layout>

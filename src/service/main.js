@@ -12,7 +12,6 @@ const proxy = httpProxy.createProxyServer({})
 const WebSocket = require('ws')
 const yargs = require('yargs')
 const packageJson = require('../../package.json')
-const TokenLedger = require('./lib/token-ledger')
 
 const commandLineArgs = yargs
   .help()
@@ -43,21 +42,21 @@ console.log('All HTTP requests to external services will be logged with verbose 
 // Log INARA cache status
 const inaraCache = require('./lib/api/inara-file-cache')
 const cacheStats = inaraCache.getCacheStats()
-const cacheDir = path.dirname(process.execPath || process.cwd())
-console.log(`\nINARA Cache Status:`)
-console.log(`  Location: ${cacheDir}/inara-cache/`)
+const cacheDir = inaraCache.getCacheDir()
+console.log('\nINARA Cache Status:')
+console.log(`  Location: ${cacheDir}/`)
 console.log(`  Total files: ${cacheStats.totalFiles}`)
 console.log(`  Valid (fresh): ${cacheStats.validFiles}`)
 console.log(`  Expired: ${cacheStats.expiredFiles}`)
 console.log(`  Total size: ${(cacheStats.totalSize / 1024).toFixed(2)} KB`)
-console.log(`  Cache persists between server restarts\n`)
+console.log('  Cache persists between server restarts\n')
 
 // Parse command line arguments
 const PORT = commandLineArgs.port || commandLineArgs.p || 3300 // Port to listen on
 const DEVELOPMENT = commandLineArgs.dev || false // Development mode
 const WEB_DIR = 'build/client'
 const DEFAULT_LOG_DIR = getLogDir()
-let LOG_DIR = DEFAULT_LOG_DIR
+const LOG_DIR = DEFAULT_LOG_DIR
 console.log('Loading save game data from', LOG_DIR)
 
 function getLogDir () {
@@ -79,8 +78,8 @@ function getLogDir () {
     // Check for absolute path: Unix (starts with '/') or Windows (e.g., C:\ or C:/)
     const isAbsolute =
       process.env.LOG_DIR.startsWith('/') ||
-      /^[a-zA-Z]:[\\\/]/.test(process.env.LOG_DIR);
-    logDir = isAbsolute ? process.env.LOG_DIR : path.join(__dirname, process.env.LOG_DIR);
+      /^[a-zA-Z]:[\\\/]/.test(process.env.LOG_DIR)
+    logDir = isAbsolute ? process.env.LOG_DIR : path.join(__dirname, process.env.LOG_DIR)
   }
   // Use provided Save Game dir as base path to look for the the files we need
   // This must be obtained via native OS APIs so is typically passed by the client.
@@ -106,11 +105,6 @@ global.PORT = PORT
 global.LOG_DIR = LOG_DIR
 // Removed global.USING_MOCK_DATA
 global.BROADCAST_EVENT = broadcastEvent
-
-const tokenLedgerUserId = process.env.INARA_TOKEN_USER_ID || process.env.ICARUS_COMMANDER_ID || 'local'
-const tokenLedger = new TokenLedger({ userId: tokenLedgerUserId })
-global.TOKEN_LEDGER = tokenLedger
-
 // Initalise LRU cache with eviction policy (reset when program restarted)
 const { LRUCache } = require('lru-cache')
 global.CACHE = {
@@ -129,10 +123,10 @@ const logger = require('./lib/logger')
 function setupApiRoutes (app) {
   // Import API route handlers (these will be created as we migrate from client)
   const bodyParser = require('./lib/api-body-parser')
-  
+
   // Add JSON body parser for POST requests
   app.use(bodyParser)
-  
+
   // Add request logging middleware
   app.use((req, res, next) => {
     if (req.url.startsWith('/api/')) {
@@ -140,7 +134,7 @@ function setupApiRoutes (app) {
 
       // Log response completion
       const originalEnd = res.end
-      res.end = function(chunk, encoding) {
+      res.end = function (chunk, encoding) {
         logger.info('← %s %s %d', req.method, req.url, res.statusCode)
         originalEnd.call(this, chunk, encoding)
       }
@@ -151,8 +145,8 @@ function setupApiRoutes (app) {
   // Add HTTP cache headers middleware for API routes
   app.use((req, res, next) => {
     if (req.url.startsWith('/api/')) {
-      // YTMD endpoints are stateful — never cache
-      if (req.url.startsWith('/api/ytmd')) {
+      // YTMD and Keybinds endpoints are stateful — never cache
+      if (req.url.startsWith('/api/ytmd') || req.url.startsWith('/api/keybinds')) {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
         res.setHeader('Pragma', 'no-cache')
       } else {
@@ -163,7 +157,7 @@ function setupApiRoutes (app) {
 
       // Only set Content-Type if not already set by route handler
       const originalEnd = res.end
-      res.end = function(chunk, encoding) {
+      res.end = function (chunk, encoding) {
         if (!res.getHeader('Content-Type')) {
           res.setHeader('Content-Type', 'application/json; charset=utf-8')
         }
@@ -174,35 +168,66 @@ function setupApiRoutes (app) {
   })
 
   logger.info('Registering API routes...')
-  
+
   // UI configuration endpoint
   app.use('/api/ui-config', require('./lib/api/ui-config'))
-  
+
   // Feature flags endpoint
   app.use('/api/feature-flags', require('./lib/api/feature-flags'))
-  
+
   // Current system and faction data
   app.use('/api/current-system', require('./lib/api/current-system'))
   app.use('/api/faction-standings', require('./lib/api/faction-standings'))
-  
+
   // INARA endpoints
   app.use('/api/inara-trade-routes', require('./lib/api/inara-trade-routes'))
   app.use('/api/inara-commodity-values', require('./lib/api/inara-commodity-values'))
   app.use('/api/inara-missions', require('./lib/api/inara-missions'))
   app.use('/api/inara-pristine-mining', require('./lib/api/inara-pristine-mining'))
-  app.use('/api/inara-search', require('./lib/api/inara-search'))
-  app.use('/api/inara-websearch', require('./lib/api/inara-websearch'))
   app.use('/api/inara-station-detail', require('./lib/api/inara-station-detail'))
   app.use('/api/inara-outfitting-search', require('./lib/api/inara-outfitting-search'))
   app.use('/api/inara-commodity-search', require('./lib/api/inara-commodity-search'))
-  
-  // Ship and token endpoints
+  app.use('/api/inara-engineering', require('./lib/api/inara-engineering'))
+  app.use('/api/scraper-health', require('./lib/api/scraper-health'))
+
+  // Ship endpoints
   app.use('/api/shipyard-list', require('./lib/api/shipyard-list'))
-  app.use('/api/token-currency', require('./lib/api/token-currency'))
-  
+
   // YouTube Music Desktop App integration
   app.use('/api/ytmd', require('./lib/api/ytmd'))
-  
+
+  // Elite Dangerous Keybindings & Input backup
+  app.use('/api/keybinds', require('./lib/api/keybinds'))
+
+  // Remote Action & Control endpoints (copy, click, navigate, notify, route scout)
+  const remoteAction = require('./lib/api/remote-action')
+  app.use('/api/remote-action', remoteAction.remoteActionHandler)
+  app.use('/api/copy/station-1', remoteAction.copyStation1Handler)
+  app.use('/api/copy/station-a', remoteAction.copyStation1Handler)
+  app.use('/api/copy/station1', remoteAction.copyStation1Handler)
+  app.use('/api/copy/stationa', remoteAction.copyStation1Handler)
+  app.use('/api/copy/station-2', remoteAction.copyStation2Handler)
+  app.use('/api/copy/station-b', remoteAction.copyStation2Handler)
+  app.use('/api/copy/station2', remoteAction.copyStation2Handler)
+  app.use('/api/copy/stationb', remoteAction.copyStation2Handler)
+  app.use('/api/copy/system-1', remoteAction.copySystem1Handler)
+  app.use('/api/copy/system-a', remoteAction.copySystem1Handler)
+  app.use('/api/copy/system1', remoteAction.copySystem1Handler)
+  app.use('/api/copy/systema', remoteAction.copySystem1Handler)
+  app.use('/api/copy/system-2', remoteAction.copySystem2Handler)
+  app.use('/api/copy/system-b', remoteAction.copySystem2Handler)
+  app.use('/api/copy/system2', remoteAction.copySystem2Handler)
+  app.use('/api/copy/systemb', remoteAction.copySystem2Handler)
+  app.use('/api/copy', remoteAction.copyHandler)
+  app.use('/api/route/next', remoteAction.nextRouteHandler)
+  app.use('/api/route-scout/next', remoteAction.nextRouteHandler)
+  app.use('/api/route/prev', remoteAction.prevRouteHandler)
+  app.use('/api/route-scout/prev', remoteAction.prevRouteHandler)
+  app.use('/api/inara-nav', remoteAction.inaraNavHandler)
+  app.use('/api/click', remoteAction.clickHandler)
+  app.use('/api/navigate', remoteAction.navigateHandler)
+  app.use('/api/notify', remoteAction.notifyHandler)
+
   logger.info('API routes registered successfully')
 }
 
@@ -212,31 +237,35 @@ if (DEVELOPMENT) {
   // requests will be forwarded to a web server which is started on localhost
   // to allow UI changes to be tested without rebuilding the app.
   exec('npx next src/client')
-  
+
   // Setup API routes in dev mode too (not just production)
   const webServer = connect()
   setupApiRoutes(webServer)
-  
+
   // Proxy non-API requests to Next.js dev server
   webServer.use((req, res) => {
     if (!req.url.startsWith('/api/')) {
       proxy.web(req, res, { target: 'http://localhost:3000' })
+    } else {
+      res.statusCode = 404
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: 'API route not found', url: req.url }))
     }
   })
-  
+
   httpServer = http.createServer(webServer)
 } else {
   // The default behaviour (i.e. production) is to serve static assets. When the
   // application is compiled to a native executable these assets will be bundled
   // with the executable in a virtual file system.
   const webServer = connect()
-  
+
   // Setup API routes BEFORE static file serving
   setupApiRoutes(webServer)
-  
+
   // Then serve static files
   webServer.use(serveStatic(WEB_DIR, { extensions: ['html'] }))
-  
+
   httpServer = http.createServer(webServer)
 }
 
@@ -339,14 +368,6 @@ webSocketServer.on('error', function (error) {
 
 async function startService () {
   try {
-    const snapshot = await tokenLedger.bootstrap()
-    console.log(`[TokenLedger] Bootstrapped in ${snapshot.mode} mode with balance ${snapshot.balance}`)
-    broadcastEvent('inaraTokensUpdated', { snapshot })
-  } catch (error) {
-    console.error('Failed to bootstrap token ledger', error)
-  }
-
-  try {
     console.log('Initializing log readers before starting web server…')
     await init()
   } catch (error) {
@@ -383,6 +404,13 @@ async function startService () {
 
   httpServer.listen(PORT, () => {
     console.log(`Listening on port ${PORT}…`)
+
+    // Pre-warm INARA session (solves bot-detection challenge in background)
+    const inaraSession = require('./lib/api/inara-session')
+    inaraSession.ensureSession().then(ok => {
+      if (ok) console.log('[INARA] Session established')
+      else console.log('[INARA] Session not established — will retry on first request')
+    }).catch(() => {})
   })
 }
 

@@ -1,13 +1,13 @@
-function createMockRes() {
+function createMockRes () {
   const res = {
     statusCode: 200,
     body: null,
     headers: {},
-    status(code) {
+    status (code) {
       this.statusCode = code
       return this
     },
-    json(payload) {
+    json (payload) {
       this.body = payload
       return this
     }
@@ -33,7 +33,7 @@ function createMockRes() {
   return res
 }
 
-function createMockReq({ method = 'POST', body = null, url = '/api/test' } = {}) {
+function createMockReq ({ method = 'POST', body = null, url = '/api/test' } = {}) {
   return {
     method,
     body,
@@ -42,7 +42,7 @@ function createMockReq({ method = 'POST', body = null, url = '/api/test' } = {})
   }
 }
 
-function createFetchResponse({ status = 200, ok = true, body = '', headers = {} } = {}) {
+function createFetchResponse ({ status = 200, ok = true, body = '', headers = {} } = {}) {
   return {
     status,
     ok,

@@ -18,7 +18,7 @@
 /**
  * Calculate 3D distance between two coordinates
  */
-function calculateDistance(pos1, pos2) {
+function calculateDistance (pos1, pos2) {
   if (!pos1 || !pos2 || !Array.isArray(pos1) || !Array.isArray(pos2)) {
     return null
   }
@@ -42,7 +42,7 @@ function calculateDistance(pos1, pos2) {
  * @param {number} options.maxJumpRange - Ship's maximum jump range in LY
  * @returns {Object} { route: Array, totalDistance: number, totalValue: number, unreachable: Array }
  */
-function planOptimalRoute({ stations, currentPosition, currentSystemName, maxJumpRange }) {
+function planOptimalRoute ({ stations, currentPosition, currentSystemName, maxJumpRange }) {
   if (!Array.isArray(stations) || stations.length === 0) {
     return { route: [], totalDistance: 0, totalValue: 0, unreachable: [] }
   }

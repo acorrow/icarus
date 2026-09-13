@@ -120,6 +120,25 @@ You can run ICARUS Terminal in development mode without building a native binary
 * `npm install`
 * `npm run dev`
 
-You can access the web client at http://localhost:3300
+You can access the web client at http://localhost:3300 (or `http://localhost:3000` via `npm run dev:web` for client-only hot reload).
 
-Note: You may also need to create a `.env` file with a `LOG_DIR` entry so it can find your game data, see `.env-example`.
+### Environment Configuration (.env)
+
+Create a `.env` file from the provided `.env-example`:
+
+* **Live Game Mode:** Set `LOG_DIR` to your Elite Dangerous Saved Games directory:
+  ```bash
+  LOG_DIR=C:\Users\<Username>\Saved Games\Frontier Developments\Elite Dangerous
+  ```
+* **Offline Mock Data Mode:** Run full stack without Elite Dangerous or live network access:
+  ```bash
+  FORCE_MOCK_DATA=true
+  ```
+
+### Testing & Diagnostic Utilities
+
+* `npm test` — Run Jest test suite across client, service, and shared libraries.
+* `npm run test:scrapers` — Test INARA scrapers offline against pre-captured HTML fixtures.
+* `npm run test:scrapers:real` — Test scrapers live against active inara.cz web pages.
+* `npm run logs:http` — Watch verbose HTTP request logs in real-time (`http-requests.log`).
+* `npm run lint` — Lint Go and JavaScript files.

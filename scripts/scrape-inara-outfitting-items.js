@@ -18,7 +18,7 @@ const OUTPUT_FILE = path.join(__dirname, '..', 'resources', 'outfitting-item-dat
 /**
  * Fetch HTML from INARA
  */
-async function fetchInaraHtml() {
+async function fetchInaraHtml () {
   return new Promise((resolve, reject) => {
     https.get(INARA_OUTFITTING_URL, { family: 4 }, (res) => {
       let html = ''
@@ -35,7 +35,7 @@ async function fetchInaraHtml() {
  *   "2D Beam Laser [Fixed]" → { class: 2, rating: "D", mount: "Fixed" }
  *   "Fighter Hangar" → { class: null, rating: null }
  */
-function parseItemMetadata(name) {
+function parseItemMetadata (name) {
   // Match pattern: "{class}{rating} {name} [{mount}]"
   const classRatingMatch = name.match(/^(\d)([A-I])\s+(.+?)(?:\s*\[(.+?)\])?$/)
 
@@ -70,7 +70,7 @@ function parseItemMetadata(name) {
 /**
  * Categorize item based on name patterns
  */
-function categorizeItem(name, baseName) {
+function categorizeItem (name, baseName) {
   const lowerName = baseName.toLowerCase()
 
   // Ships (no class/rating)
@@ -162,7 +162,7 @@ function categorizeItem(name, baseName) {
 /**
  * Main scraper function
  */
-async function scrapeInaraItems() {
+async function scrapeInaraItems () {
   console.log('Fetching INARA outfitting page...')
   const html = await fetchInaraHtml()
 

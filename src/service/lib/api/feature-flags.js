@@ -1,7 +1,4 @@
 const {
-  isInaraTokenCurrencyEnabled,
-  isInaraTokenJackpotEnabled,
-  isTokenRecoveryCompatibilityEnabled,
   isInaraSettingsEnabled,
   _private: featureFlagInternals
 } = require('../../../shared/feature-flags.js')
@@ -9,27 +6,6 @@ const {
 const { hasFlagKey } = featureFlagInternals
 
 const FLAG_DEFINITIONS = [
-  {
-    key: 'icarusInaraTokenCurrencyEnabled',
-    label: 'INARA Token Currency',
-    description: 'Enables the remote INARA token currency ledger and INARA data exchange integration.',
-    resolver: isInaraTokenCurrencyEnabled,
-    defaultValue: false
-  },
-  {
-    key: 'icarusInaraTokenJackpotEnabled',
-    label: 'Token Jackpot Bonus',
-    description: 'Unlocks the simulated jackpot multiplier when commanders recover from deep token debt.',
-    resolver: isInaraTokenJackpotEnabled,
-    defaultValue: false
-  },
-  {
-    key: 'icarusInaraTokenRecoveryCompatEnabled',
-    label: 'Token Recovery Compatibility Mode',
-    description: 'Retains the legacy negative-balance recovery schedule for the INARA token ledger.',
-    resolver: isTokenRecoveryCompatibilityEnabled,
-    defaultValue: true
-  },
   {
     key: 'icarusEnableInaraSettings',
     label: 'INARA Settings',
@@ -62,14 +38,8 @@ module.exports = function handler (req, res) {
     return
   }
 
-  try {
-    const flags = FLAG_DEFINITIONS.map(buildFlagPayload)
-    res.statusCode = 200
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({ flags }))
-  } catch (error) {
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({ error: error.message || 'Failed to resolve feature flags' }))
-  }
+  const flags = FLAG_DEFINITIONS.map(buildFlagPayload)
+  res.statusCode = 200
+  res.setHeader('Content-Type', 'application/json')
+  res.end(JSON.stringify({ flags }))
 }

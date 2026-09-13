@@ -1,3 +1,4 @@
+import React, { memo } from 'react'
 import PropTypes from 'prop-types'
 import Icons from 'lib/icons'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
@@ -22,7 +23,7 @@ export function PlanetIcon ({ planetType, size = 48, color }) {
     'Class V gas giant': 'planet-gas-giant',
     'High metal content': 'planet-high-metal-content',
     'Metal-rich': 'planet-high-metal-content',
-    'Rocky': 'planet',
+    Rocky: 'planet',
     'Rocky body': 'planet',
     'Rocky ice body': 'planet',
     'Icy body': 'planet'
@@ -84,7 +85,7 @@ PlanetIcon.propTypes = {
  * @param {string} props.className - Additional CSS class
  * @param {function} props.onClick - Click handler
  */
-export default function PlanetCard ({
+function PlanetCard ({
   planetName,
   systemName,
   planetType,
@@ -278,15 +279,17 @@ export default function PlanetCard ({
       </div>
       {fillSpace && planetImage && (
         <div className={styles.planetCardImageContainer}>
-          {typeof planetImage === 'string' ? (
-            <img
-              src={planetImage}
-              alt={`${normalizedPlanetName} surface`}
-              className={styles.planetCardImage}
-            />
-          ) : (
-            planetImage
-          )}
+          {typeof planetImage === 'string'
+            ? (
+              <img
+                src={planetImage}
+                alt={`${normalizedPlanetName} surface`}
+                className={styles.planetCardImage}
+              />
+              )
+            : (
+                planetImage
+              )}
         </div>
       )}
     </div>
@@ -339,3 +342,5 @@ PlanetCard.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func
 }
+
+export default memo(PlanetCard)

@@ -39,47 +39,53 @@ function StationSegment ({ icon, name, color, subtexts, metrics, ariaLabel }) {
   return (
     <div className={`${styles.segment} ${styles.stationSegment}`} aria-label={ariaLabel || undefined}>
       {icon ? <span className={styles.icon}>{icon}</span> : null}
-      {normalizedName ? (
-        <span className={styles.primary} style={color ? { color } : undefined}>
-          {isValidElement(normalizedName)
-            ? normalizedName
-            : <CopyOnClick copyMessageKey='station'>{normalizedName}</CopyOnClick>}
-        </span>
-      ) : null}
+      {normalizedName
+        ? (
+          <span className={styles.primary} style={color ? { color } : undefined}>
+            {isValidElement(normalizedName)
+              ? normalizedName
+              : <CopyOnClick copyMessageKey='station'>{normalizedName}</CopyOnClick>}
+          </span>
+          )
+        : null}
 
-      {normalizedSubtexts.length > 0 ? (
-        <div className={styles.subtextGroup}>
-          {normalizedSubtexts.map((line, index) => (
-            <span key={`station-subtext-${index}`} className={`${styles.subtext} ${styles.optionalWide}`}>
-              {line}
-            </span>
-          ))}
-        </div>
-      ) : null}
+      {normalizedSubtexts.length > 0
+        ? (
+          <div className={styles.subtextGroup}>
+            {normalizedSubtexts.map((line, index) => (
+              <span key={`station-subtext-${index}`} className={`${styles.subtext} ${styles.optionalWide}`}>
+                {line}
+              </span>
+            ))}
+          </div>
+          )
+        : null}
 
-      {normalizedMetrics.length > 0 ? (
-        <div className={styles.metricGroup}>
-          {normalizedMetrics.map((metric, index) => {
-            const metricClass = [styles.metric]
-            if (!metric.priority) metricClass.push(styles.optionalMedium)
-            return (
-              <div key={`station-metric-${index}`} className={metricClass.join(' ')}>
-                {metric.label ? <span className={styles.metricLabel}>{metric.label}</span> : null}
-                {metric.value
-                  ? (
+      {normalizedMetrics.length > 0
+        ? (
+          <div className={styles.metricGroup}>
+            {normalizedMetrics.map((metric, index) => {
+              const metricClass = [styles.metric]
+              if (!metric.priority) metricClass.push(styles.optionalMedium)
+              return (
+                <div key={`station-metric-${index}`} className={metricClass.join(' ')}>
+                  {metric.label ? <span className={styles.metricLabel}>{metric.label}</span> : null}
+                  {metric.value
+                    ? (
                       <span
                         className={styles.metricValue}
                         style={metric.color ? { color: metric.color } : undefined}
                       >
                         {metric.value}
                       </span>
-                    )
-                  : null}
-              </div>
-            )
-          })}
-        </div>
-      ) : null}
+                      )
+                    : null}
+                </div>
+              )
+            })}
+          </div>
+          )
+        : null}
     </div>
   )
 }
@@ -118,27 +124,35 @@ function CommoditySegment ({ icon, name, color, subtexts, quantity, price, ariaL
 
   return (
     <div className={`${styles.segment} ${styles.commoditySegment}`} aria-label={ariaLabel || undefined}>
-      {quantity ? (
-        <span className={`${styles.quantity} ${styles.optionalMedium}`}>{sanitizeText(quantity)}</span>
-      ) : null}
+      {quantity
+        ? (
+          <span className={`${styles.quantity} ${styles.optionalMedium}`}>{sanitizeText(quantity)}</span>
+          )
+        : null}
       {icon ? <span className={styles.icon}>{icon}</span> : null}
-      {name ? (
-        <span className={styles.primary} style={color ? { color } : undefined}>
-          {name}
-        </span>
-      ) : null}
-      {price ? (
-        <span className={`${styles.commodityPrice} ${styles.optionalWide}`}>{sanitizeText(price)}</span>
-      ) : null}
-      {normalizedSubtexts.length > 0 ? (
-        <div className={styles.subtextGroup}>
-          {normalizedSubtexts.map((line, index) => (
-            <span key={`commodity-subtext-${index}`} className={`${styles.subtext} ${styles.optionalMedium}`}>
-              {line}
-            </span>
-          ))}
-        </div>
-      ) : null}
+      {name
+        ? (
+          <span className={styles.primary} style={color ? { color } : undefined}>
+            {name}
+          </span>
+          )
+        : null}
+      {price
+        ? (
+          <span className={`${styles.commodityPrice} ${styles.optionalWide}`}>{sanitizeText(price)}</span>
+          )
+        : null}
+      {normalizedSubtexts.length > 0
+        ? (
+          <div className={styles.subtextGroup}>
+            {normalizedSubtexts.map((line, index) => (
+              <span key={`commodity-subtext-${index}`} className={`${styles.subtext} ${styles.optionalMedium}`}>
+                {line}
+              </span>
+            ))}
+          </div>
+          )
+        : null}
     </div>
   )
 }
@@ -178,9 +192,9 @@ function DistanceSegment ({ label, value, secondary, valueColor, secondaryColor 
       {value ? <span className={styles.distanceValue} style={valueStyle}>{sanitizeText(value)}</span> : null}
       {secondary
         ? (
-            <span className={`${styles.distanceSecondary} ${styles.optionalWide}`} style={secondaryStyle}>
-              {sanitizeText(secondary)}
-            </span>
+          <span className={`${styles.distanceSecondary} ${styles.optionalWide}`} style={secondaryStyle}>
+            {sanitizeText(secondary)}
+          </span>
           )
         : null}
     </div>

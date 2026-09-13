@@ -1,6 +1,6 @@
 /**
  * useYtmd - React hook for YouTube Music Desktop App integration
- * 
+ *
  * Provides:
  * - YTMD connection status and player state via WebSocket events
  * - Helper functions for playback control, authentication
@@ -12,6 +12,7 @@ import { eventListener } from 'lib/socket'
 
 const POLL_INTERVAL_MS = 10000
 const POLL_INTERVAL_IDLE_MS = 30000
+const PLAYLIST_SETTINGS_KEY = 'icarus_ytmd_playlist_settings'
 
 /**
  * @returns {{
@@ -52,6 +53,9 @@ export default function useYtmd () {
   const [error, setError] = useState(null)
   const [pairingCode, setPairingCode] = useState(null)
   const [pairingPending, setPairingPending] = useState(false)
+  const [playlists, setPlaylists] = useState([])
+  const [playlistSettings, setPlaylistSettings] = useState({ normal: null, combat: null })
+  const [activeScenario, setActiveScenario] = useState('normal')
 
   const pollTimerRef = useRef(null)
   const mountedRef = useRef(true)
@@ -140,6 +144,66 @@ export default function useYtmd () {
   const toggleRepeat = useCallback((mode) => sendCommand('repeatMode', mode), [sendCommand])
   const shuffle = useCallback(() => sendCommand('shuffle'), [sendCommand])
 
+  // Playlist management
+  const fetchPlaylists = useCallback(async () => {
+    try {
+      const res = await fetch('/api/ytmd/playlists')
+      if (res.status === 401) { setAuthenticated(false); return [] }
+      if (!res.ok) return []
+      const data = await res.json()
+      if (!mountedRef.current) return []
+      const list = Array.isArray(data) ? data : []
+      setPlaylists(list)
+      return list
+    } catch (err) {
+      console.error('[YTMD] Failed to fetch playlists:', err.message)
+      return []
+    }
+  }, [])
+
+  const playPlaylist = useCallback(async (playlistId) => {
+    if (!playlistId) return
+    try {
+      const res = await fetch('/api/ytmd/play-playlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playlistId })
+      })
+      if (res.status === 401) { setAuthenticated(false); return }
+      if (!res.ok) {
+        const err = await res.json()
+        console.error('[YTMD] Play playlist failed:', err.error)
+      }
+    } catch (err) {
+      console.error('[YTMD] Play playlist failed:', err.message)
+    }
+  }, [])
+
+  const loadPlaylistSettings = useCallback(async () => {
+    try {
+      const res = await fetch('/api/ytmd/playlist-settings')
+      if (!res.ok) return
+      const data = await res.json()
+      if (!mountedRef.current) return
+      setPlaylistSettings(data || { normal: null, combat: null })
+    } catch (err) {
+      console.error('[YTMD] Failed to load playlist settings:', err.message)
+    }
+  }, [])
+
+  const savePlaylistSettings = useCallback(async (settings) => {
+    try {
+      setPlaylistSettings(settings)
+      await fetch('/api/ytmd/playlist-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      })
+    } catch (err) {
+      console.error('[YTMD] Failed to save playlist settings:', err.message)
+    }
+  }, [])
+
   // Pairing flow
   // YTMD auth is a two-step process:
   //   1. POST /requestcode  → YTMD generates a 4-digit code and returns it (no UI in YTMD)
@@ -226,6 +290,52 @@ export default function useYtmd () {
     }
   }, [])
 
+  // Listen for combat zone state changes and auto-switch playlists
+  const playlistSettingsRef = useRef(playlistSettings)
+  const authenticatedForPlaylistRef = useRef(authenticated)
+  useEffect(() => { playlistSettingsRef.current = playlistSettings }, [playlistSettings])
+  useEffect(() => { authenticatedForPlaylistRef.current = authenticated }, [authenticated])
+
+  useEffect(() => {
+    const cleanupCombatZone = eventListener('combatZoneStateChange', (data) => {
+      if (!mountedRef.current) return
+      if (!authenticatedForPlaylistRef.current) return
+
+      const settings = playlistSettingsRef.current
+      if (!settings) return
+
+      if (data.inCombatZone) {
+        setActiveScenario('combat')
+        if (settings.combat?.id) {
+          console.log('[YTMD] Combat zone detected — switching to combat playlist:', settings.combat.title)
+          playPlaylist(settings.combat.id)
+        }
+      } else {
+        setActiveScenario('normal')
+        if (settings.normal?.id) {
+          console.log('[YTMD] Left combat zone — switching to normal playlist:', settings.normal.title)
+          playPlaylist(settings.normal.id)
+        }
+      }
+    })
+
+    // Listen for settings changes from the Settings panel
+    const handleSettingsChanged = (e) => {
+      if (!mountedRef.current) return
+      if (e.detail) setPlaylistSettings(e.detail)
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('ytmdPlaylistSettingsChanged', handleSettingsChanged)
+    }
+
+    return () => {
+      cleanupCombatZone()
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('ytmdPlaylistSettingsChanged', handleSettingsChanged)
+      }
+    }
+  }, [playPlaylist])
+
   // Track latest state in refs so the polling callback sees current values
   // without needing to be in the useEffect dependency array
   const connectedRef = useRef(connected)
@@ -243,6 +353,7 @@ export default function useYtmd () {
       const status = await checkStatus()
       if (status?.running && status?.authenticated) {
         await refreshState()
+        await loadPlaylistSettings()
       }
       if (mountedRef.current) setLoading(false)
     }
@@ -280,6 +391,9 @@ export default function useYtmd () {
     error,
     pairingCode,
     pairingPending,
+    playlists,
+    playlistSettings,
+    activeScenario,
     requestPairing,
     unpair,
     sendCommand,
@@ -292,6 +406,10 @@ export default function useYtmd () {
     toggleDislike,
     toggleRepeat,
     shuffle,
+    fetchPlaylists,
+    playPlaylist,
+    loadPlaylistSettings,
+    savePlaylistSettings,
     refreshState,
     checkStatus
   }

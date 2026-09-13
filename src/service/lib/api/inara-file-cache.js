@@ -1,64 +1,61 @@
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
+const { LRUCache } = require('lru-cache')
 
 const THIRTY_MINUTES_MS = 30 * 60 * 1000
 
-function getCacheDir() {
-  // Store cache next to the service executable
-  const execDir = path.dirname(process.execPath || process.cwd())
-  const cacheDir = path.join(execDir, 'inara-cache')
+// In-memory L1 LRU Cache for sub-millisecond lookups with zero disk I/O
+const memoryCache = new LRUCache({
+  max: 1000, // Up to 1,000 recent responses
+  ttl: THIRTY_MINUTES_MS,
+  updateAgeOnGet: true
+})
 
-  // Ensure cache directory exists
-  if (!fs.existsSync(cacheDir)) {
-    fs.mkdirSync(cacheDir, { recursive: true })
-  }
+const { getUserDataDir } = require('../user-data')
 
-  return cacheDir
+function getCacheDir () {
+  return getUserDataDir('inara-cache')
 }
 
-function generateCacheKey(url) {
-  // Create a hash of the URL for the filename
+function generateCacheKey (url) {
   const hash = crypto.createHash('sha256').update(url).digest('hex')
   return `${hash}.json`
 }
 
-function getCacheFilePath(url) {
+function getCacheFilePath (url) {
   const cacheDir = getCacheDir()
   const cacheKey = generateCacheKey(url)
   return path.join(cacheDir, cacheKey)
 }
 
-function isCacheValid(filePath, ttlMs = THIRTY_MINUTES_MS) {
+function isCacheValid (filePath, ttlMs = THIRTY_MINUTES_MS) {
   try {
     const stats = fs.statSync(filePath)
     const now = Date.now()
     const fileAge = now - stats.mtime.getTime()
     return fileAge <= ttlMs
   } catch (error) {
-    // File doesn't exist or can't be read
     return false
   }
 }
 
-function readCacheEntry(filePath) {
+function readCacheEntry (filePath) {
   try {
     const data = fs.readFileSync(filePath, 'utf8')
     const entry = JSON.parse(data)
 
-    // Validate entry structure
     if (!entry.url || !entry.timestamp || !entry.status) {
       return null
     }
 
     return entry
   } catch (error) {
-    // Invalid JSON or file error
     return null
   }
 }
 
-function writeCacheEntry(url, status, headers, body, ttlMs = THIRTY_MINUTES_MS) {
+async function writeCacheEntryAsync (url, status, headers, body, ttlMs = THIRTY_MINUTES_MS) {
   const filePath = getCacheFilePath(url)
   const entry = {
     url,
@@ -66,45 +63,74 @@ function writeCacheEntry(url, status, headers, body, ttlMs = THIRTY_MINUTES_MS) 
     headers: headers || {},
     body: body || '',
     timestamp: Date.now(),
-    ttlMs // Store TTL for reference
+    ttlMs
   }
 
   try {
-    fs.writeFileSync(filePath, JSON.stringify(entry, null, 2), 'utf8')
+    await fs.promises.writeFile(filePath, JSON.stringify(entry, null, 2), 'utf8')
     return true
   } catch (error) {
-    console.error('Failed to write cache entry:', error)
+    console.error('Failed to write cache entry async:', error)
     return false
   }
 }
 
-function getCachedResponse(url, ttlMs = THIRTY_MINUTES_MS) {
-  const filePath = getCacheFilePath(url)
+function getCachedResponse (url, ttlMs = THIRTY_MINUTES_MS) {
+  if (!url) return null
 
+  // 1. Check in-memory L1 cache first (0ms latency)
+  const memoryEntry = memoryCache.get(url)
+  if (memoryEntry) {
+    const age = Date.now() - (memoryEntry.timestamp || 0)
+    if (age <= ttlMs) {
+      return memoryEntry
+    }
+    memoryCache.delete(url)
+  }
+
+  // 2. Fall back to L2 filesystem cache
+  const filePath = getCacheFilePath(url)
   if (!isCacheValid(filePath, ttlMs)) {
     return null
   }
 
-  const entry = readCacheEntry(filePath)
-  if (!entry) {
+  const fileEntry = readCacheEntry(filePath)
+  if (!fileEntry) {
     return null
   }
 
-  return entry
+  // Populate L1 cache for subsequent requests
+  memoryCache.set(url, fileEntry, { ttl: ttlMs })
+  return fileEntry
 }
 
-function setCachedResponse(url, status, headers, body, ttlMs = THIRTY_MINUTES_MS) {
-  // Only cache successful responses
-  if (status !== 200) {
+function setCachedResponse (url, status, headers, body, ttlMs = THIRTY_MINUTES_MS) {
+  if (status !== 200 || !url) {
     return false
   }
 
-  return writeCacheEntry(url, status, headers, body, ttlMs)
+  const entry = {
+    url,
+    status,
+    headers: headers || {},
+    body: body || '',
+    timestamp: Date.now(),
+    ttlMs
+  }
+
+  // 1. Populate L1 memory cache immediately
+  memoryCache.set(url, entry, { ttl: ttlMs })
+
+  // 2. Persist to L2 file cache asynchronously without blocking
+  writeCacheEntryAsync(url, status, headers, body, ttlMs).catch(() => {})
+
+  return true
 }
 
-function clearExpiredCache() {
-  const cacheDir = getCacheDir()
+function clearExpiredCache () {
+  memoryCache.purgeStale()
 
+  const cacheDir = getCacheDir()
   try {
     const files = fs.readdirSync(cacheDir)
     const now = Date.now()
@@ -121,7 +147,6 @@ function clearExpiredCache() {
           fs.unlinkSync(filePath)
         }
       } catch (error) {
-        // File might have been deleted or inaccessible
         continue
       }
     }
@@ -130,20 +155,18 @@ function clearExpiredCache() {
   }
 }
 
-function clearAllCache() {
-  const cacheDir = getCacheDir()
+function clearAllCache () {
+  memoryCache.clear()
 
+  const cacheDir = getCacheDir()
   try {
     const files = fs.readdirSync(cacheDir)
-
     for (const file of files) {
       if (!file.endsWith('.json')) continue
-
       const filePath = path.join(cacheDir, file)
       try {
         fs.unlinkSync(filePath)
       } catch (error) {
-        // File might have been deleted or inaccessible
         continue
       }
     }
@@ -152,13 +175,14 @@ function clearAllCache() {
   }
 }
 
-function getCacheStats() {
+function getCacheStats () {
   const cacheDir = getCacheDir()
   const stats = {
     totalFiles: 0,
     validFiles: 0,
     expiredFiles: 0,
-    totalSize: 0
+    totalSize: 0,
+    memoryCacheSize: memoryCache.size
   }
 
   try {
@@ -182,7 +206,6 @@ function getCacheStats() {
           stats.expiredFiles++
         }
       } catch (error) {
-        // File might be inaccessible
         continue
       }
     }
@@ -194,6 +217,7 @@ function getCacheStats() {
 }
 
 module.exports = {
+  getCacheDir,
   getCachedResponse,
   setCachedResponse,
   clearExpiredCache,

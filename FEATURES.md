@@ -16,8 +16,10 @@ ICARUS Terminal currently uses **web scraping** to extract data from INARA's pub
   - `inara-commodity-values.js` - Commodity market scraper
   - `inara-missions.js` - Mission board scraper
   - `inara-pristine-mining.js` - Pristine ring location scraper
-  - `inara-websearch.js` - General outfitting/search scraper
   - `inara-station-details.js` - Station detail page scraper (allegiance, government, powerplay)
+  - `inara-outfitting-search.js` - Outfitting module location scraper
+  - `inara-commodity-search.js` - Commodity buy-location scraper
+  - `inara-engineering.js` - Engineer/blueprint/material/component-trading scraper
   - `inara-station-detail.js` - API route for station detail endpoint
 
 ### Future Implementation: INARA Official API (Not Yet Used)
@@ -26,7 +28,7 @@ INARA provides an official API that we plan to integrate:
   - Overview: https://inara.cz/elite/inara-api/
   - Developer Guide: https://inara.cz/elite/inara-api-devguide/
   - Full Docs: https://inara.cz/elite/inara-api-docs/
-- **Status**: Not implemented yet, only experimental code exists in `inara-search.js`
+- **Status**: Not yet implemented
 - **Future Goal**: 
   - Wire up INARA API endpoints
   - Send Elite Dangerous journal data to INARA via their API
@@ -53,8 +55,11 @@ A **decoupled, testable scraper engine** has been implemented to make INARA scra
 - **Individual Scrapers**: `src/service/lib/api/scrapers/`
   - `trade-routes.js` - Trade route intelligence scraper
   - `commodity-values.js` - Market commodity pricing scraper
+  - `commodity-search.js` - Commodity buy-location scraper
   - `mining-missions.js` - Mining mission radar scraper
   - `pristine-mining.js` - Pristine ring prospecting scraper
+  - `outfitting-search.js` - Outfitting module location scraper
+  - `component-trading.js` - Engineering material & component trading scraper
   - Each scraper is a pure function: HTML → Structured JSON
   - Built-in validation for data structure integrity
 
@@ -210,8 +215,17 @@ Current icon assignments (as of 2025-10-20):
 | Outfitting | Outfitting Search | Ships, modules and equipment | wrench | outfitting.js |
 | Mining Missions | Mining Missions | Find mining missions near you | asteroid-base | mining-missions.js |
 | Mining Locations | Mining Locations | Find pristine mining rings | planet-ringed | mining-locations.js |
+| Engineering | Engineering | Blueprint materials & sourcing | engineering | engineering.js |
+
+This table reflects `InaraWorkspaceNavItems()` in `src/client/lib/navigation-items.js`, which is the source of truth for what's actually in the INARA nav — check there first if this table looks stale.
 
 **Note:** The former Media Terminal page has been removed. YouTube Music Desktop integration is now a global bottom bar controlled via Settings > YouTube Music.
+
+**Not in the current nav (exist as files under `pages/inara/` but unlinked):**
+- `trade-routes.js` — thin wrapper around the `TradeRoutesPanel` also used by `status.js`; its nav entry is commented out in `navigation-items.js` (superseded by Route Scout).
+- `status.js` — legacy tabbed page (`InaraStatusPage`) combining Trade Routes/Commodities/Missions/Mining Locations into one view with tab switching. Not linked in nav, but still exported from here: `TradeRoutesPanel`, `CommoditiesPanel`, and other shared panel components used by the newer single-purpose pages above. Treat as shared implementation, not just a page.
+- `cargo.js` — standalone "Cargo Manifest" page, not linked in nav and doesn't follow the standard h2/h3 title-subtitle style below (uses its own CSS module classes instead).
+- `search.js`, `index.js`, `test-*.js` — search entry point, workspace index/redirect, and dev-only card test pages respectively.
 
 **Update this table whenever you add, remove, or modify an INARA page.**
 
@@ -340,43 +354,15 @@ Use these shortnames when coordinating INARA work:
 - **UPLINK_FEED – Ambient Telemetry Overlay.** The uplink console (`inara.js` final sections) rotates pseudo-telemetry headlines, user-configurable cadence controls, and integrates with `inaraTickerMessages`. Additions should honor the animation timings and respect the reduced-motion guard.
 - **ASSIMILATION_GATE – Page Shell & Arrival Sequence.** `InaraPage` toggles the global theme class, triggers arrival animations, and manages top-level tab state. Extend it via composition—drop new sections into the existing `<Panel>` layout so navigation/ARIA wiring continues to work.
 - **TAB_SHELL – Tab Navigation.** The `inaraTabs` array describes the tab structure and icons; updates must keep the keyboard handlers (`handleTabKeyPress`) intact. When adding tabs, double-check breakpoints so the secondary nav remains scrollable on narrow widths.
-- _The former Engineering Opportunities manifest and related `/inara/engineering` routes have been removed; no active feature mapping remains for this surface._
-- **SEARCH_PLACEHOLDER / OUTFITTING_PLACEHOLDER.** These stub routes keep routing hooks hot while conveying that the surfaces are intentionally disabled. If you activate one, migrate the placeholder copy into a dismissible announcement rather than deleting it outright.
+- **ENGINEERING – Blueprint Materials & Component Trading.** `InaraEngineeringPage` (`src/client/pages/inara/engineering.js`) provides a drill-down interface for engineers, blueprints, component sourcing, and component trading. Uses `/api/inara-engineering` POST with actions: `scrapeEngineer`, `scrapeBlueprint`, `scrapeComponent`, `scrapeComponentTrading`, `scrapeNearestMaterialTrader`. The `scrapeComponentTrading` action scrapes INARA's `/elite/market-materials/` page to find stations selling/buying engineering materials near the commander's current system. Scraper: `src/service/lib/api/scrapers/component-trading.js` (pure function, registered in scraper-index). Client-side `ComponentTradingSection` auto-loads when viewing a component detail, showing a table of stations with supply, price, distance, pad size, and age.
+- **OUTFITTING – Ship, Module & Equipment Search.** `OutfittingPage` (`src/client/pages/inara/outfitting.js`) provides an interactive browser for finding ships, core internal modules, optional internal modules, weapons, and utility mounts across nearby stations. Powered by `/api/inara-outfitting-search` and the pure scraper `src/service/lib/api/scrapers/outfitting-search.js`, querying INARA's outfitting endpoints with ship landing pad and distance constraints.
 - **API_COMMODITY_CACHE.** `/api/inara-commodity-values` orchestrates commodity lookups for **selling** cargo. It uses `ingestJournalMarketEvent` to merge Commander market journals with INARA caches, writes cache hits to disk, and exposes cache age metadata. Always sanitize inbound commodity names—see `normalizeCommodityName` helpers before hitting remote endpoints.
 - **API_COMMODITY_SEARCH.** `/api/inara-commodity-search` queries INARA for **buy** locations of specific commodities (e.g., "Where can I buy Meta-Alloys near Kruger 60?"). The endpoint (`src/service/lib/api/inara-commodity-search.js`) constructs parameterized INARA URLs (`https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1[]=<commodityId>&ps1=<systemName>...`) and uses the `commodity-search` scraper (`src/service/lib/api/scrapers/commodity-search.js`) to parse HTML tables into structured JSON with station name, system name, distances (Ly/Ls), buy price, supply, demand, and last update timestamps. Commodity IDs are sourced from `/commodity-database.json` (132 commodities, 15 categories). The scraper is decoupled and testable, with helper functions `parseDistanceLs`, `parseDistanceLy`, and `parseLandingPadSize`. This complements `/api/inara-commodity-values` (sell locations) by providing the opposite use case (buy locations).
 - **API_ROUTE_SCRAPER.** `/api/inara-trade-routes` validates filters against a whitelist, scrapes INARA HTML via `cheerio`, and calculates profit metrics per leg. Keep CPU-bound parsing out of the request handler by extending the helper functions around line ~400.
 - **API_MISSION_SCRAPER.** `/api/inara-missions` downloads INARA mission tables, pulls out system/faction columns, and annotates entries with ICARUS distance calculations. Favor adding derived fields server-side so the client can stay dumb.
 - **API_PRISTINE_SCRAPER.** `/api/inara-pristine-mining` normalizes INARA pristine datasets, injects inspector URLs, and returns body/system metadata ready for inline expansion. It already dedupes by system; preserve that behavior when expanding filters.
-- **API_WEBSEARCH.** `/api/inara-search` multiplexes INARA lookups for commodities, ships, outfitting, and materials. The endpoint constructs a queue of ICARUS service events—maintain the payload schema so `search.js` can continue to short-circuit unsupported search types.
 - **API_STATION_DETAIL.** `/api/inara-station-detail` and `/api/inara-station-detail/batch` scrape individual INARA station detail pages (e.g., `https://inara.cz/elite/station/1406/`) to extract political data: allegiance (Alliance/Empire/Federation/Independent), government type (Democracy/Dictatorship/Corporate), controlling faction, economy, and powerplay control. Station URLs captured from INARA commodity searches are parsed to extract station IDs, detail pages are fetched with 24-hour cache TTL (station politics rarely change), and the batch endpoint enables parallel fetching for multiple stations. The scraper (`src/service/lib/api/inara-station-details.js`) is decoupled and testable, with helper functions `extractStationId`, `parseStationDetail`, `fetchStationDetail`, and `fetchMultipleStationDetails`. The commodities page (`src/client/pages/inara/commodities.js`) uses the batch endpoint to hydrate station cards with accurate per-station political data instead of generic system-level fallbacks.
-- **TOKEN_CURRENCY – Token Currency and INARA Data Exchange.** The token service (`src/service/lib/token-ledger.js`) maintains a per-commander ledger, writing human-readable audit trails (`ledger.log`), structured transaction history (`transactions.jsonl`), and remote retry telemetry (`remote-retry.log`) under `~/.config/Icarus/tokens/<userId>/` (or the platform-specific equivalent). **Frontend UI:** Token balance is displayed in the INARA status page (`src/client/pages/inara/status.js`) with inline balance display, animations, and jackpot handling. When the feature flag `icarusInaraTokenCurrencyEnabled` is **false** (default), the ledger operates in simulation mode: tokens are earned from simulated INARA submissions and spent by INARA API proxies without emitting any real network traffic. Setting `icarusInaraTokenCurrencyEnabled=true` enables the remote mirror, switching ledger persistence to the external microservice while continuing to fall back to local storage if the service is unavailable.
-- **YTMD_PLAYER – YouTube Music Desktop Integration.** A Winamp-inspired compact player bar (`src/client/components/WinampBar/WinampBar.jsx`) integrates with YouTube Music Desktop App via its Companion Server API (port 9863). **Architecture:** Service-side proxy (`src/service/lib/api/ytmd.js`) handles auth code/token exchange, state queries, and playback commands. A Socket.IO bridge (`src/service/lib/ytmd-realtime-bridge.js`) relays real-time state updates to all ICARUS WebSocket clients. Client-side hook (`src/client/lib/hooks/useYtmd.js`) manages state, polling fallback, and command dispatch. **Activation:** Users enable the player in Settings > YouTube Music, which persists the toggle to `localStorage` (`icarus_ytmd_enabled`). The Layout component (`src/client/components/layout.js`) conditionally renders the bottom bar on all pages. **Features:** album art thumbnail, ticker marquee track title, progress bar with seek, transport controls (prev/play-pause/next), shuffle/repeat toggles, volume slider, like/dislike buttons, expandable queue panel, and inline pairing flow. Auth tokens are persisted to `~/AppData/Local/ICARUS Terminal/ytmd-token.json`.
-- While in simulation mode the ledger protects commanders from deep debt:
-  - When the `icarusInaraTokenJackpotEnabled` feature flag is **true**, crossing **-500,000** tokens arms a jackpot so the next earn transaction is multiplied by **100×**. The amplified entry carries `metadata.jackpot = true`, `metadata.multiplier = 100`, `metadata.jackpotSource = 'negative-balance-jackpot'`, and a randomized `metadata.jackpotCelebrationId` so the client can trigger a bespoke celebration inline with the earn.
-  - The INARA status page exposes a manual `triggerJackpot` socket handler (wired to the `+` button on the token display) so QA can invoke a simulated jackpot on demand. The helper selects a random base credit, multiplies it by the active jackpot multiplier, stamps the entry with `metadata.event = 'negative-balance-recovery'`, and broadcasts the result so the UI renders the full celebration stack.
-  - Set `icarusInaraTokenRecoveryCompatEnabled=true` to retain the legacy recovery schedule, which still grants a single-use **+1,000,000** `negative-balance-recovery` credit and mirrors the historic console celebration.
-  - **Simulation vs. Remote Mode.** `TokenLedger.getSnapshot()` surfaces whether the ledger is simulating transfers (`simulation: true/false`) and includes remote sync metadata (`remote.pending`, `remote.lastSyncedAt`, `remote.lastError`). INARA submissions are deduplicated via hashed cache keys in `event-handlers.js`, and the simulated payload mirrors the production shape:
-
-    ```json
-    {
-      "header": {
-        "appName": "INARATokenSim",
-        "appVersion": "1.0.0",
-        "commanderName": "CMDR Example",
-        "simulated": true
-      },
-      "events": [
-        {
-          "eventName": "Market",
-          "eventTimestamp": "2024-04-01T12:34:56Z",
-          "eventData": { /* journal payload */ }
-        }
-      ]
-    }
-    ```
-
-    The byte length of the JSON payload determines the number of tokens credited for each journal event. Duplicate events (matching `event`, `timestamp`, and identifier hashes) are ignored to prevent double rewards between log replays.
-  - **INARA API Spend Hooks.** `src/client/pages/api/token-currency.js` instantiates a per-request ledger instance and debits tokens equal to the combined request/response byte size for every INARA INARA proxy (`/api/inara-search`, `/api/inara-websearch`, `/api/inara-commodity-values`, `/api/inara-missions`, `/api/inara-pristine-mining`, `/api/inara-trade-routes`). Metadata is captured with each spend to aid reconciliation when viewing the ledger history in INARA.
+- **YTMD_PLAYER – YouTube Music Desktop Integration.** A Winamp-inspired compact player bar (`src/client/components/WinampBar/WinampBar.jsx`) integrates with YouTube Music Desktop App via its Companion Server API (port 9863). **Architecture:** Service-side proxy (`src/service/lib/api/ytmd.js`) handles auth code/token exchange, state queries, and playback commands. A Socket.IO bridge (`src/service/lib/ytmd-realtime-bridge.js`) relays real-time state updates to all ICARUS WebSocket clients. Client-side hook (`src/client/lib/hooks/useYtmd.js`) manages state, polling fallback, and command dispatch. **Activation:** Users enable the player in Settings > YouTube Music, which persists the toggle to `localStorage` (`icarus_ytmd_enabled`). The Layout component (`src/client/components/layout.js`) conditionally renders the bottom bar on all pages. **Features:** Winamp 2.x classic skin sprite rendering (`useSkinSprites.js`), album art thumbnail, ticker marquee track title, progress bar with seek, transport controls (prev/play-pause/next), shuffle/repeat toggles, volume slider, like/dislike buttons, expandable queue panel, inline pairing flow, and a Web Audio API analyzer supporting direct audio input capture, Oscilloscope, FFT Spectrum bars, and 3D **Butterchurn (MilkDrop)** WebGL presets. Auth tokens are persisted to `~/AppData/Local/ICARUS Terminal/ytmd-token.json`.
 
 ---
 
@@ -590,85 +576,7 @@ src/service/lib/api/scrapers/
 See `resources/mock-game-data/README.md` for complete scraper engine documentation.
 
 ---
-  - **External Token Ledger API Contract.** When remote mode is enabled the service mirrors every transaction to an external microservice. The API contract is:
 
-    - `GET /api/token-ledger/:userId` → Retrieve the current balance.
-
-      ```http
-      GET /api/token-ledger/CMDRExample HTTP/1.1
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      {
-        "userId": "CMDRExample",
-        "balance": 12450
-      }
-      ```
-
-    - `POST /api/token-ledger/:userId/credit` → Add tokens to the ledger.
-
-      ```http
-      POST /api/token-ledger/CMDRExample/credit HTTP/1.1
-      Content-Type: application/json
-
-      {
-        "amount": 512,
-        "reason": "earn:inara-data-exchange"
-      }
-
-      HTTP/1.1 200 OK
-      {
-        "userId": "CMDRExample",
-        "balance": 12962
-      }
-      ```
-
-    - `POST /api/token-ledger/:userId/debit` → Deduct tokens (balance may go negative).
-
-      ```http
-      POST /api/token-ledger/CMDRExample/debit HTTP/1.1
-      Content-Type: application/json
-
-      {
-        "amount": 2048,
-        "reason": "spend:atlas-search"
-      }
-
-      HTTP/1.1 200 OK
-      {
-        "userId": "CMDRExample",
-        "balance": 10914
-      }
-      ```
-
-    Remote interactions honour bearer authentication when `ICARUS_TOKENS_REMOTE_API_KEY` is supplied, retry failed requests with exponential backoff, and mark each transaction with `remote.synced`, `remote.attempts`, and `remote.error` so operators can monitor reconciliation status from INARA.
-
----
-
-## Token Currency Frontend Fallback & Diagnostics
-
-- **Frontend Fallback Logic:**
-  - The INARA terminal overlay (`InaraTerminalOverlay` in `src/client/pages/inara.js`) attempts to fetch the token balance via WebSocket broadcast events. If the broadcast fails or is unavailable, it falls back to an explicit HTTP API call (`/api/token-currency`).
-  - Diagnostic logging is added to confirm whether the fallback HTTP fetch is called, what response is received, and whether `applySnapshot` and `setTokenBalance` are updated with valid data. This ensures the UI does not remain stuck on 'Syncing…'.
-  - The fallback logic is critical for robust frontend/backend communication, especially when feature flags or simulation mode are toggled.
-
-- **Feature Flag Exposure:**
-  - Feature flag values (e.g., `INARA_TOKEN_CURRENCY_ENABLED`) are exposed in the UI overlay or settings for debugging. This helps diagnose environment variable handling and simulation/live mode toggling.
-
-## Animated Feedback & Jackpot Intercepts
-
-- **Animated Credit/Debit Feedback:**
-  - The INARA terminal overlay provides animated feedback for token credit and debit events. When a transaction occurs, the overlay animates the balance change, highlights the transaction type, and displays contextual metadata (e.g., source, amount, reason).
-  - For jackpot intercepts (e.g., negative-balance-recovery), the overlay triggers a special animation sequence, including celebratory effects and a summary of the windfall event.
-  - All feedback logic is future-proofed for both simulation and live API modes, ensuring consistent user experience regardless of backend state.
-
-- **Diagnostic Steps:**
-  - Add logging to confirm fallback logic, API responses, and UI state transitions.
-  - Validate that `applySnapshot` and `setTokenBalance` are called with correct data.
-  - Ensure animated feedback triggers for all relevant transaction types, including jackpot intercepts.
-
-Implementation notes and diagnostic steps for these features are maintained here to ensure CODEX agents and contributors have a canonical reference for frontend/backend sync, feature flag handling, and animated feedback logic.
 
 ## Client-Side Utilities
 

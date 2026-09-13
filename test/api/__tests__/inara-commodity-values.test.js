@@ -1,7 +1,6 @@
 const { createMockReq, createMockRes, createFetchResponse } = require('../helpers')
 
 const handlerPath = '../../../src/service/lib/api/inara-commodity-values.js'
-const tokenCurrencyPath = '../../../src/service/lib/api/token-currency.js'
 
 describe('inara-commodity-values API handler', () => {
   beforeEach(() => {
@@ -9,7 +8,7 @@ describe('inara-commodity-values API handler', () => {
     delete global.LOG_DIR
   })
 
-  async function loadModule() {
+  async function loadModule () {
     jest.doMock('axios', () => jest.fn())
     jest.doMock('fs', () => {
       const actualFs = jest.requireActual('fs')
@@ -24,18 +23,15 @@ describe('inara-commodity-values API handler', () => {
       }
     })
 
-    const tokenCurrency = require(tokenCurrencyPath)
-    tokenCurrency.spendTokensForInaraExchange = jest.fn().mockResolvedValue()
-
     const handlerModule = require(handlerPath)
     const handler = handlerModule.default || handlerModule
     const fetchMock = require('axios')
 
-    return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
+    return { handler, fetchMock }
   }
 
-  it('records token spend metadata for commodity option and listing fetches', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+  it('fetches commodity option and listing data successfully', async () => {
+    const { handler, fetchMock } = await loadModule()
 
     const optionsHtml = `
       <select name="pa1[]">
@@ -81,30 +77,11 @@ describe('inara-commodity-values API handler', () => {
     await handler(req, res)
 
     expect(res.statusCode).toBe(200)
-    expect(spendTokensMock.mock.calls.length).toBeGreaterThanOrEqual(2)
-
-    const optionsCall = spendTokensMock.mock.calls[0][0]
-    expect(optionsCall.metadata).toMatchObject({
-      method: 'GET',
-      reason: 'inara-request',
-      status: 200,
-      phase: 'commodity-options',
-      error: undefined
-    })
-
-    const listingsCall = spendTokensMock.mock.calls[1][0]
-    expect(listingsCall.metadata).toMatchObject({
-      method: 'GET',
-      reason: 'inara-request',
-      status: 200,
-      commodityId: '101',
-      system: null,
-      error: undefined
-    })
+    expect(res.body?.results).toBeDefined()
   })
 
-  it('records token spend metadata when commodity options fail to load', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+  it('handles commodity options fetch error gracefully', async () => {
+    const { handler, fetchMock } = await loadModule()
 
     fetchMock.mockRejectedValueOnce(new Error('options offline'))
 
@@ -121,15 +98,6 @@ describe('inara-commodity-values API handler', () => {
     await handler(req, res)
 
     expect(res.statusCode).toBe(200)
-    expect(spendTokensMock).toHaveBeenCalledTimes(1)
-
-    const call = spendTokensMock.mock.calls[0][0]
-    expect(call.metadata).toMatchObject({
-      method: 'GET',
-      reason: 'inara-request-error',
-      status: null,
-      phase: 'commodity-options',
-      error: 'options offline'
-    })
+    expect(res.body?.results).toBeDefined()
   })
 })

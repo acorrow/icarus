@@ -132,9 +132,9 @@ async function buildNearbySystems (currentSystem) {
 
       const coords = typeof entry?.coords === 'object' && entry.coords !== null
         ? ['x', 'y', 'z'].map(axis => {
-          const parsed = Number(entry.coords[axis])
-          return Number.isFinite(parsed) ? parsed : null
-        })
+            const parsed = Number(entry.coords[axis])
+            return Number.isFinite(parsed) ? parsed : null
+          })
         : null
       const coordsValid = Array.isArray(coords) && coords.length === 3 && coords.every(v => Number.isFinite(v))
 
@@ -196,7 +196,7 @@ module.exports = async function handler (req, res) {
     console.log('[current-system] Current system:', currentSystem?.name || 'UNKNOWN')
     const responseCurrent = sanitiseCurrentSystem(currentSystem)
     console.log('[current-system] Sanitised current system:', responseCurrent?.name || 'UNKNOWN')
-    
+
     // Skip nearby systems lookup in mock data mode - only need current system for INARA searches
     let nearby = []
     if (process.env.FORCE_MOCK_DATA === 'true') {

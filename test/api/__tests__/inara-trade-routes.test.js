@@ -1,14 +1,13 @@
 const { createMockReq, createMockRes, createFetchResponse } = require('../helpers')
 
 const handlerPath = '../../../src/service/lib/api/inara-trade-routes.js'
-const tokenCurrencyPath = '../../../src/service/lib/api/token-currency.js'
 
 describe('inara-trade-routes API handler', () => {
   beforeEach(() => {
     jest.resetModules()
   })
 
-  async function loadModule() {
+  async function loadModule () {
     jest.doMock('axios', () => jest.fn())
     jest.doMock('../../../src/service/lib/api/inara-log-utils.js', () => ({
       appendInaraLogEntry: jest.fn()
@@ -22,20 +21,17 @@ describe('inara-trade-routes API handler', () => {
     })))
     jest.doMock('../../../src/shared/distance.js', () => jest.fn(() => 0))
 
-    const tokenCurrency = require(tokenCurrencyPath)
-    tokenCurrency.spendTokensForInaraExchange = jest.fn().mockResolvedValue()
-
     const handlerModule = require(handlerPath)
     const handler = handlerModule.default || handlerModule
     const fetchMock = require('axios')
 
-    return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
+    return { handler, fetchMock }
   }
 
-  it('records token spend metadata when no trade routes are returned', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+  it('handles empty results properly when valid HTML is returned', async () => {
+    const { handler, fetchMock } = await loadModule()
 
-  fetchMock.mockResolvedValue(createFetchResponse({ status: 200, ok: true, body: '<html></html>', headers: {} }))
+    fetchMock.mockResolvedValue(createFetchResponse({ status: 200, ok: true, body: '<html></html>', headers: {} }))
 
     const req = createMockReq({
       method: 'POST',
@@ -46,23 +42,13 @@ describe('inara-trade-routes API handler', () => {
     await handler(req, res)
 
     expect(res.statusCode).toBe(200)
-    expect(spendTokensMock).toHaveBeenCalledTimes(1)
-
-    const call = spendTokensMock.mock.calls[0][0]
-    expect(call.endpoint).toContain('market-traderoutes')
-    expect(call.metadata).toMatchObject({
-      method: 'GET',
-      reason: 'inara-request',
-      status: 200,
-      system: 'Shinrarta Dezhra',
-      error: undefined
-    })
+    expect(res.body?.results).toEqual([])
   })
 
-  it('records token spend metadata when the trade routes fetch fails', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+  it('returns 500 when the trade routes fetch fails', async () => {
+    const { handler, fetchMock } = await loadModule()
 
-  fetchMock.mockResolvedValue(createFetchResponse({ status: 502, ok: false, body: 'error', headers: {} }))
+    fetchMock.mockResolvedValue(createFetchResponse({ status: 502, ok: false, body: 'error', headers: {} }))
 
     const req = createMockReq({
       method: 'POST',
@@ -73,15 +59,6 @@ describe('inara-trade-routes API handler', () => {
     await handler(req, res)
 
     expect(res.statusCode).toBe(500)
-    expect(spendTokensMock).toHaveBeenCalledTimes(1)
-
-    const call = spendTokensMock.mock.calls[0][0]
-    expect(call.metadata).toMatchObject({
-      method: 'GET',
-      reason: 'inara-request-error',
-      status: 502,
-      system: 'Cubeo',
-      error: 'INARA request failed'
-    })
+    expect(res.body?.error).toBe('TRADE_ROUTES_ERROR')
   })
 })

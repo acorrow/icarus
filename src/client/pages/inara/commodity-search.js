@@ -7,6 +7,7 @@ import { InaraWorkspaceNavItems } from 'lib/navigation-items'
 import { StationCard } from 'components/cards'
 import { getDistanceSeverityColor, getStationDistanceSeverityColor } from 'lib/distance-colors'
 import { formatCredits } from 'lib/inara-formatters'
+import { fetchWithCache } from 'lib/inara-request-cache'
 
 export default function InaraCommoditySearchPage () {
   const { connected, active, ready } = useSocket()
@@ -144,7 +145,7 @@ export default function InaraCommoditySearchPage () {
     setResults([])
 
     try {
-      const response = await fetch('/api/inara-commodity-search', {
+      const response = await fetchWithCache('/api/inara-commodity-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -192,9 +193,11 @@ export default function InaraCommoditySearchPage () {
   const isLoadingDatabase = !commodityDatabase
 
   // Determine current view level
-  const currentLevel = selectedCommodity ? 'results' :
-                       selectedCategory ? 'commodities' :
-                       'categories'
+  const currentLevel = selectedCommodity
+    ? 'results'
+    : selectedCategory
+      ? 'commodities'
+      : 'categories'
 
   return (
     <Layout connected={connected} active={active} ready={ready} loader={status === 'loading'}>
@@ -320,7 +323,7 @@ export default function InaraCommoditySearchPage () {
               <p className='text-info'>Loading commodity database...</p>
             ) : (
               <>
-                <div style={{ marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '1rem', position: 'relative' }}>
                   <input
                     type='text'
                     value={searchFilter}
@@ -328,123 +331,148 @@ export default function InaraCommoditySearchPage () {
                     placeholder='Filter commodities... (e.g. "alloy", "gold", "tritium")'
                     style={{
                       width: '100%',
-                      padding: '0.75rem',
+                      padding: '0.65rem 0.85rem',
                       background: 'var(--color-background-panel-translucent)',
-                      border: '1px solid var(--color-primary-dark)',
+                      border: '1px solid var(--color-primary)',
                       color: 'var(--color-primary)',
                       borderRadius: '2px',
-                      fontSize: '1rem'
+                      fontSize: '1.1rem',
+                      fontFamily: 'Jura, sans-serif',
+                      fontWeight: 'bold',
+                      boxSizing: 'border-box'
                     }}
                   />
                   {searchFilter && (
                     <p className='text-muted' style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>
                       Filtering by: "{searchFilter}" - {(() => {
-                        let count = 0
-                        Object.values(commodityDatabase.categories).forEach(category => {
-                          category.commodities.forEach(commodity => {
-                            if (commodity.name.toLowerCase().includes(searchFilter.toLowerCase())) {
-                              count++
-                            }
-                          })
+                      let count = 0
+                      Object.values(commodityDatabase.categories).forEach(category => {
+                        category.commodities.forEach(commodity => {
+                          if (commodity.name.toLowerCase().includes(searchFilter.toLowerCase())) {
+                            count++
+                          }
                         })
-                        return count
-                      })()} matches
+                      })
+                      return count
+                    })()} matches
                     </p>
                   )}
                 </div>
 
                 {Object.entries(commodityDatabase.categories).map(([categoryKey, category]) => {
-              const isExpanded = expandedCategories.has(categoryKey)
+                  const isExpanded = expandedCategories.has(categoryKey)
 
-              // Filter commodities based on search
-              const filteredCommodities = searchFilter
-                ? category.commodities.filter(c => c.name.toLowerCase().includes(searchFilter.toLowerCase()))
-                : category.commodities
+                  // Filter commodities based on search
+                  const filteredCommodities = searchFilter
+                    ? category.commodities.filter(c => c.name.toLowerCase().includes(searchFilter.toLowerCase()))
+                    : category.commodities
 
-              const totalCommodities = filteredCommodities.length
+                  const totalCommodities = filteredCommodities.length
 
-              // Skip category if no matches
-              if (searchFilter && totalCommodities === 0) return null
+                  // Skip category if no matches
+                  if (searchFilter && totalCommodities === 0) return null
 
-              return (
-                <div key={categoryKey} style={{ marginTop: '1rem' }}>
-                  <div className='section-heading' style={{ cursor: 'pointer' }} onClick={() => toggleCategory(categoryKey)}>
-                    <h4 className='section-heading__text'>
-                      {category.label} ({totalCommodities} commodities)
-                      <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>{isExpanded ? '▼' : '▶'}</span>
-                    </h4>
-                  </div>
+                  return (
+                    <div
+                      key={categoryKey}
+                      style={{
+                        marginTop: '0.75rem',
+                        marginBottom: '0.75rem',
+                        background: 'var(--color-background-panel-translucent)',
+                        border: '1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.3)',
+                        borderRadius: '2px',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '0.6rem 1rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          background: isExpanded ? 'rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.15)' : 'transparent',
+                          borderBottom: isExpanded ? '1px solid var(--color-primary)' : 'none',
+                          transition: 'background 0.2s ease'
+                        }}
+                        onClick={() => toggleCategory(categoryKey)}
+                      >
+                        <h4 className='text-primary' style={{ margin: 0, fontSize: '1.25rem' }}>
+                          {category.label} <span className='text-muted' style={{ fontSize: '1rem', fontWeight: 'normal' }}>({totalCommodities} commodities)</span>
+                        </h4>
+                        <span className='text-primary' style={{ fontSize: '1.1rem' }}>{isExpanded ? '▼' : '▶'}</span>
+                      </div>
 
-                  {isExpanded && (
-                    <div style={{ marginTop: '0.5rem' }}>
-                      <table className='table--interactive table--animated'>
-                        <tbody>
-                          {searchFilter ? (
-                            // When filtering, show individual commodities directly
-                            filteredCommodities.map((commodity, index) => (
-                              <tr
-                                key={`${commodity.id}-${index}`}
-                                tabIndex={2}
-                                className='table__row--highlight-primary-hover'
-                                onClick={() => {
+                      {isExpanded && (
+                        <div style={{ padding: '0.25rem 0.5rem' }}>
+                          <table className='table--interactive table--animated'>
+                            <tbody>
+                              {searchFilter ? (
+                              // When filtering, show individual commodities directly
+                                filteredCommodities.map((commodity, index) => (
+                                  <tr
+                                    key={`${commodity.id}-${index}`}
+                                    tabIndex={2}
+                                    className='table__row--highlight-primary-hover'
+                                    onClick={() => {
                                   setSelectedCategory(categoryKey)
                                   handleCommodityClick(commodity)
                                 }}
-                              >
-                                <td className='text-center text-info' style={{ width: '1rem' }}>
+                                  >
+                                    <td className='text-center text-info' style={{ width: '1rem' }}>
                                   <i
                                     className='icon icarus-terminal-cargo'
                                     style={{ position: 'relative', top: '.15rem' }}
                                   />
                                 </td>
-                                <td>
+                                    <td>
                                   <h4>{commodity.name}</h4>
                                   {commodity.avgPrice && (
                                     <h4 className='text-muted visible-medium'>Avg: {formatCredits(commodity.avgPrice)}</h4>
                                   )}
                                 </td>
-                                <td className='text-right hidden-medium'>
+                                    <td className='text-right hidden-medium'>
                                   {commodity.avgPrice && (
                                     <h4 className='text-muted'>Avg: {formatCredits(commodity.avgPrice)}</h4>
                                   )}
                                 </td>
-                                <td className='text-center' style={{ width: '1rem' }}>
+                                    <td className='text-center' style={{ width: '1rem' }}>
                                   <i className='icon icarus-terminal-chevron-right' style={{ fontSize: '1rem' }} />
                                 </td>
-                              </tr>
-                            ))
-                          ) : (
-                            // When not filtering, show category row
-                            <tr
-                              tabIndex={2}
-                              className='table__row--highlight-primary-hover'
-                              onClick={() => handleCategoryClick(categoryKey)}
-                            >
-                              <td className='text-center text-info' style={{ width: '1rem' }}>
+                                  </tr>
+                                ))
+                              ) : (
+                              // When not filtering, show category row
+                                <tr
+                                  tabIndex={2}
+                                  className='table__row--highlight-primary-hover'
+                                  onClick={() => handleCategoryClick(categoryKey)}
+                                >
+                                  <td className='text-center text-info' style={{ width: '1rem' }}>
                                 <i
                                   className='icon icarus-terminal-cargo'
                                   style={{ position: 'relative', top: '.15rem' }}
                                 />
                               </td>
-                              <td>
+                                  <td>
                                 <h4>{category.label}</h4>
                                 <h4 className='text-muted visible-medium'>{totalCommodities} commodities</h4>
                               </td>
-                              <td className='text-right hidden-medium'>
+                                  <td className='text-right hidden-medium'>
                                 <h4 className='text-muted'>{totalCommodities} commodities</h4>
                               </td>
-                              <td className='text-center' style={{ width: '1rem' }}>
+                                  <td className='text-center' style={{ width: '1rem' }}>
                                 <i className='icon icarus-terminal-chevron-right' style={{ fontSize: '1rem' }} />
                               </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                )
-              })}
+                  )
+                })}
               </>
             )}
           </>

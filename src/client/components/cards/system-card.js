@@ -1,3 +1,4 @@
+import React, { memo } from 'react'
 import PropTypes from 'prop-types'
 import Icons from 'lib/icons'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
@@ -58,7 +59,7 @@ SystemIcon.propTypes = {
  * @param {string} props.className - Additional CSS class
  * @param {function} props.onClick - Click handler
  */
-export default function SystemCard ({
+function SystemCard ({
   systemName,
   allegiance,
   government,
@@ -194,7 +195,7 @@ export default function SystemCard ({
               {isCurrentLocation && (
                 <span
                   className={styles.currentLocationIndicator}
-                  title="Your Current Location"
+                  title='Your Current Location'
                 >
                   {Icons.location}
                 </span>
@@ -320,3 +321,5 @@ SystemCard.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func
 }
+
+export default memo(SystemCard)

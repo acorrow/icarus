@@ -1,18 +1,21 @@
-const https = require('https')
 const logger = require('../logger.js')
 const { fetchWithInaraCache } = require('./inara-request-cache.js')
 const outfittingSearchScraper = require('./scrapers/outfitting-search.js')
+const {
+  ipv4HttpsAgent,
+  sendJson,
+  validatePostRequest
+} = require('./scraper-shared.js')
 
 const INARA_BASE_URL = 'https://inara.cz'
 const INARA_OUTFITTING_SEARCH_URL = `${INARA_BASE_URL}/elite/nearest-outfitting/`
-const ipv4HttpsAgent = new https.Agent({ family: 4 })
 
 /**
  * Build INARA outfitting search URL with query parameters
  * @param {Object} params - Search parameters
  * @returns {string} Full URL with query string
  */
-function buildOutfittingSearchUrl({ itemId, systemName, landingPadSize = 'any', maxDistanceLy = 50 }) {
+function buildOutfittingSearchUrl ({ itemId, systemName, landingPadSize = 'any', maxDistanceLy = 50 }) {
   const url = new URL(INARA_OUTFITTING_SEARCH_URL)
 
   // Brief form (minimal UI)
@@ -50,7 +53,7 @@ function buildOutfittingSearchUrl({ itemId, systemName, landingPadSize = 'any', 
  * @param {Object} params - Search parameters
  * @returns {Promise<Object>} Parsed outfitting data
  */
-async function fetchOutfittingSearch({ itemId, itemName, systemName, landingPadSize, maxDistanceLy }) {
+async function fetchOutfittingSearch ({ itemId, itemName, systemName, landingPadSize, maxDistanceLy }) {
   if (!itemId) {
     throw new Error('Item ID is required for outfitting search')
   }
@@ -68,7 +71,9 @@ async function fetchOutfittingSearch({ itemId, itemName, systemName, landingPadS
     })
 
     if (!response.ok) {
-      throw new Error(`INARA outfitting search failed with status ${response.status}`)
+      const err = new Error(`INARA outfitting search failed with status ${response.status}`)
+      err.inaraStatus = response.status
+      throw err
     }
 
     const html = await response.text()
@@ -91,27 +96,12 @@ async function fetchOutfittingSearch({ itemId, itemName, systemName, landingPadS
 }
 
 /**
- * Send JSON response
- * @param {Object} res - Response object
- * @param {number} statusCode - HTTP status code
- * @param {Object} payload - JSON payload
- */
-function sendJson(res, statusCode, payload) {
-  res.statusCode = statusCode
-  res.setHeader('Content-Type', 'application/json')
-  res.end(JSON.stringify(payload))
-}
-
-/**
  * API route handler for outfitting search
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  */
-async function handler(req, res) {
-  if (req.method !== 'POST') {
-    sendJson(res, 405, { error: 'Method not allowed' })
-    return
-  }
+async function handler (req, res) {
+  if (!validatePostRequest(req, res)) return
 
   const { itemId, itemName, systemName, landingPadSize, maxDistanceLy } = req.body || {}
 
@@ -132,9 +122,13 @@ async function handler(req, res) {
     sendJson(res, 200, data)
   } catch (err) {
     logger.error('Outfitting search API error: %s', err?.message || err)
-    sendJson(res, 500, {
-      error: 'Failed to fetch outfitting data',
-      message: err?.message || 'Unknown error'
+    const statusCode = err.inaraStatus === 503 ? 503 : 500
+    const errorCode = statusCode === 503 ? 'INARA_UNAVAILABLE' : 'OUTFITTING_SEARCH_ERROR'
+    sendJson(res, statusCode, {
+      error: errorCode,
+      message: statusCode === 503
+        ? 'INARA is temporarily unavailable. Please try again shortly.'
+        : (err?.message || 'Failed to fetch outfitting data')
     })
   }
 }

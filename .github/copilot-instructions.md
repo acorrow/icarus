@@ -69,6 +69,17 @@ The application reads Elite Dangerous journal files in real-time and provides a 
 - Do NOT document features in `AGENTS.md`—refer to `FEATURES.md`
 - Keep feature shortnames consistent across endpoints and UI
 
+### Playwright MCP (Browser Automation)
+This project includes a Playwright MCP server (configured in `.vscode/mcp.json` for Copilot and `.mcp.json` for Claude Code) that provides browser automation tools to AI agents. **Use Playwright MCP for visual verification of UI changes.**
+
+**Capabilities:**
+- Navigate to dev server pages (`localhost:3000` or `localhost:3300`)
+- Take screenshots of pages and elements
+- Click, type, fill forms, interact with the UI
+- Inspect DOM structure and page content
+
+**When to use:** After GUI changes, for debugging UI issues, verifying INARA scraper output renders correctly, and checking responsive layouts. Requires the dev server to be running.
+
 ### Testing Requirements for GUI Changes
 When modifying any GUI surface:
 1. Run `npm test -- --runInBand --config jest.config.js`
@@ -76,8 +87,9 @@ When modifying any GUI surface:
 3. Launch rendering target:
    - Production: `npm run serve:export` (http://127.0.0.1:4100)
    - Fast iteration: `npm run dev:web` (http://127.0.0.1:3000)
-4. Manually review spacing, typography, state handling
-5. Note any UI regressions in commit message
+4. Use Playwright MCP to navigate to affected pages and take screenshots for visual verification
+5. Review spacing, typography, state handling in screenshots
+6. Note any UI regressions in commit message
 
 ### Code Organization Best Practices
 - **Client/server separation**: Utility functions used by both should live in `src/shared/`
@@ -302,6 +314,8 @@ scripts/                                 # Build scripts
 - **FEATURES.md**: Canonical feature mapping (ALWAYS UPDATE THIS)
 - **BUILD.md**: Build requirements, cross-platform instructions
 - **CONTRIB.md**: Contribution guidelines
+- **.mcp.json**: MCP server configuration for Claude Code (Playwright browser automation)
+- **.vscode/mcp.json**: MCP server configuration for GitHub Copilot (Playwright browser automation)
 
 ### External APIs
 - **EDSM**: Stellar cartography data

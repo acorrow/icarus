@@ -7,7 +7,6 @@ const EliteLog = require('../elite-log.js')
 const System = require('../event-handlers/system.js')
 const distance = require('../../../shared/distance.js')
 const { appendInaraLogEntry } = require('./inara-log-utils.js')
-const { estimateByteSize, spendTokensForInaraExchange } = require('./token-currency.js')
 const { fetchWithInaraCache } = require('./inara-request-cache.js')
 const logger = require('../logger.js')
 const {
@@ -15,14 +14,15 @@ const {
   resolveRelativeToProject,
   isAbsolutePath
 } = require('../path-resolvers.js')
+const { getUserDataPath } = require('../user-data.js')
 
-const logPath = path.join(process.cwd(), 'inara-trade-routes.log')
+const logPath = getUserDataPath('logs', 'inara-trade-routes.log')
 const ipv4HttpsAgent = new https.Agent({ family: 4 })
-function logInaraTrade(entry) {
+function logInaraTrade (entry) {
   appendInaraLogEntry(logPath, entry)
 }
 
-function resolveLogDir() {
+function resolveLogDir () {
   if (global.LOG_DIR && fs.existsSync(global.LOG_DIR)) return global.LOG_DIR
   const envLogDir = process.env.LOG_DIR
   if (envLogDir) {
@@ -44,7 +44,7 @@ function resolveLogDir() {
 
 let systemInitPromise = null
 
-async function ensureSystemInstance() {
+async function ensureSystemInstance () {
   if (global.ICARUS_SYSTEM_INSTANCE) return global.ICARUS_SYSTEM_INSTANCE
   if (systemInitPromise) return systemInitPromise
 
@@ -88,15 +88,15 @@ async function ensureSystemInstance() {
   return systemInitPromise
 }
 
-function cleanText(value) {
+function cleanText (value) {
   return (value || '').replace(/\s+/g, ' ').trim()
 }
 
-function escapeRegExp(value = '') {
+function escapeRegExp (value = '') {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-function parseFirstNumber(text) {
+function parseFirstNumber (text) {
   if (!text) return null
   const match = String(text).match(/[-+]?\d[\d,]*(?:\.\d+)?/)
   if (!match) return null
@@ -105,7 +105,7 @@ function parseFirstNumber(text) {
   return Number.isFinite(num) ? num : null
 }
 
-function parseStationLink($, container) {
+function parseStationLink ($, container) {
   const anchor = container.find('a[href*="/elite/station-market/"]').first()
   if (!anchor.length) return null
   const stationName = cleanText(anchor.find('.standardcase').text()).replace(/\|+$/, '')
@@ -120,7 +120,7 @@ function parseStationLink($, container) {
   }
 }
 
-function extractPriceParts(text) {
+function extractPriceParts (text) {
   const result = {
     priceText: cleanText(text),
     price: null,
@@ -149,7 +149,7 @@ function extractPriceParts(text) {
   return result
 }
 
-function parseSupplyDemand($, container, expectedLabel) {
+function parseSupplyDemand ($, container, expectedLabel) {
   if (!container || !container.length) return null
   const containers = container.find('.itempaircontainer')
   let valueNode = null
@@ -171,7 +171,7 @@ function parseSupplyDemand($, container, expectedLabel) {
   }
 }
 
-function parseTradeBlock($, block, action) {
+function parseTradeBlock ($, block, action) {
   if (!block || !block.length) return null
   const containers = block.find('.itempaircontainer')
   if (!containers.length) return null
@@ -208,7 +208,7 @@ function parseTradeBlock($, block, action) {
   }
 }
 
-function parseSummary($, profitBlock) {
+function parseSummary ($, profitBlock) {
   if (!profitBlock || !profitBlock.length) return null
   const container = profitBlock.parent()
   const metrics = {
@@ -255,7 +255,7 @@ function parseSummary($, profitBlock) {
   return metrics
 }
 
-function parseRouteElement($, el) {
+function parseRouteElement ($, el) {
   const childDivs = $(el).children('div')
   if (!childDivs.length) return null
   const originInfo = parseStationLink($, childDivs.eq(0))
@@ -300,7 +300,7 @@ function parseRouteElement($, el) {
   }
 }
 
-function parseTradeRoutes(html) {
+function parseTradeRoutes (html) {
   const $ = cheerio.load(html)
   const routes = []
   $('.traderoutebox').each((_, el) => {
@@ -310,7 +310,7 @@ function parseTradeRoutes(html) {
   return routes
 }
 
-function normalizeChoice(value) {
+function normalizeChoice (value) {
   if (value === undefined || value === null) return null
   if (typeof value === 'number' && Number.isFinite(value)) return String(value)
   if (typeof value === 'string') return value.trim()
@@ -326,9 +326,9 @@ const allowedPowers = new Set(['', '0', '-1', '1', '2', '3', '4', '5', '7', '8',
 const allowedSupplyDemand = new Set(['0', '100', '500', '1000', '2500', '5000', '10000', '50000'])
 const allowedOrder = new Set(['0', '1', '2', '3', '4'])
 
-async function handler(req, res) {
+async function handler (req, res) {
   logger.info('[trade-routes] Handler invoked')
-  
+
   if (req.method !== 'POST') {
     logger.warn('[trade-routes] Invalid method: %s', req.method)
     logInaraTrade(`INVALID_METHOD: ${req.method} ${req.url}`)
@@ -340,7 +340,7 @@ async function handler(req, res) {
 
   const body = req.body || {}
   logger.debug('[trade-routes] Request body: %j', body)
-  
+
   const filters = (body && typeof body.filters === 'object' && !Array.isArray(body.filters)) ? body.filters : body
   const system = typeof body.system === 'string' && body.system.trim() ? body.system : (typeof filters.system === 'string' ? filters.system : null)
 
@@ -352,7 +352,7 @@ async function handler(req, res) {
     res.end(JSON.stringify({ error: 'Missing origin system. Please provide a star system to search from.' }))
     return
   }
-  
+
   logger.info('[trade-routes] Processing request for system: %s', system)
 
   // MOCK DATA MODE: Load mock HTML instead of fetching from INARA
@@ -360,7 +360,7 @@ async function handler(req, res) {
     logger.info('[trade-routes] FORCE_MOCK_DATA enabled, loading mock HTML for system: %s', system)
     const mockDataDir = resolveMockDataDir()
     const mockHtmlPath = path.join(mockDataDir, 'inara', 'trade-routes-painite-sol.html')
-    
+
     if (!fs.existsSync(mockHtmlPath)) {
       logger.error('[trade-routes] Mock HTML file not found: %s', mockHtmlPath)
       res.statusCode = 500
@@ -368,14 +368,14 @@ async function handler(req, res) {
       res.end(JSON.stringify({ error: 'Mock data file not found' }))
       return
     }
-    
+
     try {
       const mockHtml = fs.readFileSync(mockHtmlPath, 'utf-8')
       logger.info('[trade-routes] Loaded mock HTML (%d bytes)', mockHtml.length)
-      
+
       const routes = parseTradeRoutes(mockHtml)
       logger.info('[trade-routes] Parsed %d routes from mock data', routes.length)
-      
+
       // Enrich with system data (skip distance calculations in mock mode)
       // Add mock station types for icon display
       const stationTypes = ['Coriolis', 'Orbis', 'Ocellus', 'Asteroid', 'Outpost']
@@ -392,7 +392,7 @@ async function handler(req, res) {
           stationType: route.destination.stationType || stationTypes[(index + 1) % stationTypes.length]
         }
       }))
-      
+
       logInaraTrade(`MOCK_DATA_SUCCESS: system=${system} routes=${enrichedRoutes.length}`)
       res.statusCode = 200
       res.setHeader('Content-Type', 'application/json')
@@ -540,15 +540,10 @@ async function handler(req, res) {
   logger.info('[trade-routes] Fetching INARA URL: %s', url)
   logInaraTrade(`REQUEST: system=${system} url=${url}`)
 
-  const requestBytes = estimateByteSize(url)
-  let responseText = ''
-  let responseStatus = null
-  let caughtError = null
-
   try {
     logger.debug('[trade-routes] Making HTTP request to INARA...')
     const startTime = Date.now()
-    
+
     const response = await fetchWithInaraCache(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; ICARUS/1.0)',
@@ -556,20 +551,24 @@ async function handler(req, res) {
       },
       agent: ipv4HttpsAgent
     })
-    
+
     const elapsed = Date.now() - startTime
     responseStatus = response.status
     logger.info('[trade-routes] INARA responded in %dms, status=%d', elapsed, responseStatus)
-    
-    if (!response.ok) throw new Error('INARA request failed')
+
+    if (!response.ok) {
+      const err = new Error(`INARA request failed with status ${response.status}`)
+      err.inaraStatus = response.status
+      throw err
+    }
     responseText = await response.text()
-    
+
     logger.info('[trade-routes] Response size: %d bytes', responseText.length)
 
     logger.debug('[trade-routes] Parsing HTML with cheerio...')
     const routes = parseTradeRoutes(responseText)
     logger.info('[trade-routes] Extracted %d trade routes from INARA', routes.length)
-    
+
     if (!routes.length) {
       logger.warn('[trade-routes] No routes found in response')
       logInaraTrade(`RESPONSE: system=${system} url=${url} NO_RESULTS`)
@@ -585,7 +584,7 @@ async function handler(req, res) {
     let stationIndex = null
     let stationIndexPopulatedFromCache = false
 
-    function collectStations(systemData = {}) {
+    function collectStations (systemData = {}) {
       return [
         systemData.spaceStations,
         systemData.planetaryPorts,
@@ -597,7 +596,7 @@ async function handler(req, res) {
       ].filter(Boolean).flat()
     }
 
-    async function getJournalStationDetails(stationName) {
+    async function getJournalStationDetails (stationName) {
       if (!stationName || typeof stationName !== 'string') return null
       if (!eliteLogInstance || typeof eliteLogInstance._query !== 'function') return null
 
@@ -622,7 +621,7 @@ async function handler(req, res) {
       return null
     }
 
-    function addSystemToStationIndex(systemData) {
+    function addSystemToStationIndex (systemData) {
       if (!systemData) return
       const stations = collectStations(systemData)
       if (!stations.length) return
@@ -642,7 +641,7 @@ async function handler(req, res) {
       }
     }
 
-    function ensureStationIndexFromGlobalCache() {
+    function ensureStationIndexFromGlobalCache () {
       if (!stationIndex) stationIndex = new Map()
       if (stationIndexPopulatedFromCache) return stationIndex
       stationIndexPopulatedFromCache = true
@@ -655,7 +654,7 @@ async function handler(req, res) {
       return stationIndex
     }
 
-    async function getSystemData(systemName) {
+    async function getSystemData (systemName) {
       if (!systemName || typeof systemName !== 'string') return null
       const key = systemName.trim().toLowerCase()
       if (!key) return null
@@ -697,7 +696,7 @@ async function handler(req, res) {
     logger.info('[trade-routes] Step 1/3: Collecting unique systems and stations...')
     const uniqueSystemNames = new Set()
     const uniqueStations = new Map() // key: "stationName|systemName"
-    
+
     routes.forEach(route => {
       if (route?.origin?.systemName) {
         uniqueSystemNames.add(route.origin.systemName)
@@ -720,15 +719,15 @@ async function handler(req, res) {
         }
       }
     })
-    
+
     logger.info('[trade-routes] Found %d unique systems and %d unique stations', uniqueSystemNames.size, uniqueStations.size)
-    
+
     // Pre-fetch all unique systems in parallel with batching to avoid overwhelming EDSM
     logger.info('[trade-routes] Step 2/3: Pre-fetching %d unique systems...', uniqueSystemNames.size)
-    const BATCH_SIZE = 20 // Fetch 20 systems at a time to avoid overwhelming the API
+    const BATCH_SIZE = 2 // Small batch size to avoid triggering EDSM 429 rate limits
     const systemNameArray = Array.from(uniqueSystemNames)
     const systemFetchStart = Date.now()
-    
+
     for (let i = 0; i < systemNameArray.length; i += BATCH_SIZE) {
       const batch = systemNameArray.slice(i, i + BATCH_SIZE)
       const batchNum = Math.floor(i / BATCH_SIZE) + 1
@@ -739,28 +738,28 @@ async function handler(req, res) {
         return null
       })))
     }
-    
+
     const systemFetchElapsed = Date.now() - systemFetchStart
-    logger.info('[trade-routes] ✓ Pre-fetched %d systems in %dms (avg %dms per system)', 
-      uniqueSystemNames.size, 
+    logger.info('[trade-routes] ✓ Pre-fetched %d systems in %dms (avg %dms per system)',
+      uniqueSystemNames.size,
       systemFetchElapsed,
       Math.round(systemFetchElapsed / uniqueSystemNames.size))
-    
+
     // Pre-build station index from cache if available
     ensureStationIndexFromGlobalCache()
 
-    function formatPadSize(landingPads = {}) {
+    function formatPadSize (landingPads = {}) {
       if (landingPads.large) return 'Large'
       if (landingPads.medium) return 'Medium'
       if (landingPads.small) return 'Small'
       return ''
     }
 
-    function pickUpdatedTimestamp(station = {}) {
+    function pickUpdatedTimestamp (station = {}) {
       return station.updatedAt || station.marketUpdatedAt || station.lastUpdated || station.timestamp || null
     }
 
-    function inferStationIcon(station = {}) {
+    function inferStationIcon (station = {}) {
       const type = (station.type || station.subType || '').toLowerCase()
       if (type.includes('asteroid')) return 'asteroid-base'
       if (type.includes('outpost')) return 'outpost'
@@ -772,7 +771,7 @@ async function handler(req, res) {
       return 'coriolis-starport'
     }
 
-    function resolveStationFactionName(station = {}) {
+    function resolveStationFactionName (station = {}) {
       if (!station || typeof station !== 'object') {
         return typeof station === 'string' ? station : ''
       }
@@ -781,7 +780,7 @@ async function handler(req, res) {
         if (!entry) return null
         if (typeof entry === 'string') {
           const trimmed = entry.trim()
-          return trimmed ? trimmed : null
+          return trimmed || null
         }
         if (typeof entry === 'object') {
           const candidates = [
@@ -838,7 +837,7 @@ async function handler(req, res) {
       return ''
     }
 
-    function buildLocalResult({ stationName, systemData, station, journalData }) {
+    function buildLocalResult ({ stationName, systemData, station, journalData }) {
       const systemCoords = Array.isArray(systemData?.position) ? systemData.position : null
       let systemDistanceLy = null
       if (selectedSystemPosition && systemCoords) {
@@ -952,7 +951,7 @@ async function handler(req, res) {
       return result
     }
 
-    async function getLocalStationDetails(stationName, candidateSystems = []) {
+    async function getLocalStationDetails (stationName, candidateSystems = []) {
       if (!stationName) return null
       const normalizedStation = stationName.trim().toLowerCase()
       if (!normalizedStation) return null
@@ -1044,7 +1043,7 @@ async function handler(req, res) {
     // NOW enriching routes should be MUCH faster since all system data is already cached
     logger.info('[trade-routes] Step 3/3: Enriching %d routes with cached data...', routes.length)
     const enrichStart = Date.now()
-    
+
     const enrichedResults = await Promise.all(routes.map(async route => {
       if (!route || !route.origin || !route.destination) return route
       const [originLocal, destinationLocal] = await Promise.all([
@@ -1071,8 +1070,8 @@ async function handler(req, res) {
     }))
 
     const enrichElapsed = Date.now() - enrichStart
-    logger.info('[trade-routes] ✓ Enriched %d routes in %dms (avg %dms per route)', 
-      enrichedResults.length, 
+    logger.info('[trade-routes] ✓ Enriched %d routes in %dms (avg %dms per route)',
+      enrichedResults.length,
       enrichElapsed,
       Math.round(enrichElapsed / enrichedResults.length))
 
@@ -1081,25 +1080,11 @@ async function handler(req, res) {
   } catch (err) {
     caughtError = err
     logInaraTrade(`ERROR: system=${system} url=${url} error=${err}`)
-    res.statusCode = 500; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ error: 'Failed to fetch or parse INARA results', details: err.message }))
-  } finally {
-    const metadata = {
-      reason: caughtError ? 'inara-request-error' : 'inara-request',
-      method: 'GET',
-      status: responseStatus,
-      system,
-      error: caughtError ? caughtError.message : undefined
-    }
-    await spendTokensForInaraExchange({
-      endpoint: url,
-      requestBytes,
-      responseBytes: estimateByteSize(responseText),
-      metadata
-    }).catch(ledgerError => {
-      logInaraTrade(`TOKEN_LEDGER_ERROR: ${ledgerError}`)
-    })
+    const statusCode = err.inaraStatus === 503 ? 503 : 500
+    const errorCode = statusCode === 503 ? 'INARA_UNAVAILABLE' : 'TRADE_ROUTES_ERROR'
+    logger.error('Trade routes error (status=%d): %s', statusCode, err?.message || err)
+    res.statusCode = statusCode; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ error: errorCode, message: statusCode === 503 ? 'INARA is temporarily unavailable. Please try again shortly.' : (err.message || 'Failed to fetch trade routes') }))
   }
 }
 
 module.exports = handler
-

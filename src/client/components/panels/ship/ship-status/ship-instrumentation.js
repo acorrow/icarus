@@ -19,7 +19,7 @@ export default function ShipInstrumentation ({ ship, cmdrStatus, toggleSwitches,
   const scaledContent = useRef()
 
   const panelActive = (ship.onBoard || cmdrStatus?.flags?.inSrv)
-  
+
   useEffect(async () => {
     const resizeEventHandler = () => {
       if (scaledWrapper.current && scaledContent.current) {
@@ -31,20 +31,20 @@ export default function ShipInstrumentation ({ ship, cmdrStatus, toggleSwitches,
     return () => window.removeEventListener('resize', resizeEventHandler)
   }, [])
 
-  useEffect(()=> {
+  useEffect(() => {
     if (scaledWrapper.current && scaledContent.current) {
       applyScaling(scaledWrapper.current, scaledContent.current)
     }
-  },[scaledWrapper.current,scaledContent.current])
+  }, [scaledWrapper.current, scaledContent.current])
 
   return (
-    <div ref={scaledWrapper} style={{position: 'fixed', pointerEvents: 'none', top: '14.25rem', bottom: '2rem', right: '1rem', left: '5rem', xoverflow: 'hidden'}}>
+    <div ref={scaledWrapper} style={{ position: 'fixed', pointerEvents: 'none', top: '14.25rem', bottom: '2rem', right: '1rem', left: '5rem', xoverflow: 'hidden' }}>
       <div
         ref={scaledContent}
         className='ship-panel__instrumentation fx-fade-in'
-        style={{ 
+        style={{
           position: 'absolute',
-          margin: 'auto', 
+          margin: 'auto',
           top: 0,
           left: 0,
           right: 0,
@@ -53,7 +53,7 @@ export default function ShipInstrumentation ({ ship, cmdrStatus, toggleSwitches,
           opacity: 0
         }}
       >
-          <table className={`ship-panel__switches table--layout ${!ship.onBoard ? 'text-muted' : ''}`}>
+        <table className={`ship-panel__switches table--layout ${!ship.onBoard ? 'text-muted' : ''}`}>
           <tbody>
             <tr>
               <td>
@@ -130,11 +130,12 @@ export default function ShipInstrumentation ({ ship, cmdrStatus, toggleSwitches,
           </tbody>
         </table>
 
-        <table className={`ship-panel__ship-stats visible-medium table--layout`}
+        <table
+          className='ship-panel__ship-stats visible-medium table--layout'
           style={{
-            marginBottom: '4rem',
+            marginBottom: '4rem'
           }}
-          >
+        >
           <tbody className='text-info'>
             <tr>
               <td style={{ padding: 0, overflow: 'visible' }}>
@@ -147,9 +148,9 @@ export default function ShipInstrumentation ({ ship, cmdrStatus, toggleSwitches,
           </tbody>
         </table>
 
-        <table className={`ship-panel__ship-stats table--layout`} style={{marginTop: '2rem', marginBottom: '4rem'}}>
+        <table className='ship-panel__ship-stats table--layout' style={{ marginTop: '2rem', marginBottom: '4rem' }}>
           <tbody className='text-info'>
-            <tr className='hidden-medium' >
+            <tr className='hidden-medium'>
               <td rowSpan={4} style={{ padding: 0, overflow: 'visible' }}>
                 <NavigationInstrumentation ship={ship} cmdrStatus={cmdrStatus} />
               </td>
@@ -161,7 +162,7 @@ export default function ShipInstrumentation ({ ship, cmdrStatus, toggleSwitches,
               </td>
               <td>
                 <span className='text-muted'>Fuel reservoir</span>
-                <span className={`value ${!ship.onBoard ? 'text-muted' : ''}`}>{typeof ship?.fuelReservoir === 'number' ? <>{ship.fuelReservoir} T</>: '-'}</span>
+                <span className={`value ${!ship.onBoard ? 'text-muted' : ''}`}>{typeof ship?.fuelReservoir === 'number' ? <>{ship.fuelReservoir} T</> : '-'}</span>
               </td>
               <td className='hidden-medium' rowSpan={4} style={{ padding: 0, overflow: 'visible' }}>
                 <PowerDistribution ship={ship} />
@@ -315,11 +316,12 @@ function NavigationInstrumentation ({ ship, cmdrStatus }) {
   // so that mode is not supported right now.
 
   return (
-    <div className={`ship-panel__navigation-instrumentation ${panelActive ? '--on-board' : ' text-muted'} ${panelActive && typeof cmdrStatus?.heading === 'number' ? '--active' : ''} text-uppercase`}
-    style={{
-      minHeight: '13rem',
-      minWidth: '13rem',
-    }}
+    <div
+      className={`ship-panel__navigation-instrumentation ${panelActive ? '--on-board' : ' text-muted'} ${panelActive && typeof cmdrStatus?.heading === 'number' ? '--active' : ''} text-uppercase`}
+      style={{
+        minHeight: '13rem',
+        minWidth: '13rem'
+      }}
     >
       <div style={{
         position: 'absolute',
@@ -330,30 +332,32 @@ function NavigationInstrumentation ({ ship, cmdrStatus }) {
         maxHeight: '12rem',
         maxWidth: '12rem',
         margin: 'auto',
-        aspectRatio: '1',
+        aspectRatio: '1'
       }}
       >
-      <div className='rings'>
-        <div
-          className='ring'
-          style={{
-            bottom: '-6rem',
-            left: '-5%',
-            width: '100%',
-          }}
-        />
-          <div className='ring'
-          style={{
-            bottom: '-8rem',
-            left: '-15%',
-            width: '120%',
-            opacity: '.5',
-            animationDelay: '1s'
-          }}
+        <div className='rings'>
+          <div
+            className='ring'
+            style={{
+              bottom: '-6rem',
+              left: '-5%',
+              width: '100%'
+            }}
+          />
+          <div
+            className='ring'
+            style={{
+              bottom: '-8rem',
+              left: '-15%',
+              width: '120%',
+              opacity: '.5',
+              animationDelay: '1s'
+            }}
           />
         </div>
       </div>
-      <div className='dial-border'
+      <div
+        className='dial-border'
         style={{
           position: 'absolute',
           left: 0,
@@ -369,7 +373,7 @@ function NavigationInstrumentation ({ ship, cmdrStatus }) {
           opacity: (panelActive && typeof cmdrStatus?.heading === 'number') ? 1 : '.25',
           borderRadius: '100rem',
           transition: 'opacity .25s ease-in-out',
-          zIndex: 100,
+          zIndex: 100
         }}
       >
         <div style={{
@@ -386,23 +390,23 @@ function NavigationInstrumentation ({ ship, cmdrStatus }) {
           display: panelActive && typeof cmdrStatus?.heading === 'number' ? ' block' : 'none'
         }}
         >
-          <i className='icarus-terminal-direction-heading' style={{position: 'absolute', top: '-1rem', left: '-.6rem', fontSize: '2rem'}}/>
+          <i className='icarus-terminal-direction-heading' style={{ position: 'absolute', top: '-1rem', left: '-.6rem', fontSize: '2rem' }} />
         </div>
       </div>
       <div
-      style={{
-        display: 'block',
-        maxHeight: '12rem',
-        maxWidth: '12rem',
-        margin: 'auto',
-        border: '.5rem double transparent',
-        borderRadius: '100rem'
-      }}
+        style={{
+          display: 'block',
+          maxHeight: '12rem',
+          maxWidth: '12rem',
+          margin: 'auto',
+          border: '.5rem double transparent',
+          borderRadius: '100rem'
+        }}
       >
-        <div 
+        <div
           className='dial-background'
           style={{
-           boxShadow: (panelActive && typeof cmdrStatus?.heading === 'number') ? 'inset 0 0 .5rem var(--color-info), 0 0 1.75rem var(--color-secondary), inset 0 0 1.5rem var(--color-secondary)' : '',
+            boxShadow: (panelActive && typeof cmdrStatus?.heading === 'number') ? 'inset 0 0 .5rem var(--color-info), 0 0 1.75rem var(--color-secondary), inset 0 0 1.5rem var(--color-secondary)' : ''
           }}
         >
           <div style={{
@@ -420,7 +424,7 @@ function NavigationInstrumentation ({ ship, cmdrStatus }) {
           }}
           />
           <h5 className='text-muted' style={{ margin: '0 0 .25rem 0' }}>
-            PLANETARY<br/>NAVIGATION
+            PLANETARY<br />NAVIGATION
           </h5>
           <h2 style={{ padding: 0, margin: '0 0 .1rem 0' }}>
             {panelActive && <>

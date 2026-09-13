@@ -1,6 +1,6 @@
 /**
  * INARA Scraper Tests
- * 
+ *
  * Test suite for INARA scrapers using both mock data and real URLs.
  * Cloud agents can run these tests to validate scraper logic.
  */
@@ -15,7 +15,7 @@ const { getScraper, runScraper, testScraper, getAllScrapers } = require('../src/
  * @param {string} url - URL to fetch
  * @returns {Promise<string>} HTML content
  */
-function fetchHtml(url) {
+function fetchHtml (url) {
   return new Promise((resolve, reject) => {
     https.get(url, { headers: { 'User-Agent': 'ICARUS-Terminal-Test-Suite' } }, (res) => {
       let data = ''
@@ -30,14 +30,14 @@ function fetchHtml(url) {
  * @param {string} filename - Mock filename
  * @returns {string} HTML content
  */
-function loadMockHtml(filename) {
+function loadMockHtml (filename) {
   const mockDir = path.join(__dirname, '..', 'resources', 'mock-game-data', 'inara')
   const filepath = path.join(mockDir, filename)
-  
+
   if (!fs.existsSync(filepath)) {
     throw new Error(`Mock file not found: ${filename}`)
   }
-  
+
   return fs.readFileSync(filepath, 'utf8')
 }
 
@@ -46,14 +46,14 @@ function loadMockHtml(filename) {
  * @param {string} scraperName - Scraper to test
  * @returns {Promise<Object>} Test results
  */
-async function testWithMockData(scraperName) {
+async function testWithMockData (scraperName) {
   const scraper = getScraper(scraperName)
   if (!scraper) {
     throw new Error(`Unknown scraper: ${scraperName}`)
   }
-  
+
   const results = []
-  
+
   for (const mockFile of scraper.mockFiles || []) {
     try {
       const html = loadMockHtml(mockFile)
@@ -68,7 +68,7 @@ async function testWithMockData(scraperName) {
       })
     }
   }
-  
+
   return {
     scraper: scraperName,
     mockTests: results,
@@ -85,12 +85,12 @@ async function testWithMockData(scraperName) {
  * @param {Object} options - Parse options
  * @returns {Promise<Object>} Test results
  */
-async function testWithRealUrl(scraperName, url, options = {}) {
+async function testWithRealUrl (scraperName, url, options = {}) {
   console.log(`Fetching ${url}...`)
   const html = await fetchHtml(url)
-  
+
   const result = testScraper(scraperName, html, options)
-  
+
   return {
     ...result,
     url,
@@ -102,24 +102,24 @@ async function testWithRealUrl(scraperName, url, options = {}) {
  * Run all tests for all scrapers
  * @returns {Promise<Object>} All test results
  */
-async function runAllTests() {
+async function runAllTests () {
   const scrapers = getAllScrapers()
   const results = []
-  
+
   console.log(`Running tests for ${scrapers.length} scrapers...\n`)
-  
+
   for (const scraper of scrapers) {
     console.log(`Testing ${scraper.name}...`)
     const result = await testWithMockData(scraper.name)
     results.push(result)
-    
+
     if (result.passed > 0) {
       console.log(`  ✓ ${result.passed}/${result.totalTests} mock tests passed`)
     } else {
       console.log(`  ✗ ${result.failed}/${result.totalTests} mock tests failed`)
     }
   }
-  
+
   return {
     totalScrapers: scrapers.length,
     results,
@@ -151,21 +151,21 @@ const REAL_URL_TESTS = {
  * @param {string} scraperName - Optional scraper name to test (tests all if omitted)
  * @returns {Promise<Object>} Test results
  */
-async function testRealUrls(scraperName = null) {
-  const testsToRun = scraperName 
+async function testRealUrls (scraperName = null) {
+  const testsToRun = scraperName
     ? { [scraperName]: REAL_URL_TESTS[scraperName] || [] }
     : REAL_URL_TESTS
-  
+
   const results = []
-  
+
   for (const [name, urls] of Object.entries(testsToRun)) {
     console.log(`\nTesting ${name} with real URLs...`)
-    
+
     for (const url of urls) {
       try {
         const result = await testWithRealUrl(name, url)
         results.push(result)
-        
+
         if (result.success) {
           console.log(`  ✓ Success (${result.data.count} items, ${result.parseTime}ms)`)
         } else {
@@ -180,12 +180,12 @@ async function testRealUrls(scraperName = null) {
           error: err.message
         })
       }
-      
+
       // Be nice to INARA - wait 2 seconds between requests
       await new Promise(resolve => setTimeout(resolve, 2000))
     }
   }
-  
+
   return {
     totalTests: results.length,
     passed: results.filter(r => r.success).length,
@@ -199,7 +199,7 @@ async function testRealUrls(scraperName = null) {
 if (require.main === module) {
   const command = process.argv[2]
   const scraperName = process.argv[3]
-  
+
   switch (command) {
     case 'mock':
       runAllTests().then(results => {
@@ -207,14 +207,14 @@ if (require.main === module) {
         process.exit(results.overallFailed > 0 ? 1 : 0)
       })
       break
-      
+
     case 'real':
       testRealUrls(scraperName).then(results => {
         console.log('\n' + JSON.stringify(results, null, 2))
         process.exit(results.failed > 0 ? 1 : 0)
       })
       break
-      
+
     default:
       console.log('Usage:')
       console.log('  node scraper-tests.js mock                 - Run all mock data tests')

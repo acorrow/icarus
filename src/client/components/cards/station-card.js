@@ -1,3 +1,4 @@
+import React, { memo } from 'react'
 import PropTypes from 'prop-types'
 import Icons from 'lib/icons'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
@@ -35,51 +36,8 @@ StationIcon.propTypes = {
  *
  * Vibrant card style with data-driven colors based on distance and faction standing.
  * Uses shared CSS classes from cards.module.css for modular styling.
- *
- * Modes:
- * - Small: Icon + Name, Type, Distance (~half size of Large, compact)
- * - Large: Icon + Name, System, Type, Faction, Distance metrics (detailed)
- * - Inline: Icon + Name + System + Distance (single row, list view)
- *
- * Color System:
- * - Icon color: Derived from faction standing with intensity (rgba) based on reputation value (-100 to +100)
- *   - Friendly/Allied: #29f3c3 (cyan/green) with alpha based on reputation strength
- *   - Hostile: #ff3333 (red) with alpha based on reputation strength
- *   - Neutral: var(--inara-accent) (fallback)
- * - System distance color: Gradient from success (green) → info (cyan) → primary (blue) → danger (red)
- *   - Based on distance vs ship jump range (multipliers: 1x green, 3x red)
- * - Station distance color: Gradient from success → danger
- *   - Based on orbital distance in Ls (thresholds: 1000 Ls green, 20000 Ls red)
- *
- * @param {object} props
- * @param {string} props.stationName - Name of the station
- * @param {string} props.systemName - Name of the system
- * @param {string} props.stationType - Type of station (Coriolis, Orbis, etc.)
- * @param {string} props.factionName - Faction controlling the station
- * @param {string} props.allegiance - System/station allegiance (Alliance, Empire, Federation, Independent)
- * @param {string} props.government - Government type
- * @param {string} props.powerplay - Powerplay power controlling this system
- * @param {string} props.economy - Station economy type
- * @param {string} props.iconColor - Custom icon color (overrides faction standing color)
- * @param {number} props.distanceLy - Distance to system in LY
- * @param {number} props.distanceLs - Distance to station in LS
- * @param {string} props.distanceLyText - Formatted distance to system text
- * @param {string} props.distanceLsText - Formatted distance to station text
- * @param {string} props.distanceLyColor - CSS color for system distance (from getDistanceSeverityColor)
- * @param {string} props.distanceLsColor - CSS color for station distance (from getStationDistanceSeverityColor)
- * @param {object} props.factionStanding - Faction standing: { label, color, iconColor, className }
- *   - label: Display text (e.g., "Allied", "Hostile")
- *   - color: CSS color for standing chip background
- *   - iconColor: CSS color for station icon (with alpha based on reputation)
- * @param {string} props.mode - Display mode: 'small', 'large', or 'inline' (default: 'large')
- * @param {string} props.variant - 'origin' or 'destination' for gradient styling
- * @param {boolean} props.isSelected - Whether this station is selected/active
- * @param {boolean} props.isCurrentLocation - Whether this is the player's current location
- * @param {boolean} props.fillSpace - Whether card should fill container width/height
- * @param {string} props.className - Additional CSS class
- * @param {function} props.onClick - Click handler
  */
-export default function StationCard ({
+function StationCard ({
   stationName,
   systemName,
   stationType,
@@ -140,21 +98,23 @@ export default function StationCard ({
   if (className) containerClassNames.push(className)
 
   const handleClick = () => {
-    if (onClick) onClick();
-  };
+    if (onClick) onClick()
+  }
 
   const handleKeyDown = (e) => {
     if (onClick && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      onClick();
+      e.preventDefault()
+      onClick()
     }
-  };
+  }
 
   // Inline mode: single row layout
   if (mode === 'inline') {
-    const icon = iconName ? (
-      <StationIcon icon={iconName} size={20} color={resolvedIconColor} />
-    ) : null
+    const icon = iconName
+      ? (
+        <StationIcon icon={iconName} size={20} color={resolvedIconColor} />
+        )
+      : null
 
     return (
       <div
@@ -190,9 +150,11 @@ export default function StationCard ({
 
   // Small mode: compact card layout (~half size of Large)
   if (mode === 'small') {
-    const icon = iconName ? (
-      <StationIcon icon={iconName} size={32} color={resolvedIconColor} />
-    ) : null
+    const icon = iconName
+      ? (
+        <StationIcon icon={iconName} size={32} color={resolvedIconColor} />
+        )
+      : null
 
     return (
       <div
@@ -223,9 +185,11 @@ export default function StationCard ({
   }
 
   // Large mode: full card layout
-  const icon = iconName ? (
-    <StationIcon icon={iconName} size={72} color={resolvedIconColor} />
-  ) : null
+  const icon = iconName
+    ? (
+      <StationIcon icon={iconName} size={72} color={resolvedIconColor} />
+      )
+    : null
 
   return (
     <div
@@ -249,7 +213,7 @@ export default function StationCard ({
               {isCurrentLocation && (
                 <span
                   className={styles.currentLocationIndicator}
-                  title="Your Current Location"
+                  title='Your Current Location'
                 >
                   {Icons.location}
                 </span>
@@ -274,44 +238,54 @@ export default function StationCard ({
         </div>
         {/* Metrics row with pill backgrounds */}
         <div className={styles.stationCardMetricsVibrant}>
-          {systemDistance && (
-            <div className={styles.stationCardMetricPill}>
-              <span className={styles.stationCardMetricLabelVibrant}>SYSTEM DISTANCE</span>
-              <span
-                className={styles.stationCardMetricValueVibrant}
-                style={distanceLyColor ? { color: distanceLyColor } : undefined}
-              >
-                {systemDistance}
-              </span>
-            </div>
-          )}
-          {stationDistance && (
-            <div className={styles.stationCardMetricPill}>
-              <span className={styles.stationCardMetricLabelVibrant}>ORBITAL DISTANCE</span>
-              <span
-                className={styles.stationCardMetricValueVibrant}
-                style={distanceLsColor ? { color: distanceLsColor } : undefined}
-              >
-                {stationDistance}
-              </span>
-            </div>
-          )}
-          {factionStanding && factionStanding.label && (
-            <div className={styles.stationCardMetricPill}>
-              <span className={styles.stationCardMetricLabelVibrant}>FACTION STANDING</span>
-              <span
-                className={styles.stationCardMetricValueVibrant}
-                style={factionStanding.color ? {
-                  background: factionStanding.color,
-                  color: '#fff',
-                  borderRadius: '8px',
-                  padding: '2px 12px'
-                } : undefined}
-              >
-                {factionStanding.label}
-              </span>
-            </div>
-          )}
+          <div className={styles.stationCardMetricPill}>
+            <span className={styles.stationCardMetricLabelVibrant}>SYSTEM DISTANCE</span>
+            <span
+              className={styles.stationCardMetricValueVibrant}
+              style={distanceLyColor ? { color: distanceLyColor } : undefined}
+            >
+              {systemDistance || '--'}
+            </span>
+          </div>
+          <div className={styles.stationCardMetricPill}>
+            <span className={styles.stationCardMetricLabelVibrant}>ORBITAL DISTANCE</span>
+            <span
+              className={styles.stationCardMetricValueVibrant}
+              style={distanceLsColor ? { color: distanceLsColor } : undefined}
+            >
+              {stationDistance || '--'}
+            </span>
+          </div>
+          <div className={styles.stationCardMetricPill}>
+            <span className={styles.stationCardMetricLabelVibrant}>FACTION STANDING</span>
+            {factionStanding && factionStanding.label
+              ? (
+                <span
+                  className={styles.stationCardStandingBadge}
+                  style={factionStanding.color
+                    ? {
+                        background: factionStanding.color,
+                        color: '#ffffff',
+                        border: '1px solid rgba(255, 255, 255, 0.25)'
+                      }
+                    : undefined}
+                >
+                  {factionStanding.label}
+                </span>
+                )
+              : (
+                <span
+                  className={styles.stationCardStandingBadge}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    color: 'rgba(255, 255, 255, 0.55)',
+                    border: '1px solid rgba(255, 255, 255, 0.18)'
+                  }}
+                >
+                  UNKNOWN
+                </span>
+                )}
+          </div>
           {normalizedAllegiance && (
             <div className={styles.stationCardMetricPill}>
               <span className={styles.stationCardMetricLabelVibrant}>ALLEGIANCE</span>
@@ -342,7 +316,7 @@ export default function StationCard ({
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 StationCard.defaultProps = {
@@ -409,3 +383,5 @@ StationCard.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func
 }
+
+export default memo(StationCard)

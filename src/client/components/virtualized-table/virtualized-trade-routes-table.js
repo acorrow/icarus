@@ -127,7 +127,7 @@ export default function VirtualizedTradeRoutesTable ({
       itemData={itemData()}
       className={className}
       overscanCount={5} // Render 5 extra rows above/below viewport for smooth scrolling
-      width="100%"
+      width='100%'
     >
       {VirtualizedRow}
     </List>

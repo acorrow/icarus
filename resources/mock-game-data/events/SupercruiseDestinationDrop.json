@@ -36,8 +36,22 @@
                         "Type":  "Abraham Lincoln",
                         "Threat":  0,
                         "MarketID":  128016896
+                    },
+                    {
+                        "timestamp":  "2025-09-25T03:10:00Z",
+                        "event":  "SupercruiseDestinationDrop",
+                        "Type":  "$Warzone_PointRace_Low;",
+                        "Type_Localised":  "Conflict Zone [Low Intensity]",
+                        "Threat":  2
+                    },
+                    {
+                        "timestamp":  "2025-09-25T05:30:00Z",
+                        "event":  "SupercruiseDestinationDrop",
+                        "Type":  "$Warzone_PointRace_High;",
+                        "Type_Localised":  "Conflict Zone [High Intensity]",
+                        "Threat":  4
                     }
                 ],
-    "sampleCount":  5,
+    "sampleCount":  7,
     "eventType":  "SupercruiseDestinationDrop"
 }

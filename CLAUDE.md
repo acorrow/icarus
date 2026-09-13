@@ -106,19 +106,17 @@ src/
 │       ├── event-handlers.js # WebSocket event handlers
 │       ├── elite-log.js      # Journal file watcher
 │       ├── elite-json.js     # JSON file watcher (Cargo, Status, etc.)
-│       ├── api/              # HTTP API routes
-│       └── token-ledger.js   # Token currency system
+│       ├── ytmd-realtime-bridge.js # YouTube Music WebSocket bridge
+│       └── api/              # HTTP API routes, session manager & scrapers
 ├── client/                    # Next.js/React UI
-│   ├── pages/                # Next.js pages
-│   │   ├── inara.js          # Main INARA workspace
-│   │   └── inara/            # INARA sub-pages
+│   ├── pages/                # Next.js pages (inara/, nav/, ship/, eng/)
 │   ├── components/           # React components
-│   │   ├── panels/inara/     # INARA-specific panels
+│   │   ├── WinampBar/        # Retro Winamp/YTMD player with MilkDrop visualizer
+│   │   ├── panels/inara/     # INARA-specific panels & error banners
+│   │   ├── cards/            # Reusable StationCard, CommodityCard, PlanetCard
 │   │   ├── panel.js          # Panel shell with navigation
-│   │   └── layout.js         # Page layout wrapper
-│   └── lib/                  # Client utilities
-│       ├── socket.js         # WebSocket client
-│       └── inara-*.js        # INARA formatters, thresholds, etc.
+│   │   └── layout.js         # Page layout wrapper with loader support
+│   └── lib/                  # Client utilities (hooks, socket.js, inara-*.js)
 └── shared/                    # Shared utilities (client + server)
     ├── consts.js
     ├── distance.js
@@ -179,8 +177,27 @@ When `FORCE_MOCK_DATA=true`, the service uses pre-captured fixture data:
 
 **Future Integration:**
 - INARA provides an official API (https://inara.cz/elite/inara-api-docs/)
-- NOT yet implemented (experimental code exists in `inara-search.js`)
 - Goal: Send journal data to INARA API, retrieve structured responses instead of scraping
+- Scrapers will continue to serve as a robust fallback mechanism
+
+### Playwright MCP (Browser Automation)
+
+This project includes a Playwright MCP server (configured in `.mcp.json` for Claude Code and `.vscode/mcp.json` for GitHub Copilot) that gives AI agents browser automation capabilities. **Use Playwright MCP for visual verification of UI changes** instead of relying solely on manual review.
+
+**What it provides:**
+- Navigate to running dev server pages (`localhost:3000` or `localhost:3300`)
+- Take screenshots of pages and specific elements
+- Click, type, fill forms, and interact with the UI
+- Inspect DOM structure and page content
+- Wait for elements, network activity, and navigation
+
+**When to use it:**
+- After GUI changes: navigate to the affected page and screenshot to verify layout
+- Debugging UI issues: inspect element state, check rendered content
+- Testing INARA scraper output: load the page and verify data renders correctly
+- Verifying responsive layouts and component spacing
+
+**Prerequisites:** The dev server must be running (`npm run dev:web` or `npm run dev`).
 
 ### Testing Requirements for GUI Changes
 
@@ -191,8 +208,9 @@ When modifying any GUI component:
 3. Launch rendering target:
    - Production: `npm run serve:export` (http://127.0.0.1:4100)
    - Fast iteration: `npm run dev:web` (http://127.0.0.1:3000)
-4. Manually review spacing, typography, state handling
-5. Note any UI regressions in commit message
+4. Use Playwright MCP to navigate to affected pages and take screenshots for visual verification
+5. Review spacing, typography, state handling in screenshots
+6. Note any UI regressions in commit message
 
 ### HTTP Request Logging
 
@@ -300,8 +318,11 @@ See `FEATURES.md` for detailed documentation of:
 - Scraper engine architecture
 
 Active feature plans:
-- `OUTFITTING-PLAN.md` - INARA outfitting search implementation (web scraper + API)
-- `MEDIA-TERMINAL-TOKEN-MIGRATION-PLAN.md` - Token feature migration to Media Terminal + deprecate inara/status route
+- `SCRAPER-ENGINE-PLAN.md` - Unified scraper engine consolidation (shared utilities, diagnostics, phased endpoint migration)
+
+Completed/removed plans (kept here so agents don't go looking for them):
+- `OUTFITTING-PLAN.md` - INARA outfitting search implementation. Completed and removed; outfitting search now lives in `inara-outfitting-search.js`, `scrapers/outfitting-search.js`, and the Outfitting workspace page.
+- `MEDIA-TERMINAL-TOKEN-MIGRATION-PLAN.md` - Token feature migration to Media Terminal. Superseded — the Media Terminal page was removed entirely and replaced by the YTMD/Winamp-style global player bar (see `FEATURES.md`).
 
 ## Important Files to Reference
 
@@ -309,6 +330,8 @@ Active feature plans:
 - **FEATURES.md** - Canonical feature mapping (MUST be updated with any feature changes)
 - **AGENTS.md** - Detailed implementation principles (if exists)
 - **.github/copilot-instructions.md** - Additional development guidelines and patterns
+- **.mcp.json** - MCP server configuration for Claude Code (Playwright browser automation)
+- **.vscode/mcp.json** - MCP server configuration for GitHub Copilot (Playwright browser automation)
 
 ## Common Pitfalls
 

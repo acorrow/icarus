@@ -75,14 +75,14 @@ export default function NavigationSystemMapPanel ({ system, systemObject, setSys
           </div>
 
           <div className='fx-fade-in'>
-            {!system?.scanPercentComplete && 
+            {!system?.scanPercentComplete &&
               <div className='system-map__system-telemetry--text text-info text-uppercase text-no-wrap' onClick={(e) => rescanSystem()}>
-                <p style={{margin: '0 4rem .15rem 0'}} className={rescanInProgress ? 'text-blink-slow' : 'text-muted'}>
-                  <i className='icarus-terminal-scan float-left' style={{fontSize: '2.5rem', marginRight: '.15rem'}}/>
-                  NO SCAN<br/>DATA
-              </p>
-            </div>}
-         </div>
+                <p style={{ margin: '0 4rem .15rem 0' }} className={rescanInProgress ? 'text-blink-slow' : 'text-muted'}>
+                  <i className='icarus-terminal-scan float-left' style={{ fontSize: '2.5rem', marginRight: '.15rem' }} />
+                  NO SCAN<br />DATA
+                </p>
+              </div>}
+          </div>
         </div>
       </div>
     )
@@ -102,12 +102,13 @@ export default function NavigationSystemMapPanel ({ system, systemObject, setSys
         </div>
         <div
           onClick={() => setShowSystemDetails(!showSystemDetails)}
-          className={`system-map__system-information ${showSystemDetails ? 'system-map__system-information--open' : 'button'}`}>
+          className={`system-map__system-information ${showSystemDetails ? 'system-map__system-information--open' : 'button'}`}
+        >
           {showSystemDetails === true
             ? <div className='fx-fade-in'>
-              <h3 className='text-primary text-muted' style={{ position: 'relative', top: '-.1rem', marginLeft: '1.5rem'}}>System Information</h3>
+              <h3 className='text-primary text-muted' style={{ position: 'relative', top: '-.1rem', marginLeft: '1.5rem' }}>System Information</h3>
               <i className='icarus-terminal-chevron-down text-primary text-muted' style={{ position: 'absolute', top: '.5rem', right: '.65rem' }} />
-              <hr className='small muted' style={{marginTop: '.3rem', marginRight: '-1.75rem', marginBottom: '.3rem'}}/>
+              <hr className='small muted' style={{ marginTop: '.3rem', marginRight: '-1.75rem', marginBottom: '.3rem' }} />
               <PointsOfInterest system={system} />
               {system.economy && system.economy?.primary !== 'Unknown' && system?.economy?.primary !== 'None' &&
                 <h3 className='text-primary'>
@@ -140,7 +141,7 @@ export default function NavigationSystemMapPanel ({ system, systemObject, setSys
                 </h3>}
             </div>
             : <>
-              <span style={{display: 'block', minHeight: '2.9rem'}}>
+              <span style={{ display: 'block', minHeight: '2.9rem' }}>
                 {/* {system.detail && system.detail.bodies && system.detail.bodies.length > 0 && */}
                 <i className='icon icarus-terminal-info' style={{ fontSize: '2rem', position: 'relative', top: '.4rem', textShadow: 'none' }} />
                 <i className='icarus-terminal-chevron-up' style={{ position: 'relative', top: '.5rem', left: '-.25rem' }} />
@@ -151,26 +152,26 @@ export default function NavigationSystemMapPanel ({ system, systemObject, setSys
         <div className='fx-fade-in'>
           {system?.scanPercentComplete && system?.scanPercentComplete !== 100 &&
             <div className={`system-map__system-telemetry--progress text-uppercase text-secondary ${rescanInProgress ? 'text-blink-slow' : ''}`} onClick={(e) => rescanSystem()}>
-              <i className='icarus-terminal-scan float-left' style={{fontSize: '2.5rem', marginLeft: '.25rem'}}/>
-              <div style={{position: 'absolute', right: 0}}>
+              <i className='icarus-terminal-scan float-left' style={{ fontSize: '2.5rem', marginLeft: '.25rem' }} />
+              <div style={{ position: 'absolute', right: 0 }}>
                 EDSM {system?.scanPercentComplete}% <br />
-                <progress value={system?.scanPercentComplete} max='100' className='progress--secondary progress--border' style={{margin: '.15rem 0 -.1rem 0', height: '1.25rem', width: '5.5rem'}}/>
+                <progress value={system?.scanPercentComplete} max='100' className='progress--secondary progress--border' style={{ margin: '.15rem 0 -.1rem 0', height: '1.25rem', width: '5.5rem' }} />
               </div>
-          </div>}
+            </div>}
           {system?.scanPercentComplete === 100 &&
-            <div className='system-map__system-telemetry--text text-primary text-uppercase text-no-wrap'  onClick={(e) => rescanSystem()}>
-            <p style={{margin: '0 4rem .15rem 0'}} className={rescanInProgress ? 'text-blink-slow' : 'text-muted'}>
-              <i className='icarus-terminal-scan float-left' style={{fontSize: '2.5rem', marginRight: '.15rem'}}/>
-              SYSTEM<br/>SCANNED
-          </p>
-          </div>}
-          {!system?.scanPercentComplete && 
+            <div className='system-map__system-telemetry--text text-primary text-uppercase text-no-wrap' onClick={(e) => rescanSystem()}>
+              <p style={{ margin: '0 4rem .15rem 0' }} className={rescanInProgress ? 'text-blink-slow' : 'text-muted'}>
+                <i className='icarus-terminal-scan float-left' style={{ fontSize: '2.5rem', marginRight: '.15rem' }} />
+                SYSTEM<br />SCANNED
+              </p>
+            </div>}
+          {!system?.scanPercentComplete &&
             <div className='system-map__system-telemetry--text text-info text-uppercase text-no-wrap' onClick={(e) => rescanSystem()}>
-              <p style={{margin: '0 4rem .15rem 0'}} className={rescanInProgress ? 'text-blink-slow' : 'text-muted'}>
-                <i className='icarus-terminal-scan float-left' style={{fontSize: '2.5rem', marginRight: '.15rem'}}/>
-                NO SCAN<br/>DATA
-            </p>
-          </div>}
+              <p style={{ margin: '0 4rem .15rem 0' }} className={rescanInProgress ? 'text-blink-slow' : 'text-muted'}>
+                <i className='icarus-terminal-scan float-left' style={{ fontSize: '2.5rem', marginRight: '.15rem' }} />
+                NO SCAN<br />DATA
+              </p>
+            </div>}
           {system.position &&
             <div className='system-map__system-position text-info text-muted text-no-wrap'>
               {system.position?.[0]}, {system.position?.[1]}, {system.position?.[2]}
@@ -179,15 +180,15 @@ export default function NavigationSystemMapPanel ({ system, systemObject, setSys
 
         <div className='system-map__toolbar-background' />
         <div className='system-map__toolbar'>
-          <LocationInformation system={system} cmdrStatus={cmdrStatus}/>
+          <LocationInformation system={system} cmdrStatus={cmdrStatus} />
           <div className='system-map__info fx-fade-in text-uppercase'>
             <span className='text-info'>
               <i className='icarus-terminal-system-orbits' style={{ fontSize: '1.5rem', float: 'left', position: 'relative', left: '-.15rem' }} />
               <CopyOnClick append=' system' copyMessageKey='system'>{system.name}</CopyOnClick>
             </span>
-            <span className='text-center-vertical' style={{pointerEvents: 'none'}}>
-             {system.detail && system.detail.bodies && system.detail.bodies.length > 0 &&
-                <h4 className='text-primary' style={{ marginLeft: '2.6rem', marginTop: '1.2rem'}}>
+            <span className='text-center-vertical' style={{ pointerEvents: 'none' }}>
+              {system.detail && system.detail.bodies && system.detail.bodies.length > 0 &&
+                <h4 className='text-primary' style={{ marginLeft: '2.6rem', marginTop: '1.2rem' }}>
                   {system.detail.bodies.length} {system.detail.bodies.length === 1 ? 'body found in system' : 'bodies found in system'}
                 </h4>}
             </span>
@@ -198,7 +199,7 @@ export default function NavigationSystemMapPanel ({ system, systemObject, setSys
   )
 }
 
-function PointsOfInterest({ system }) {
+function PointsOfInterest ({ system }) {
   const coriolisStarports = system?.spaceStations?.filter(station => station?.type === 'Coriolis Starport')?.length ?? 0
   const ocellusStarports = system?.spaceStations?.filter(station => station?.type === 'Ocellus Starport')?.length ?? 0
   const orbisStarports = system?.spaceStations?.filter(station => station?.type === 'Orbis Starport')?.length ?? 0
@@ -223,7 +224,7 @@ function PointsOfInterest({ system }) {
       </div>
     )
   }
-  
+
   const biologicalSignals = system.bodies.reduce((total, body) => total + (body?.signals?.biological ?? 0), 0)
 
   const geologicalSignals = system.bodies.reduce((total, body) => {
@@ -262,14 +263,14 @@ function PointsOfInterest({ system }) {
           {terraformableWorlds > 0 && <h3 className='text-primary'><span className='system-map__info-icon'><i className='icon icarus-terminal-planet-terraformable' /><span className='count'>{terraformableWorlds} {terraformableWorlds === 1 ? 'Terraformable Planet' : 'Terraformable Planets'}</span></span></h3>}
           {highValueGasGiants > 0 && <h3 className='text-primary'><span className='system-map__info-icon'><i className='icon icarus-terminal-planet-gas-giant' /><span className='count'>{highValueGasGiants} {highValueGasGiants === 1 ? 'Class II Gas Giant' : 'Class II Gas Giants'}</span></span></h3>}
           {metalRichPlanets > 0 && <h3 className='text-primary'><span className='system-map__info-icon'><i className='icon icarus-terminal-planet-high-metal-value' /><span className='count'>{metalRichPlanets} {metalRichPlanets === 1 ? 'Metal Rich Planet' : 'Metal Rich Planets'}</span></span></h3>}
-       </div>
+        </div>
       </div>
     )
   }
 
   return (
     <h3 className='system-map__info--icons text-uppercase text-info text-muted'><span className='system-map__info-icon'><span className='count'>No notable signals</span></span></h3>
-   )
+  )
 }
 
 function LocationInformation ({ system, cmdrStatus, rescanSystem, rescanInProgress }) {
@@ -298,7 +299,7 @@ function LocationInformation ({ system, cmdrStatus, rescanSystem, rescanInProgre
               ? cmdrStatus._location.map((loc, i) =>
                 <span key={`location_${loc}_${i}`}>
                   {i > 0 && <>
-                    <br/>
+                    <br />
                     <i className='icon icarus-terminal-chevron-right text-muted' style={{ fontSize: '.8rem', margin: '0 .25rem' }} />
                   </>}
                   {loc}

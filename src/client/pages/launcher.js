@@ -147,7 +147,7 @@ export default function IndexPage () {
               ><i className='icon icarus-terminal-download' /> Install Update
               </button>}
             {downloadingUpdate && <p className='text-primary text-blink-slow'>
-              <i style={{position: 'relative', top: '.2rem', marginRight: '.2rem'}} className='icon icarus-terminal-download' /> Downloading update...
+              <i style={{ position: 'relative', top: '.2rem', marginRight: '.2rem' }} className='icon icarus-terminal-download' /> Downloading update...
             </p>}
           </div>}
         <div

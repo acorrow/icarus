@@ -11,7 +11,6 @@ const {
   isAbsolutePath
 } = require('../path-resolvers.js')
 const { appendInaraLogEntry } = require('./inara-log-utils.js')
-const { estimateByteSize, spendTokensForInaraExchange } = require('./token-currency.js')
 const { fetchWithInaraCache } = require('./inara-request-cache.js')
 
 const INARA_BASE_URL = 'https://inara.cz'
@@ -32,7 +31,9 @@ const INARA_SEARCH_DEFAULT_PARAMS = Object.freeze({
   pi14: '0'
 })
 
-const INARA_MARKET_CACHE_DIR = path.join(process.cwd(), 'resources', 'cache')
+const { getUserDataDir, getUserDataPath } = require('../user-data.js')
+
+const INARA_MARKET_CACHE_DIR = getUserDataDir('cache')
 const INARA_MARKET_CACHE_FILE = path.join(INARA_MARKET_CACHE_DIR, 'inara-market-cache.json')
 const INARA_MARKET_CACHE_VERSION = 1
 const DEFAULT_INARA_CACHE_TTL_MS = 15 * 60 * 1000
@@ -57,7 +58,7 @@ let cachedCommoditySynonyms = null
 let cachedMarketCache = null
 const inMemoryInaraCommodityCache = new Map()
 
-const logPath = path.join(process.cwd(), 'inara-commodity-values.log')
+const logPath = getUserDataPath('logs', 'inara-commodity-values.log')
 
 function ensureDirectoryExists (dirPath) {
   if (!dirPath) return
@@ -287,18 +288,13 @@ async function loadCommodityOptions () {
     const url = new URL(INARA_COMMODITY_SEARCH_URL)
     url.searchParams.set('formbrief', '1')
 
-    const requestBytes = estimateByteSize(url.toString())
-    let responseText = ''
-    let responseStatus = null
-    let fetchError = null
-
     try {
       const response = await fetchWithInaraCache(url.toString(), {
         agent: ipv4HttpsAgent,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ICARUS Terminal)'
         },
-        cacheTtlMs: 0
+        cacheTtlMs: 60 * 60 * 1000 // 1 hour cache — commodity option lists rarely change
       })
       responseStatus = response.status
       if (!response.ok) {
@@ -338,23 +334,9 @@ async function loadCommodityOptions () {
       cachedCommodityOptionsPromise = null
       return optionMap
     } catch (err) {
-  fetchError = err
-  logger.error('Failed fetching INARA commodity options: %s', err?.message || err)
+      fetchError = err
+      logger.error('Failed fetching INARA commodity options: %s', err?.message || err)
       throw err
-    } finally {
-      const metadata = {
-        reason: fetchError ? 'inara-request-error' : 'inara-request',
-        method: 'GET',
-        status: responseStatus,
-        phase: 'commodity-options',
-        error: fetchError ? fetchError.message : undefined
-      }
-      await spendTokensForInaraExchange({
-        endpoint: url.toString(),
-        requestBytes,
-        responseBytes: estimateByteSize(responseText),
-        metadata
-      }).catch(() => {})
     }
   })().catch(err => {
     cachedCommodityOptionsPromise = null
@@ -442,7 +424,7 @@ function parseCommoditySearchResults (html) {
       updatedText,
       updatedAt: parseEpochSecondsToIso(updatedAttr),
       fetchedAt: new Date().toISOString(),
-      source: 'inara-search'
+      source: 'inara-scraper'
     }
 
     listings.push(listing)
@@ -464,10 +446,6 @@ async function fetchCommoditySearchListings ({ commodityId, commodityName, nearS
   params.append('pa1[]', commodityId)
   if (nearSystem) params.set('ps1', nearSystem)
   const url = `${INARA_COMMODITY_SEARCH_URL}?${params.toString()}`
-  const requestBytes = estimateByteSize(url)
-  let responseText = ''
-  let responseStatus = null
-  let fetchError = null
 
   try {
     const response = await fetchWithInaraCache(url, {
@@ -486,21 +464,6 @@ async function fetchCommoditySearchListings ({ commodityId, commodityName, nearS
     fetchError = err
     logger.error('Failed fetching INARA commodity listings %s near %s: %s', commodityId, nearSystem || 'unknown', err?.message || err)
     throw err
-  } finally {
-    const metadata = {
-      reason: fetchError ? 'inara-request-error' : 'inara-request',
-      method: 'GET',
-      status: responseStatus,
-      commodityId,
-      system: nearSystem || null,
-      error: fetchError ? fetchError.message : undefined
-    }
-    await spendTokensForInaraExchange({
-      endpoint: url,
-      requestBytes,
-      responseBytes: estimateByteSize(responseText),
-      metadata
-    }).catch(() => {})
   }
 }
 
@@ -807,220 +770,231 @@ async function handler (req, res) {
   logger.info('Fetching INARA commodity values for %d commodities', requestedCommodities.length)
   appendLog(`REQUEST commodities=${requestedCommodities.map(item => item.name).join(', ')}`)
 
-  const logDir = resolveLogDir()
-  const marketData = buildMarketLookup(loadMarketFile(logDir))
-  const marketStatus = marketData ? 'ok' : 'missing'
-  const { history: localHistory, status: historyStatus } = buildLocalMarketHistory(logDir, marketData?.marketId || null)
+  try {
+    const logDir = resolveLogDir()
+    const marketData = buildMarketLookup(loadMarketFile(logDir))
+    const marketStatus = marketData ? 'ok' : 'missing'
+    const { history: localHistory, status: historyStatus } = buildLocalMarketHistory(logDir, marketData?.marketId || null)
 
-  const inaraSearchCache = loadInaraMarketCache()
-  let inaraCacheDirty = false
-  const inaraResults = new Map()
-  const results = []
-  let inaraStatus = 'ok'
+    const inaraSearchCache = loadInaraMarketCache()
+    let inaraCacheDirty = false
+    const inaraResults = new Map()
+    const results = []
+    let inaraStatus = 'ok'
 
-  for (const commodity of requestedCommodities) {
-    const commodityKey = commodity.key || normaliseCommodityKey(commodity.name)
-    if (!commodityKey || inaraResults.has(commodityKey)) continue
+    for (const commodity of requestedCommodities) {
+      const commodityKey = commodity.key || normaliseCommodityKey(commodity.name)
+      if (!commodityKey || inaraResults.has(commodityKey)) continue
 
-    let option = null
-    let searchError = null
-    let listings = []
-    let hardFailure = false
+      let option = null
+      let searchError = null
+      let listings = []
+      let hardFailure = false
 
-    try {
-      option = await resolveCommodityId(commodity.name)
-      if (!option && commodity.symbol) {
-        option = await resolveCommodityId(commodity.symbol)
+      try {
+        option = await resolveCommodityId(commodity.name)
+        if (!option && commodity.symbol) {
+          option = await resolveCommodityId(commodity.symbol)
+        }
+      } catch (err) {
+        searchError = err.message || 'Failed to resolve INARA commodity id'
+        hardFailure = true
+        logger.warn('Failed resolving commodity id for %s: %s', commodity.name, err?.message || err)
       }
-    } catch (err) {
-      searchError = err.message || 'Failed to resolve INARA commodity id'
-      hardFailure = true
-  logger.warn('Failed resolving commodity id for %s: %s', commodity.name, err?.message || err)
-    }
 
-    const nearSystem = marketData?.systemName || null
-    let memoryKey = null
-    let memoryEntry = null
+      const nearSystem = marketData?.systemName || null
+      let memoryKey = null
+      let memoryEntry = null
 
-    if (!searchError && option) {
-      ({ key: memoryKey, entry: memoryEntry } = getInaraMemoryEntry(commodityKey, nearSystem))
+      if (!searchError && option) {
+        ({ key: memoryKey, entry: memoryEntry } = getInaraMemoryEntry(commodityKey, nearSystem))
 
-      if (memoryEntry) {
-        if (Array.isArray(memoryEntry.listings) && memoryEntry.listings.length > 0) {
-          listings = memoryEntry.listings
-          if (!searchError && memoryEntry.error) searchError = memoryEntry.error
-        } else if (memoryEntry.promise && typeof memoryEntry.promise.then === 'function') {
-          try {
-            const result = await memoryEntry.promise
-            if (result && Array.isArray(result.listings) && result.listings.length > 0) {
-              listings = result.listings
+        if (memoryEntry) {
+          if (Array.isArray(memoryEntry.listings) && memoryEntry.listings.length > 0) {
+            listings = memoryEntry.listings
+            if (!searchError && memoryEntry.error) searchError = memoryEntry.error
+          } else if (memoryEntry.promise && typeof memoryEntry.promise.then === 'function') {
+            try {
+              const result = await memoryEntry.promise
+              if (result && Array.isArray(result.listings) && result.listings.length > 0) {
+                listings = result.listings
+              }
+              if (!searchError && result?.error) searchError = result.error
+            } catch (err) {
+              searchError = err.message || 'Failed to retrieve INARA listings'
+              hardFailure = true
+              logger.warn('Commodity memory fetch failed for %s: %s', commodity.name, err?.message || err)
             }
-            if (!searchError && result?.error) searchError = result.error
+
+            const resolvedMemory = getInaraMemoryEntry(commodityKey, nearSystem).entry
+            if ((!Array.isArray(listings) || listings.length === 0) && resolvedMemory && Array.isArray(resolvedMemory.listings)) {
+              listings = resolvedMemory.listings
+              if (!searchError && resolvedMemory.error) searchError = resolvedMemory.error
+            }
+          } else if (memoryEntry.error && !searchError) {
+            searchError = memoryEntry.error
+          }
+        }
+
+        if ((!Array.isArray(listings) || listings.length === 0) && !searchError) {
+          const cached = getCachedCommoditySearch(inaraSearchCache, commodityKey, nearSystem)
+          if (cached) {
+            listings = Array.isArray(cached.listings) ? cached.listings : []
+            if (memoryKey) setInaraMemoryResult(memoryKey, listings, null)
+          }
+        }
+
+        if ((!Array.isArray(listings) || listings.length === 0) && !searchError) {
+          const fetchPromise = fetchCommoditySearchListings({
+            commodityId: option.id,
+            commodityName: commodity.name,
+            nearSystem
+          })
+            .then(freshListings => {
+              if (memoryKey) setInaraMemoryResult(memoryKey, freshListings, null)
+              if (Array.isArray(freshListings) && freshListings.length > 0) {
+                const didUpdate = setCachedCommoditySearch(inaraSearchCache, commodityKey, nearSystem, freshListings)
+                if (didUpdate) inaraCacheDirty = true
+              }
+              return { listings: freshListings, error: null }
+            })
+            .catch(err => {
+              const message = err.message || 'Failed to retrieve INARA listings'
+              if (memoryKey) setInaraMemoryResult(memoryKey, [], message)
+              throw new Error(message)
+            })
+
+          if (memoryKey) setInaraMemoryPromise(memoryKey, fetchPromise)
+
+          try {
+            const result = await fetchPromise
+            listings = Array.isArray(result?.listings) ? result.listings : []
           } catch (err) {
             searchError = err.message || 'Failed to retrieve INARA listings'
             hardFailure = true
-            logger.warn('Commodity memory fetch failed for %s: %s', commodity.name, err?.message || err)
+            logger.warn('Commodity fetch failed for %s: %s', commodity.name, err?.message || err)
           }
+        }
+      } else if (!option && !searchError) {
+        searchError = 'Commodity not recognized by INARA search'
+      }
 
-          const resolvedMemory = getInaraMemoryEntry(commodityKey, nearSystem).entry
-          if ((!Array.isArray(listings) || listings.length === 0) && resolvedMemory && Array.isArray(resolvedMemory.listings)) {
-            listings = resolvedMemory.listings
-            if (!searchError && resolvedMemory.error) searchError = resolvedMemory.error
-          }
-        } else if (memoryEntry.error && !searchError) {
-          searchError = memoryEntry.error
+      if (!searchError && Array.isArray(listings) && listings.length === 0) {
+        searchError = 'No INARA listings found'
+      }
+
+      if (memoryKey && searchError) {
+        setInaraMemoryResult(memoryKey, Array.isArray(listings) ? listings : [], searchError)
+      }
+
+      if (searchError) {
+        appendLog(`ERROR commodity=${commodity.name} reason=${searchError}`)
+        if (hardFailure) {
+          inaraStatus = 'error'
+        } else if (inaraStatus === 'ok') {
+          inaraStatus = 'partial'
         }
       }
 
-      if ((!Array.isArray(listings) || listings.length === 0) && !searchError) {
-        const cached = getCachedCommoditySearch(inaraSearchCache, commodityKey, nearSystem)
-        if (cached) {
-          listings = Array.isArray(cached.listings) ? cached.listings : []
-          if (memoryKey) setInaraMemoryResult(memoryKey, listings, null)
-        }
-      }
-
-      if ((!Array.isArray(listings) || listings.length === 0) && !searchError) {
-        const fetchPromise = fetchCommoditySearchListings({
-          commodityId: option.id,
-          commodityName: commodity.name,
-          nearSystem
-        })
-          .then(freshListings => {
-            if (memoryKey) setInaraMemoryResult(memoryKey, freshListings, null)
-            if (Array.isArray(freshListings) && freshListings.length > 0) {
-              const didUpdate = setCachedCommoditySearch(inaraSearchCache, commodityKey, nearSystem, freshListings)
-              if (didUpdate) inaraCacheDirty = true
-            }
-            return { listings: freshListings, error: null }
-          })
-          .catch(err => {
-            const message = err.message || 'Failed to retrieve INARA listings'
-            if (memoryKey) setInaraMemoryResult(memoryKey, [], message)
-            throw new Error(message)
-          })
-
-        if (memoryKey) setInaraMemoryPromise(memoryKey, fetchPromise)
-
-        try {
-          const result = await fetchPromise
-          listings = Array.isArray(result?.listings) ? result.listings : []
-        } catch (err) {
-          searchError = err.message || 'Failed to retrieve INARA listings'
-          hardFailure = true
-          logger.warn('Commodity fetch failed for %s: %s', commodity.name, err?.message || err)
-        }
-      }
-    } else if (!option && !searchError) {
-      searchError = 'Commodity not recognized by INARA search'
+      inaraResults.set(commodityKey, {
+        listings: Array.isArray(listings) ? listings : [],
+        error: searchError || null
+      })
     }
 
-    if (!searchError && Array.isArray(listings) && listings.length === 0) {
-      searchError = 'No INARA listings found'
+    if (inaraCacheDirty) {
+      saveInaraMarketCache(inaraSearchCache)
     }
 
-    if (memoryKey && searchError) {
-      setInaraMemoryResult(memoryKey, Array.isArray(listings) ? listings : [], searchError)
-    }
-
-    if (searchError) {
-      appendLog(`ERROR commodity=${commodity.name} reason=${searchError}`)
-      if (hardFailure) {
-        inaraStatus = 'error'
-      } else if (inaraStatus === 'ok') {
+    requestedCommodities.forEach(commodity => {
+      const commodityKey = commodity.key || normaliseCommodityKey(commodity.name)
+      const cacheEntry = commodityKey ? inaraResults.get(commodityKey) : null
+      const resolvedEntry = cacheEntry || { listings: [], error: 'No INARA data available' }
+      if (resolvedEntry.error && resolvedEntry.listings.length === 0 && inaraStatus === 'ok') {
         inaraStatus = 'partial'
       }
-    }
 
-    inaraResults.set(commodityKey, {
-      listings: Array.isArray(listings) ? listings : [],
-      error: searchError || null
-    })
-  }
-
-  if (inaraCacheDirty) {
-    saveInaraMarketCache(inaraSearchCache)
-  }
-
-  requestedCommodities.forEach(commodity => {
-    const commodityKey = commodity.key || normaliseCommodityKey(commodity.name)
-    const cacheEntry = commodityKey ? inaraResults.get(commodityKey) : null
-    const resolvedEntry = cacheEntry || { listings: [], error: 'No INARA data available' }
-    if (resolvedEntry.error && resolvedEntry.listings.length === 0 && inaraStatus === 'ok') {
-      inaraStatus = 'partial'
-    }
-
-    let marketEntry = null
-    if (marketData && marketData.lookup) {
-      const bySymbol = commodity.symbol ? marketData.lookup[normalise(commodity.symbol)] : null
-      const byName = marketData.lookup[normalise(commodity.name)]
-      const candidate = bySymbol || byName
-      if (candidate && typeof candidate.sellPrice === 'number') {
-        marketEntry = {
-          sellPrice: candidate.sellPrice,
-          sellPriceText: `${Math.round(candidate.sellPrice).toLocaleString()} Cr`,
-          stationName: marketData.stationName || null,
-          systemName: marketData.systemName || null,
-          marketId: marketData.marketId || null,
-          timestamp: marketData.timestamp || null,
-          stock: candidate.stock,
-          demand: candidate.demand,
-          meanPrice: candidate.meanPrice,
-          buyPrice: candidate.buyPrice,
-          source: 'market'
+      let marketEntry = null
+      if (marketData && marketData.lookup) {
+        const bySymbol = commodity.symbol ? marketData.lookup[normalise(commodity.symbol)] : null
+        const byName = marketData.lookup[normalise(commodity.name)]
+        const candidate = bySymbol || byName
+        if (candidate && typeof candidate.sellPrice === 'number') {
+          marketEntry = {
+            sellPrice: candidate.sellPrice,
+            sellPriceText: `${Math.round(candidate.sellPrice).toLocaleString()} Cr`,
+            stationName: marketData.stationName || null,
+            systemName: marketData.systemName || null,
+            marketId: marketData.marketId || null,
+            timestamp: marketData.timestamp || null,
+            stock: candidate.stock,
+            demand: candidate.demand,
+            meanPrice: candidate.meanPrice,
+            buyPrice: candidate.buyPrice,
+            source: 'market'
+          }
         }
       }
-    }
 
-    const bestInaraListing = resolvedEntry.listings.find(entry => typeof entry.price === 'number') || null
+      const bestInaraListing = resolvedEntry.listings.find(entry => typeof entry.price === 'number') || null
 
-    let historyEntries = []
-    let historyBestEntry = null
-    if (localHistory && typeof localHistory.get === 'function') {
-      const historyKeys = []
-      const nameKey = normalise(commodity.name)
-      const symbolKey = normalise(commodity.symbol)
-      if (nameKey) historyKeys.push(nameKey)
-      if (symbolKey && symbolKey !== nameKey) historyKeys.push(symbolKey)
+      let historyEntries = []
+      let historyBestEntry = null
+      if (localHistory && typeof localHistory.get === 'function') {
+        const historyKeys = []
+        const nameKey = normalise(commodity.name)
+        const symbolKey = normalise(commodity.symbol)
+        if (nameKey) historyKeys.push(nameKey)
+        if (symbolKey && symbolKey !== nameKey) historyKeys.push(symbolKey)
 
-      for (const historyKey of historyKeys) {
-        const rawEntries = localHistory.get(historyKey)
-        if (Array.isArray(rawEntries) && rawEntries.length > 0) {
-          historyEntries = rawEntries
-          historyBestEntry = rawEntries.find(entry => typeof entry?.sellPrice === 'number') || null
-          break
+        for (const historyKey of historyKeys) {
+          const rawEntries = localHistory.get(historyKey)
+          if (Array.isArray(rawEntries) && rawEntries.length > 0) {
+            historyEntries = rawEntries
+            historyBestEntry = rawEntries.find(entry => typeof entry?.sellPrice === 'number') || null
+            break
+          }
         }
       }
-    }
 
-    results.push({
-      symbol: commodity.symbol,
-      name: commodity.name,
-      count: commodity.count,
-      market: marketEntry,
-      inara: bestInaraListing,
-      inaraListings: Array.isArray(resolvedEntry.listings) ? resolvedEntry.listings : [],
-      localHistory: {
-        best: historyBestEntry,
-        entries: historyEntries
-      },
-      errors: {
-        market: !marketEntry && marketStatus !== 'missing' ? 'Commodity not found in latest market data.' : null,
-        inara: resolvedEntry.error || null
+      results.push({
+        symbol: commodity.symbol,
+        name: commodity.name,
+        count: commodity.count,
+        market: marketEntry,
+        inara: bestInaraListing,
+        inaraListings: Array.isArray(resolvedEntry.listings) ? resolvedEntry.listings : [],
+        localHistory: {
+          best: historyBestEntry,
+          entries: historyEntries
+        },
+        errors: {
+          market: !marketEntry && marketStatus !== 'missing' ? 'Commodity not found in latest market data.' : null,
+          inara: resolvedEntry.error || null
+        }
+      })
+    })
+
+    appendLog(`RESULT status=${inaraStatus} commodities=${results.length}`)
+    sendJson(res, 200, {
+      results,
+      metadata: {
+        inaraStatus,
+        marketStatus,
+        historyStatus
       }
     })
-  })
-
-  appendLog(`RESULT status=${inaraStatus} commodities=${results.length}`)
-  sendJson(res, 200, {
-    results,
-    metadata: {
-      inaraStatus,
-      marketStatus,
-      historyStatus
-    }
-  })
+  } catch (err) {
+    logger.error('Commodity values handler error: %s', err?.message || err)
+    const statusCode = err.inaraStatus === 503 ? 503 : 500
+    const errorCode = statusCode === 503 ? 'INARA_UNAVAILABLE' : 'COMMODITY_VALUES_ERROR'
+    sendJson(res, statusCode, {
+      error: errorCode,
+      message: statusCode === 503
+        ? 'INARA is temporarily unavailable. Please try again shortly.'
+        : (err?.message || 'Failed to fetch commodity values')
+    })
+  }
 }
 
 module.exports = handler
-

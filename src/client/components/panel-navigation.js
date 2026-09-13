@@ -26,7 +26,7 @@ export default function PanelNavigation ({ items = [], search = () => {}, exit }
             <>
               <button
                 id='secondary-navigation__search-toggle'
-                data-secondary-navigation={i+1}
+                data-secondary-navigation={i + 1}
                 tabIndex='2'
                 disabled={search === false}
                 className={`button--icon ${searchInputVisible ? 'button--selected button--secondary' : ''}`}
@@ -70,9 +70,14 @@ export default function PanelNavigation ({ items = [], search = () => {}, exit }
 
           {!item.type &&
             <button
+              id={`secondary-nav-${(item.name || item.icon || `${i + 1}`).toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+              data-nav-name={item.name}
+              data-nav-id={(item.name || item.icon || `${i + 1}`).toLowerCase().replace(/[^a-z0-9]/g, '-')}
               tabIndex='2'
-              data-secondary-navigation={i+1}
+              data-secondary-navigation={i + 1}
               className={`button--icon ${item.active ? 'button--active' : ''}`}
+              title={item.name || `Panel ${i + 1}`}
+              aria-label={item.name || `Panel ${i + 1}`}
               onClick={
                 item.onClick
                   ? item.onClick

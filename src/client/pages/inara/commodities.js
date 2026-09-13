@@ -352,7 +352,7 @@ export default function InaraCommoditiesPage () {
 
     ;(async () => {
       try {
-        const response = await fetch('/api/inara-station-detail', {
+        const response = await fetchWithCache('/api/inara-station-detail', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ stations: stationsToFetch })
@@ -369,7 +369,7 @@ export default function InaraCommoditiesPage () {
           data.stations.forEach(detail => {
             if (detail.url) {
               newDetails.set(detail.url, detail)
-              
+
               // Also set with station-market URL variant for matching
               const marketUrl = detail.url.replace('/station/', '/station-market/')
               if (marketUrl !== detail.url) {
@@ -392,7 +392,7 @@ export default function InaraCommoditiesPage () {
   const enhancedStations = useMemo(() => {
     return optimalStations.map(station => {
       const detail = station.stationUrl ? stationDetails.get(station.stationUrl) : null
-      
+
       if (!detail) {
         // Fallback to current system data if no station detail available
         return {
@@ -652,7 +652,7 @@ export default function InaraCommoditiesPage () {
                         systemName={bestListing?.systemName}
                         quantity={commodity.quantity}
                         updatedAt={commodity.updatedAt}
-                        mode="inline"
+                        mode='inline'
                         isSelected={selectedCommodity?.key === commodity.key}
                         onClick={() => handleCommodityClick(commodity)}
                       />
@@ -741,7 +741,7 @@ export default function InaraCommoditiesPage () {
                               government={station.government}
                               powerplay={station.powerplay}
                               isCurrentLocation={isCurrentLocation}
-                              fillSpace={true}
+                              fillSpace
                               onClick={() => handleStationClick(station)}
                             />
                           </div>

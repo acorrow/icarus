@@ -1,9 +1,9 @@
 /**
  * YouTube Music Desktop App (YTMD) Companion Server API Proxy
- * 
+ *
  * Proxies requests from ICARUS Terminal client to the local YTMD companion server.
  * Handles authentication (code/token exchange), state queries, and playback commands.
- * 
+ *
  * YTMD Companion Server runs on 127.0.0.1:9863 by default.
  * Docs: https://github.com/ytmdesktop/ytmdesktop/wiki
  */
@@ -22,9 +22,10 @@ const APP_ID = 'icarus-terminal'
 const APP_NAME = 'ICARUS Terminal'
 const APP_VERSION = '1.0.0'
 
-// Persistent token storage
+// Persistent storage
 const CONFIG_DIR = path.join(os.homedir(), 'AppData', 'Local', 'ICARUS Terminal')
 const TOKEN_FILE = path.join(CONFIG_DIR, 'ytmd-token.json')
+const PLAYLIST_SETTINGS_FILE = path.join(CONFIG_DIR, 'ytmd-playlist-settings.json')
 
 function loadToken () {
   try {
@@ -58,6 +59,34 @@ function clearToken () {
     }
   } catch (err) {
     logger.error('[YTMD] Failed to clear token:', err.message)
+  }
+}
+
+/**
+ * Playlist settings persistence
+ * Stores which playlists are assigned to Normal and Combat scenarios
+ */
+function loadPlaylistSettings () {
+  try {
+    if (fs.existsSync(PLAYLIST_SETTINGS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(PLAYLIST_SETTINGS_FILE, 'utf8'))
+      return data || {}
+    }
+  } catch (err) {
+    logger.error('[YTMD] Failed to load playlist settings:', err.message)
+  }
+  return {}
+}
+
+function savePlaylistSettings (settings) {
+  try {
+    if (!fs.existsSync(CONFIG_DIR)) {
+      fs.mkdirSync(CONFIG_DIR, { recursive: true })
+    }
+    fs.writeFileSync(PLAYLIST_SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf8')
+    logger.info('[YTMD] Playlist settings saved')
+  } catch (err) {
+    logger.error('[YTMD] Failed to save playlist settings:', err.message)
   }
 }
 
@@ -144,6 +173,11 @@ module.exports = function handler (req, res) {
       return handleCommand(req, res)
     case 'playlists':
       return handlePlaylists(req, res)
+    case 'play-playlist':
+      return handlePlayPlaylist(req, res)
+    case 'playlist-settings':
+      if (req.method === 'GET') return handleGetPlaylistSettings(req, res)
+      return handleSavePlaylistSettings(req, res)
     default:
       res.statusCode = 404
       res.setHeader('Content-Type', 'application/json')
@@ -382,7 +416,70 @@ async function handlePlaylists (req, res) {
   }
 }
 
+/**
+ * POST /api/ytmd/play-playlist - Play a specific playlist by ID
+ * Body: { playlistId: string }
+ *
+ * Uses the YTMD navigateTo command to open the playlist URL,
+ * which starts playback of that playlist in YouTube Music.
+ */
+async function handlePlayPlaylist (req, res) {
+  const token = loadToken()
+  if (!token) {
+    res.statusCode = 401
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Not authenticated with YTMD' }))
+    return
+  }
+
+  const { playlistId } = req.body || {}
+  if (!playlistId) {
+    res.statusCode = 400
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Missing playlistId parameter' }))
+    return
+  }
+
+  try {
+    // YTMD's changeVideo command can navigate to a playlist URL
+    const playlistUrl = `https://music.youtube.com/playlist?list=${playlistId}`
+    const body = { command: 'changeVideo', data: playlistUrl }
+    const result = await ytmdRequest('POST', '/api/v1/command', body, token)
+    res.statusCode = result.status === 204 ? 200 : result.status
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ success: result.status === 204, status: result.status }))
+  } catch (err) {
+    res.statusCode = 503
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'YTMD not reachable', message: err.message }))
+  }
+}
+
+/**
+ * GET /api/ytmd/playlist-settings - Load playlist scenario assignments
+ */
+function handleGetPlaylistSettings (req, res) {
+  const settings = loadPlaylistSettings()
+  res.statusCode = 200
+  res.setHeader('Content-Type', 'application/json')
+  res.end(JSON.stringify(settings))
+}
+
+/**
+ * POST /api/ytmd/playlist-settings - Save playlist scenario assignments
+ * Body: { normal: { id, title }, combat: { id, title } }
+ */
+function handleSavePlaylistSettings (req, res) {
+  const { normal, combat } = req.body || {}
+  const settings = { normal: normal || null, combat: combat || null }
+  savePlaylistSettings(settings)
+  res.statusCode = 200
+  res.setHeader('Content-Type', 'application/json')
+  res.end(JSON.stringify({ success: true, settings }))
+}
+
 // Export token accessor for WebSocket real-time bridge
 module.exports.loadToken = loadToken
+module.exports.loadPlaylistSettings = loadPlaylistSettings
 module.exports.YTMD_HOST = YTMD_HOST
 module.exports.YTMD_PORT = YTMD_PORT

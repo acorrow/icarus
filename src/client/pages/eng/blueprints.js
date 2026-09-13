@@ -22,7 +22,7 @@ export default function EngineeringMaterialsPage () {
   const [selectedBlueprint, setSelectedBlueprint] = useState()
 
   useEffect(animateTableEffect)
-  
+
   useEffect(async () => {
     if (!connected || !router.isReady) return
 

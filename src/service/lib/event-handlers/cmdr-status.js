@@ -144,8 +144,8 @@ class CmdrStatus {
         //
         // This logic is "best effort" and I would not be surprised if there
         // are edge cases to the logic.
-        if ((dockedEvent && dockedEvent.StationName && dockedEvent?.StarSystem === currentSystem?.name)
-           || locationEvent?.StarSystem === currentSystem?.name) {
+        if ((dockedEvent && dockedEvent.StationName && dockedEvent?.StarSystem === currentSystem?.name) ||
+           locationEvent?.StarSystem === currentSystem?.name) {
           if (dockedEvent?.StationType === 'FleetCarrier') {
             location.push(`Carrier ${dockedEvent.StationName}`)
           } else {
@@ -184,7 +184,7 @@ class CmdrStatus {
       // FIXME: This is technically incorrect and it should use whatever is the
       //  most recent event
       if (!dockedEvent && embarkEvent?.StationName) {
-        location.push(embarkEvent.StationName) 
+        location.push(embarkEvent.StationName)
       } else if (!embarkEvent && dockedEvent?.StationName) {
         if (dockedEvent?.StationType === 'FleetCarrier') {
           location.push(`Carrier ${dockedEvent.StationName}`)
@@ -270,7 +270,7 @@ class CmdrStatus {
     }
 
     // Because of how we grab the location, sometimes we can end up with a
-    // location that is a symbol- e.g. if disembarking to a planet on a mission 
+    // location that is a symbol- e.g. if disembarking to a planet on a mission
     // it could be a description of the mission target area like this:
     // "$POIScenario_Watson_Damaged_Sidewinder_01_Salvage_Easy; $USS_ThreatLevel:#threatLevel=1;"
     //

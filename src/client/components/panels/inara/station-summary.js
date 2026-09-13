@@ -114,43 +114,53 @@ export default function StationSummary ({
         <div className={styles.stationName}>
           <CopyOnClick copyMessageKey='station'>{normalizedName}</CopyOnClick>
         </div>
-        {normalizedSystem ? (
-          <div className={styles.stationSystem}>
-            <CopyOnClick copyMessageKey='system'>{normalizedSystem}</CopyOnClick>
-          </div>
-        ) : null}
-        {hasMetaRow ? (
-          <div className={styles.stationMetaRow}>
-            {normalizedType ? <div className={styles.stationMeta}>{normalizedType}</div> : null}
-            {normalizedMeta.map((entry, index) => (
-              <div key={`station-meta-${index}`} className={styles.stationMeta}>{entry}</div>
-            ))}
-            {isSelected && selectionLabel ? (
-              <span className={styles.stationSelectionTag}>{selectionLabel}</span>
-            ) : null}
-          </div>
-        ) : null}
-        {hasDemand ? (
-          <div className={styles.stationDemand}>
-            {demand || (demandLabel ? <span>{sanitizeInaraText(demandLabel)}</span> : null)}
-          </div>
-        ) : null}
-        {hasMetrics ? (
-          <div className={styles.stationMetrics}>
-            {metrics.map((metric, index) => {
-              if (!metric || (!metric.label && !metric.value)) return null
-              const label = sanitizeInaraText(metric.label)
-              const value = sanitizeInaraText(metric.value)
-              if (!label && !value) return null
-              return (
-                <div key={`station-metric-${index}`} className={styles.stationMetric}>
-                  {label ? <span className={styles.stationMetricLabel}>{label}</span> : null}
-                  {value ? <span>{value}</span> : null}
-                </div>
-              )
-            })}
-          </div>
-        ) : null}
+        {normalizedSystem
+          ? (
+            <div className={styles.stationSystem}>
+              <CopyOnClick copyMessageKey='system'>{normalizedSystem}</CopyOnClick>
+            </div>
+            )
+          : null}
+        {hasMetaRow
+          ? (
+            <div className={styles.stationMetaRow}>
+              {normalizedType ? <div className={styles.stationMeta}>{normalizedType}</div> : null}
+              {normalizedMeta.map((entry, index) => (
+                <div key={`station-meta-${index}`} className={styles.stationMeta}>{entry}</div>
+              ))}
+              {isSelected && selectionLabel
+                ? (
+                  <span className={styles.stationSelectionTag}>{selectionLabel}</span>
+                  )
+                : null}
+            </div>
+            )
+          : null}
+        {hasDemand
+          ? (
+            <div className={styles.stationDemand}>
+              {demand || (demandLabel ? <span>{sanitizeInaraText(demandLabel)}</span> : null)}
+            </div>
+            )
+          : null}
+        {hasMetrics
+          ? (
+            <div className={styles.stationMetrics}>
+              {metrics.map((metric, index) => {
+                if (!metric || (!metric.label && !metric.value)) return null
+                const label = sanitizeInaraText(metric.label)
+                const value = sanitizeInaraText(metric.value)
+                if (!label && !value) return null
+                return (
+                  <div key={`station-metric-${index}`} className={styles.stationMetric}>
+                    {label ? <span className={styles.stationMetricLabel}>{label}</span> : null}
+                    {value ? <span>{value}</span> : null}
+                  </div>
+                )
+              })}
+            </div>
+            )
+          : null}
         {children}
       </div>
     </div>

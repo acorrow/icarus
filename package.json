@@ -25,6 +25,8 @@
     "logs:http": "powershell -ExecutionPolicy Bypass -File ./scripts/view-http-logs.ps1",
     "test:scrapers": "node test/scraper-tests.js mock",
     "test:scrapers:real": "node test/scraper-tests.js real",
+    "scraper:health": "node scripts/scraper-health.js",
+    "test:views": "node scripts/test-views.js",
     "mock:extract": "powershell -ExecutionPolicy Bypass -File ./scripts/extract-mock-events.ps1",
     "lint": "npm run lint:go && npm run lint:javascript",
     "lint:go": "go fmt src/app/main.go",
@@ -67,6 +69,8 @@
   "dependencies": {
     "async-retry": "^1.3.3",
     "axios": "^0.24.0",
+    "butterchurn": "^2.6.7",
+    "butterchurn-presets": "^2.4.7",
     "cheerio": "^0.22.0",
     "connect": "^3.7.0",
     "dotenv": "^10.0.0",

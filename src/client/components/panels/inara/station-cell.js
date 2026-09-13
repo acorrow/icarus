@@ -34,11 +34,13 @@ function StationLeg ({ label, leg }) {
         </span>
       </div>
       <div className={styles.stationMetaRow}>
-        {system ? (
-          <span className={styles.stationSystem}>
-            <CopyOnClick copyMessageKey='system'>{system}</CopyOnClick>
-          </span>
-        ) : null}
+        {system
+          ? (
+            <span className={styles.stationSystem}>
+              <CopyOnClick copyMessageKey='system'>{system}</CopyOnClick>
+            </span>
+            )
+          : null}
         {type ? <span className={styles.stationType}>{type}</span> : null}
         {distance ? <span className={styles.stationDistance}>{distance}</span> : null}
         {status
@@ -100,12 +102,12 @@ export default function StationCell ({
   }
   const metaEntries = Array.isArray(meta)
     ? meta
-      .map((entry, index) => {
-        const content = normalizeText(entry)
-        if (!content) return null
-        return { key: `meta-${index}`, content: <span className={styles.stationMetaEntry}>{content}</span> }
-      })
-      .filter(Boolean)
+        .map((entry, index) => {
+          const content = normalizeText(entry)
+          if (!content) return null
+          return { key: `meta-${index}`, content: <span className={styles.stationMetaEntry}>{content}</span> }
+        })
+        .filter(Boolean)
     : []
   if (metaEntries.length > 0) {
     rows.push({

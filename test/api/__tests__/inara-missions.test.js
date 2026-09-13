@@ -1,28 +1,24 @@
 const { createMockReq, createMockRes, createFetchResponse } = require('../helpers')
 
 const handlerPath = '../../../src/service/lib/api/inara-missions.js'
-const tokenCurrencyPath = '../../../src/service/lib/api/token-currency.js'
 
 describe('inara-missions API handler', () => {
   beforeEach(() => {
     jest.resetModules()
   })
 
-  async function loadModule() {
+  async function loadModule () {
     jest.doMock('axios', () => jest.fn())
-
-    const tokenCurrency = require(tokenCurrencyPath)
-    tokenCurrency.spendTokensForInaraExchange = jest.fn().mockResolvedValue()
 
     const handlerModule = require(handlerPath)
     const handler = handlerModule.default || handlerModule
     const fetchMock = require('axios')
 
-    return { handler, fetchMock, spendTokensMock: tokenCurrency.spendTokensForInaraExchange }
+    return { handler, fetchMock }
   }
 
-  it('records token spend metadata when missions are fetched successfully', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+  it('returns missions when missions are fetched successfully', async () => {
+    const { handler, fetchMock } = await loadModule()
 
     const html = `
       <table class="tablesortercollapsed">
@@ -49,21 +45,11 @@ describe('inara-missions API handler', () => {
 
     expect(res.statusCode).toBe(200)
     expect(res.body?.missions).toBeDefined()
-    expect(spendTokensMock).toHaveBeenCalledTimes(1)
-
-    const call = spendTokensMock.mock.calls[0][0]
-    expect(call.endpoint).toContain('nearest-misc')
-    expect(call.metadata).toMatchObject({
-      method: 'GET',
-      reason: 'inara-request',
-      status: 200,
-      system: 'Sol',
-      error: undefined
-    })
+    expect(Array.isArray(res.body.missions)).toBe(true)
   })
 
-  it('records token spend metadata when the mission fetch fails', async () => {
-    const { handler, fetchMock, spendTokensMock } = await loadModule()
+  it('returns 503 when INARA is unavailable', async () => {
+    const { handler, fetchMock } = await loadModule()
 
     fetchMock.mockResolvedValue(createFetchResponse({ status: 503, ok: false, body: 'error' }))
 
@@ -75,16 +61,7 @@ describe('inara-missions API handler', () => {
 
     await handler(req, res)
 
-    expect(res.statusCode).toBe(500)
-    expect(spendTokensMock).toHaveBeenCalledTimes(1)
-
-    const call = spendTokensMock.mock.calls[0][0]
-    expect(call.metadata).toMatchObject({
-      method: 'GET',
-      reason: 'inara-request-error',
-      status: 503,
-      system: 'Lave',
-      error: 'INARA request failed with status 503'
-    })
+    expect(res.statusCode).toBe(503)
+    expect(res.body?.error).toBe('INARA_UNAVAILABLE')
   })
 })

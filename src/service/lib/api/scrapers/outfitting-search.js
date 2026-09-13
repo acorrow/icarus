@@ -20,7 +20,7 @@ const {
  * @param {string} text - Text containing distance (e.g., "1,234 Ls")
  * @returns {number|null} Distance in light seconds
  */
-function parseDistanceLs(text) {
+function parseDistanceLs (text) {
   if (!text) return null
   const match = String(text).match(/([\d,]+)\s*Ls/i)
   if (!match) return null
@@ -32,7 +32,7 @@ function parseDistanceLs(text) {
  * @param {string} text - Text containing distance (e.g., "12.34 Ly")
  * @returns {number|null} Distance in light years
  */
-function parseDistanceLy(text) {
+function parseDistanceLy (text) {
   if (!text) return null
   const match = String(text).match(/([\d,.]+)\s*Ly/i)
   if (!match) return null
@@ -44,7 +44,7 @@ function parseDistanceLy(text) {
  * @param {string} stationType - Station type text
  * @returns {string} "Small", "Medium", "Large", or "Unknown"
  */
-function parseLandingPadSize(stationType) {
+function parseLandingPadSize (stationType) {
   if (!stationType) return 'Unknown'
   const typeStr = String(stationType).toLowerCase()
 
@@ -73,7 +73,7 @@ function parseLandingPadSize(stationType) {
  * @param {Object} options - Parse options
  * @returns {Object} Parsed outfitting data
  */
-function parseOutfittingSearchResults(html, options = {}) {
+function parseOutfittingSearchResults (html, options = {}) {
   const $ = cheerioLoad(html)
   const results = []
 
@@ -206,7 +206,7 @@ function parseOutfittingSearchResults(html, options = {}) {
  * @param {Object} data - Parsed data to validate
  * @returns {boolean} True if valid
  */
-function validate(data) {
+function validate (data) {
   if (!data || typeof data !== 'object') return false
   if (!Array.isArray(data.results)) return false
   if (typeof data.success !== 'boolean') return false
@@ -228,11 +228,14 @@ function validate(data) {
 const outfittingSearchScraper = {
   name: 'outfitting-search',
   description: 'Scrapes outfitting availability from INARA nearest-outfitting search',
+  selectors: {
+    table: 'table tr'
+  },
+  expectedMinCount: 1,
   parse: parseOutfittingSearchResults,
   validate,
   mockFiles: [
-    'outfitting-search-fighter-hangar.html',
-    'outfitting-search-fuel-scoop.html'
+    'outfitting-search-fighter-hangar.html'
   ],
 
   // Export individual parsing functions for unit testing

@@ -47,7 +47,7 @@ class NavRoute {
             ...systemMap
           }
         }
-        
+
         // In mock data mode, create minimal system entry if not in cache
         if (!global.CACHE.SYSTEMS[system.StarSystem.toLowerCase()] && process.env.FORCE_MOCK_DATA === 'true') {
           global.CACHE.SYSTEMS[system.StarSystem.toLowerCase()] = {
@@ -57,11 +57,11 @@ class NavRoute {
             bodies: []
           }
         }
-        
+
         const cacheResponse = global.CACHE.SYSTEMS[system.StarSystem.toLowerCase()]
-        
+
         // FIXME Refactor this if how objects orbiting a null point changes
-        // Currently there is always at least one "star" for a system, an 
+        // Currently there is always at least one "star" for a system, an
         // object that is a placeholder for bodies not orbiting a star
         // (this is useful as as a placeholder for edge cases, such as if there
         // is data for a body but not for a star in ESDM, more likely with older

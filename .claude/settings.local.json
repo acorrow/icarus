@@ -46,7 +46,9 @@
       "Bash(\"e:\\icarus\\build\\bin\\ICARUS Service.exe\" --help)",
       "Bash(npm run build:*)",
       "Bash(\"e:\\icarus\\build\\bin\\ICARUS Service.exe\" --version)",
-      "Bash(1)"
+      "Bash(1)",
+      "mcp__playwright__browser_close",
+      "Bash(code:*)"
     ],
     "deny": [],
     "ask": []

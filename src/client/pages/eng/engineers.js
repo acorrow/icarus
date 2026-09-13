@@ -18,7 +18,7 @@ export default function EngineeringEngineersPage () {
   const [engineers, setEngineers] = useState()
 
   useEffect(animateTableEffect)
-  
+
   useEffect(async () => {
     if (!connected || !router.isReady) return
 

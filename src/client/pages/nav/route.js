@@ -18,7 +18,7 @@ export default function NavListPage () {
   const currentSystemRef = useRef(null)
 
   useEffect(animateTableEffect)
-  
+
   // Scroll to current route once, on view load
   useEffect(() => {
     if (!scrolled && currentSystemRef?.current) {
@@ -171,10 +171,10 @@ export default function NavListPage () {
                                   <span className='text-muted'>
                                     {route.starClass.match(/^[DNH]/)
                                       ? route.starClass.match(/^D/)
-                                        ? 'White Dwarf'
-                                        : route.starClass.match(/^N/)
-                                          ? 'Neutron Star'
-                                          : 'Black Hole'
+                                          ? 'White Dwarf'
+                                          : route.starClass.match(/^N/)
+                                            ? 'Neutron Star'
+                                            : 'Black Hole'
                                       : `${route.starClass} Class`}
                                     {route.starClass.match(/^[OBAFGKM]/) ? <><br />Main Sequence</> : ''}
                                   </span>
@@ -207,28 +207,27 @@ export default function NavListPage () {
               </table>
             </div>
           </>}
-          <div className='text-primary text-uppercase text-center' style={{height: '2F.75rem', fontSize: '1.5rem', position: 'fixed', bottom: '.8rem', left: '5rem', right: '1rem', marginBottom: '.5rem' }}>
-            <hr className='small' style={{ marginTop: 0, marginBottom: '1rem' }} />
-            {navRoute?.route?.length > 0 && navRoute?.jumpsToDestination > 0 &&
-              <>
-                {navRoute.inSystemOnRoute && <>
-                  {navRoute.jumpsToDestination === 1 ? `${navRoute.jumpsToDestination} jump` : `${navRoute.jumpsToDestination} jumps`}
-                  <span className='text-muted'> / </span>
-                </>}
-                {navRoute.destination.distance.toLocaleString(undefined, { maximumFractionDigits: 2 })} Ly
-                {' '}<span className='text-muted hidden-small'>to destination</span>
+        <div className='text-primary text-uppercase text-center' style={{ height: '2F.75rem', fontSize: '1.5rem', position: 'fixed', bottom: '.8rem', left: '5rem', right: '1rem', marginBottom: '.5rem' }}>
+          <hr className='small' style={{ marginTop: 0, marginBottom: '1rem' }} />
+          {navRoute?.route?.length > 0 && navRoute?.jumpsToDestination > 0 &&
+            <>
+              {navRoute.inSystemOnRoute && <>
+                {navRoute.jumpsToDestination === 1 ? `${navRoute.jumpsToDestination} jump` : `${navRoute.jumpsToDestination} jumps`}
+                <span className='text-muted'> / </span>
               </>}
-            {navRoute?.route?.length > 0 && navRoute?.jumpsToDestination === 0 &&
-              <>Arrived at destination</>}
+              {navRoute.destination.distance.toLocaleString(undefined, { maximumFractionDigits: 2 })} Ly
+              {' '}<span className='text-muted hidden-small'>to destination</span>
+            </>}
+          {navRoute?.route?.length > 0 && navRoute?.jumpsToDestination === 0 &&
+            <>Arrived at destination</>}
         </div>
         {navRoute?.route?.length === 0 &&
-          <div className='text-center-both' style={{zIndex: '30', pointerEvents: 'none' }}>
+          <div className='text-center-both' style={{ zIndex: '30', pointerEvents: 'none' }}>
             <h2 className='text-primary'>
               NO ROUTE SET<br />
               <span className='text-muted' style={{ fontSize: '1.5rem' }}>Use galaxy map to plot route</span>
             </h2>
-          </div>
-        }
+          </div>}
       </Panel>
     </Layout>
   )

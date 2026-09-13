@@ -123,6 +123,11 @@ function InaraWorkspaceNavItems (activePanel) {
       icon: 'planet-ringed',
       url: '/inara/mining-locations'
     },
+    {
+      name: 'Engineering',
+      icon: 'engineering',
+      url: '/inara/engineering'
+    }
   ]
 
   navigationItems.forEach(item => {
@@ -182,18 +187,22 @@ function SettingsNavItems (activePanel, exposeFeatureFlags = false) {
       icon: 'sound'
     },
     {
+      name: 'Keybindings',
+      icon: 'cogs'
+    },
+    {
       name: 'YouTube Music',
       icon: 'signal'
     }
   ]
-  
+
   if (exposeFeatureFlags) {
     navigationItems.push({
       name: 'Feature Flags',
       icon: 'settings'
     })
   }
-  
+
   navigationItems.forEach(item => {
     if (item.name.toLowerCase() === activePanel.toLowerCase()) item.active = true
   })

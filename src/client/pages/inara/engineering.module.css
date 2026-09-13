@@ -1,0 +1,326 @@
+/* ─── Engineering Page ─── */
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.25);
+  font-family: 'Jura', sans-serif;
+  font-weight: bold;
+}
+
+/* ─── Info Card ─── */
+
+.infoCard {
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.35);
+  background: var(--color-background-panel-translucent);
+  border-radius: 2px;
+}
+
+.infoRow {
+  display: flex;
+  gap: 1rem;
+  padding: 0.35rem 0;
+}
+
+.infoLabel {
+  min-width: 120px;
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'Jura', sans-serif;
+  font-weight: bold;
+}
+
+.infoValue {
+  color: var(--color-info);
+  font-size: 1rem;
+  font-family: 'Jura', sans-serif;
+  text-shadow: var(--text-shadow);
+}
+
+/* ─── Engineer Detail ─── */
+
+.engineerDetail {
+  /* no extra styles needed */
+}
+
+/* ─── Grade Stars ─── */
+
+.gradeStars {
+  display: inline-flex;
+  gap: 0.1rem;
+}
+
+.gradeStar {
+  color: var(--color-info);
+  font-size: 0.85rem;
+}
+
+/* ─── Blueprint Detail ─── */
+
+.blueprintDetail {
+  /* container */
+}
+
+.variantBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.variantButton {
+  padding: 0.4rem 0.85rem;
+  background: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.08);
+  border: 1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.25);
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.variantButton:hover {
+  background: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.15);
+  border-color: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.5);
+}
+
+.variantActive {
+  background: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.2);
+  border-color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ─── Grade Block ─── */
+
+.gradeBlock {
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.12);
+}
+
+.gradeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  background: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.06);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.gradeHeader:hover {
+  background: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.12);
+}
+
+.gradeTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.gradeToggle {
+  color: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.5);
+  font-size: 0.75rem;
+}
+
+.gradeContent {
+  padding: 0.75rem 1rem 1rem;
+}
+
+/* ─── Section Labels ─── */
+
+.sectionLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.5);
+  margin: 0.75rem 0 0.4rem;
+  padding: 0;
+}
+
+/* ─── Modifiers ─── */
+
+.modifierGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.modifier {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modifierPositive {
+  border-color: rgba(77, 255, 201, 0.25);
+  background: rgba(77, 255, 201, 0.05);
+}
+
+.modifierNegative {
+  border-color: rgba(252, 72, 72, 0.25);
+  background: rgba(252, 72, 72, 0.05);
+}
+
+.modifierName {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modifierValue {
+  font-weight: 600;
+}
+
+.modifierPositive .modifierValue {
+  color: var(--color-success);
+}
+
+.modifierNegative .modifierValue {
+  color: var(--color-danger);
+}
+
+/* ─── Materials ─── */
+
+.materialSection {
+  margin-top: 0.5rem;
+}
+
+.materialQty {
+  color: var(--color-info);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ─── Engineer Tags ─── */
+
+.engineerSection {
+  margin-top: 0.5rem;
+}
+
+.engineerTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.engineerTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  background: rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.08);
+  border: 1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.2);
+  color: var(--color-primary);
+  font-size: 0.8rem;
+}
+
+/* ─── Experimental Effects ─── */
+
+.expEffect {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.1);
+}
+
+.expEffectName {
+  color: var(--color-primary);
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.expEffectContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.expMaterials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.materialPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  background: rgba(var(--color-secondary-r), var(--color-secondary-g), var(--color-secondary-b), 0.08);
+  border: 1px solid rgba(var(--color-secondary-r), var(--color-secondary-g), var(--color-secondary-b), 0.2);
+  color: var(--color-info);
+  font-size: 0.8rem;
+  transition: background 0.15s;
+}
+
+.materialPill:hover {
+  background: rgba(var(--color-secondary-r), var(--color-secondary-g), var(--color-secondary-b), 0.15);
+}
+
+/* ─── Component Detail ─── */
+
+.componentDetail {
+  /* container */
+}
+
+.componentDesc {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 0.75rem;
+  max-width: 600px;
+}
+
+.componentMeta {
+  /* wrapper for info rows */
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 799px) {
+  .variantBar {
+    gap: 0.35rem;
+  }
+
+  .variantButton {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  .modifierGrid {
+    flex-direction: column;
+  }
+
+  .modifier {
+    justify-content: space-between;
+  }
+
+  .breadcrumbs {
+    font-size: 0.85rem;
+  }
+
+  .infoLabel {
+    min-width: 90px;
+  }
+}
+
+@media (max-width: 599px) {
+  .gradeHeader {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .gradeContent {
+    padding: 0.5rem 0.75rem;
+  }
+}

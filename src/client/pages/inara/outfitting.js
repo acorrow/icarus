@@ -6,6 +6,7 @@ import { useSocket, sendEvent } from 'lib/socket'
 import { InaraWorkspaceNavItems } from 'lib/navigation-items'
 import { StationCard } from 'components/cards'
 import { getDistanceSeverityColor, getStationDistanceSeverityColor } from 'lib/distance-colors'
+import { fetchWithCache } from 'lib/inara-request-cache'
 import { OUTFITTING_CATEGORIES } from '../../../shared/outfitting-categories'
 
 export default function InaraOutfittingPage () {
@@ -110,7 +111,7 @@ export default function InaraOutfittingPage () {
     setResults([])
 
     try {
-      const response = await fetch('/api/inara-outfitting-search', {
+      const response = await fetchWithCache('/api/inara-outfitting-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -173,10 +174,13 @@ export default function InaraOutfittingPage () {
   }
 
   // Determine current view level
-  const currentLevel = selectedVariant ? 'results' :
-                       selectedGroup ? 'variants' :
-                       selectedSubcategory ? 'groups' :
-                       'categories'
+  const currentLevel = selectedVariant
+    ? 'results'
+    : selectedGroup
+      ? 'variants'
+      : selectedSubcategory
+        ? 'groups'
+        : 'categories'
 
   return (
     <Layout connected={connected} active={active} ready={ready} loader={status === 'loading'}>
@@ -306,12 +310,34 @@ export default function InaraOutfittingPage () {
               const totalItems = Object.values(categoryItems).reduce((sum, items) => sum + (items?.length || 0), 0)
 
               return (
-                <div key={categoryKey} style={{ marginTop: '1rem' }}>
-                  <div className='section-heading' style={{ cursor: 'pointer' }} onClick={() => toggleCategory(categoryKey)}>
-                    <h4 className='section-heading__text'>
-                      {category.label} ({totalItems} groups)
-                      <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>{isExpanded ? '▼' : '▶'}</span>
+                <div
+                  key={categoryKey}
+                  style={{
+                    marginTop: '0.75rem',
+                    marginBottom: '0.75rem',
+                    background: 'var(--color-background-panel-translucent)',
+                    border: '1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.3)',
+                    borderRadius: '2px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: '0.6rem 1rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: isExpanded ? 'rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.15)' : 'transparent',
+                      borderBottom: isExpanded ? '1px solid var(--color-primary)' : 'none',
+                      transition: 'background 0.2s ease'
+                    }}
+                    onClick={() => toggleCategory(categoryKey)}
+                  >
+                    <h4 className='text-primary' style={{ margin: 0, fontSize: '1.25rem' }}>
+                      {category.label} <span className='text-muted' style={{ fontSize: '1rem', fontWeight: 'normal' }}>({totalItems} groups)</span>
                     </h4>
+                    <span className='text-primary' style={{ fontSize: '1.1rem' }}>{isExpanded ? '▼' : '▶'}</span>
                   </div>
 
                   {isExpanded && Object.entries(category.subcategories).map(([subcategoryKey, subcategory]) => {
@@ -321,7 +347,7 @@ export default function InaraOutfittingPage () {
                     const totalVariants = groups.reduce((sum, g) => sum + g.variants.length, 0)
 
                     return (
-                      <div key={subcategoryKey} style={{ marginTop: '0.5rem' }}>
+                      <div key={subcategoryKey} style={{ padding: '0.25rem 0.5rem' }}>
                         <table className='table--interactive table--animated'>
                           <tbody>
                             <tr
@@ -329,7 +355,7 @@ export default function InaraOutfittingPage () {
                               className='table__row--highlight-primary-hover'
                               onClick={() => handleCategoryClick(categoryKey, subcategoryKey)}
                             >
-                              <td className='text-center text-info' style={{ width: '1rem' }}>
+                              <td className='text-center text-info' style={{ width: '1.5rem' }}>
                                 <i
                                   className={`icon icarus-terminal-${categoryKey === 'ships' ? 'ship' : 'wrench'}`}
                                   style={{ position: 'relative', top: '.15rem' }}
@@ -342,7 +368,7 @@ export default function InaraOutfittingPage () {
                               <td className='text-right hidden-medium'>
                                 <h4 className='text-muted'>{groups.length} groups · {totalVariants} variants</h4>
                               </td>
-                              <td className='text-center' style={{ width: '1rem' }}>
+                              <td className='text-center' style={{ width: '1.5rem' }}>
                                 <i className='icon icarus-terminal-chevron-right' style={{ fontSize: '1rem' }} />
                               </td>
                             </tr>

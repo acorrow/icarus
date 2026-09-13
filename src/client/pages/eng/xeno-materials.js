@@ -11,7 +11,7 @@ export default function EngineeringMaterialsPage () {
   const [materials, setMaterials] = useState()
 
   useEffect(animateTableEffect)
-  
+
   useEffect(async () => {
     if (!connected) return
     setMaterials(await sendEvent('getMaterials'))

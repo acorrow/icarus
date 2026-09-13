@@ -146,11 +146,6 @@ ICARUS Terminal is a sophisticated three-tier **local desktop application** (Go 
   - Fixed: Max retry limit (10 attempts)
   - File: `src/client/lib/socket.js:148,165-181`
 
-- **Token ledger sync failures invisible**
-  - Users see "Syncing..." indefinitely on error
-  - No error message or retry button
-  - File: `src/service/lib/token-ledger.js`
-  - **Impact:** Feature appears broken with no way to fix it
 
 **Action Items:**
 - [ ] Surface all critical errors to UI with user-friendly messages
@@ -1350,12 +1345,6 @@ test/api/__tests__/
 └── inara-websearch.test.js
 ```
 
-**Service Tests (3 files):**
-```
-src/service/lib/__tests__/
-├── event-handlers.test.js
-├── event-handlers.inara.test.js
-└── token-ledger.test.js
 ```
 
 **Client Tests (1 file):**

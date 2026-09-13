@@ -91,16 +91,11 @@
 }
 
 .ship-panel__status {
-  position: absolute;
-  /* To avoid clipping text-shadow to left of title text */
-  top: 0;
-  bottom: 0;
-  height: auto;
+  position: relative;
+  width: 100%;
+  min-height: 100%;
   padding-right: .5rem;
-  right: 0;
-  left: 4.5rem;
 }
-
 
 .ship-panel__status:before {
   content: " ";
@@ -112,20 +107,15 @@
   right: 0;
   z-index: -1;
   opacity: .02;
-  content: ' ';
   background-size: 5rem 5rem;
   background-image: url(/images/grid.svg);
 }
 
 .ship-panel__modules {
-  position: absolute;
-  /* To avoid clipping text-shadow to left of title text */
-  top: 0;
-  bottom: 0;
-  height: auto;
+  position: relative;
+  width: 100%;
+  min-height: 100%;
   padding-right: .5rem;
-  right: 0;
-  left: 4.5rem;
 }
 
 .ship-panel__modules--module-inspector {

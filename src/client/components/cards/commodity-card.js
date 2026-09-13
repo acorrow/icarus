@@ -1,3 +1,4 @@
+import React, { memo } from 'react'
 import PropTypes from 'prop-types'
 import Icons from 'lib/icons'
 import { getCommodityIconConfig } from 'lib/commodity-icons'
@@ -65,7 +66,7 @@ CommodityIcon.propTypes = {
  * @param {string} props.className - Additional CSS class
  * @param {function} props.onClick - Click handler
  */
-export default function CommodityCard ({
+function CommodityCard ({
   commodityName,
   commoditySymbol,
   category,
@@ -102,7 +103,7 @@ export default function CommodityCard ({
     const diffPercent = ((diff / galacticAverage) * 100).toFixed(1)
     const diffSign = diff > 0 ? '+' : ''
     metaText = `${diffSign}${diffPercent}% avg`
-    
+
     // Color based on price vs average (green = above average = good for selling)
     if (diff > galacticAverage * 0.15) {
       priceColor = 'var(--color-success)'
@@ -306,3 +307,5 @@ CommodityCard.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func
 }
+
+export default memo(CommodityCard)

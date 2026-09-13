@@ -2,6 +2,7 @@ import { useState, useEffect, Fragment } from 'react'
 import { sendEvent, eventListener } from 'lib/socket'
 import { SettingsNavItems } from 'lib/navigation-items'
 import packageJson from '../../../package.json'
+import KeybindingsSettings from './settings/keybindings-settings'
 import {
   DEFAULT_INARA_THRESHOLD_SETTINGS,
   sanitizeInaraThresholdSettings,
@@ -129,6 +130,7 @@ function Settings ({ visible, toggleVisible = () => {}, defaultActiveSettingsPan
         </div>
         {activeSettingsPanel === 'Theme' && <ThemeSettings visible={visible} />}
         {activeSettingsPanel === 'Sounds' && <SoundSettings visible={visible} />}
+        {activeSettingsPanel === 'Keybindings' && <KeybindingsSettings />}
         {activeSettingsPanel === 'Feature Flags' && <FeatureFlagSettings />}
         {activeSettingsPanel === 'INARA' && featureFlags.icarusEnableInaraSettings && <InaraSettings />}
         {activeSettingsPanel === 'YouTube Music' && <YouTubeMusicSettings />}
@@ -700,14 +702,91 @@ function YouTubeMusicSettings () {
   const [enabled, setEnabled] = useState(false)
   const [statusInfo, setStatusInfo] = useState(null)
   const [checking, setChecking] = useState(false)
+  const [playlists, setPlaylists] = useState([])
+  const [loadingPlaylists, setLoadingPlaylists] = useState(false)
+  const [playlistSettings, setPlaylistSettings] = useState({ normal: null, combat: null })
+  const [playlistSettingsSaved, setPlaylistSettingsSaved] = useState(false)
+  const [audioDevices, setAudioDevices] = useState([])
+  const [selectedAudioDevice, setSelectedAudioDevice] = useState('')
+  const [audioGain, setAudioGain] = useState(1.8)
+
+  const refreshAudioDevices = async () => {
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.enumerateDevices) {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        const inputs = devices
+          .filter(d => d.kind === 'audioinput')
+          .map((d) => {
+            const rawLabel = d.label || (d.deviceId ? `Input (${d.deviceId.slice(0, 8)}…)` : 'Default Microphone')
+            const isVirtualChannel = /wave\s*link|elgato|stereo\s*mix|what\s*u\s*hear|cable|virtual|music|loopback|stream|game|aux|chat|monitor/i.test(rawLabel)
+            return {
+              deviceId: d.deviceId,
+              groupId: d.groupId,
+              label: `${isVirtualChannel ? '🎛️ ' : '🎤 '}${rawLabel}`,
+              isVirtualChannel
+            }
+          })
+        setAudioDevices(inputs)
+      } catch (err) {
+        console.warn('Failed to enumerate audio devices:', err)
+      }
+    }
+  }
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         setEnabled(localStorage.getItem(STORAGE_KEY) === 'true')
+        const savedDev = localStorage.getItem('icarus_winamp_vis_device') || ''
+        setSelectedAudioDevice(savedDev)
+        const savedGain = localStorage.getItem('icarus_winamp_vis_gain')
+        if (savedGain) setAudioGain(parseFloat(savedGain) || 1.8)
       } catch (e) { /* ignore */ }
     }
+    // Load saved playlist settings from server
+    loadPlaylistSettingsFromServer()
+    refreshAudioDevices()
   }, [])
+
+  const handleAudioDeviceChange = (e) => {
+    const devId = e.target.value
+    setSelectedAudioDevice(devId)
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('icarus_winamp_vis_device', devId)
+        const match = audioDevices.find(d => d.deviceId === devId)
+        const label = devId === '__display_audio__' ? '🖥️ Digital System Audio' : (match?.label || 'Audio Channel')
+        window.dispatchEvent(new CustomEvent('icarusAudioDeviceChanged', {
+          detail: { deviceId: devId, label }
+        }))
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  const handleAudioGainChange = (e) => {
+    const val = parseFloat(e.target.value) || 1.8
+    setAudioGain(val)
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('icarus_winamp_vis_gain', String(val))
+        window.dispatchEvent(new CustomEvent('icarusAudioGainChanged', {
+          detail: { gain: val }
+        }))
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  async function loadPlaylistSettingsFromServer () {
+    try {
+      const res = await fetch('/api/ytmd/playlist-settings')
+      if (res.ok) {
+        const data = await res.json()
+        setPlaylistSettings(data || { normal: null, combat: null })
+      }
+    } catch (err) {
+      // Silently fail
+    }
+  }
 
   const handleToggle = () => {
     const next = !enabled
@@ -739,6 +818,52 @@ function YouTubeMusicSettings () {
       setStatusInfo(prev => prev ? { ...prev, authenticated: false } : prev)
     } catch (err) {
       console.error('Failed to unpair YTMD:', err)
+    }
+  }
+
+  const handleFetchPlaylists = async () => {
+    setLoadingPlaylists(true)
+    try {
+      const res = await fetch('/api/ytmd/playlists')
+      if (res.ok) {
+        const data = await res.json()
+        setPlaylists(Array.isArray(data) ? data : [])
+      } else {
+        setPlaylists([])
+      }
+    } catch (err) {
+      console.error('Failed to fetch playlists:', err)
+      setPlaylists([])
+    } finally {
+      setLoadingPlaylists(false)
+    }
+  }
+
+  const handlePlaylistAssign = (scenario, playlistId) => {
+    const selected = playlists.find(p => p.id === playlistId) || null
+    const newSettings = {
+      ...playlistSettings,
+      [scenario]: selected ? { id: selected.id, title: selected.title } : null
+    }
+    setPlaylistSettings(newSettings)
+    setPlaylistSettingsSaved(false)
+  }
+
+  const handleSavePlaylistSettings = async () => {
+    try {
+      await fetch('/api/ytmd/playlist-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(playlistSettings)
+      })
+      setPlaylistSettingsSaved(true)
+      // Notify the WinampBar hook to reload settings
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('ytmdPlaylistSettingsChanged', { detail: playlistSettings }))
+      }
+      setTimeout(() => setPlaylistSettingsSaved(false), 2000)
+    } catch (err) {
+      console.error('Failed to save playlist settings:', err)
     }
   }
 
@@ -800,6 +925,189 @@ function YouTubeMusicSettings () {
           )}
         </div>
       )}
+
+      <hr style={{ margin: '1.5rem 0', opacity: 0.2 }} />
+
+      <h4 className='text-primary'>Scenario Playlists</h4>
+      <p className='text-muted' style={{ marginTop: '.5rem', fontSize: '.9rem' }}>
+        Assign playlists to automatically switch when entering or leaving a combat zone.
+        When a conflict zone is detected, ICARUS will switch to the Combat playlist.
+        When you leave, it switches back to Normal.
+      </p>
+
+      <div style={{ marginTop: '1rem' }}>
+        <button
+          onClick={handleFetchPlaylists}
+          disabled={loadingPlaylists}
+          style={{ fontSize: '.9rem' }}
+        >
+          {loadingPlaylists ? 'Loading...' : playlists.length > 0 ? 'Refresh Playlists' : 'Load Playlists'}
+        </button>
+        {playlists.length > 0 && (
+          <span className='text-muted' style={{ marginLeft: '.5rem', fontSize: '.85rem' }}>
+            {playlists.length} playlist{playlists.length !== 1 ? 's' : ''} found
+          </span>
+        )}
+      </div>
+
+      {playlists.length > 0 && (
+        <div style={{ marginTop: '1rem' }}>
+          {/* Normal playlist */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label className='text-muted' style={{ display: 'block', fontSize: '.85rem', marginBottom: '.3rem' }}>
+              NORMAL PLAYLIST
+            </label>
+            <select
+              value={playlistSettings.normal?.id || ''}
+              onChange={(e) => handlePlaylistAssign('normal', e.target.value)}
+              style={{
+                width: '100%',
+                maxWidth: '400px',
+                padding: '.4rem .5rem',
+                fontSize: '.9rem',
+                backgroundColor: 'rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.05)',
+                color: 'rgb(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b))',
+                border: '1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.3)',
+                fontFamily: 'var(--font-family-headings)'
+              }}
+            >
+              <option value=''>— None —</option>
+              {playlists.map(p => (
+                <option key={p.id} value={p.id}>{p.title}</option>
+              ))}
+            </select>
+            {playlistSettings.normal && (
+              <span className='text-success' style={{ display: 'block', fontSize: '.8rem', marginTop: '.2rem' }}>
+                ✓ {playlistSettings.normal.title}
+              </span>
+            )}
+          </div>
+
+          {/* Combat playlist */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label className='text-muted' style={{ display: 'block', fontSize: '.85rem', marginBottom: '.3rem' }}>
+              COMBAT PLAYLIST
+            </label>
+            <select
+              value={playlistSettings.combat?.id || ''}
+              onChange={(e) => handlePlaylistAssign('combat', e.target.value)}
+              style={{
+                width: '100%',
+                maxWidth: '400px',
+                padding: '.4rem .5rem',
+                fontSize: '.9rem',
+                backgroundColor: 'rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.05)',
+                color: 'rgb(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b))',
+                border: '1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.3)',
+                fontFamily: 'var(--font-family-headings)'
+              }}
+            >
+              <option value=''>— None —</option>
+              {playlists.map(p => (
+                <option key={p.id} value={p.id}>{p.title}</option>
+              ))}
+            </select>
+            {playlistSettings.combat && (
+              <span className='text-danger' style={{ display: 'block', fontSize: '.8rem', marginTop: '.2rem' }}>
+                ⚔ {playlistSettings.combat.title}
+              </span>
+            )}
+          </div>
+
+          <button
+            onClick={handleSavePlaylistSettings}
+            style={{
+              fontSize: '.9rem',
+              borderColor: playlistSettingsSaved ? 'var(--color-success)' : undefined,
+              color: playlistSettingsSaved ? 'var(--color-success)' : undefined
+            }}
+          >
+            {playlistSettingsSaved ? 'SAVED ✓' : 'Save Playlist Settings'}
+          </button>
+        </div>
+      )}
+
+      <hr style={{ margin: '1.5rem 0', opacity: 0.2 }} />
+
+      <h4 className='text-primary'>Audio Visualization Channel</h4>
+      <p className='text-muted' style={{ marginTop: '.5rem', fontSize: '.9rem', lineHeight: '1.5' }}>
+        Select how the visualizer receives sound. To stream <strong>pure digital PC sound without microphone room noise</strong>, use a virtual loopback channel (such as <strong>Elgato Wave Link Stream Mix / Music</strong>, <strong>Stereo Mix</strong>, or <strong>VB-Audio Cable</strong>) or select <strong>Digital System Audio</strong>.
+      </p>
+
+      <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '480px' }}>
+        <div>
+          <label className='text-muted' style={{ display: 'block', fontSize: '.85rem', marginBottom: '.3rem' }}>
+            AUDIO SOURCE DEVICE / CHANNEL
+          </label>
+          <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
+            <select
+              value={selectedAudioDevice}
+              onChange={handleAudioDeviceChange}
+              style={{
+                flex: 1,
+                padding: '.4rem .5rem',
+                fontSize: '.9rem',
+                backgroundColor: 'rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.05)',
+                color: 'rgb(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b))',
+                border: '1px solid rgba(var(--color-primary-r), var(--color-primary-g), var(--color-primary-b), 0.3)',
+                fontFamily: 'var(--font-family-headings)'
+              }}
+            >
+              <option value=''>Default Audio Input (Microphone / System Default)</option>
+              <option value='__display_audio__'>🖥️ Digital System Audio (Tab / Screen Share Loopback)</option>
+              {audioDevices.map(d => (
+                <option key={d.deviceId} value={d.deviceId}>
+                  {d.label} {d.isVirtualChannel ? '★ (Virtual Loopback)' : ''}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={refreshAudioDevices}
+              style={{ fontSize: '.85rem', padding: '.4rem .75rem' }}
+              title='Refresh audio device list'
+            >
+              ⟳
+            </button>
+          </div>
+          {selectedAudioDevice === '__display_audio__' && (
+            <span className='text-info' style={{ display: 'block', fontSize: '.8rem', marginTop: '.3rem' }}>
+              💡 When prompted by your browser, choose the Tab or Screen with audio enabled to stream pure digital sound.
+            </span>
+          )}
+          {selectedAudioDevice && selectedAudioDevice !== '__display_audio__' && (
+            <span className='text-success' style={{ display: 'block', fontSize: '.8rem', marginTop: '.2rem' }}>
+              ✓ Listening to selected channel
+            </span>
+          )}
+        </div>
+
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.3rem' }}>
+            <label className='text-muted' style={{ fontSize: '.85rem' }}>
+              VISUALIZER SENSITIVITY (GAIN BOOST)
+            </label>
+            <span className='text-info' style={{ fontSize: '.85rem', fontWeight: 'bold' }}>
+              {audioGain.toFixed(1)}x
+            </span>
+          </div>
+          <input
+            type='range'
+            min='0.5'
+            max='4.0'
+            step='0.1'
+            value={audioGain}
+            onChange={handleAudioGainChange}
+            style={{
+              width: '100%',
+              accentColor: 'var(--color-primary)',
+              cursor: 'pointer'
+            }}
+          />
+          <span className='text-muted' style={{ fontSize: '.75rem' }}>
+            Boost low-volume virtual channels (like Elgato Music channel at 50% fader) so oscilloscope and spectrum bars bounce dynamically.
+          </span>
+        </div>
+      </div>
     </div>
   )
 }

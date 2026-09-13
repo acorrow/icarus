@@ -12,14 +12,14 @@ function normalizeFlagValue (value) {
 
 function resolveFlag (primaryKey, env = process.env) {
   if (!env) return false
-  
-  // Try exact match first (e.g., icarusInaraTokenCurrencyEnabled)
+
+  // Try exact match first
   if (Object.prototype.hasOwnProperty.call(env, primaryKey)) {
     const parsed = normalizeFlagValue(env[primaryKey])
     if (parsed !== null) return parsed
   }
-  
-  // Try SCREAMING_SNAKE_CASE (e.g., ICARUS_INARA_TOKEN_CURRENCY_ENABLED)
+
+  // Try SCREAMING_SNAKE_CASE
   const screamingSnakeCase = primaryKey
     .replace(/([A-Z])/g, '_$1')
     .toUpperCase()
@@ -28,25 +28,25 @@ function resolveFlag (primaryKey, env = process.env) {
     const parsed = normalizeFlagValue(env[screamingSnakeCase])
     if (parsed !== null) return parsed
   }
-  
-  // Try simple UPPERCASE as final fallback (e.g., ICARUSINARATOKENCURRENCYENABLED)
+
+  // Try simple UPPERCASE as final fallback
   const fallbackKey = primaryKey.toUpperCase()
   if (fallbackKey !== primaryKey && fallbackKey !== screamingSnakeCase && Object.prototype.hasOwnProperty.call(env, fallbackKey)) {
     const parsed = normalizeFlagValue(env[fallbackKey])
     if (parsed !== null) return parsed
   }
-  
+
   return false
 }
 
 function hasFlagKey (primaryKey, env = process.env) {
   if (!env) return false
-  
+
   // Check exact match
   if (Object.prototype.hasOwnProperty.call(env, primaryKey)) {
     return true
   }
-  
+
   // Check SCREAMING_SNAKE_CASE
   const screamingSnakeCase = primaryKey
     .replace(/([A-Z])/g, '_$1')
@@ -55,29 +55,14 @@ function hasFlagKey (primaryKey, env = process.env) {
   if (screamingSnakeCase !== primaryKey && Object.prototype.hasOwnProperty.call(env, screamingSnakeCase)) {
     return true
   }
-  
+
   // Check simple UPPERCASE as fallback
   const fallbackKey = primaryKey.toUpperCase()
   if (fallbackKey !== primaryKey && fallbackKey !== screamingSnakeCase && Object.prototype.hasOwnProperty.call(env, fallbackKey)) {
     return true
   }
-  
+
   return false
-}
-
-function isInaraTokenCurrencyEnabled (env = process.env) {
-  return resolveFlag('icarusInaraTokenCurrencyEnabled', env)
-}
-
-function isInaraTokenJackpotEnabled (env = process.env) {
-  return resolveFlag('icarusInaraTokenJackpotEnabled', env)
-}
-
-function isTokenRecoveryCompatibilityEnabled (env = process.env) {
-  if (!hasFlagKey('icarusInaraTokenRecoveryCompatEnabled', env)) {
-    return true
-  }
-  return resolveFlag('icarusInaraTokenRecoveryCompatEnabled', env)
 }
 
 function isInaraSettingsEnabled (env = process.env) {
@@ -85,9 +70,6 @@ function isInaraSettingsEnabled (env = process.env) {
 }
 
 module.exports = {
-  isInaraTokenCurrencyEnabled,
-  isInaraTokenJackpotEnabled,
-  isTokenRecoveryCompatibilityEnabled,
   isInaraSettingsEnabled,
   _private: { normalizeFlagValue, resolveFlag, hasFlagKey }
 }

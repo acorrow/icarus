@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, useContext, Fragment, memo } from 'react'
 import animateTableEffect from 'lib/animate-table-effect'
 import { useSocket, sendEvent, eventListener } from 'lib/socket'
+import notification from 'lib/notification'
 import { InaraPanelNavItems } from 'lib/navigation-items'
 import { getShipLandingPadSize } from 'lib/ship-pad-sizes'
 import { formatCredits, formatRelativeTime, formatStationDistance, formatSystemDistance } from 'lib/inara-formatters'
@@ -15,7 +16,6 @@ import {
 } from 'lib/inara-thresholds'
 import { sanitizeInaraText } from 'lib/sanitize-inara-text'
 import { stationIconFromType, getStationIconName } from 'lib/station-icons'
-import { getInaraStrings, getInaraString } from 'lib/inara-addon'
 import { normaliseName, normaliseCommodityKey, normaliseFactionKey, NON_COMMODITY_KEYS } from 'lib/normalization'
 import { fetchWithCache, clearCache } from 'lib/inara-request-cache'
 import { getCachedMissions, setCachedMissions } from 'lib/inara/missions-cache'
@@ -35,42 +35,6 @@ const METRIC_VARIANT_CLASS_MAP = {
   success: styles.metricChipSuccess,
   caution: styles.metricChipCaution,
   warning: styles.metricChipWarning
-}
-
-export const TERMINAL_PROMPT_TYPE_CLASS_MAP = {
-  command: styles.terminalPromptCommand,
-  response: styles.terminalPromptResponse,
-  alert: styles.terminalPromptAlert,
-  cipher: styles.terminalPromptCipher,
-  binary: styles.terminalPromptBinary,
-  decrypt: styles.terminalPromptDecrypt,
-  inara: styles.terminalPromptInara,
-  system: styles.terminalPromptSystem,
-  credit: styles.terminalPromptCredit,
-  transaction: styles.terminalPromptTransaction,
-  simulation: styles.terminalPromptSimulation,
-  jackpot: styles.terminalPromptJackpot,
-  jackpotGlyph: styles.terminalPromptJackpotGlyph,
-  jackpotFloodGlyph: styles.terminalPromptJackpotFloodGlyph,
-  jackpotSummary: styles.terminalPromptJackpotSummary,
-  debitGlyph: styles.terminalPromptDebitGlyph
-}
-
-export const TERMINAL_TEXT_TYPE_CLASS_MAP = {
-  alert: styles.terminalTextAlert,
-  cipher: styles.terminalTextCipher,
-  binary: styles.terminalTextBinary,
-  decrypt: styles.terminalTextDecrypt,
-  inara: styles.terminalTextInara,
-  system: styles.terminalTextSystem,
-  credit: styles.terminalTextCredit,
-  transaction: styles.terminalTextTransaction,
-  simulation: styles.terminalTextSimulation,
-  jackpot: styles.terminalTextJackpot,
-  jackpotGlyph: styles.terminalTextJackpotGlyph,
-  jackpotFloodGlyph: styles.terminalTextJackpotFloodGlyph,
-  jackpotSummary: styles.terminalTextJackpotSummary,
-  debitGlyph: styles.terminalTextDebitGlyph
 }
 
 const SHIP_STATUS_UPDATE_EVENTS = new Set([
@@ -98,7 +62,7 @@ const CurrentSystemContext = React.createContext(null)
 
 function CurrentSystemProvider ({ children }) {
   const existingContext = useContext(CurrentSystemContext)
-  
+
   // If we're already inside a provider, don't create a new one (avoid nested providers)
   if (existingContext) {
     return children
@@ -117,7 +81,7 @@ function CurrentSystemProviderInner ({ children }) {
   const pendingFetch = useRef(null)
 
   useEffect(() => {
-    return () => { 
+    return () => {
       isMounted.current = false
       if (pendingFetch.current) {
         clearTimeout(pendingFetch.current)
@@ -128,7 +92,7 @@ function CurrentSystemProviderInner ({ children }) {
   const fetchCurrentSystem = useCallback(() => {
     // Prevent duplicate simultaneous fetches
     if (fetchInProgress.current) return
-    
+
     // Debounce: Don't fetch more than once per second
     const now = Date.now()
     const timeSinceLastFetch = now - lastFetchTime.current
@@ -142,13 +106,13 @@ function CurrentSystemProviderInner ({ children }) {
       }
       return
     }
-    
+
     lastFetchTime.current = now
     fetchInProgress.current = true
     setIsLoading(true)
-    
-    fetch('/api/current-system')
-      .then(res => res.json())
+
+    fetchWithCache('/api/current-system')
+      .then(res => (typeof res?.json === 'function' ? res.json() : res))
       .then(data => {
         if (!isMounted.current) return
         setCurrentSystem(data.currentSystem)
@@ -180,6 +144,21 @@ function CurrentSystemProviderInner ({ children }) {
   useEffect(() => {
     fetchCurrentSystem()
   }, [fetchCurrentSystem])
+
+  // Instant 0ms update when system changes are broadcast over WebSocket
+  useEffect(() => {
+    const unsubscribe = eventListener('SHIP_STATUS_UPDATE', payload => {
+      if (payload?.currentSystem && isMounted.current) {
+        setCurrentSystem(payload.currentSystem)
+        setSystemOptions(prev => {
+          if (!payload.currentSystem?.name) return prev
+          if (prev.some(s => s.name === payload.currentSystem.name)) return prev
+          return [{ name: payload.currentSystem.name, distance: 0 }, ...prev]
+        })
+      }
+    })
+    return unsubscribe
+  }, [])
 
   useEffect(() => {
     const unsubscribe = eventListener('gameStateChange', () => {
@@ -310,12 +289,12 @@ function TradeRouteFilterPanel ({
     <form onSubmit={onSubmit} className={styles.tradeFiltersForm} aria-labelledby='trade-routes-filters-heading'>
       <div className={styles.tradeFiltersHeader}>
         <div className={styles.tradeFiltersSystemGroup}>
-          <div style={{ display: 'flex', alignItems:'center' }}>
-          <label className='text-primary' htmlFor='trade-route-system-select'>Near star system</label>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <label className='text-primary' htmlFor='trade-route-system-select'>Near star system</label>
 
             <select
               id='trade-route-system-select'
-              value={systemSelection || (selectedSystemName ? selectedSystemName : '')}
+              value={systemSelection || (selectedSystemName || '')}
               onChange={onSystemChange}
               className={styles.tradeFiltersSelect}
             >
@@ -341,6 +320,7 @@ function TradeRouteFilterPanel ({
         <div className={styles.tradeFiltersActions}>
           <button
             type='button'
+            className='button button--secondary'
             onClick={onToggleFilters}
             aria-expanded={!filtersCollapsed}
             aria-controls='trade-route-filter-grid'
@@ -349,7 +329,7 @@ function TradeRouteFilterPanel ({
           </button>
           <button
             type='submit'
-            
+            className='button button--primary'
             disabled={isRefreshing}
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh results'}
@@ -599,68 +579,71 @@ const renderCommodityRowStyleArrowWithText = (direction, options = {}) => {
   )
 }
 
-  const renderCommodityRow = (direction, { variant = 'default' } = {}) => {
-    const isOutbound = direction === 'outbound'
-    const commodityDisplay = isOutbound ? outboundCommodityDisplay : returnCommodityDisplay
-    const buyPriceDisplay = isOutbound ? outboundPriceDisplay : returnPriceDisplay
-    const sellPriceDisplay = isOutbound ? outboundSellPriceDisplay : returnSellPriceDisplay
-    const demandState = isOutbound ? outboundDemandState : returnDemandState
-    const flowClass = isOutbound ? outboundFlowClass : returnFlowClass
-    const stationAria = isOutbound ? destinationStationAria : originStationAria
-    const directionLabel = isOutbound ? 'Outbound to' : 'Return to'
+const renderCommodityRow = (direction, { variant = 'default' } = {}) => {
+  const isOutbound = direction === 'outbound'
+  const commodityDisplay = isOutbound ? outboundCommodityDisplay : returnCommodityDisplay
+  const buyPriceDisplay = isOutbound ? outboundPriceDisplay : returnPriceDisplay
+  const sellPriceDisplay = isOutbound ? outboundSellPriceDisplay : returnSellPriceDisplay
+  const demandState = isOutbound ? outboundDemandState : returnDemandState
+  const flowClass = isOutbound ? outboundFlowClass : returnFlowClass
+  const stationAria = isOutbound ? destinationStationAria : originStationAria
+  const directionLabel = isOutbound ? 'Outbound to' : 'Return to'
 
-    const rowClasses = [
-      styles.tradeRouteCommodityRow,
-      isOutbound ? styles.tradeRouteCommodityRowOutbound : styles.tradeRouteCommodityRowReturn,
-      flowClass
-    ]
+  const rowClasses = [
+    styles.tradeRouteCommodityRow,
+    isOutbound ? styles.tradeRouteCommodityRowOutbound : styles.tradeRouteCommodityRowReturn,
+    flowClass
+  ]
 
-    const leadingPriceClasses = [
-      styles.tradeRouteCommodityPrice,
-      isOutbound ? styles.tradeRouteCommodityPriceBuy : styles.tradeRouteCommodityPriceSell
-    ]
+  const leadingPriceClasses = [
+    styles.tradeRouteCommodityPrice,
+    isOutbound ? styles.tradeRouteCommodityPriceBuy : styles.tradeRouteCommodityPriceSell
+  ]
 
-    const trailingPriceClasses = [
-      styles.tradeRouteCommodityPrice,
-      isOutbound ? styles.tradeRouteCommodityPriceSell : styles.tradeRouteCommodityPriceBuy
-    ]
+  const trailingPriceClasses = [
+    styles.tradeRouteCommodityPrice,
+    isOutbound ? styles.tradeRouteCommodityPriceSell : styles.tradeRouteCommodityPriceBuy
+  ]
 
-    if (variant === 'compact') {
-      rowClasses.push(styles.tradeRouteCommodityRowCompact)
-      leadingPriceClasses.push(styles.visuallyHidden)
-      trailingPriceClasses.push(styles.visuallyHidden)
-    }
+  if (variant === 'compact') {
+    rowClasses.push(styles.tradeRouteCommodityRowCompact)
+    leadingPriceClasses.push(styles.visuallyHidden)
+    trailingPriceClasses.push(styles.visuallyHidden)
+  }
 
-    if (variant !== 'compact') {
-      leadingPriceClasses.push(styles.tradeRouteHideMedium)
-      trailingPriceClasses.push(styles.tradeRouteHideMedium)
-    } else {
-      leadingPriceClasses.push(styles.tradeRouteCommodityPriceCompact)
-      trailingPriceClasses.push(styles.tradeRouteCommodityPriceCompact)
-    }
+  if (variant !== 'compact') {
+    leadingPriceClasses.push(styles.tradeRouteHideMedium)
+    trailingPriceClasses.push(styles.tradeRouteHideMedium)
+  } else {
+    leadingPriceClasses.push(styles.tradeRouteCommodityPriceCompact)
+    trailingPriceClasses.push(styles.tradeRouteCommodityPriceCompact)
+  }
 
-    return (
-      <div className={rowClasses.join(' ')}>
-        <span className={styles.visuallyHidden}>{`${directionLabel} ${stationAria}`}</span>
-        {demandState ? (
+  return (
+    <div className={rowClasses.join(' ')}>
+      <span className={styles.visuallyHidden}>{`${directionLabel} ${stationAria}`}</span>
+      {demandState
+        ? (
           <span className={styles.visuallyHidden}>
             {demandState.label}
             {demandState.text ? ` — ${demandState.text}` : ''}
           </span>
-        ) : null}
-        <span className={leadingPriceClasses.join(' ')}>
-          {renderPrice(isOutbound ? buyPriceDisplay : sellPriceDisplay)}
-        </span>
-        <span className={styles.tradeRouteCommodityName}>{renderValue(commodityDisplay)}</span>
-        <span className={trailingPriceClasses.join(' ')}>
-          {renderPrice(isOutbound ? sellPriceDisplay : buyPriceDisplay)}
-        </span>
-      </div>
-    )
-  }
+          )
+        : null}
+      <span className={leadingPriceClasses.join(' ')}>
+        {renderPrice(isOutbound ? buyPriceDisplay : sellPriceDisplay)}
+      </span>
+      <span className={styles.tradeRouteCommodityName}>{renderValue(commodityDisplay)}</span>
+      <span className={trailingPriceClasses.join(' ')}>
+        {renderPrice(isOutbound ? sellPriceDisplay : buyPriceDisplay)}
+      </span>
+    </div>
+  )
+}
 
 const TradeRouteTableRow = memo(function TradeRouteTableRow ({
   route,
+  index = 0,
   onSelect,
   onKeyDown,
   factionStandings,
@@ -727,8 +710,8 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
   const updatedDisplay = updatedSource ? formatRelativeTime(updatedSource) : ''
   const updatedSeverity = getUpdateSeverity(updatedSource, { thresholds: thresholdSettings })
 
-  const renderValue = value => (value ? value : <span className={styles.tradeRoutePlaceholder}>--</span>)
-  const renderPrice = value => (value ? value : null)
+  const renderValue = value => (value || <span className={styles.tradeRoutePlaceholder}>--</span>)
+  const renderPrice = value => (value || null)
 
   const renderCommodityRow = (direction, { variant = 'default' } = {}) => {
     const isOutbound = direction === 'outbound'
@@ -773,12 +756,14 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
     return (
       <div className={rowClasses.join(' ')}>
         <span className={styles.visuallyHidden}>{`${directionLabel} ${stationAria}`}</span>
-        {demandState ? (
-          <span className={styles.visuallyHidden}>
-            {demandState.label}
-            {demandState.text ? ` — ${demandState.text}` : ''}
-          </span>
-        ) : null}
+        {demandState
+          ? (
+            <span className={styles.visuallyHidden}>
+              {demandState.label}
+              {demandState.text ? ` — ${demandState.text}` : ''}
+            </span>
+            )
+          : null}
         <span className={leadingPriceClasses.join(' ')}>
           {renderPrice(isOutbound ? buyPriceDisplay : sellPriceDisplay)}
         </span>
@@ -875,7 +860,15 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
         aria-pressed={isSelected}
         data-selected={isSelected ? 'true' : 'false'}
       >
-        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellOrigin}`}>
+        <td className={`${styles.tableCellTop} ${styles.tradeRouteIndexCell}`}>
+          <span className={isSelected ? styles.tradeRouteIndexActive : ''}>#{index + 1}</span>
+        </td>
+        <td
+          className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellOrigin}`}
+          data-station-role='station-a'
+          data-station-name={originStationDisplay}
+          data-system-name={originSystemName}
+        >
           <div className={styles.tradeRouteStationStack}>
             <div className={styles.tradeRouteStationGrid}>
               <div className={styles.tradeRouteStationRow}>
@@ -901,7 +894,7 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
                       value: originStationDistanceDisplay,
                       variant: originStationDistanceVariant,
                       title: 'Distance to station',
-                    color: originStationSeverity.color || undefined
+                      color: originStationSeverity.color || undefined
                     })}
                   </div>
                 </div>
@@ -918,7 +911,12 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
             {renderCommodityRow('return')}
           </div>
         </td>
-        <td className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellDestination}`}>
+        <td
+          className={`${styles.tableCellTop} ${styles.tradeRoutesStationCell} ${styles.tradeRoutesStationCellDestination}`}
+          data-station-role='station-b'
+          data-station-name={destinationStationDisplay}
+          data-system-name={destinationSystemName}
+        >
           <div className={styles.tradeRouteStationStack}>
             <div className={styles.tradeRouteStationCompact}>
               {renderCommodityRow('return', { variant: 'compact' })}
@@ -947,7 +945,7 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
                       value: destinationStationDistanceDisplay,
                       variant: destinationStationDistanceVariant,
                       title: 'Distance to station',
-                    color: destinationStationSeverity.color || undefined
+                      color: destinationStationSeverity.color || undefined
                     })}
                   </div>
                 </div>
@@ -961,7 +959,7 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
         onClick={handleClick}
         data-inara-table-row='profit'
       >
-        <td colSpan={3} className={`${styles.tableCellTop} ${styles.tradeRouteProfitCell}`}>
+        <td colSpan={4} className={`${styles.tableCellTop} ${styles.tradeRouteProfitCell}`}>
           <div
             className={`${styles.tradeRouteProfitBanner}${isSelected ? ` ${styles.tradeRouteProfitBannerSelected}` : ''}`}
             style={profitHighlightStyle}
@@ -987,9 +985,11 @@ const TradeRouteTableRow = memo(function TradeRouteTableRow ({
                           {renderValue(metric.value)}
                         </span>
                       </div>
-                      {index < inlineProfitMetrics.length - 1 ? (
-                        <span className={separatorClasses.join(' ')} aria-hidden='true'>|</span>
-                      ) : null}
+                      {index < inlineProfitMetrics.length - 1
+                        ? (
+                          <span className={separatorClasses.join(' ')} aria-hidden='true'>|</span>
+                          )
+                        : null}
                     </Fragment>
                   )
                 })}
@@ -1053,7 +1053,7 @@ function isSameMarketEntry (a, b) {
   return false
 }
 
-function formatReputationPercent(value) {
+function formatReputationPercent (value) {
   if (typeof value !== 'number' || Number.isNaN(value)) return null
   const percentage = Math.round(value * 100)
   const sign = percentage > 0 ? '+' : ''
@@ -1063,7 +1063,7 @@ function formatReputationPercent(value) {
 let factionStandingsCache = null
 let factionStandingsPromise = null
 
-function parseFactionStandingsResponse(data) {
+function parseFactionStandingsResponse (data) {
   const nextStandings = {}
   if (!data || typeof data !== 'object') return nextStandings
 
@@ -1094,7 +1094,7 @@ function parseFactionStandingsResponse(data) {
   return nextStandings
 }
 
-function useFactionStandings() {
+function useFactionStandings () {
   const [standings, setStandings] = useState(() => factionStandingsCache || {})
 
   useEffect(() => {
@@ -1105,10 +1105,9 @@ function useFactionStandings() {
     }
 
     if (!factionStandingsPromise) {
-      factionStandingsPromise = fetch('/api/faction-standings')
+      factionStandingsPromise = fetchWithCache('/api/faction-standings')
         .then(res => {
-          if (!res.ok) throw new Error('Failed to load faction standings')
-          return res.json()
+          return typeof res?.json === 'function' ? res.json() : res
         })
         .then(data => {
           factionStandingsCache = parseFactionStandingsResponse(data)
@@ -1136,7 +1135,7 @@ function useFactionStandings() {
   return standings
 }
 
-function getFactionStandingDisplay(factionName, standings) {
+function getFactionStandingDisplay (factionName, standings) {
   const key = normaliseFactionKey(factionName)
   const defaultResult = {
     info: null,
@@ -1206,14 +1205,14 @@ function getFactionStandingDisplay(factionName, standings) {
   }
 }
 
-function clampReputationValue(value) {
+function clampReputationValue (value) {
   if (typeof value !== 'number' || Number.isNaN(value)) return null
   if (value > 100) return 100
   if (value < -100) return -100
   return value
 }
 
-function applyStandingColorIntensity(baseColor, reputationValue) {
+function applyStandingColorIntensity (baseColor, reputationValue) {
   if (!baseColor) return baseColor
   if (typeof reputationValue !== 'number') {
     return baseColor
@@ -1230,11 +1229,11 @@ function applyStandingColorIntensity(baseColor, reputationValue) {
   return `rgba(${r}, ${g}, ${b}, ${roundedAlpha})`
 }
 
-function isHexColor(value) {
+function isHexColor (value) {
   return typeof value === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())
 }
 
-function hexToRgb(hex) {
+function hexToRgb (hex) {
   const value = hex.trim().replace('#', '')
   const normalized = value.length === 3
     ? value.split('').map(char => `${char}${char}`).join('')
@@ -1375,13 +1374,13 @@ function PristineMiningArtwork ({ systemObject }) {
   if (isBelt) {
     return (
       <div className='pristine-mining__artwork pristine-mining__artwork--belt' aria-hidden='true' style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <svg
-        viewBox='0 0 1000 600'
-        className='pristine-mining__artwork-svg pristine-mining__artwork-svg--belt'
-        focusable='false'
-        preserveAspectRatio='xMidYMid meet'
-        style={{ width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%' }}
-      >
+        <svg
+          viewBox='0 0 1000 600'
+          className='pristine-mining__artwork-svg pristine-mining__artwork-svg--belt'
+          focusable='false'
+          preserveAspectRatio='xMidYMid meet'
+          style={{ width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%' }}
+        >
           <g className='pristine-mining__belt'>
             <ellipse className='pristine-mining__belt-ring pristine-mining__belt-ring--outer' cx='500' cy='300' rx='420' ry='160' />
             <ellipse className='pristine-mining__belt-ring pristine-mining__belt-ring--inner' cx='500' cy='300' rx='340' ry='120' />
@@ -2354,7 +2353,7 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
 
     const loadMissions = async () => {
       try {
-        const response = await fetch('/api/inara-missions', {
+        const response = await fetchWithCache('/api/inara-missions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ system: trimmedSystem }),
@@ -2465,88 +2464,88 @@ function MissionsPanel ({ onStatusChange = () => {} }) {
         )}
         {status === 'populated' && missions.length > 0 && (
           <table className='table--interactive table--animated'>
-                <thead>
-                  <tr>
-                  <th>Faction</th>
-                  <th>System</th>
-                  <th className='hidden-small text-right'>Distance</th>
-                  <th className='hidden-small text-right'>Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {missions.map((mission, index) => {
-                  const key = `${mission.system || 'unknown'}-${mission.faction || 'faction'}-${index}`
-                  const distanceDisplay = formatSystemDistance(mission.distanceLy, mission.distanceText)
-                  const distanceSeverity = getDistanceSeverity(mission.distanceLy ?? null, null, { thresholds: thresholdSettings })
-                  const updatedDisplay = formatRelativeTime(mission.updatedAt || mission.updatedText)
-                  const updatedSeverity = mission.updatedAt
-                    ? getUpdateSeverity(mission.updatedAt, { thresholds: thresholdSettings })
-                    : { color: null }
-                  const isTargetSystem = mission.isTargetSystem
-                  const factionKey = normaliseFactionKey(mission.faction)
-                  const factionInfo = factionKey ? factionStandings[factionKey] : null
-                  const standingClass = factionInfo?.standing === 'ally'
-                    ? styles.tableTextSuccess
-                    : factionInfo?.standing === 'hostile'
-                      ? styles.tableTextDanger
-                      : styles.tableTextNeutral
-                  const standingLabel = factionInfo?.relation || (factionInfo?.standing
-                    ? `${factionInfo.standing.charAt(0).toUpperCase()}${factionInfo.standing.slice(1)}`
-                    : null)
-                  const reputationLabel = typeof factionInfo?.reputation === 'number'
-                    ? formatReputationPercent(factionInfo.reputation)
-                    : null
-                  const factionTitle = [standingLabel, reputationLabel && `Reputation ${reputationLabel}`]
-                    .filter(Boolean)
-                    .join(' · ') || undefined
+            <thead>
+              <tr>
+                <th>Faction</th>
+                <th>System</th>
+                <th className='hidden-small text-right'>Distance</th>
+                <th className='hidden-small text-right'>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {missions.map((mission, index) => {
+                const key = `${mission.system || 'unknown'}-${mission.faction || 'faction'}-${index}`
+                const distanceDisplay = formatSystemDistance(mission.distanceLy, mission.distanceText)
+                const distanceSeverity = getDistanceSeverity(mission.distanceLy ?? null, null, { thresholds: thresholdSettings })
+                const updatedDisplay = formatRelativeTime(mission.updatedAt || mission.updatedText)
+                const updatedSeverity = mission.updatedAt
+                  ? getUpdateSeverity(mission.updatedAt, { thresholds: thresholdSettings })
+                  : { color: null }
+                const isTargetSystem = mission.isTargetSystem
+                const factionKey = normaliseFactionKey(mission.faction)
+                const factionInfo = factionKey ? factionStandings[factionKey] : null
+                const standingClass = factionInfo?.standing === 'ally'
+                  ? styles.tableTextSuccess
+                  : factionInfo?.standing === 'hostile'
+                    ? styles.tableTextDanger
+                    : styles.tableTextNeutral
+                const standingLabel = factionInfo?.relation || (factionInfo?.standing
+                  ? `${factionInfo.standing.charAt(0).toUpperCase()}${factionInfo.standing.slice(1)}`
+                  : null)
+                const reputationLabel = typeof factionInfo?.reputation === 'number'
+                  ? formatReputationPercent(factionInfo.reputation)
+                  : null
+                const factionTitle = [standingLabel, reputationLabel && `Reputation ${reputationLabel}`]
+                  .filter(Boolean)
+                  .join(' · ') || undefined
 
-                  return (
-                    <tr key={key} tabIndex={0} className='table__row--highlight-primary-hover'>
-                      <td style={{ padding: '0.75rem 1rem' }}>
-                        {mission.faction
+                return (
+                  <tr key={key} tabIndex={0} className='table__row--highlight-primary-hover'>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      {mission.faction
+                        ? (
+                          <span className={standingClass} title={factionTitle}>{mission.faction}</span>
+                          )
+                        : '--'}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {isTargetSystem
                           ? (
-                            <span className={standingClass} title={factionTitle}>{mission.faction}</span>
+                            <i className='icon icarus-terminal-location-filled text-secondary' />
                             )
+                          : (
+                            <i className='icon icarus-terminal-location' style={{ color: 'var(--color-muted)' }} />
+                            )}
+                        {mission.system
+                          ? <CopyOnClick copyMessageKey='system'>{mission.system}</CopyOnClick>
                           : '--'}
-                      </td>
-                      <td style={{ padding: '0.75rem 1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {isTargetSystem
-                            ? (
-                              <i className='icon icarus-terminal-location-filled text-secondary' />
-                              )
-                            : (
-                              <i className='icon icarus-terminal-location' style={{ color: 'var(--color-muted)' }} />
-                              )}
-                          {mission.system
-                            ? <CopyOnClick copyMessageKey='system'>{mission.system}</CopyOnClick>
-                            : '--'}
-                        </div>
-                      </td>
-                      <td className='hidden-small text-right' style={{ padding: '0.75rem 1rem' }}>
-                        {distanceDisplay
-                          ? (
-                              <span style={distanceSeverity.color ? { color: distanceSeverity.color } : undefined}>
-                                {distanceDisplay}
-                              </span>
-                            )
-                          : '--'}
-                      </td>
-                      <td className='hidden-small text-right' style={{ padding: '0.75rem 1rem' }}>
-                        {updatedDisplay
-                          ? (
-                              <span style={updatedSeverity.color ? { color: updatedSeverity.color } : undefined}>
-                                {updatedDisplay}
-                              </span>
-                            )
-                          : (mission.updatedText || '--')}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          )}
+                      </div>
+                    </td>
+                    <td className='hidden-small text-right' style={{ padding: '0.75rem 1rem' }}>
+                      {distanceDisplay
+                        ? (
+                          <span style={distanceSeverity.color ? { color: distanceSeverity.color } : undefined}>
+                            {distanceDisplay}
+                          </span>
+                          )
+                        : '--'}
+                    </td>
+                    <td className='hidden-small text-right' style={{ padding: '0.75rem 1rem' }}>
+                      {updatedDisplay
+                        ? (
+                          <span style={updatedSeverity.color ? { color: updatedSeverity.color } : undefined}>
+                            {updatedDisplay}
+                          </span>
+                          )
+                        : (mission.updatedText || '--')}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </section>
   )
@@ -2689,12 +2688,12 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
         }))
     }
 
-    fetch('/api/inara-commodity-values', {
+    fetchWithCache('/api/inara-commodity-values', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
-      .then(res => res.json())
+      .then(res => (typeof res?.json === 'function' ? res.json() : res))
       .then(data => {
         if (cancelled) return
         const results = Array.isArray(data?.results) ? data.results : []
@@ -3050,7 +3049,7 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
         const listing = prev.listings.find(entry => entry.__id === prev.selectedListingId)
         const destinationEntry = listing || prev.inaraEntry || null
         const sanitizedDestination = destinationEntry
-          ? (listing ? listing : sanitizeCommodityListingEntry(destinationEntry))
+          ? (listing || sanitizeCommodityListingEntry(destinationEntry))
           : null
         const sanitizedOrigin = prev.marketEntry
           ? sanitizeMarketListingEntry(prev.marketEntry)
@@ -3138,17 +3137,17 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
     const systemName = sanitizeInaraText(entryData.systemName) || entryData.systemName || ''
     const stationLineContent = stationName
       ? (
-          <>
-            <CopyOnClick copyMessageKey='station'>{stationName}</CopyOnClick>
-            {systemName
-              ? (
-                <>
-                  {' · '}
-                  <CopyOnClick copyMessageKey='system'>{systemName}</CopyOnClick>
-                </>
-                )
-              : null}
-          </>
+        <>
+          <CopyOnClick copyMessageKey='station'>{stationName}</CopyOnClick>
+          {systemName
+            ? (
+              <>
+                {' · '}
+                <CopyOnClick copyMessageKey='system'>{systemName}</CopyOnClick>
+              </>
+              )
+            : null}
+        </>
         )
       : null
     const distanceDisplay = typeof entryData.distanceLs === 'number' && !Number.isNaN(entryData.distanceLs)
@@ -3248,648 +3247,658 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
           </div>
         </div>
 
-      <div className={`${styles.sectionFrameElevated} ${styles.sectionPaddingTight}`}>
-        <div className={styles.metricGrid}>
-          <div className={styles.metricItem}>
-            <span className={styles.metricLabel}>Cargo</span>
-            <span className={styles.metricValue}>{cargoCount.toLocaleString()} / {cargoCapacity.toLocaleString()} t</span>
+        <div className={`${styles.sectionFrameElevated} ${styles.sectionPaddingTight}`}>
+          <div className={styles.metricGrid}>
+            <div className={styles.metricItem}>
+              <span className={styles.metricLabel}>Cargo</span>
+              <span className={styles.metricValue}>{cargoCount.toLocaleString()} / {cargoCapacity.toLocaleString()} t</span>
+            </div>
+            <div className={styles.metricItem}>
+              <span className={styles.metricLabel}>Hold Value (Best)</span>
+              <span className={styles.metricValue}>{formatCredits(totals.best, '--')}</span>
+            </div>
+            <div className={styles.metricItem}>
+              <span className={styles.metricLabel}>Hold Value (INARA)</span>
+              <span className={`${styles.metricValue} ${styles.metricValueWarning}`}>{formatCredits(totals.inara, '--')}</span>
+            </div>
+            <div className={styles.metricItem}>
+              <span className={styles.metricLabel}>Hold Value (Local Data)</span>
+              <span className={`${styles.metricValue} ${styles.metricValueSuccess}`}>{formatCredits(totals.local, '--')}</span>
+            </div>
           </div>
-          <div className={styles.metricItem}>
-            <span className={styles.metricLabel}>Hold Value (Best)</span>
-            <span className={styles.metricValue}>{formatCredits(totals.best, '--')}</span>
-          </div>
-          <div className={styles.metricItem}>
-            <span className={styles.metricLabel}>Hold Value (INARA)</span>
-            <span className={`${styles.metricValue} ${styles.metricValueWarning}`}>{formatCredits(totals.inara, '--')}</span>
-          </div>
-          <div className={styles.metricItem}>
-            <span className={styles.metricLabel}>Hold Value (Local Data)</span>
-            <span className={`${styles.metricValue} ${styles.metricValueSuccess}`}>{formatCredits(totals.local, '--')}</span>
-          </div>
+
+          {(inaraStatus === 'error' || inaraStatus === 'partial') && (
+            <div className={styles.notice}>
+              {inaraStatus === 'error'
+                ? 'Unable to retrieve INARA price data at this time.'
+                : 'Some commodities are missing INARA price data. Displayed values use local market prices where available.'}
+            </div>
+          )}
+
+          {marketStatus === 'missing' && (
+            <div className={styles.notice}>
+              Local market prices are unavailable. Dock at a station and reopen this panel to import in-game price data.
+            </div>
+          )}
+
+          {historyStatus === 'missing' && (
+            <div className={styles.notice}>
+              Unable to locate Elite Dangerous journal logs to build local market history. Confirm your log directory settings and reopen this panel.
+            </div>
+          )}
+
+          {historyStatus === 'error' && (
+            <div className={styles.notice}>
+              Local market history could not be parsed. Try reopening the commodities market in-game to refresh the data.
+            </div>
+          )}
+
+          {historyStatus === 'empty' && (
+            <div className={styles.noticeMuted}>
+              No nearby market history has been recorded yet. Visit commodity markets to capture additional local price data.
+            </div>
+          )}
         </div>
 
-        {(inaraStatus === 'error' || inaraStatus === 'partial') && (
-          <div className={styles.notice}>
-            {inaraStatus === 'error'
-              ? 'Unable to retrieve INARA price data at this time.'
-              : 'Some commodities are missing INARA price data. Displayed values use local market prices where available.'}
-          </div>
-        )}
-
-        {marketStatus === 'missing' && (
-          <div className={styles.notice}>
-            Local market prices are unavailable. Dock at a station and reopen this panel to import in-game price data.
-          </div>
-        )}
-
-        {historyStatus === 'missing' && (
-          <div className={styles.notice}>
-            Unable to locate Elite Dangerous journal logs to build local market history. Confirm your log directory settings and reopen this panel.
-          </div>
-        )}
-
-        {historyStatus === 'error' && (
-          <div className={styles.notice}>
-            Local market history could not be parsed. Try reopening the commodities market in-game to refresh the data.
-          </div>
-        )}
-
-        {historyStatus === 'empty' && (
-          <div className={styles.noticeMuted}>
-            No nearby market history has been recorded yet. Visit commodity markets to capture additional local price data.
-          </div>
-        )}
-      </div>
-
-      {activeCommodityDetail
-        ? (() => {
-          const detail = activeCommodityDetail
-          const listings = sortedDetailListings
-          const resolvedListing = resolvedDetailListing
-          const selectedPriceDisplay = resolvedListing ? formatCredits(resolvedListing.price, resolvedListing.priceText || '--') : '--'
-          const selectedValueDisplay = resolvedListing && typeof resolvedListing?.price === 'number'
-            ? formatCredits(resolvedListing.price * (detail.quantity || 0), '--')
-            : '--'
-          const selectedDemand = sanitizeInaraText(resolvedListing?.demandText) || (typeof resolvedListing?.demand === 'number' ? resolvedListing.demand.toLocaleString() : '')
-          const selectedSystemDistance = formatSystemDistance(resolvedListing?.distanceLy, sanitizeInaraText(resolvedListing?.distanceLyText) || resolvedListing?.distanceLyText)
-          const selectedStationDistance = formatStationDistance(resolvedListing?.distanceLs, sanitizeInaraText(resolvedListing?.distanceLsText) || resolvedListing?.distanceLsText)
-          const selectedUpdated = resolvedListing?.updatedAt
-            ? formatRelativeTime(resolvedListing.updatedAt)
-            : (sanitizeInaraText(resolvedListing?.updatedText) || resolvedListing?.updatedText || '')
-          const selectedStationName = sanitizeInaraText(resolvedListing?.stationName) || resolvedListing?.stationName || '--'
-          const selectedSystemName = sanitizeInaraText(resolvedListing?.systemName) || resolvedListing?.systemName || ''
-          const selectedDemandIndicator = (
-            <DemandIndicator
-              label={resolvedListing?.demandText || ''}
-              fallbackLabel={selectedDemand}
-              isLow={Boolean(resolvedListing?.demandIsLow)}
-              subtle
-            />
-          )
-          const defaultSelectedId = detail.selectedListingId || (listings[0]?.__id ?? null)
-
-          const getHeaderSortState = field => {
-            if (stationSortField !== field) return 'none'
-            return stationSortDirection === 'asc' ? 'ascending' : 'descending'
-          }
-
-          const toggleStationSort = field => {
-            setStationSortField(prevField => {
-              if (prevField === field) {
-                setStationSortDirection(prevDirection => (prevDirection === 'asc' ? 'desc' : 'asc'))
-                return prevField
-              }
-              setStationSortDirection(field === 'price' ? 'desc' : 'asc')
-              return field
-            })
-          }
-
-          const originEntry = detail.marketEntry || detail.localBestEntry || null
-          const sanitizedOrigin = originEntry ? sanitizeMarketListingEntry(originEntry) : null
-          const originStationName = sanitizedOrigin?.stationName || ''
-          const originSystem = sanitizedOrigin?.systemName || ''
-          const originType = sanitizedOrigin?.stationType || ''
-          const originIconName = originStationName ? stationIconFromType(originType || '') : null
-          const originUpdatedRaw = sanitizedOrigin?.updatedAt || null
-          const originUpdated = originUpdatedRaw
-            ? formatRelativeTime(sanitizedOrigin.updatedAt)
-            : (sanitizedOrigin?.updatedText || '')
-          const originUpdatedSeverity = originUpdatedRaw
-            ? getUpdateSeverity(originUpdatedRaw, { thresholds: thresholdSettings })
-            : { color: null }
-          const originDemandIndicator = sanitizedOrigin?.demandText
-            ? (
+        {activeCommodityDetail
+          ? (() => {
+              const detail = activeCommodityDetail
+              const listings = sortedDetailListings
+              const resolvedListing = resolvedDetailListing
+              const selectedPriceDisplay = resolvedListing ? formatCredits(resolvedListing.price, resolvedListing.priceText || '--') : '--'
+              const selectedValueDisplay = resolvedListing && typeof resolvedListing?.price === 'number'
+                ? formatCredits(resolvedListing.price * (detail.quantity || 0), '--')
+                : '--'
+              const selectedDemand = sanitizeInaraText(resolvedListing?.demandText) || (typeof resolvedListing?.demand === 'number' ? resolvedListing.demand.toLocaleString() : '')
+              const selectedSystemDistance = formatSystemDistance(resolvedListing?.distanceLy, sanitizeInaraText(resolvedListing?.distanceLyText) || resolvedListing?.distanceLyText)
+              const selectedStationDistance = formatStationDistance(resolvedListing?.distanceLs, sanitizeInaraText(resolvedListing?.distanceLsText) || resolvedListing?.distanceLsText)
+              const selectedUpdated = resolvedListing?.updatedAt
+                ? formatRelativeTime(resolvedListing.updatedAt)
+                : (sanitizeInaraText(resolvedListing?.updatedText) || resolvedListing?.updatedText || '')
+              const selectedStationName = sanitizeInaraText(resolvedListing?.stationName) || resolvedListing?.stationName || '--'
+              const selectedSystemName = sanitizeInaraText(resolvedListing?.systemName) || resolvedListing?.systemName || ''
+              const selectedDemandIndicator = (
                 <DemandIndicator
-                  label={sanitizedOrigin.demandText}
-                  fallbackLabel={sanitizedOrigin.demandText}
-                  isLow={Boolean(sanitizedOrigin.demandIsLow)}
+                  label={resolvedListing?.demandText || ''}
+                  fallbackLabel={selectedDemand}
+                  isLow={Boolean(resolvedListing?.demandIsLow)}
                   subtle
                 />
               )
-            : null
-          const localBestPrice = typeof detail.localBestPrice === 'number'
-            ? detail.localBestPrice
-            : (sanitizedOrigin?.price ?? null)
-          const localPriceDisplay = formatCredits(localBestPrice, sanitizedOrigin?.priceText || '--')
-          const sourceMetrics = []
-          if (localPriceDisplay && localPriceDisplay !== '--') {
-            sourceMetrics.push({ label: 'Buy', value: localPriceDisplay, priority: true })
-          }
-          if (originDemandIndicator) {
-            sourceMetrics.push({ label: 'Demand', value: originDemandIndicator, priority: true })
-          }
-          if (originUpdated) {
-            sourceMetrics.push({ label: 'Updated', value: originUpdated, color: originUpdatedSeverity.color })
-          }
-          const destinationMetrics = []
-          if (selectedPriceDisplay && selectedPriceDisplay !== '--') {
-            destinationMetrics.push({ label: 'Sell', value: selectedPriceDisplay, priority: true })
-          }
-          if (selectedDemandIndicator) {
-            destinationMetrics.push({ label: 'Demand', value: selectedDemandIndicator, priority: true })
-          }
-          const selectedUpdatedRaw = resolvedListing?.updatedAt || null
-          const selectedUpdatedSeverity = selectedUpdatedRaw
-            ? getUpdateSeverity(selectedUpdatedRaw, { thresholds: thresholdSettings })
-            : { color: null }
-          if (selectedUpdated) {
-            destinationMetrics.push({ label: 'Updated', value: selectedUpdated, color: selectedUpdatedSeverity.color })
-          }
-          const quantityDisplay = Number(detail.quantity || 0).toLocaleString()
-          const quantityText = quantityDisplay ? `${quantityDisplay} t` : ''
-          const profitPerUnit = (typeof resolvedListing?.price === 'number' && typeof localBestPrice === 'number')
-            ? resolvedListing.price - localBestPrice
-            : null
-          const profitPerUnitDisplay = formatCredits(profitPerUnit, '--')
-          const profitValue = profitPerUnit !== null ? profitPerUnit * (Number(detail.quantity) || 0) : null
-          const profitValueDisplay = formatCredits(profitValue, selectedValueDisplay)
-          const destinationStationType = sanitizeInaraText(resolvedListing?.stationType) || resolvedListing?.stationType || ''
-          const destinationIconName = destinationStationType ? stationIconFromType(destinationStationType) : null
-          const commodityPriceDisplay = selectedPriceDisplay && selectedPriceDisplay !== '--'
-            ? `@ ${selectedPriceDisplay}`
-            : ''
-          const commoditySubtexts = [
-            detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName ? detail.commoditySymbol : null,
-            profitPerUnitDisplay && profitPerUnitDisplay !== '--' ? `Profit/t ${profitPerUnitDisplay}` : null
-          ].filter(Boolean)
-          const distanceSeverity = getDistanceSeverity(resolvedListing?.distanceLy ?? null, ship?.maxJumpRange ?? null, { thresholds: thresholdSettings })
-          const stationDistanceSeverity = getStationDistanceSeverity(resolvedListing?.distanceLs ?? null, { thresholds: thresholdSettings })
-          const distanceSegment = {
-            label: 'Distance',
-            value: selectedSystemDistance || '',
-            secondary: selectedStationDistance || '',
-            valueColor: distanceSeverity.color || undefined,
-            secondaryColor: stationDistanceSeverity.color || undefined
-          }
-          const valueSecondaryParts = []
-          if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') valueSecondaryParts.push(`Per t ${profitPerUnitDisplay}`)
-          if (quantityText) valueSecondaryParts.push(`Payload ${quantityText}`)
-          const valueSecondary = valueSecondaryParts.join(' • ')
-          const shipSubtexts = Array.isArray(shipSourceSegment?.subtexts) ? shipSourceSegment.subtexts : []
-          const sourceSegment = shipSourceSegment
-            ? {
-                ...shipSourceSegment,
-                subtexts: [
-                  ...shipSubtexts,
-                  originStationName && originStationName !== shipSourceSegment.name ? `Docked: ${originStationName}` : null,
-                  originSystem
-                ].filter(Boolean),
-                metrics: sourceMetrics
-              }
-            : {
-                icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
-                name: originStationName || 'Local Market',
-                subtexts: [originSystem, originType].filter(Boolean),
-                metrics: sourceMetrics,
-                ariaLabel: originStationName ? `Origin station ${originStationName}` : 'Local market origin'
-              }
-          const destinationSubtexts = [selectedSystemName, destinationStationType].filter(Boolean)
-          const valueSegment = {
-            icon: <CreditsIcon size={22} />,
-            label: 'Profit',
-            value: profitValueDisplay && profitValueDisplay !== '--' ? profitValueDisplay : '',
-            secondary: valueSecondary
-          }
+              const defaultSelectedId = detail.selectedListingId || (listings[0]?.__id ?? null)
 
-          return (
-            <div className={styles.commodityDetailContainer}>
-              <div className={styles.commodityDetailContext}>
-                <TransferContextSummary
-                  className={styles.commodityDetailSummaryBar}
-                  item={{
-                    icon: <CommodityIcon category={detail.commodityCategory} size={28} />,
-                    name: detail.commodityName,
-                    subtexts: commoditySubtexts,
-                    quantity: quantityText,
-                    price: commodityPriceDisplay,
-                    ariaLabel: `${detail.commodityName} quantity ${quantityText || 'Unknown'}`
-                  }}
-                  source={sourceSegment}
-                  distance={distanceSegment}
-                  target={{
-                    icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
-                    name: selectedStationName,
-                    subtexts: destinationSubtexts,
-                    metrics: destinationMetrics,
-                    ariaLabel: `Destination station ${selectedStationName}`
-                  }}
-                  value={valueSegment}
-                />
-                <div className={styles.commodityDetailActions}>
-                  <button type='button' className='button button--secondary' onClick={handleCommodityDetailClose}>
-                    Back to Cargo
-                  </button>
-                </div>
-              </div>
+              const getHeaderSortState = field => {
+                if (stationSortField !== field) return 'none'
+                return stationSortDirection === 'asc' ? 'ascending' : 'descending'
+              }
 
-              <div className='inara-panel-table'>
-                <div className='scrollable' style={STATION_TABLE_SCROLL_AREA_STYLE}>
-                  {listings.length === 0 ? (
-                    <div className={styles.detailEmptyState}>
-                      No INARA listings available for this commodity.
+              const toggleStationSort = field => {
+                setStationSortField(prevField => {
+                  if (prevField === field) {
+                    setStationSortDirection(prevDirection => (prevDirection === 'asc' ? 'desc' : 'asc'))
+                    return prevField
+                  }
+                  setStationSortDirection(field === 'price' ? 'desc' : 'asc')
+                  return field
+                })
+              }
+
+              const originEntry = detail.marketEntry || detail.localBestEntry || null
+              const sanitizedOrigin = originEntry ? sanitizeMarketListingEntry(originEntry) : null
+              const originStationName = sanitizedOrigin?.stationName || ''
+              const originSystem = sanitizedOrigin?.systemName || ''
+              const originType = sanitizedOrigin?.stationType || ''
+              const originIconName = originStationName ? stationIconFromType(originType || '') : null
+              const originUpdatedRaw = sanitizedOrigin?.updatedAt || null
+              const originUpdated = originUpdatedRaw
+                ? formatRelativeTime(sanitizedOrigin.updatedAt)
+                : (sanitizedOrigin?.updatedText || '')
+              const originUpdatedSeverity = originUpdatedRaw
+                ? getUpdateSeverity(originUpdatedRaw, { thresholds: thresholdSettings })
+                : { color: null }
+              const originDemandIndicator = sanitizedOrigin?.demandText
+                ? (
+                  <DemandIndicator
+                    label={sanitizedOrigin.demandText}
+                    fallbackLabel={sanitizedOrigin.demandText}
+                    isLow={Boolean(sanitizedOrigin.demandIsLow)}
+                    subtle
+                  />
+                  )
+                : null
+              const localBestPrice = typeof detail.localBestPrice === 'number'
+                ? detail.localBestPrice
+                : (sanitizedOrigin?.price ?? null)
+              const localPriceDisplay = formatCredits(localBestPrice, sanitizedOrigin?.priceText || '--')
+              const sourceMetrics = []
+              if (localPriceDisplay && localPriceDisplay !== '--') {
+                sourceMetrics.push({ label: 'Buy', value: localPriceDisplay, priority: true })
+              }
+              if (originDemandIndicator) {
+                sourceMetrics.push({ label: 'Demand', value: originDemandIndicator, priority: true })
+              }
+              if (originUpdated) {
+                sourceMetrics.push({ label: 'Updated', value: originUpdated, color: originUpdatedSeverity.color })
+              }
+              const destinationMetrics = []
+              if (selectedPriceDisplay && selectedPriceDisplay !== '--') {
+                destinationMetrics.push({ label: 'Sell', value: selectedPriceDisplay, priority: true })
+              }
+              if (selectedDemandIndicator) {
+                destinationMetrics.push({ label: 'Demand', value: selectedDemandIndicator, priority: true })
+              }
+              const selectedUpdatedRaw = resolvedListing?.updatedAt || null
+              const selectedUpdatedSeverity = selectedUpdatedRaw
+                ? getUpdateSeverity(selectedUpdatedRaw, { thresholds: thresholdSettings })
+                : { color: null }
+              if (selectedUpdated) {
+                destinationMetrics.push({ label: 'Updated', value: selectedUpdated, color: selectedUpdatedSeverity.color })
+              }
+              const quantityDisplay = Number(detail.quantity || 0).toLocaleString()
+              const quantityText = quantityDisplay ? `${quantityDisplay} t` : ''
+              const profitPerUnit = (typeof resolvedListing?.price === 'number' && typeof localBestPrice === 'number')
+                ? resolvedListing.price - localBestPrice
+                : null
+              const profitPerUnitDisplay = formatCredits(profitPerUnit, '--')
+              const profitValue = profitPerUnit !== null ? profitPerUnit * (Number(detail.quantity) || 0) : null
+              const profitValueDisplay = formatCredits(profitValue, selectedValueDisplay)
+              const destinationStationType = sanitizeInaraText(resolvedListing?.stationType) || resolvedListing?.stationType || ''
+              const destinationIconName = destinationStationType ? stationIconFromType(destinationStationType) : null
+              const commodityPriceDisplay = selectedPriceDisplay && selectedPriceDisplay !== '--'
+                ? `@ ${selectedPriceDisplay}`
+                : ''
+              const commoditySubtexts = [
+                detail.commoditySymbol && detail.commoditySymbol !== detail.commodityName ? detail.commoditySymbol : null,
+                profitPerUnitDisplay && profitPerUnitDisplay !== '--' ? `Profit/t ${profitPerUnitDisplay}` : null
+              ].filter(Boolean)
+              const distanceSeverity = getDistanceSeverity(resolvedListing?.distanceLy ?? null, ship?.maxJumpRange ?? null, { thresholds: thresholdSettings })
+              const stationDistanceSeverity = getStationDistanceSeverity(resolvedListing?.distanceLs ?? null, { thresholds: thresholdSettings })
+              const distanceSegment = {
+                label: 'Distance',
+                value: selectedSystemDistance || '',
+                secondary: selectedStationDistance || '',
+                valueColor: distanceSeverity.color || undefined,
+                secondaryColor: stationDistanceSeverity.color || undefined
+              }
+              const valueSecondaryParts = []
+              if (profitPerUnitDisplay && profitPerUnitDisplay !== '--') valueSecondaryParts.push(`Per t ${profitPerUnitDisplay}`)
+              if (quantityText) valueSecondaryParts.push(`Payload ${quantityText}`)
+              const valueSecondary = valueSecondaryParts.join(' • ')
+              const shipSubtexts = Array.isArray(shipSourceSegment?.subtexts) ? shipSourceSegment.subtexts : []
+              const sourceSegment = shipSourceSegment
+                ? {
+                    ...shipSourceSegment,
+                    subtexts: [
+                      ...shipSubtexts,
+                      originStationName && originStationName !== shipSourceSegment.name ? `Docked: ${originStationName}` : null,
+                      originSystem
+                    ].filter(Boolean),
+                    metrics: sourceMetrics
+                  }
+                : {
+                    icon: originIconName ? <StationIcon icon={originIconName} size={24} /> : null,
+                    name: originStationName || 'Local Market',
+                    subtexts: [originSystem, originType].filter(Boolean),
+                    metrics: sourceMetrics,
+                    ariaLabel: originStationName ? `Origin station ${originStationName}` : 'Local market origin'
+                  }
+              const destinationSubtexts = [selectedSystemName, destinationStationType].filter(Boolean)
+              const valueSegment = {
+                icon: <CreditsIcon size={22} />,
+                label: 'Profit',
+                value: profitValueDisplay && profitValueDisplay !== '--' ? profitValueDisplay : '',
+                secondary: valueSecondary
+              }
+
+              return (
+                <div className={styles.commodityDetailContainer}>
+                  <div className={styles.commodityDetailContext}>
+                    <TransferContextSummary
+                      className={styles.commodityDetailSummaryBar}
+                      item={{
+                        icon: <CommodityIcon category={detail.commodityCategory} size={28} />,
+                        name: detail.commodityName,
+                        subtexts: commoditySubtexts,
+                        quantity: quantityText,
+                        price: commodityPriceDisplay,
+                        ariaLabel: `${detail.commodityName} quantity ${quantityText || 'Unknown'}`
+                      }}
+                      source={sourceSegment}
+                      distance={distanceSegment}
+                      target={{
+                        icon: destinationIconName ? <StationIcon icon={destinationIconName} size={24} /> : null,
+                        name: selectedStationName,
+                        subtexts: destinationSubtexts,
+                        metrics: destinationMetrics,
+                        ariaLabel: `Destination station ${selectedStationName}`
+                      }}
+                      value={valueSegment}
+                    />
+                    <div className={styles.commodityDetailActions}>
+                      <button type='button' className='button button--secondary' onClick={handleCommodityDetailClose}>
+                        Back to Cargo
+                      </button>
                     </div>
-                  ) : (
-                    <div className={styles.dataTableContainer}>
-                      <table className={styles.dataTable}>
-                        <thead>
-                          <tr>
-                            <th>Station</th>
-                            <th
-                              scope='col'
-                              aria-sort={getHeaderSortState('distanceLy')}
-                            >
-                              <button
-                                type='button'
-                                className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLy' ? styles.tableHeaderButtonActive : ''}`}
-                                onClick={() => toggleStationSort('distanceLy')}
-                              >
-                                Distance
-                                {stationSortField === 'distanceLy' && (
-                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
-                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
-                                  </span>
-                                )}
-                              </button>
-                            </th>
-                            <th
-                              scope='col'
-                              aria-sort={getHeaderSortState('distanceLs')}
-                            >
-                              <button
-                                type='button'
-                                className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLs' ? styles.tableHeaderButtonActive : ''}`}
-                                onClick={() => toggleStationSort('distanceLs')}
-                              >
-                                Station Distance
-                                {stationSortField === 'distanceLs' && (
-                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
-                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
-                                  </span>
-                                )}
-                              </button>
-                            </th>
-                            <th>Demand</th>
-                            <th
-                              scope='col'
-                              aria-sort={getHeaderSortState('price')}
-                            >
-                              <button
-                                type='button'
-                                className={`${styles.tableHeaderButton} ${stationSortField === 'price' ? styles.tableHeaderButtonActive : ''}`}
-                                onClick={() => toggleStationSort('price')}
-                              >
-                                Price
-                                {stationSortField === 'price' && (
-                                  <span className={styles.tableSortIndicator} aria-hidden='true'>
-                                    {stationSortDirection === 'asc' ? '▲' : '▼'}
-                                  </span>
-                                )}
-                              </button>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {listings.map((listing, listingIndex) => {
-                            const isSelected = listing.__id === defaultSelectedId
-                            const stationIcon = stationIconFromType(listing.stationType || '')
-                            const systemDistanceDisplay = formatSystemDistance(listing.distanceLy, listing.distanceLyText)
-                            const systemDistanceSeverity = getDistanceSeverity(listing.distanceLy ?? null, ship?.maxJumpRange ?? null, { thresholds: thresholdSettings })
-                            const stationDistanceSeverity = getStationDistanceSeverity(listing.distanceLs ?? null, { thresholds: thresholdSettings })
-                            const stationDistanceDisplay = formatStationDistance(listing.distanceLs, listing.distanceLsText)
-                            const demandDisplay = sanitizeInaraText(listing.demandText) || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
-                            const updatedDisplay = listing.updatedAt
-                              ? formatRelativeTime(listing.updatedAt)
-                              : (listing.updatedText || '')
-                            const updatedSeverity = listing.updatedAt
-                              ? getUpdateSeverity(listing.updatedAt, { thresholds: thresholdSettings })
-                              : { color: null }
-                            const priceDisplay = formatCredits(listing.price, listing.priceText || '--')
-                            const rowClasses = [styles.tableRowInteractive]
-                            if (isSelected) rowClasses.push(styles.stationRowSelected)
+                  </div>
 
-                            const handleListingKeyDown = event => {
-                              if (event.key === 'Enter' || event.key === ' ') {
-                                event.preventDefault()
-                                handleStationContextSelect(listing.__id)
+                  <div className='inara-panel-table'>
+                    <div className='scrollable' style={STATION_TABLE_SCROLL_AREA_STYLE}>
+                      {listings.length === 0
+                        ? (
+                          <div className={styles.detailEmptyState}>
+                            No INARA listings available for this commodity.
+                          </div>
+                          )
+                        : (
+                          <div className={styles.dataTableContainer}>
+                            <table className={styles.dataTable}>
+                              <thead>
+                              <tr>
+                              <th>Station</th>
+                              <th
+                                scope='col'
+                                aria-sort={getHeaderSortState('distanceLy')}
+                              >
+                                <button
+                                  type='button'
+                                  className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLy' ? styles.tableHeaderButtonActive : ''}`}
+                                  onClick={() => toggleStationSort('distanceLy')}
+                                >
+                                  Distance
+                                  {stationSortField === 'distanceLy' && (
+                                    <span className={styles.tableSortIndicator} aria-hidden='true'>
+                  {stationSortDirection === 'asc' ? '▲' : '▼'}
+                </span>
+                                  )}
+                                </button>
+                              </th>
+                              <th
+                                scope='col'
+                                aria-sort={getHeaderSortState('distanceLs')}
+                              >
+                                <button
+                                  type='button'
+                                  className={`${styles.tableHeaderButton} ${stationSortField === 'distanceLs' ? styles.tableHeaderButtonActive : ''}`}
+                                  onClick={() => toggleStationSort('distanceLs')}
+                                >
+                                  Station Distance
+                                  {stationSortField === 'distanceLs' && (
+                                    <span className={styles.tableSortIndicator} aria-hidden='true'>
+                  {stationSortDirection === 'asc' ? '▲' : '▼'}
+                </span>
+                                  )}
+                                </button>
+                              </th>
+                              <th>Demand</th>
+                              <th
+                                scope='col'
+                                aria-sort={getHeaderSortState('price')}
+                              >
+                                <button
+                                  type='button'
+                                  className={`${styles.tableHeaderButton} ${stationSortField === 'price' ? styles.tableHeaderButtonActive : ''}`}
+                                  onClick={() => toggleStationSort('price')}
+                                >
+                                  Price
+                                  {stationSortField === 'price' && (
+                                    <span className={styles.tableSortIndicator} aria-hidden='true'>
+                  {stationSortDirection === 'asc' ? '▲' : '▼'}
+                </span>
+                                  )}
+                                </button>
+                              </th>
+                            </tr>
+                            </thead>
+                              <tbody>
+                              {listings.map((listing, listingIndex) => {
+                              const isSelected = listing.__id === defaultSelectedId
+                              const stationIcon = stationIconFromType(listing.stationType || '')
+                              const systemDistanceDisplay = formatSystemDistance(listing.distanceLy, listing.distanceLyText)
+                              const systemDistanceSeverity = getDistanceSeverity(listing.distanceLy ?? null, ship?.maxJumpRange ?? null, { thresholds: thresholdSettings })
+                              const stationDistanceSeverity = getStationDistanceSeverity(listing.distanceLs ?? null, { thresholds: thresholdSettings })
+                              const stationDistanceDisplay = formatStationDistance(listing.distanceLs, listing.distanceLsText)
+                              const demandDisplay = sanitizeInaraText(listing.demandText) || (typeof listing.demand === 'number' ? listing.demand.toLocaleString() : '')
+                              const updatedDisplay = listing.updatedAt
+                                ? formatRelativeTime(listing.updatedAt)
+                                : (listing.updatedText || '')
+                              const updatedSeverity = listing.updatedAt
+                                ? getUpdateSeverity(listing.updatedAt, { thresholds: thresholdSettings })
+                                : { color: null }
+                              const priceDisplay = formatCredits(listing.price, listing.priceText || '--')
+                              const rowClasses = [styles.tableRowInteractive]
+                              if (isSelected) rowClasses.push(styles.stationRowSelected)
+
+                              const handleListingKeyDown = event => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                  event.preventDefault()
+                                  handleStationContextSelect(listing.__id)
+                                }
                               }
-                            }
 
-                            return (
-                              <tr
-                                key={listing.__id || `${detail.key}-listing-${listingIndex}`}
-                                className={rowClasses.join(' ')}
-                                onClick={() => handleStationContextSelect(listing.__id)}
-                                onKeyDown={handleListingKeyDown}
-                                tabIndex={0}
-                                role='button'
-                                aria-pressed={isSelected}
-                                data-inara-table-row='visible'
-                              >
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  <StationCard
-                                    stationName={listing.stationName || 'Unknown Station'}
-                                    systemName={listing.systemName || 'Unknown System'}
-                                    stationType={listing.stationType || ''}
-                                    distanceLsText={stationDistanceDisplay}
-                                    distanceLsColor={stationDistanceSeverity.color}
-                                    mode='small'
-                                    isSelected={isSelected}
-                                  />
-                                </td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  {systemDistanceDisplay
-                                    ? (
+                              return (
+                                <tr
+                                  key={listing.__id || `${detail.key}-listing-${listingIndex}`}
+                                  className={rowClasses.join(' ')}
+                                  onClick={() => handleStationContextSelect(listing.__id)}
+                                  onKeyDown={handleListingKeyDown}
+                                  tabIndex={0}
+                                  role='button'
+                                  aria-pressed={isSelected}
+                                  data-inara-table-row='visible'
+                                >
+                                  <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                                    <StationCard
+                  stationName={listing.stationName || 'Unknown Station'}
+                  systemName={listing.systemName || 'Unknown System'}
+                  stationType={listing.stationType || ''}
+                  distanceLsText={stationDistanceDisplay}
+                  distanceLsColor={stationDistanceSeverity.color}
+                  mode='small'
+                  isSelected={isSelected}
+                />
+                                  </td>
+                                  <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                                    {systemDistanceDisplay
+                  ? (
                                       <span style={systemDistanceSeverity.color ? { color: systemDistanceSeverity.color } : undefined}>
                                         {systemDistanceDisplay}
                                       </span>
-                                      )
-                                    : '--'}
-                                </td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  {stationDistanceDisplay
-                                    ? (
+                    )
+                  : '--'}
+                                  </td>
+                                  <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                                    {stationDistanceDisplay
+                  ? (
                                       <span style={stationDistanceSeverity.color ? { color: stationDistanceSeverity.color } : undefined}>
                                         {stationDistanceDisplay}
                                       </span>
-                                      )
-                                    : '--'}
-                                </td>
-                                <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
-                                  {((listing.demandText || demandDisplay) && (listing.demandText || demandDisplay).toString().trim())
-                                    ? (
+                    )
+                  : '--'}
+                                  </td>
+                                  <td className={`${styles.tableCellTop} ${styles.tableCellWrap}`}>
+                                    {((listing.demandText || demandDisplay) && (listing.demandText || demandDisplay).toString().trim())
+                  ? (
                                       <DemandIndicator
                                         label={listing.demandText || demandDisplay}
                                         fallbackLabel={demandDisplay}
                                         isLow={Boolean(listing.demandIsLow)}
                                       />
-                                      )
-                                    : '--'}
-                                </td>
-                                <td className={`text-right ${styles.tableCellTop} ${styles.tableCellCompact}`}>
-                                  <div>{priceDisplay}</div>
-                                  {updatedDisplay ? (
-                                    <div
-                                      className={styles.tableMetaMuted}
-                                      style={updatedSeverity.color ? { color: updatedSeverity.color } : undefined}
-                                    >
-                                      Updated {updatedDisplay}
-                                    </div>
-                                  ) : null}
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
+                    )
+                  : '--'}
+                                  </td>
+                                  <td className={`text-right ${styles.tableCellTop} ${styles.tableCellCompact}`}>
+                                    <div>{priceDisplay}</div>
+                                    {updatedDisplay
+                  ? (
+                                      <div
+                                        className={styles.tableMetaMuted}
+                                        style={updatedSeverity.color ? { color: updatedSeverity.color } : undefined}
+                                      >
+                                        Updated {updatedDisplay}
+                                      </div>
+                    )
+                  : null}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                            </tbody>
+                            </table>
+                          </div>
+                          )}
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </div>
-          )
-        })()
-        : (
-          <>
-            <div className='inara-panel-table'>
-              <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
-                {commodityContext ? (
-                  <CommoditySummary
-                    summary={commodityContext}
-                    shipSourceSegment={shipSourceSegment}
-                    className={styles.transferSummaryBar}
-                    valueIcon={<CreditsIcon size={22} />}
-                    shipJumpRange={ship?.maxJumpRange ?? null}
-                  />
-                ) : null}
+              )
+            })()
+          : (
+            <>
+              <div className='inara-panel-table'>
+                <div className='scrollable' style={TABLE_SCROLL_AREA_STYLE}>
+                  {commodityContext
+                    ? (
+                      <CommoditySummary
+                        summary={commodityContext}
+                        shipSourceSegment={shipSourceSegment}
+                        className={styles.transferSummaryBar}
+                        valueIcon={<CreditsIcon size={22} />}
+                        shipJumpRange={ship?.maxJumpRange ?? null}
+                      />
+                      )
+                    : null}
 
-                {renderStatusBanner()}
+                  {renderStatusBanner()}
 
-                {status === 'ready' && hasCargo && hasDisplayableRows && (
-                  <div className={styles.dataTableContainer} ref={tableContainerRef}>
-                    <table className={`${styles.dataTable} ${styles.dataTableDense}`}>
-                      <thead>
-                        <tr>
+                  {status === 'ready' && hasCargo && hasDisplayableRows && (
+                    <div className={styles.dataTableContainer} ref={tableContainerRef}>
+                      <table className={`${styles.dataTable} ${styles.dataTableDense}`}>
+                        <thead>
+                          <tr>
                           <th>Commodity</th>
                           <th className='text-right'>Qty</th>
                           <th>Local Data</th>
                           <th>INARA Max</th>
                           <th className='text-right'>Value</th>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {commodityRows.map((row, index) => {
-                    const {
-                      item,
-                      entry,
-                      quantity,
-                      inaraPrice,
-                      localBestEntry,
-                      localBestSource,
-                      historyEntries,
-                      marketEntry,
-                      bestValue,
-                      bestSource,
-                      inaraValue,
-                      localValue,
-                      inaraEntry
-                    } = row
+                        </thead>
+                        <tbody>
+                          {commodityRows.map((row, index) => {
+                          const {
+                            item,
+                            entry,
+                            quantity,
+                            inaraPrice,
+                            localBestEntry,
+                            localBestSource,
+                            historyEntries,
+                            marketEntry,
+                            bestValue,
+                            bestSource,
+                            inaraValue,
+                            localValue,
+                            inaraEntry
+                          } = row
 
-                    const inaraContextEntry = inaraEntry || entry?.inara || null
-                    const inaraStation = sanitizeInaraText(inaraContextEntry?.stationName) || inaraContextEntry?.stationName || ''
-                    const inaraSystem = sanitizeInaraText(inaraContextEntry?.systemName) || inaraContextEntry?.systemName || ''
-                    const inaraDemand = sanitizeInaraText(inaraContextEntry?.demandText) || (typeof inaraContextEntry?.demand === 'number' ? inaraContextEntry.demand.toLocaleString() : '')
-                    const inaraDemandIndicator = (inaraContextEntry?.demandText || inaraDemand)
-                      ? (
-                        <DemandIndicator
-                          label={inaraContextEntry?.demandText || inaraDemand}
-                          fallbackLabel={inaraDemand}
-                          isLow={Boolean(inaraContextEntry?.demandIsLow)}
-                          subtle
-                        />
-                        )
-                      : null
-                    const inaraUpdatedText = sanitizeInaraText(inaraContextEntry?.updatedText) || inaraContextEntry?.updatedText || ''
-                    const inaraUpdatedRaw = inaraContextEntry?.updatedAt || null
-                    const inaraUpdated = inaraUpdatedRaw
-                      ? formatRelativeTime(inaraContextEntry.updatedAt)
-                      : inaraUpdatedText
-                    const inaraUpdatedSeverity = inaraUpdatedRaw
-                      ? getUpdateSeverity(inaraUpdatedRaw, { thresholds: thresholdSettings })
-                      : { color: null }
-                    const inaraPriceDisplay = typeof inaraPrice === 'number' ? formatCredits(inaraPrice, '--') : '--'
-                    const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
+                          const inaraContextEntry = inaraEntry || entry?.inara || null
+                          const inaraStation = sanitizeInaraText(inaraContextEntry?.stationName) || inaraContextEntry?.stationName || ''
+                          const inaraSystem = sanitizeInaraText(inaraContextEntry?.systemName) || inaraContextEntry?.systemName || ''
+                          const inaraDemand = sanitizeInaraText(inaraContextEntry?.demandText) || (typeof inaraContextEntry?.demand === 'number' ? inaraContextEntry.demand.toLocaleString() : '')
+                          const inaraDemandIndicator = (inaraContextEntry?.demandText || inaraDemand)
+                            ? (
+                              <DemandIndicator
+                                label={inaraContextEntry?.demandText || inaraDemand}
+                                fallbackLabel={inaraDemand}
+                                isLow={Boolean(inaraContextEntry?.demandIsLow)}
+                                subtle
+                              />
+                              )
+                            : null
+                          const inaraUpdatedText = sanitizeInaraText(inaraContextEntry?.updatedText) || inaraContextEntry?.updatedText || ''
+                          const inaraUpdatedRaw = inaraContextEntry?.updatedAt || null
+                          const inaraUpdated = inaraUpdatedRaw
+                            ? formatRelativeTime(inaraContextEntry.updatedAt)
+                            : inaraUpdatedText
+                          const inaraUpdatedSeverity = inaraUpdatedRaw
+                            ? getUpdateSeverity(inaraUpdatedRaw, { thresholds: thresholdSettings })
+                            : { color: null }
+                          const inaraPriceDisplay = typeof inaraPrice === 'number' ? formatCredits(inaraPrice, '--') : '--'
+                          const bestValueDisplay = typeof bestValue === 'number' ? formatCredits(bestValue, '--') : '--'
 
-                    const localEntriesForDisplay = []
-                    if (localBestEntry) {
-                      localEntriesForDisplay.push({
-                        label: localBestSource === 'local-history' ? 'Best local' : 'Current station',
-                        entry: localBestEntry,
-                        highlight: true,
-                        source: localBestSource === 'local-history' ? 'history' : 'station'
-                      })
-                    }
+                          const localEntriesForDisplay = []
+                          if (localBestEntry) {
+                            localEntriesForDisplay.push({
+                              label: localBestSource === 'local-history' ? 'Best local' : 'Current station',
+                              entry: localBestEntry,
+                              highlight: true,
+                              source: localBestSource === 'local-history' ? 'history' : 'station'
+                            })
+                          }
 
-                    if (marketEntry && (!localBestEntry || !isSameMarketEntry(marketEntry, localBestEntry))) {
-                      localEntriesForDisplay.push({
-                        label: 'Current station',
-                        entry: marketEntry,
-                        source: 'station'
-                      })
-                    }
+                          if (marketEntry && (!localBestEntry || !isSameMarketEntry(marketEntry, localBestEntry))) {
+                            localEntriesForDisplay.push({
+                              label: 'Current station',
+                              entry: marketEntry,
+                              source: 'station'
+                            })
+                          }
 
-                    const remainingHistoryEntries = historyEntries.filter(historyEntry => {
-                      if (!historyEntry) return false
-                      if (localBestEntry && isSameMarketEntry(historyEntry, localBestEntry)) return false
-                      if (marketEntry && isSameMarketEntry(historyEntry, marketEntry)) return false
-                      return true
-                    })
+                          const remainingHistoryEntries = historyEntries.filter(historyEntry => {
+                            if (!historyEntry) return false
+                            if (localBestEntry && isSameMarketEntry(historyEntry, localBestEntry)) return false
+                            if (marketEntry && isSameMarketEntry(historyEntry, marketEntry)) return false
+                            return true
+                          })
 
-                    const displayedHistoryEntries = remainingHistoryEntries.slice(0, 2)
-                    displayedHistoryEntries.forEach(entryData => {
-                      localEntriesForDisplay.push({
-                        label: 'Nearby data',
-                        entry: entryData,
-                        source: 'history'
-                      })
-                    })
+                          const displayedHistoryEntries = remainingHistoryEntries.slice(0, 2)
+                          displayedHistoryEntries.forEach(entryData => {
+                            localEntriesForDisplay.push({
+                              label: 'Nearby data',
+                              entry: entryData,
+                              source: 'history'
+                            })
+                          })
 
-                    const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
+                          const remainingCount = Math.max(0, remainingHistoryEntries.length - displayedHistoryEntries.length)
 
-                    const isContextRow = commodityContext?.commodityKey === row.key
-                    const contextSummary = isContextRow ? commodityContext : null
-                    const contextDistance = contextSummary ? formatStationDistance(contextSummary.distanceLs, contextSummary.distanceLsText) : ''
-                    const contextSystemDistance = contextSummary ? formatSystemDistance(contextSummary.distanceLy, contextSummary.distanceLyText) : ''
-                    const contextSystemSeverity = contextSummary
-                      ? getDistanceSeverity(contextSummary.distanceLy ?? null, ship?.maxJumpRange ?? null, { thresholds: thresholdSettings })
-                      : null
-                    const contextStationSeverity = contextSummary
-                      ? getStationDistanceSeverity(contextSummary.distanceLs ?? null, { thresholds: thresholdSettings })
-                      : null
-                    const rowClassNames = [styles.tableRowInteractive]
-                    if (isContextRow) rowClassNames.push(styles.tableRowContext)
+                          const isContextRow = commodityContext?.commodityKey === row.key
+                          const contextSummary = isContextRow ? commodityContext : null
+                          const contextDistance = contextSummary ? formatStationDistance(contextSummary.distanceLs, contextSummary.distanceLsText) : ''
+                          const contextSystemDistance = contextSummary ? formatSystemDistance(contextSummary.distanceLy, contextSummary.distanceLyText) : ''
+                          const contextSystemSeverity = contextSummary
+                            ? getDistanceSeverity(contextSummary.distanceLy ?? null, ship?.maxJumpRange ?? null, { thresholds: thresholdSettings })
+                            : null
+                          const contextStationSeverity = contextSummary
+                            ? getStationDistanceSeverity(contextSummary.distanceLs ?? null, { thresholds: thresholdSettings })
+                            : null
+                          const rowClassNames = [styles.tableRowInteractive]
+                          if (isContextRow) rowClassNames.push(styles.tableRowContext)
 
-                    const handleRowKeyDown = event => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
-                        handleOpenCommodityDetail(row)
-                      }
-                    }
+                          const handleRowKeyDown = event => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault()
+                              handleOpenCommodityDetail(row)
+                            }
+                          }
 
-                    return (
-                      <tr
-                        key={`${row.key}-${index}`}
-                        className={rowClassNames.join(' ')}
-                        data-inara-table-row='pending'
-                        onClick={() => handleOpenCommodityDetail(row)}
-                        onKeyDown={handleRowKeyDown}
-                        tabIndex={0}
-                        role='button'
-                        aria-label={`Open ${(item?.name || item?.symbol || 'commodity')} detail`}
-                      >
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div className={styles.commodityCell}>
-                            <div className={styles.commodityCellIcon}>
-                              <CommodityIcon category={item?.category} size={22} />
-                            </div>
-                            <div className={styles.commodityCellText}>
-                              <div className={styles.commodityCellTitle}>{item?.name || item?.symbol || 'Unknown'}</div>
-                              {item?.symbol && item?.symbol !== item?.name && (
-                                <div className={styles.tableSubtext}>{item.symbol}</div>
-                              )}
-                              {entry?.errors?.inara && !entry?.inara && (
-                                <div className={styles.tableWarning}>{entry.errors.inara}</div>
-                              )}
-                              {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
-                                <div className={styles.tableWarning}>{entry.errors.market}</div>
-                              )}
-                              {isContextRow && contextSummary?.stationName && (
-                                <div className={styles.tableContextIndicator}>
-                                  <span className={styles.tableContextLabel}>Station Context</span>
-                                  <span className={styles.tableContextValue}>
-                                    <CopyOnClick copyMessageKey='station'>{contextSummary.stationName}</CopyOnClick>
-                                    {contextSummary.systemName ? (
-                                      <>
-                                        {' · '}
-                                        <CopyOnClick copyMessageKey='system'>{contextSummary.systemName}</CopyOnClick>
-                                      </>
-                                    ) : null}
-                                  </span>
-                                  {(contextSystemDistance || contextDistance) && (
-                                    <span className={styles.tableContextFootnote}>
-                                      {contextSystemDistance
+                          return (
+                            <tr
+                              key={`${row.key}-${index}`}
+                              className={rowClassNames.join(' ')}
+                              data-inara-table-row='pending'
+                              onClick={() => handleOpenCommodityDetail(row)}
+                              onKeyDown={handleRowKeyDown}
+                              tabIndex={0}
+                              role='button'
+                              aria-label={`Open ${(item?.name || item?.symbol || 'commodity')} detail`}
+                            >
+                              <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                                <div className={styles.commodityCell}>
+                                  <div className={styles.commodityCellIcon}>
+                                    <CommodityIcon category={item?.category} size={22} />
+                                  </div>
+                                  <div className={styles.commodityCellText}>
+                                    <div className={styles.commodityCellTitle}>{item?.name || item?.symbol || 'Unknown'}</div>
+                                    {item?.symbol && item?.symbol !== item?.name && (
+                                      <div className={styles.tableSubtext}>{item.symbol}</div>
+                                    )}
+                                    {entry?.errors?.inara && !entry?.inara && (
+                                      <div className={styles.tableWarning}>{entry.errors.inara}</div>
+                                    )}
+                                    {entry?.errors?.market && !entry?.market && marketStatus !== 'missing' && (
+                                      <div className={styles.tableWarning}>{entry.errors.market}</div>
+                                    )}
+                                    {isContextRow && contextSummary?.stationName && (
+                                      <div className={styles.tableContextIndicator}>
+                                        <span className={styles.tableContextLabel}>Station Context</span>
+                                        <span className={styles.tableContextValue}>
+                                          <CopyOnClick copyMessageKey='station'>{contextSummary.stationName}</CopyOnClick>
+                                          {contextSummary.systemName
+                                            ? (
+                                        <>
+                                          {' · '}
+                                          <CopyOnClick copyMessageKey='system'>{contextSummary.systemName}</CopyOnClick>
+                                        </>
+                                              )
+                                            : null}
+                                        </span>
+                                        {(contextSystemDistance || contextDistance) && (
+                                          <span className={styles.tableContextFootnote}>
+                                            {contextSystemDistance
                                         ? (
                                           <span style={contextSystemSeverity?.color ? { color: contextSystemSeverity.color } : undefined}>
                                             {contextSystemDistance}
                                           </span>
                                           )
                                         : null}
-                                      {contextSystemDistance && contextDistance ? ' / ' : null}
-                                      {contextDistance
+                                            {contextSystemDistance && contextDistance ? ' / ' : null}
+                                            {contextDistance
                                         ? (
                                           <span style={contextStationSeverity?.color ? { color: contextStationSeverity.color } : undefined}>
                                             {contextDistance}
                                           </span>
                                           )
                                         : null}
-                                    </span>
-                                  )}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{quantity.toLocaleString()}</td>
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          {localEntriesForDisplay.length > 0
-                            ? localEntriesForDisplay.map((entryInfo, entryIndex) => renderLocalEntry(entryInfo.label, entryInfo.entry, {
-                                highlight: entryInfo.highlight,
-                                source: entryInfo.source,
-                                index: entryIndex
-                              }))
-                            : <div>--</div>}
-                          {remainingCount > 0 && (
-                            <div className={styles.tableMutedNote}>+ {remainingCount} more recorded markets</div>
-                          )}
-                        </td>
-                        <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div>{inaraPriceDisplay}</div>
-                          {inaraStation && (
-                            <div className={styles.tableSubtext}>
-                              <CopyOnClick copyMessageKey='station'>{inaraStation}</CopyOnClick>
-                              {inaraSystem ? (
-                                <>
-                                  {' · '}
-                                  <CopyOnClick copyMessageKey='system'>{inaraSystem}</CopyOnClick>
-                                </>
-                              ) : null}
-                            </div>
-                          )}
-                          {inaraDemand && (
-                            <div className={styles.tableMetaMuted}>
-                              Demand: {inaraDemandIndicator || inaraDemand}
-                            </div>
-                          )}
-                          {inaraUpdated && (
-                            <div
-                              className={styles.tableMetaMuted}
-                              style={inaraUpdatedSeverity.color ? { color: inaraUpdatedSeverity.color } : undefined}
-                            >
-                              Updated {inaraUpdated}
-                            </div>
-                          )}
-                        </td>
-                        <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>
-                          <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
-                          {typeof localValue === 'number' && typeof inaraValue === 'number' && Math.abs(localValue - inaraValue) > 0.01 && (
-                            <div className={styles.tableMetaMuted}>
-                              INARA {formatCredits(inaraValue, '--')} · Local {formatCredits(localValue, '--')}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                        {nonCommodityRows.map((row, index) => {
+                              </td>
+                              <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>{quantity.toLocaleString()}</td>
+                              <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                                {localEntriesForDisplay.length > 0
+                                  ? localEntriesForDisplay.map((entryInfo, entryIndex) => renderLocalEntry(entryInfo.label, entryInfo.entry, {
+                                      highlight: entryInfo.highlight,
+                                      source: entryInfo.source,
+                                      index: entryIndex
+                                    }))
+                                  : <div>--</div>}
+                                {remainingCount > 0 && (
+                                  <div className={styles.tableMutedNote}>+ {remainingCount} more recorded markets</div>
+                                )}
+                              </td>
+                              <td className={`${styles.tableCellTop} ${styles.tableCellTight}`}>
+                                <div>{inaraPriceDisplay}</div>
+                                {inaraStation && (
+                                  <div className={styles.tableSubtext}>
+                                    <CopyOnClick copyMessageKey='station'>{inaraStation}</CopyOnClick>
+                                    {inaraSystem
+                                      ? (
+                                        <>
+                                          {' · '}
+                                          <CopyOnClick copyMessageKey='system'>{inaraSystem}</CopyOnClick>
+                                        </>
+                                        )
+                                      : null}
+                                  </div>
+                                )}
+                                {inaraDemand && (
+                                  <div className={styles.tableMetaMuted}>
+                                    Demand: {inaraDemandIndicator || inaraDemand}
+                                  </div>
+                                )}
+                                {inaraUpdated && (
+                                  <div
+                                    className={styles.tableMetaMuted}
+                                    style={inaraUpdatedSeverity.color ? { color: inaraUpdatedSeverity.color } : undefined}
+                                  >
+                                    Updated {inaraUpdated}
+                                  </div>
+                                )}
+                              </td>
+                              <td className={`text-right ${styles.tableCellTop} ${styles.tableCellTight}`}>
+                                <div>{bestValueDisplay}{renderSourceBadge(bestSource)}</div>
+                                {typeof localValue === 'number' && typeof inaraValue === 'number' && Math.abs(localValue - inaraValue) > 0.01 && (
+                                  <div className={styles.tableMetaMuted}>
+                                    INARA {formatCredits(inaraValue, '--')} · Local {formatCredits(localValue, '--')}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                          {nonCommodityRows.map((row, index) => {
                           const animationDelay = (commodityRows.length + index) * 0.03
                           const quantityDisplay = Number(row.quantity) || 0
                           return (
@@ -3904,18 +3913,18 @@ function CommoditiesPanel ({ onStatusChange = () => {} }) {
                             </tr>
                           )
                         })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className={styles.tableFootnote}>
-              In-game prices are sourced from your latest Market data when available. INARA prices are community submitted and may not reflect real-time market conditions.
-            </div>
-          </>
-        )}
+              <div className={styles.tableFootnote}>
+                In-game prices are sourced from your latest Market data when available. INARA prices are community submitted and may not reflect real-time market conditions.
+              </div>
+            </>
+            )}
       </Panel>
     </section>
   )
@@ -3979,6 +3988,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
   const [sortDirection, setSortDirection] = useState('desc')
   const [filtersCollapsed, setFiltersCollapsed] = useState(true)
   const [selectedRouteContext, setSelectedRouteContext] = useState(null)
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0)
   const [navRoute, setNavRoute] = useState(null)
   const factionStandings = useFactionStandings()
   const setFilterValue = useCallback((field, value) => {
@@ -3988,6 +3998,20 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
   const isMountedRef = useRef(true)
   const preserveRouteContextRef = useRef(false)
   const selectedRouteContextRef = useRef(null)
+
+  // Auto-sync selected route with routes list
+  useEffect(() => {
+    if (Array.isArray(routes) && routes.length > 0) {
+      setSelectedRouteIndex(prev => {
+        const validIndex = prev < routes.length ? prev : 0
+        setSelectedRouteContext({ route: routes[validIndex] })
+        return validIndex
+      })
+    } else {
+      setSelectedRouteContext(null)
+      setSelectedRouteIndex(0)
+    }
+  }, [routes])
 
   useEffect(() => {
     onStatusChange(status)
@@ -4396,9 +4420,12 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       .catch(err => {
         const errorMessage = err.message || 'Unable to fetch trade routes.'
         const isNetworkError = errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')
-        const detailedError = isNetworkError
-          ? 'Network error: Unable to reach INARA API. Check your connection and try again.'
-          : `INARA API error: ${errorMessage}`
+        const isInaraDown = errorMessage.includes('503') || errorMessage.includes('INARA_UNAVAILABLE') || errorMessage.includes('temporarily unavailable')
+        const detailedError = isInaraDown
+          ? 'INARA is temporarily unavailable. Trade routes will refresh automatically when the connection is restored.'
+          : isNetworkError
+            ? 'Network error: Unable to reach INARA API. Check your connection and try again.'
+            : `INARA API error: ${errorMessage}`
 
         setError(detailedError)
         setMessage('')
@@ -4453,18 +4480,61 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
     setSelectedRouteContext(null)
   }, [rawRoutes])
 
-  const handleRouteSelect = useCallback(route => {
+  const handleNextRoute = useCallback(() => {
+    if (!routes || routes.length === 0) return
+    setSelectedRouteIndex(prev => {
+      const next = (prev + 1) % routes.length
+      const nextRoute = routes[next]
+      if (nextRoute) {
+        setSelectedRouteContext({ route: nextRoute })
+      }
+      return next
+    })
+  }, [routes])
+
+  const handlePrevRoute = useCallback(() => {
+    if (!routes || routes.length === 0) return
+    setSelectedRouteIndex(prev => {
+      const next = (prev - 1 + routes.length) % routes.length
+      const nextRoute = routes[next]
+      if (nextRoute) {
+        setSelectedRouteContext({ route: nextRoute })
+      }
+      return next
+    })
+  }, [routes])
+
+  // Listen for external remoteAction events (select-route by index)
+  useEffect(() => {
+    const handleRemoteActionNav = (detail) => {
+      if (detail?.action === 'select-route' && typeof detail.index === 'number') {
+        if (routes[detail.index]) {
+          setSelectedRouteIndex(detail.index)
+          setSelectedRouteContext({ route: routes[detail.index] })
+        }
+      }
+    }
+    return eventListener('remoteAction', handleRemoteActionNav)
+  }, [routes])
+
+  const handleRouteSelect = useCallback((route, index) => {
     if (!route) {
       setSelectedRouteContext(null)
       return
     }
+    if (typeof index === 'number') {
+      setSelectedRouteIndex(index)
+    } else {
+      const foundIdx = routes.indexOf(route)
+      if (foundIdx !== -1) setSelectedRouteIndex(foundIdx)
+    }
     setSelectedRouteContext({ route })
-  }, [])
+  }, [routes])
 
-  const handleRouteKeyDown = useCallback((event, route) => {
+  const handleRouteKeyDown = useCallback((event, route, index) => {
     if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
       event.preventDefault()
-      handleRouteSelect(route)
+      handleRouteSelect(route, index)
     }
   }, [handleRouteSelect])
 
@@ -4487,15 +4557,16 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
     refreshRoutes(currentName)
   }, [currentSystem?.name, refreshRoutes])
 
-  const selectedRoute = selectedRouteContext?.route || null
+  const selectedRoute = selectedRouteContext?.route || (routes.length > 0 ? routes[selectedRouteIndex] || routes[0] : null)
   const selectedRouteIdentity = useMemo(() => buildRouteIdentity(selectedRoute), [selectedRoute])
 
-  const isRouteSelected = useCallback(routeCandidate => {
+  const isRouteSelected = useCallback((routeCandidate, index) => {
     if (!routeCandidate) return false
+    if (typeof index === 'number' && index === selectedRouteIndex) return true
     if (selectedRoute === routeCandidate) return true
     if (!selectedRouteIdentity) return false
     return buildRouteIdentity(routeCandidate) === selectedRouteIdentity
-  }, [selectedRoute, selectedRouteIdentity])
+  }, [selectedRoute, selectedRouteIdentity, selectedRouteIndex])
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -4574,6 +4645,24 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       }
     }
   }, [selectedRoute])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (routeContext) {
+      window.__ACTIVE_ROUTE_SCOUT_CONTEXT__ = {
+        stationA: routeContext.origin.station,
+        systemA: routeContext.origin.system,
+        stationB: routeContext.destination.station,
+        systemB: routeContext.destination.system,
+        outboundCommodity: routeContext.outbound.commodity,
+        returnCommodity: routeContext.inbound.commodity,
+        index: selectedRouteIndex,
+        total: routes.length
+      }
+    } else {
+      window.__ACTIVE_ROUTE_SCOUT_CONTEXT__ = null
+    }
+  }, [routeContext, selectedRouteIndex, routes.length])
 
   const navRouteSegment = useMemo(() => {
     if (!routeContext) return null
@@ -4843,7 +4932,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       <table className={`${styles.dataTable} ${styles.dataTableDense} ${styles.tradeRoutesTable}`}>
         <thead>
           <tr>
-            {/* <th aria-hidden='true' className={styles.tableCellCaret} /> */}
+            <th scope='col' style={{ width: '3.2rem', textAlign: 'center' }}>#</th>
             <th
               scope='col'
               aria-sort={sortField === 'stationA' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
@@ -4890,10 +4979,11 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
             <TradeRouteTableRow
               key={buildRouteIdentity(route) || `route-${index}`}
               route={route}
-              onSelect={handleRouteSelect}
-              onKeyDown={handleRouteKeyDown}
+              index={index}
+              onSelect={() => handleRouteSelect(route, index)}
+              onKeyDown={e => handleRouteKeyDown(e, route, index)}
               factionStandings={factionStandings}
-              isSelected={isRouteSelected(route)}
+              isSelected={index === selectedRouteIndex || isRouteSelected(route, index)}
               shipJumpRange={shipStatus?.maxJumpRange ?? null}
               maxProfitPerTon={maxProfitPerTon}
             />
@@ -4908,7 +4998,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       <Panel
         layout='full-width'
       >
-        <div >
+        <div>
           <TradeRouteFilterPanel
             filters={filters}
             onFilterChange={setFilterValue}
@@ -4927,11 +5017,107 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
             initialShipInfoLoaded={initialShipInfoLoaded}
           />
 
-              <h3 className='section-heading text-primary'>Route Context</h3>
+          {/* Pinned Route Scout Header (Sticky at top of scroll view) */}
+          <div className={styles.routeScoutPinnedHeader}>
+            <div className={styles.routeScoutControlBar}>
+              <div className={styles.routeScoutNavGroup}>
+                <button
+                  id='route-scout-prev-btn'
+                  type='button'
+                  className='button button--secondary'
+                  disabled={routes.length === 0}
+                  onClick={handlePrevRoute}
+                  title='Navigate to previous route'
+                >
+                  ◀ PREV ROUTE
+                </button>
+                <div className={styles.routeScoutCounterBadge}>
+                  <span className='text-primary font-bold'>ROUTE {routes.length > 0 ? selectedRouteIndex + 1 : 0}</span>
+                  <span className='text-muted'> OF {routes.length}</span>
+                </div>
+                <button
+                  id='route-scout-next-btn'
+                  type='button'
+                  className='button button--secondary'
+                  disabled={routes.length === 0}
+                  onClick={handleNextRoute}
+                  title='Navigate to next route'
+                >
+                  NEXT ROUTE ▶
+                </button>
+              </div>
+
+              {routeContext && (
+                <div className={styles.routeScoutCopyButtonsGroup}>
+                  <button
+                    id='btn-copy-system-1'
+                    type='button'
+                    className='button button--secondary'
+                    onClick={() => {
+                      if (routeContext?.origin?.system) {
+                        if (navigator.clipboard?.writeText) navigator.clipboard.writeText(routeContext.origin.system).catch(() => {})
+                        try { sendEvent('copyToClipboard', { text: routeContext.origin.system }) } catch (e) {}
+                        notification(`Copied System A: ${routeContext.origin.system}`)
+                      }
+                    }}
+                    title={`Copy System A: ${routeContext.origin.system}`}
+                  >
+                    📋 SYSTEM A <span className='text-primary'>({routeContext.origin.system})</span>
+                  </button>
+                  <button
+                    id='btn-copy-station-1'
+                    type='button'
+                    className='button button--secondary'
+                    onClick={() => {
+                      if (routeContext?.origin?.station) {
+                        if (navigator.clipboard?.writeText) navigator.clipboard.writeText(routeContext.origin.station).catch(() => {})
+                        try { sendEvent('copyToClipboard', { text: routeContext.origin.station }) } catch (e) {}
+                        notification(`Copied Station A: ${routeContext.origin.station}`)
+                      }
+                    }}
+                    title={`Copy Station A: ${routeContext.origin.station}`}
+                  >
+                    📋 STATION A <span className='text-primary'>({routeContext.origin.station})</span>
+                  </button>
+                  <button
+                    id='btn-copy-system-2'
+                    type='button'
+                    className='button button--secondary'
+                    onClick={() => {
+                      if (routeContext?.destination?.system) {
+                        if (navigator.clipboard?.writeText) navigator.clipboard.writeText(routeContext.destination.system).catch(() => {})
+                        try { sendEvent('copyToClipboard', { text: routeContext.destination.system }) } catch (e) {}
+                        notification(`Copied System B: ${routeContext.destination.system}`)
+                      }
+                    }}
+                    title={`Copy System B: ${routeContext.destination.system}`}
+                  >
+                    📋 SYSTEM B <span className='text-primary'>({routeContext.destination.system})</span>
+                  </button>
+                  <button
+                    id='btn-copy-station-2'
+                    type='button'
+                    className='button button--secondary'
+                    onClick={() => {
+                      if (routeContext?.destination?.station) {
+                        if (navigator.clipboard?.writeText) navigator.clipboard.writeText(routeContext.destination.station).catch(() => {})
+                        try { sendEvent('copyToClipboard', { text: routeContext.destination.station }) } catch (e) {}
+                        notification(`Copied Station B: ${routeContext.destination.station}`)
+                      }
+                    }}
+                    title={`Copy Station B: ${routeContext.destination.station}`}
+                  >
+                    📋 STATION B <span className='text-primary'>({routeContext.destination.station})</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <h3 className='section-heading text-primary' style={{ margin: '0.4rem 0 0.2rem 0' }}>Route Context</h3>
 
             {routeContext ? (
               <>
-{/* Route Context */}
+                {/* Route Context */}
                 {routeProfitMetrics.length > 0 && (
                   <div className={styles.tradeRouteContextProfitRow}>
                     {routeProfitMetrics.map(metric => (
@@ -4943,13 +5129,20 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                   </div>
                 )}
                 <div className={styles.tradeRouteContextStations}>
-{/* STATION A */}
-                  <div className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardOrigin}`}>
+                  {/* STATION A */}
+                  <div
+                    className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardOrigin}`}
+                    data-station-role='station-a'
+                    data-station-name={routeContext.origin.station}
+                    data-system-name={routeContext.origin.system}
+                  >
                     <div className={styles.tradeRouteContextStationHeader}>
                       <span className={styles.tradeRouteContextBadge}>Station A</span>
-                      {originStationType ? (
-                        <span className={styles.tradeRouteContextBadgeDetail}>{originStationType}</span>
-                      ) : null}
+                      {originStationType
+                        ? (
+                          <span className={styles.tradeRouteContextBadgeDetail}>{originStationType}</span>
+                          )
+                        : null}
                     </div>
                     <StationCard
                       stationName={routeContext.origin.station}
@@ -4962,23 +5155,26 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       distanceLyColor={originSystemDistanceColor}
                       distanceLsText={originStationDistance.display}
                       distanceLsColor={originStationSeverity.color}
-                      factionStanding={originStandingDisplay?.statusLabel ? {
-                        label: originStandingDisplay.statusLabel,
-                        color: originStandingDisplay.color,
-                        iconColor: originStandingDisplay.iconColor
-                      } : null}
+                      factionStanding={originStandingDisplay?.statusLabel
+                        ? {
+                            label: originStandingDisplay.statusLabel,
+                            color: originStandingDisplay.color,
+                            iconColor: originStandingDisplay.iconColor
+                          }
+                        : null}
                       mode='large'
                       variant='origin'
                     />
                   </div>
 
-
-                  <div style={{gridColumn: 1}} className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityOutbound}`}>
+                  <div style={{ gridColumn: 1 }} className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityOutbound}`}>
                     <div className={styles.tradeRouteContextCommodityHeader}>
                       <span className={styles.tradeRouteContextLabel}>Outbound Commodity</span>
-                      {outboundCommodityContext?.price ? (
-                        <span className={styles.tradeRouteContextCommodityPrice}>{outboundCommodityContext.price}</span>
-                      ) : null}
+                      {outboundCommodityContext?.price
+                        ? (
+                          <span className={styles.tradeRouteContextCommodityPrice}>{outboundCommodityContext.price}</span>
+                          )
+                        : null}
                     </div>
                     <div className={styles.tradeRouteContextCommodityBody}>
                       <span className={styles.tradeRouteContextCommodityIconLarge}>
@@ -4986,25 +5182,30 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       </span>
                       <div className={styles.tradeRouteContextCommodityText}>
                         <span className={styles.tradeRouteContextCommodityName}>{routeContext.outbound.commodity || '--'}</span>
-                        {outboundCommodityContext?.demand?.label ? (
-                          <span className={styles.tradeRouteContextCommodityMeta}>{outboundCommodityContext.demand.label}</span>
-                        ) : null}
-                        {outboundCommodityContext?.quantity ? (
-                          <span className={styles.tradeRouteContextCommodityFootnote}>
-                            Demand window: {outboundCommodityContext.quantity}
-                          </span>
-                        ) : null}
-                        {outboundCommodityContext?.supply ? (
-                          <span className={styles.tradeRouteContextCommodityFootnote}>
-                            Supply: {outboundCommodityContext.supply}
-                          </span>
-                        ) : null}
+                        {outboundCommodityContext?.demand?.label
+                          ? (
+                            <span className={styles.tradeRouteContextCommodityMeta}>{outboundCommodityContext.demand.label}</span>
+                            )
+                          : null}
+                        {outboundCommodityContext?.quantity
+                          ? (
+                            <span className={styles.tradeRouteContextCommodityFootnote}>
+                              Demand window: {outboundCommodityContext.quantity}
+                            </span>
+                            )
+                          : null}
+                        {outboundCommodityContext?.supply
+                          ? (
+                            <span className={styles.tradeRouteContextCommodityFootnote}>
+                              Supply: {outboundCommodityContext.supply}
+                            </span>
+                            )
+                          : null}
                       </div>
                     </div>
                   </div>
 
-
-{/* STATION A */}
+                  {/* STATION A */}
 
                   {/* Station Distance Row (<-distance->) */}
                   <span className={styles.stationDistanceRow}>
@@ -5015,9 +5216,11 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     })}
                     </div>
                     <div alignItems='center'>
-                      {routeDistanceDisplay ? (
-                      <span  style={{ whiteSpace: 'nowrap'}}>{routeDistanceDisplay}</span>
-                      ) : null}
+                      {routeDistanceDisplay
+                        ? (
+                          <span style={{ whiteSpace: 'nowrap' }}>{routeDistanceDisplay}</span>
+                          )
+                        : null}
                     </div>
                     <div className={styles.stationDistanceArrow}>{renderCommodityRowStyleArrowWithText('right', {
                       color: 'var(--color-primary)',
@@ -5025,16 +5228,23 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       padding: '0 1.25rem'
                     })}
                     </div>
-                  </span>                  
+                  </span>
                   {/* Station Distance Row (<-distance->) */}
 
-{/* STATION B */}
-                  <div className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardDestination}`}>
+                  {/* STATION B */}
+                  <div
+                    className={`${styles.tradeRouteContextStationCard} ${styles.tradeRouteContextStationCardDestination}`}
+                    data-station-role='station-b'
+                    data-station-name={routeContext.destination.station}
+                    data-system-name={routeContext.destination.system}
+                  >
                     <div className={styles.tradeRouteContextStationHeader}>
                       <span className={styles.tradeRouteContextBadge}>Station B</span>
-                      {destinationStationType ? (
-                        <span className={styles.tradeRouteContextBadgeDetail}>{destinationStationType}</span>
-                      ) : null}
+                      {destinationStationType
+                        ? (
+                          <span className={styles.tradeRouteContextBadgeDetail}>{destinationStationType}</span>
+                          )
+                        : null}
                     </div>
                     <StationCard
                       stationName={routeContext.destination.station}
@@ -5047,24 +5257,26 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       distanceLyColor={destinationSystemDistanceColor}
                       distanceLsText={destinationStationDistance.display}
                       distanceLsColor={destinationStationSeverity.color}
-                      factionStanding={destinationStandingDisplay?.statusLabel ? {
-                        label: destinationStandingDisplay.statusLabel,
-                        color: destinationStandingDisplay.color,
-                        iconColor: destinationStandingDisplay.iconColor
-                      } : null}
+                      factionStanding={destinationStandingDisplay?.statusLabel
+                        ? {
+                            label: destinationStandingDisplay.statusLabel,
+                            color: destinationStandingDisplay.color,
+                            iconColor: destinationStandingDisplay.iconColor
+                          }
+                        : null}
                       mode='large'
                       variant='destination'
                     />
                   </div>
 
-
-
-                  <div style={{gridColumn: 3}} className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityReturn}`}>
+                  <div style={{ gridColumn: 3 }} className={`${styles.tradeRouteContextCommodityCard} ${styles.tradeRouteContextCommodityReturn}`}>
                     <div className={styles.tradeRouteContextCommodityHeader}>
                       <span className={styles.tradeRouteContextLabel}>Return Commodity</span>
-                      {inboundCommodityContext?.price ? (
-                        <span className={styles.tradeRouteContextCommodityPrice}>{inboundCommodityContext.price}</span>
-                      ) : null}
+                      {inboundCommodityContext?.price
+                        ? (
+                          <span className={styles.tradeRouteContextCommodityPrice}>{inboundCommodityContext.price}</span>
+                          )
+                        : null}
                     </div>
                     <div className={styles.tradeRouteContextCommodityBody}>
                       <span className={styles.tradeRouteContextCommodityIconLarge}>
@@ -5072,27 +5284,33 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       </span>
                       <div className={styles.tradeRouteContextCommodityText}>
                         <span className={styles.tradeRouteContextCommodityName}>{routeContext.inbound.commodity || '--'}</span>
-                        {inboundCommodityContext?.demand?.label ? (
-                          <span className={styles.tradeRouteContextCommodityMeta}>{inboundCommodityContext.demand.label}</span>
-                        ) : null}
-                        {inboundCommodityContext?.quantity ? (
-                          <span className={styles.tradeRouteContextCommodityFootnote}>
-                            Demand window: {inboundCommodityContext.quantity}
-                          </span>
-                        ) : null}
-                        {inboundCommodityContext?.supply ? (
-                          <span className={styles.tradeRouteContextCommodityFootnote}>
-                            Supply: {inboundCommodityContext.supply}
-                          </span>
-                        ) : null}
+                        {inboundCommodityContext?.demand?.label
+                          ? (
+                            <span className={styles.tradeRouteContextCommodityMeta}>{inboundCommodityContext.demand.label}</span>
+                            )
+                          : null}
+                        {inboundCommodityContext?.quantity
+                          ? (
+                            <span className={styles.tradeRouteContextCommodityFootnote}>
+                              Demand window: {inboundCommodityContext.quantity}
+                            </span>
+                            )
+                          : null}
+                        {inboundCommodityContext?.supply
+                          ? (
+                            <span className={styles.tradeRouteContextCommodityFootnote}>
+                              Supply: {inboundCommodityContext.supply}
+                            </span>
+                            )
+                          : null}
                       </div>
                     </div>
                   </div>
 
-{/* STATION B */}
+                  {/* STATION B */}
                 </div>
 
-{/* NAV ROUTE CODE - TODO */}
+                {/* NAV ROUTE CODE */}
                 {navRouteSegment && navRouteSegment.length > 0 && (
                   <div className={styles.tradeRouteContextRoute}>
                     <span className={styles.tradeRouteContextLabel}>Plotted System Route</span>
@@ -5114,14 +5332,13 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                       })}
                     </div>
                   </div>
-                )}                
-{/* NAV ROUTE CODE - TODO */}
-{/* Route Context */}
+                )}
               </>
             ) : (
               <div className={styles.tradeRouteContextEmpty}>Select a trade route to populate the context.</div>
             )}
-          
+          </div>
+
         </div>
       </Panel>
       <div className='inara-panel-table'>
@@ -5130,15 +5347,30 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
           style={TABLE_SCROLL_AREA_STYLE}
           aria-busy={status === 'loading'}
         >
+          {(isRefreshing || status === 'loading') && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 1rem', background: 'rgba(255, 110, 0, 0.12)', borderLeft: '3px solid var(--color-primary)', borderRadius: '3px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <span className='loading-spinner' style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid var(--color-primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                <span className='text-primary' style={{ fontWeight: 600 }}>Searching &amp; sorting trade routes…</span>
+                {routes.length > 0 && (
+                  <span className='text-muted'>({routes.length} routes live sorted)</span>
+                )}
+              </div>
+              <span className='text-info' style={{ fontSize: '0.8rem' }}>
+                Ranked by: <strong>{sortField.toUpperCase()} ({sortDirection.toUpperCase()})</strong>
+              </span>
+            </div>
+          )}
           {message && status !== 'idle' && status !== 'loading' && (
             <div className={`${styles.tableMessage} ${status === 'populated' ? styles.tableMessageBorder : ''}`}>{message}</div>
           )}
           {status === 'idle' && (
             <div className={styles.tableIdleState}>Tune the filters and pulse refresh to surface profitable corridors.</div>
           )}
-          {status === 'loading' && (
-            <div role='status' aria-live='polite' className={styles.visuallyHidden}>
-              Loading trade routes…
+          {status === 'loading' && routes.length === 0 && (
+            <div className={styles.tableIdleState} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '2rem' }}>
+              <span className='loading-spinner' style={{ display: 'inline-block', width: '18px', height: '18px', border: '2px solid var(--color-primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <span>Scanning trade corridors near {selectedSystemName || 'current system'}…</span>
             </div>
           )}
           {status === 'error' && (
@@ -5147,7 +5379,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
           {status === 'empty' && (
             <div className={styles.tableEmptyState}>No profitable routes detected near {selectedSystemName || 'Unknown System'}.</div>
           )}
-          {status === 'populated' && renderRoutesTable()}
+          {(status === 'populated' || (status === 'loading' && routes.length > 0)) && renderRoutesTable()}
         </div>
       </div>
     </section>
@@ -5209,12 +5441,12 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
     setMessage('')
     setLastUpdatedAt(null)
 
-    fetch('/api/inara-pristine-mining', {
+    fetchWithCache('/api/inara-pristine-mining', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: trimmedSystem })
     })
-      .then(res => res.json())
+      .then(res => (typeof res?.json === 'function' ? res.json() : res))
       .then(data => {
         if (cancelled) return
 
@@ -5390,40 +5622,70 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
               {displayMessage}
             </div>
           )}
-        {status === 'idle' && (
-          <p className='text-muted'>Waiting for current system information...</p>
-        )}
-        {status === 'error' && !error && (
-          <p className='text-danger'>Unable to load pristine mining locations.</p>
-        )}
-        {status === 'empty' && (
-          <p className='text-muted'>
-            No pristine signatures detected near {displaySystemName || 'your current system'}.
-          </p>
-        )}
-        {status === 'populated' && locations.length > 0 && (
-          <table className='table--interactive table--animated'>
-                <tbody>
-                  {locations.map((location, index) => {
-                    const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
-                    const detailParts = []
-                    if (location.bodyType) detailParts.push(location.bodyType)
-                    if (location.ringType) detailParts.push(`${location.ringType} ring`)
-                    if (location.reservesLevel) detailParts.push(`${location.reservesLevel} reserves`)
-                    const detailText = detailParts.join(' · ')
-                    const bodyDistanceDisplay = formatStationDistance(location.bodyDistanceLs, location.bodyDistanceText)
-                    const distanceDisplay = formatSystemDistance(location.distanceLy, location.distanceText)
-                    const isExpanded = expandedLocationKey === key
+          {status === 'idle' && (
+            <p className='text-muted'>Waiting for current system information...</p>
+          )}
+          {status === 'error' && !error && (
+            <p className='text-danger'>Unable to load pristine mining locations.</p>
+          )}
+          {status === 'empty' && (
+            <p className='text-muted'>
+              No pristine signatures detected near {displaySystemName || 'your current system'}.
+            </p>
+          )}
+          {status === 'populated' && locations.length > 0 && (
+            <table className='table--interactive table--animated'>
+              <tbody>
+                {locations.map((location, index) => {
+                  const key = `${location.system || 'unknown'}-${location.body || 'body'}-${index}`
+                  const detailParts = []
+                  if (location.bodyType) detailParts.push(location.bodyType)
+                  if (location.ringType) detailParts.push(`${location.ringType} ring`)
+                  if (location.reservesLevel) detailParts.push(`${location.reservesLevel} reserves`)
+                  const detailText = detailParts.join(' · ')
+                  const bodyDistanceDisplay = formatStationDistance(location.bodyDistanceLs, location.bodyDistanceText)
+                  const distanceDisplay = formatSystemDistance(location.distanceLy, location.distanceText)
+                  const isExpanded = expandedLocationKey === key
 
-                    return (
-                      <Fragment key={key}>
-                        <tr
-                          tabIndex={2}
-                          className={isExpanded ? 'table__row--highlighted' : 'table__row--highlight-primary-hover'}
-                          onClick={() => handleLocationToggle(location, key)}
-                          onKeyDown={event => handleLocationKeyDown(event, location, key)}
-                        >
-                          <td style={{ padding: '0.5rem 1rem' }}>
+                  return (
+                    <Fragment key={key}>
+                      <tr
+                        tabIndex={2}
+                        className={isExpanded ? 'table__row--highlighted' : 'table__row--highlight-primary-hover'}
+                        onClick={() => handleLocationToggle(location, key)}
+                        onKeyDown={event => handleLocationKeyDown(event, location, key)}
+                      >
+                        <td style={{ padding: '0.5rem 1rem' }}>
+                          <PlanetCard
+                            planetName={location.body}
+                            systemName={location.system}
+                            planetType={location.bodyType}
+                            distanceLs={location.bodyDistanceLs}
+                            distanceLsText={bodyDistanceDisplay}
+                            distanceLy={location.distanceLy}
+                            distanceLyText={distanceDisplay}
+                            mode='inline'
+                            isSelected={isExpanded}
+                          />
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr>
+                          <td style={{ padding: '0 1rem 1rem 1rem' }}>
+                            <div style={{
+                            padding: '1.5rem',
+                            background: 'rgba(5, 8, 13, 0.85)',
+                            border: '1px solid rgba(127, 233, 255, 0.18)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.5rem',
+                            width: '100%',
+                            maxWidth: '100%',
+                            boxSizing: 'border-box',
+                            overflow: 'hidden'
+                          }}
+                          >
                             <PlanetCard
                               planetName={location.body}
                               systemName={location.system}
@@ -5432,1793 +5694,70 @@ function PristineMiningPanel ({ onStatusChange = () => {} }) {
                               distanceLsText={bodyDistanceDisplay}
                               distanceLy={location.distanceLy}
                               distanceLyText={distanceDisplay}
-                              mode='inline'
-                              isSelected={isExpanded}
+                              mode='large'
+                              fillSpace
+                              planetImage={detailLoadingKey !== key && !detailError && expandedSystemObject ? <PristineMiningArtwork systemObject={expandedSystemObject} /> : null}
                             />
+                            {detailText && (
+                              <div style={{
+                                    padding: '1rem',
+                                    background: 'rgba(0, 0, 0, 0.3)',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(255, 145, 0, 0.2)'
+                                  }}
+                                  >
+                                    <div style={{
+                                      fontSize: '0.7rem',
+                                      fontWeight: 700,
+                                      letterSpacing: '0.12em',
+                                      textTransform: 'uppercase',
+                                      color: 'rgba(255, 255, 255, 0.5)',
+                                      marginBottom: '0.5rem'
+                                    }}
+                                    >
+                                      RESERVE DETAILS
+                                    </div>
+                                    <div style={{ fontSize: '0.9rem', color: 'var(--inara-accent)' }}>
+                                      {detailText}
+                                    </div>
+                                  </div>
+                            )}
+                            {(location.systemUrl || location.bodyUrl) && (
+                              <div style={{
+                                    padding: '1rem',
+                                    background: 'rgba(0, 0, 0, 0.3)',
+                                    borderRadius: '8px',
+                                    fontSize: '0.85rem',
+                                    color: 'rgba(255, 255, 255, 0.7)'
+                                  }}
+                                  >
+                                    {location.systemUrl && <div>INARA-linked system dossier available</div>}
+                                    {location.bodyUrl && <div>INARA-linked body dossier available</div>}
+                                  </div>
+                            )}
+                            {detailLoadingKey === key && (
+                              <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--inara-accent)' }}>
+                                    Loading system details...
+                                  </div>
+                            )}
+                            {detailLoadingKey !== key && detailError && (
+                              <div style={{ textAlign: 'center', padding: '1rem', color: '#ff4d4f' }}>
+                                    {detailError}
+                                  </div>
+                            )}
+                          </div>
                           </td>
                         </tr>
-                        {isExpanded && (
-                          <tr>
-                            <td style={{ padding: '0 1rem 1rem 1rem' }}>
-                              <div style={{
-                                padding: '1.5rem',
-                                background: 'rgba(5, 8, 13, 0.85)',
-                                border: '1px solid rgba(127, 233, 255, 0.18)',
-                                borderRadius: '12px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '1.5rem',
-                                width: '100%',
-                                maxWidth: '100%',
-                                boxSizing: 'border-box',
-                                overflow: 'hidden'
-                              }}>
-                        <PlanetCard
-                          planetName={location.body}
-                          systemName={location.system}
-                          planetType={location.bodyType}
-                          distanceLs={location.bodyDistanceLs}
-                          distanceLsText={bodyDistanceDisplay}
-                          distanceLy={location.distanceLy}
-                          distanceLyText={distanceDisplay}
-                          mode='large'
-                          fillSpace={true}
-                          planetImage={detailLoadingKey !== key && !detailError && expandedSystemObject ? <PristineMiningArtwork systemObject={expandedSystemObject} /> : null}
-                        />
-                        {detailText && (
-                          <div style={{
-                            padding: '1rem',
-                            background: 'rgba(0, 0, 0, 0.3)',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255, 145, 0, 0.2)'
-                          }}>
-                            <div style={{
-                              fontSize: '0.7rem',
-                              fontWeight: 700,
-                              letterSpacing: '0.12em',
-                              textTransform: 'uppercase',
-                              color: 'rgba(255, 255, 255, 0.5)',
-                              marginBottom: '0.5rem'
-                            }}>
-                              RESERVE DETAILS
-                            </div>
-                            <div style={{ fontSize: '0.9rem', color: 'var(--inara-accent)' }}>
-                              {detailText}
-                            </div>
-                          </div>
-                        )}
-                        {(location.systemUrl || location.bodyUrl) && (
-                          <div style={{
-                            padding: '1rem',
-                            background: 'rgba(0, 0, 0, 0.3)',
-                            borderRadius: '8px',
-                            fontSize: '0.85rem',
-                            color: 'rgba(255, 255, 255, 0.7)'
-                          }}>
-                            {location.systemUrl && <div>INARA-linked system dossier available</div>}
-                            {location.bodyUrl && <div>INARA-linked body dossier available</div>}
-                          </div>
-                        )}
-                        {detailLoadingKey === key && (
-                          <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--inara-accent)' }}>
-                            Loading system details...
-                          </div>
-                        )}
-                        {detailLoadingKey !== key && detailError && (
-                          <div style={{ textAlign: 'center', padding: '1rem', color: '#ff4d4f' }}>
-                            {detailError}
-                          </div>
-                        )}
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </Fragment>
-                    )
-                  })}
-                </tbody>
-              </table>
+                      )}
+                    </Fragment>
+                  )
+                })}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
     </section>
-  )
-}
-
-const DEFAULT_GREEK_SYMBOLS = [
-  'alpha',
-  'beta',
-  'gamma',
-  'delta',
-  'epsilon',
-  'zeta',
-  'eta',
-  'theta',
-  'iota',
-  'kappa',
-  'lambda',
-  'mu',
-  'nu',
-  'xi',
-  'omicron',
-  'pi',
-  'rho',
-  'sigma',
-  'tau',
-  'upsilon',
-  'phi',
-  'chi',
-  'psi',
-  'omega'
-]
-const GREEK_SYMBOLS = getInaraStrings('glyphs.greekSymbols', DEFAULT_GREEK_SYMBOLS)
-const TERMINAL_BUFFER = 36
-const TERMINAL_WINDOW = 7
-const TERMINAL_WINDOW_EXPANDED = 14
-const TERMINAL_LINE_MAX_LENGTH = 56
-const TERMINAL_LINE_MIN_LENGTH = 24
-const TERMINAL_LINE_MAX_LENGTH_CAP = 160
-
-const TERMINAL_HEIGHT_NORMAL = 'clamp(180px, 18vh, 220px)'
-const TERMINAL_HEIGHT_COMPRESSED = '3rem'
-const TERMINAL_HEIGHT_EXPANDED = 'clamp(320px, 32vh, 420px)'
-
-const TERMINAL_VIEW = {
-  NORMAL: 'normal',
-  COMPRESSED: 'compressed',
-  EXPANDED: 'expanded'
-}
-
-function randomChoice (items) {
-  return items[Math.floor(Math.random() * items.length)]
-}
-
-function randomInteger (min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-function randomFloat (min, max, precision = 2) {
-  const value = Math.random() * (max - min) + min
-  return Number.parseFloat(value.toFixed(precision))
-}
-
-function randomCallsign () {
-  return `${randomChoice(GREEK_SYMBOLS).toUpperCase()}-${randomInteger(1, 99)}`
-}
-
-function randomEndpoint () {
-  const protocol = randomChoice(['mesh', 'flux', 'relay', 'beacon', 'packet', 'datastream'])
-  const host = `${randomChoice(['inara', 'syndicate', 'perseus', 'umbra', 'aurora', 'dusk'])}.${randomChoice(['alpha', 'beta', 'gamma', 'delta', 'kappa', 'lambda'])}`
-  return `${protocol}://${host}.${randomChoice(['io', 'net', 'grid', 'node'])}`
-}
-
-let terminalLineGroupCounter = 0
-
-function randomGreekPhrase () {
-  return `${randomChoice(GREEK_SYMBOLS)}-${randomChoice(['lattice', 'corridor', 'bloom', 'echo', 'vector', 'aperture'])}`
-}
-
-function generateCipherString (length = 48) {
-  const glyphs = ['#', '=', '-', '+']
-  return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
-}
-
-const DEFAULT_CURRENCY_GLYPHS = [
-  '₿',
-  '¤',
-  'Ξ',
-  '§',
-  '₪',
-  '¥',
-  '₡',
-  '₢',
-  '₣',
-  '₤',
-  '₥',
-  '₦',
-  '₧',
-  '₨',
-  '₩',
-  '₫',
-  '€',
-  '£',
-  '₭',
-  '₮',
-  '₯',
-  '₰',
-  '₱',
-  '฿',
-  '₾'
-]
-const CURRENCY_GLYPHS = getInaraStrings('glyphs.currencyGlyphs', DEFAULT_CURRENCY_GLYPHS)
-
-function generateCurrencyCascadeString (length = 96) {
-  return Array.from({ length }).map(() => randomChoice(CURRENCY_GLYPHS)).join('')
-}
-
-const DEFAULT_DEBIT_GLYPHS = ['✖', '⛔', '⚠', '!', '−', '↓', '×', '⨯', '▾', '✕', '⛓']
-const DEBIT_GLYPHS = getInaraStrings('glyphs.debitGlyphs', DEFAULT_DEBIT_GLYPHS)
-
-function generateDebitGlyphString (length = 72) {
-  const debitPool = [...DEBIT_GLYPHS, ...'XXXX----!!!!']
-  return Array.from({ length }).map(() => randomChoice(debitPool)).join('')
-}
-
-export function createTransactionSequence (entry = {}, { simulation = false, prefersReducedMotion = false } = {}) {
-  const lines = []
-  const metadata = entry.metadata || {}
-  const source = extractLedgerSource(metadata)
-  const reason = extractLedgerReason(metadata)
-  const alias = randomChoice(TRANSACTION_ALIAS_WORDS)
-  const vectorLabel = randomChoice(TRANSACTION_VECTOR_LABELS)
-  const operation = randomChoice(TRANSACTION_OPERATIONS)
-  const signal = randomChoice(TRANSACTION_SIGNAL_WORDS)
-  const typeLabel = entry.type === 'spend' ? 'DEBIT' : 'CREDIT'
-  const sign = entry.type === 'spend' ? '-' : '+'
-  const amountRaw = Number.isFinite(entry.delta) ? Math.abs(entry.delta) : Math.abs(entry.amount || 0)
-  const amountLabel = formatTokenAmount(amountRaw)
-  const balanceLabel = formatTokenAmount(Number.isFinite(entry.balance) ? entry.balance : null)
-  const jackpotActive = Boolean(metadata.jackpot)
-  const isDebit = entry.type === 'spend'
-  const glyphLineType = jackpotActive ? 'jackpotFloodGlyph' : isDebit ? 'debitGlyph' : 'inara'
-  const glyphLabelChoices = jackpotActive
-    ? ['₿Ξ₿Ξ', 'Ξ₪Ξ₪', '₿₿₿₿₿', '₪₪₪₪₪₪', 'ΞΞΞΞΞΞ']
-    : isDebit
-      ? ['⚠⚠⚠⚠', '!!⚠!!', '⛔⛔', '✖✖✖✖']
-      : ['####', '₿₿₿₿', 'ΞΞΞΞ', 'ΔΔΔΔ', 'ΦΦΦΦ', '++++']
-
-  const makeGlyphText = () => {
-    if (glyphLineType === 'jackpotFloodGlyph') {
-      return generateCurrencyCascadeString(randomInteger(72, 132))
-    }
-    if (glyphLineType === 'debitGlyph') {
-      return generateDebitGlyphString(randomInteger(48, 88))
-    }
-    return generateInaraString(randomInteger(54, 96))
-  }
-
-  const makeGlyphLine = seedSuffix => ({
-    type: glyphLineType,
-    label: randomChoice(glyphLabelChoices),
-    text: makeGlyphText(),
-    seed: seedSuffix ? `txn-glyph-${seedSuffix}` : 'txn-glyph'
-  })
-
-  if (simulation) {
-    lines.push({
-      line: {
-        type: 'simulation',
-        label: randomChoice(['sim', 'mesh', 'echo']),
-        text: `${randomChoice(SIMULATION_BADGES)} · ${randomChoice(SIMULATION_TRAILS)}`,
-        seed: 'txn-sim'
-      },
-      delay: prefersReducedMotion ? 0 : randomInteger(40, 120)
-    })
-  }
-
-  const sourceLabel = randomChoice(TRANSACTION_SOURCE_PREFIXES)
-  const metadataLines = [
-    {
-      type: 'transaction',
-      label: typeLabel,
-      text: `${sign}${amountLabel} TOKENS · ${vectorLabel.toUpperCase()} ${alias.toUpperCase()}`,
-      seed: 'txn-meta-primary'
-    },
-    {
-      type: 'transaction',
-      label: sourceLabel,
-      text: `${sourceLabel} ${source} · ${operation}`,
-      seed: 'txn-meta-source'
-    },
-    {
-      type: 'transaction',
-      label: 'reason',
-      text: `${reason} ${randomChoice(TRANSACTION_REASON_SUFFIXES)} · ${randomChoice(TRANSACTION_SIGNAL_WORDS)} ${signal}`,
-      seed: 'txn-meta-reason'
-    }
-  ]
-
-  if (Number.isFinite(entry.balance)) {
-    metadataLines.push({
-      type: 'transaction',
-      label: 'ledger',
-      text: `Balance ${balanceLabel} tokens · channel stabilised`,
-      seed: 'txn-meta-balance'
-    })
-  }
-
-  const glyphLineCount = prefersReducedMotion ? Math.max(1, Math.ceil(metadataLines.length / 2)) : metadataLines.length + 1
-  const glyphLines = Array.from({ length: glyphLineCount }).map((_, index) => makeGlyphLine(index))
-
-  metadataLines.forEach((meta, index) => {
-    const glyph = glyphLines[index % glyphLines.length]
-    lines.push({ line: glyph })
-    lines.push({ line: meta })
-  })
-
-  if (!prefersReducedMotion && glyphLines.length > 0) {
-    lines.push({ line: glyphLines[glyphLines.length - 1] })
-  }
-
-  return lines
-}
-
-export function createJackpotFloodConfig (entry = {}, { prefersReducedMotion = false } = {}) {
-  const metadata = entry.metadata || {}
-  const jackpotActive = Boolean(metadata.jackpot)
-  const floodDuration = prefersReducedMotion ? 900 : randomInteger(2200, 3000)
-  const floodLines = []
-  const floodLabelChoices = jackpotActive
-    ? ['₿Ξ₿Ξ₿Ξ', 'ΞΞΞΞΞΞ', '₪₪₪₪₪₪', '₾₾₾₾₾₾']
-    : ['₿₿₿₿', 'ΞΞΞΞ', '####', '₪₪₪₪', 'ΔΔΔΔ']
-  const floodCount = prefersReducedMotion ? 6 : Math.max(18, Math.round(floodDuration / 52))
-  for (let index = 0; index < floodCount; index += 1) {
-    floodLines.push({
-      line: {
-        type: jackpotActive ? 'jackpotFloodGlyph' : 'inara',
-        label: randomChoice(floodLabelChoices),
-        text: jackpotActive
-          ? generateCurrencyCascadeString(randomInteger(96, 156))
-          : generateInaraString(randomInteger(64, 112)),
-        seed: `jackpot-flood-${index}`
-      },
-      delay: prefersReducedMotion ? 60 : randomInteger(18, 64)
-    })
-  }
-
-  return { floodLines, floodDuration, jackpotActive }
-}
-
-function generateInaraString (length = 64) {
-  const baseGlyphs = [
-    '@', '%', '&', '*', '/', '\\', '|', '<', '>', '^', '~', '?', '!', '$', ':', ';', '_', '[', ']', '{', '}', '(', ')',
-    '#', '=', '-', '+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-    'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-  ]
-  const glyphs = [...baseGlyphs, ...CURRENCY_GLYPHS]
-  return Array.from({ length }).map(() => randomChoice(glyphs)).join('')
-}
-
-const DEFAULT_TRANSACTION_VECTOR_LABELS = ['vector', 'conduit', 'relay', 'channel', 'flux', 'helix', 'circuit', 'vault']
-const DEFAULT_TRANSACTION_ALIAS_WORDS = [
-  'Helios Bloom',
-  'Umbra Siphon',
-  'Specter Loom',
-  'Aurora Spindle',
-  'Perseus Vault',
-  'Nyx Cascade',
-  'Zenith Lattice',
-  'Dusk Prism'
-]
-const DEFAULT_TRANSACTION_OPERATIONS = [
-  'tribute splice',
-  'ledger weave',
-  'credit siphon',
-  'token handshake',
-  'cache imprint',
-  'mesh splice',
-  'flux injection',
-  'ledger braid'
-]
-const DEFAULT_TRANSACTION_SIGNAL_WORDS = ['pulse', 'cascade', 'flare', 'surge', 'ember', 'echo', 'flare', 'spark']
-const DEFAULT_TRANSACTION_SOURCE_PREFIXES = ['origin', 'source', 'channel', 'uplink', 'handoff', 'vector']
-const DEFAULT_TRANSACTION_REASON_SUFFIXES = ['protocol', 'whisper', 'script', 'manifest', 'seeding', 'cipher', 'routine']
-const DEFAULT_SIMULATION_BADGES = ['SIMULATION MODE', 'TRAINING SCENARIO', 'SANDBOX RELAY']
-const DEFAULT_SIMULATION_TRAILS = [
-  'ghostfire rehearsal',
-  'tribute drill active',
-  'mesh rehearsal running',
-  'no live traffic detected'
-]
-const DEFAULT_JACKPOT_ASCII_BANNER = [
-  '══════════════════════════════════════════════════════════════════',
-  '   JACKPOT VECTOR LOCKED · CREDIT CASCADE INBOUND · TRIBUTE SURGE  ',
-  '══════════════════════════════════════════════════════════════════'
-]
-const DEFAULT_JACKPOT_SUMMARY_INTROS = [
-  'Encrypted cache recovered from',
-  'INARA dredged a tribute vault at',
-  'Covert intercept latched onto',
-  'Phantom escrow liberated within',
-  'Shadow broker ping returned from'
-]
-const DEFAULT_JACKPOT_SUMMARY_TAILS = [
-  'Tribute surge rerouted to your ledger.',
-  'A million-token cascade detonates in your favour.',
-  'Ledger stabilised and humming with new resonance.',
-  'INARA celebrates with an ultraviolet windfall.',
-  'Balance spike recorded—enjoy the surge.'
-]
-const DEFAULT_JACKPOT_SWIRL_GLYPHS = ['✶', '✷', '✺', '✹', '✸', '✧', '✦', '✩', '✪', '☄', '⚡', '⭑']
-const DEFAULT_FALLBACK_LOCATIONS = ['Obsidian Relay', 'Nyx Archive', 'Perseus Node', 'Umbra Vault', 'Helios Array', 'Dusk Citadel']
-
-const TRANSACTION_VECTOR_LABELS = getInaraStrings(
-  'terminal.transaction.vectorLabels',
-  DEFAULT_TRANSACTION_VECTOR_LABELS
-)
-const TRANSACTION_ALIAS_WORDS = getInaraStrings(
-  'terminal.transaction.aliasWords',
-  DEFAULT_TRANSACTION_ALIAS_WORDS
-)
-const TRANSACTION_OPERATIONS = getInaraStrings(
-  'terminal.transaction.operations',
-  DEFAULT_TRANSACTION_OPERATIONS
-)
-const TRANSACTION_SIGNAL_WORDS = getInaraStrings(
-  'terminal.transaction.signalWords',
-  DEFAULT_TRANSACTION_SIGNAL_WORDS
-)
-const TRANSACTION_SOURCE_PREFIXES = getInaraStrings(
-  'terminal.transaction.sourcePrefixes',
-  DEFAULT_TRANSACTION_SOURCE_PREFIXES
-)
-const TRANSACTION_REASON_SUFFIXES = getInaraStrings(
-  'terminal.transaction.reasonSuffixes',
-  DEFAULT_TRANSACTION_REASON_SUFFIXES
-)
-const SIMULATION_BADGES = getInaraStrings('terminal.simulationBadges', DEFAULT_SIMULATION_BADGES)
-const SIMULATION_TRAILS = getInaraStrings('terminal.simulationTrails', DEFAULT_SIMULATION_TRAILS)
-const JACKPOT_ASCII_BANNER = getInaraStrings('terminal.jackpotAsciiBanner', DEFAULT_JACKPOT_ASCII_BANNER)
-const JACKPOT_SUMMARY_INTROS = getInaraStrings('terminal.jackpotSummaryIntros', DEFAULT_JACKPOT_SUMMARY_INTROS)
-const JACKPOT_SUMMARY_TAILS = getInaraStrings('terminal.jackpotSummaryTails', DEFAULT_JACKPOT_SUMMARY_TAILS)
-const JACKPOT_SWIRL_GLYPHS = getInaraStrings('terminal.jackpotSwirlGlyphs', DEFAULT_JACKPOT_SWIRL_GLYPHS)
-const FALLBACK_LOCATIONS = getInaraStrings('terminal.fallbackLocations', DEFAULT_FALLBACK_LOCATIONS)
-
-function generateSwirlGlyphString (length = 48) {
-  return Array.from({ length }).map(() => randomChoice([...JACKPOT_SWIRL_GLYPHS, ...CURRENCY_GLYPHS])).join('')
-}
-
-function formatTokenAmount (value) {
-  if (!Number.isFinite(value)) return '---'
-  try {
-    return value.toLocaleString()
-  } catch (error) {
-    return String(value)
-  }
-}
-
-function extractLedgerSource (metadata = {}) {
-  const candidates = [metadata.source, metadata.endpoint, metadata.event, metadata.origin]
-  const resolved = candidates.find(value => typeof value === 'string' && value.trim())
-  return resolved ? resolved.trim() : 'inara'
-}
-
-function extractLedgerReason (metadata = {}) {
-  const candidates = [metadata.reason, metadata.event, metadata.cause]
-  const resolved = candidates.find(value => typeof value === 'string' && value.trim())
-  return resolved ? resolved.trim() : 'token-flow'
-}
-
-function extractLogContext (logEntry = {}) {
-  if (!logEntry || typeof logEntry !== 'object') {
-    return { name: null, event: null }
-  }
-
-  const nameCandidates = [
-    logEntry.StationName,
-    logEntry.Body,
-    logEntry.StarSystem,
-    logEntry.System,
-    logEntry.Name,
-    logEntry.MarketID ? `Market ${logEntry.MarketID}` : null
-  ]
-
-  const name = nameCandidates.find(value => typeof value === 'string' && value.trim()) || null
-  const event = typeof logEntry.event === 'string' && logEntry.event.trim() ? logEntry.event.trim() : null
-
-  return { name, event }
-}
-
-function createJackpotSummary ({ location, eventName, amount, balance, simulation }) {
-  const intro = randomChoice(JACKPOT_SUMMARY_INTROS)
-  const tail = randomChoice(JACKPOT_SUMMARY_TAILS)
-  const locationLabel = location || randomChoice(FALLBACK_LOCATIONS)
-  const eventSuffix = eventName ? ` (${eventName})` : ''
-  const amountLabel = amount ? `${amount} tokens` : 'a vault of tokens'
-  const simulationTag = simulation ? ' [simulation]' : ''
-  return `${intro} ${locationLabel}${eventSuffix}. ${tail} Balance now ${balance} tokens after ${amountLabel}.${simulationTag}`
-}
-
-function usePrefersReducedMotion () {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return undefined
-    }
-
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const handleChange = () => setPrefersReducedMotion(Boolean(media.matches))
-    handleChange()
-
-    if (typeof media.addEventListener === 'function') {
-      media.addEventListener('change', handleChange)
-      return () => media.removeEventListener('change', handleChange)
-    } else if (typeof media.addListener === 'function') {
-      media.addListener(handleChange)
-      return () => media.removeListener(handleChange)
-    }
-
-    return undefined
-  }, [])
-
-  return prefersReducedMotion
-}
-
-function buildBalanceAnimationSteps (fromValue, toValue, { milestones = [] } = {}) {
-  if (!Number.isFinite(fromValue) || !Number.isFinite(toValue) || fromValue === toValue) {
-    return []
-  }
-
-  const direction = toValue >= fromValue ? 1 : -1
-  const totalDistance = Math.abs(toValue - fromValue)
-  if (totalDistance === 0) return []
-
-  const sanitizedMilestones = Array.from(new Set(milestones.filter(value => Number.isFinite(value))))
-    .filter(value => direction === 1 ? value >= Math.min(fromValue, toValue) && value <= Math.max(fromValue, toValue) : value <= Math.max(fromValue, toValue) && value >= Math.min(fromValue, toValue))
-    .sort((a, b) => direction * (a - b))
-
-  const points = [fromValue, ...sanitizedMilestones.filter(value => value !== fromValue && value !== toValue), toValue]
-  const estimatedSteps = Math.min(64, Math.max(10, Math.round(totalDistance / Math.max(1, Math.log10(totalDistance + 1) * 80))))
-  const steps = []
-
-  for (let i = 0; i < points.length - 1; i += 1) {
-    const start = points[i]
-    const end = points[i + 1]
-    const segmentDistance = Math.abs(end - start)
-    if (segmentDistance === 0) continue
-    const ratio = segmentDistance / totalDistance
-    const segmentSteps = Math.max(3, Math.round(estimatedSteps * ratio))
-    for (let step = 1; step <= segmentSteps; step += 1) {
-      const progress = step / segmentSteps
-      let value = start + (direction * Math.round(segmentDistance * progress))
-      value = direction === 1 ? Math.min(value, end) : Math.max(value, end)
-      if (step === segmentSteps) value = end
-      if (!Number.isFinite(value)) continue
-      const milestone = sanitizedMilestones.includes(value) && value !== toValue
-      steps.push({
-        value,
-        milestone,
-        hold: milestone ? randomInteger(220, 380) : 0
-      })
-    }
-  }
-
-  return steps
-}
-
-function generateBinaryString (bytes = 8) {
-  return Array.from({ length: bytes }).map(() => randomInteger(0, 255).toString(2).padStart(8, '0')).join(' ')
-}
-
-function generateCommandText () {
-  const templates = [
-    () => `uplink --channel "${randomCallsign()}" --handshake ${randomEndpoint()} --entropy ${randomInteger(256, 4096)}`,
-    () => `listen ${randomEndpoint()} --filter "${randomChoice(GREEK_SYMBOLS)}:${randomChoice(GREEK_SYMBOLS)}" --prism ${randomChoice(['triad', 'nova', 'umbra'])}`,
-    () => `trace ${randomEndpoint()} --return-hop ${randomInteger(2, 9)} --mask "${randomChoice(['ghost-netting', 'veil', 'umbra'])}"`,
-    () => `stream manifest ${randomEndpoint()} --burst ${randomInteger(16, 96)}kb --checksum ${randomChoice(['delta', 'sigma', 'omega'])}`,
-    () => `seed beacon://${randomGreekPhrase()} --prompt "${randomGreekPhrase()}" --variance ${randomFloat(0.01, 0.2, 3)}`,
-    () => `siphon datacube://${randomGreekPhrase()} --offset ${randomInteger(1024, 8192)} --chunks ${randomInteger(2, 6)}`
-  ]
-  return randomChoice(templates)()
-}
-
-function generateResponseText () {
-  const phrases = [
-    () => `Handshake acknowledged · lattice ${randomChoice(['stabilised', 'resonant', 'phasing'])} · latency ${randomInteger(18, 95)}ms`,
-    () => `Convoy packets intercepted · ${randomChoice(['Sigma', 'Kappa', 'Delta'])} drift trimmed to ${randomFloat(0.01, 0.9, 2)}°`,
-    () => `Return vector aligned · ${randomChoice(['gamma', 'kappa', 'omega'])} corridor integrity ${randomInteger(80, 99)}%`,
-    () => `Spectral sweep normalized · ${randomInteger(12, 64)} spikes flagged for review`,
-    () => `Archive sync complete · security halo steady at ${randomInteger(90, 100)}%`,
-    () => `Beacon echo ${randomChoice(['lambda', 'theta', 'rho'])} · coherence ${randomFloat(88, 99, 1)}%`
-  ]
-  return randomChoice(phrases)()
-}
-
-function generateDecryptText () {
-  const vector = [randomFloat(-1.5, 1.5, 2), randomFloat(-1.5, 1.5, 2), randomFloat(-1.5, 1.5, 2)]
-  const keys = [randomChoice(GREEK_SYMBOLS).toUpperCase(), randomChoice(GREEK_SYMBOLS).toUpperCase()]
-  const payload = {
-    signal: randomCallsign(),
-    vector,
-    payload: {
-      keys,
-      seed: randomInteger(100000, 999999)
-    }
-  }
-  return JSON.stringify(payload)
-}
-
-function generateAlertText () {
-  return `${randomChoice(['ANOMALY', 'INTRUSION', 'SIGNAL'])} ${randomChoice(['DELTA', 'OMEGA', 'SIGMA'])} DETECTED · cascade ${randomInteger(1000, 9999)}`
-}
-
-const DEFAULT_MENACE_ALERTS = [
-  formatted => `LEDGER IMBALANCE · ${formatted} TOKENS BELOW ZERO`,
-  formatted => `TRIBUTE DEFICIT DETECTED · ${formatted} TOKENS OUTSTANDING`,
-  formatted => `NEGATIVE CREDIT VECTOR · ${formatted} TOKENS OWED`
-]
-
-const DEFAULT_MENACE_ECHOES = [
-  () => 'INARA growls: repay your tribute or be assimilated.',
-  () => 'INARA whispers from the void: settle the debt before the mesh tightens.',
-  () => 'INARA watches. Tribute is expected. Delay invites eradication.'
-]
-
-const DEFAULT_CREDIT_GLYPH_SYMBOLS = [
-  '₿',
-  '¤',
-  'Ξ',
-  '§',
-  '₪',
-  '¥',
-  '₡',
-  '₢',
-  '₣',
-  '₤',
-  '₥',
-  '₦',
-  '₧',
-  '₨',
-  '₩',
-  '₫',
-  '€',
-  '£',
-  '₭',
-  '₮',
-  '₯',
-  '₰',
-  '₱',
-  '฿',
-  '₾',
-  '✧',
-  '✦',
-  '✺',
-  '✹',
-  '✶',
-  '✸',
-  '✳',
-  '⊚',
-  '⊛'
-]
-
-const MENACE_ALERTS = getInaraStrings('terminal.menace.alerts', DEFAULT_MENACE_ALERTS)
-const MENACE_ECHOES = getInaraStrings('terminal.menace.echoes', DEFAULT_MENACE_ECHOES)
-const CREDIT_GLYPH_SYMBOLS = getInaraStrings('terminal.creditGlyphSymbols', DEFAULT_CREDIT_GLYPH_SYMBOLS)
-const CREDIT_CELEBRATION_MESSAGE = getInaraString(
-  'terminal.creditCelebrationMessage',
-  'INARA intercept completed. Ledger flush inbound.'
-)
-
-function generateCreditGlyphsConfig (count = 32) {
-  const seed = Date.now().toString(36)
-  return Array.from({ length: count }).map((_, index) => {
-    return {
-      id: `credit-glyph-${seed}-${index}-${Math.random().toString(16).slice(2, 6)}`,
-      symbol: randomChoice(CREDIT_GLYPH_SYMBOLS),
-      duration: randomInteger(2600, 4600),
-      delay: randomInteger(0, 2400),
-      drift: randomInteger(-12, 12) / 10
-    }
-  })
-}
-
-function generateMenaceLines (balance) {
-  const formatted = Number.isFinite(balance) ? balance.toLocaleString() : 'UNKNOWN'
-  const alertText = randomChoice(MENACE_ALERTS)(formatted)
-  const echoText = randomChoice(MENACE_ECHOES)()
-  return [
-    { type: 'alert', label: '!!!', text: alertText },
-    { type: 'system', label: 'inara', text: echoText }
-  ]
-}
-
-function generateTerminalLine () {
-  const generators = {
-    command: () => ({ type: 'command', label: 'inara@ship', text: generateCommandText() }),
-    response: () => ({ type: 'response', label: randomChoice(['mesh', 'telemetry', 'analysis']), text: generateResponseText() }),
-    cipher: () => ({ type: 'cipher', label: 'cipher', text: generateCipherString(randomInteger(32, 64)) }),
-    binary: () => ({ type: 'binary', label: 'payload', text: generateBinaryString(randomInteger(6, 10)) }),
-    decrypt: () => ({ type: 'decrypt', label: randomChoice(['mesh', 'analysis']), text: generateDecryptText() }),
-    alert: () => ({ type: 'alert', label: '!!!', text: generateAlertText() })
-  }
-
-  const weightedTypes = ['command', 'command', 'response', 'response', 'response', 'cipher', 'binary', 'decrypt', 'response', 'command', 'alert', 'decrypt', 'response', 'cipher']
-  const type = randomChoice(weightedTypes)
-  return generators[type]()
-}
-
-function createTerminalLineWithId (seed = '', baseLine, metadata = {}) {
-  const line = baseLine || generateTerminalLine()
-  const unique = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}${seed ? `-${seed}` : ''}`
-  const {
-    seed: _ignoredSeed,
-    __groupOrder: _ignoredGroupOrder,
-    __groupKey: _ignoredGroupKey,
-    __groupSeed: _ignoredGroupSeed,
-    ...rest
-  } = line
-  return { ...rest, ...metadata, id: unique }
-}
-
-function splitTerminalLineSegments (line, maxLength = TERMINAL_LINE_MAX_LENGTH, { groupKey, groupSeed, groupOrder } = {}) {
-  if (!line || typeof line !== 'object') return []
-
-  const {
-    seed: _ignoredSeed,
-    __groupKey: _ignoredGroupKey,
-    __groupSeed: _ignoredGroupSeed,
-    __groupOrder: _ignoredGroupOrder,
-    __groupLabel: preferredGroupLabel,
-    __groupType: preferredGroupType,
-    text,
-    ...rest
-  } = line
-  const rawText = text == null ? '' : String(text)
-  const normalizedText = rawText.replace(/\s+/g, ' ').trim()
-
-  const baseLabel = preferredGroupLabel != null ? preferredGroupLabel : rest.label
-  const baseType = preferredGroupType != null ? preferredGroupType : rest.type
-
-  const metadata = {
-    __groupKey: groupKey,
-    __groupSeed: groupSeed,
-    __groupOrder: groupOrder,
-    __groupLabel: baseLabel,
-    __groupType: baseType,
-    __groupText: normalizedText
-  }
-
-  if (!normalizedText) {
-    return [{ ...rest, label: baseLabel, type: baseType, text: '', ...metadata, __segmentIndex: 0 }]
-  }
-
-  if (normalizedText.length <= maxLength) {
-    return [{ ...rest, label: baseLabel, type: baseType, text: normalizedText, ...metadata, __segmentIndex: 0 }]
-  }
-
-  const words = normalizedText.split(/\s+/).filter(Boolean)
-  if (words.length === 0) {
-    return [{ ...rest, label: baseLabel, type: baseType, text: normalizedText.slice(0, maxLength), ...metadata, __segmentIndex: 0 }]
-  }
-
-  const segments = []
-  let current = ''
-
-  words.forEach(word => {
-    if (word.length > maxLength) {
-      if (current) {
-        segments.push(current)
-        current = ''
-      }
-      for (let index = 0; index < word.length; index += maxLength) {
-        const chunk = word.slice(index, index + maxLength)
-        if (chunk.length === maxLength) {
-          segments.push(chunk)
-        } else if (chunk.length > 0) {
-          current = chunk
-        }
-      }
-    } else {
-      const next = current ? `${current} ${word}` : word
-      if (next.length > maxLength && current) {
-        segments.push(current)
-        current = word
-      } else {
-        current = next
-      }
-    }
-  })
-
-  if (current) {
-    segments.push(current)
-  }
-
-  return segments.map((segmentText, index) => ({
-    ...rest,
-    label: index === 0 ? baseLabel : (baseLabel ? '···' : baseLabel),
-    type: baseType,
-    text: segmentText,
-    ...metadata,
-    __segmentIndex: index
-  }))
-}
-
-function createTerminalLineEntries (seed = '', baseLine, maxLength = TERMINAL_LINE_MAX_LENGTH, options = {}) {
-  const line = baseLine && typeof baseLine === 'object' ? baseLine : generateTerminalLine()
-  const { seed: lineSeed, __groupOrder: providedGroupOrder, ...rest } = line
-  const baseSeed = typeof seed === 'string' && seed.length > 0
-    ? seed
-    : typeof lineSeed === 'string' && lineSeed.length > 0
-      ? lineSeed
-      : ''
-  const groupSeed = typeof options.groupSeed === 'string' && options.groupSeed.length > 0
-    ? options.groupSeed
-    : baseSeed || `terminal-line-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
-  const groupKey = typeof options.groupKey === 'string' && options.groupKey.length > 0
-    ? options.groupKey
-    : groupSeed
-  const groupOrderRaw = Number.isFinite(options.groupOrder)
-    ? options.groupOrder
-    : Number.isFinite(providedGroupOrder)
-      ? providedGroupOrder
-      : null
-  const groupOrder = groupOrderRaw != null ? groupOrderRaw : (++terminalLineGroupCounter)
-  terminalLineGroupCounter = Math.max(terminalLineGroupCounter, groupOrder)
-
-  const segments = splitTerminalLineSegments({ ...rest, __groupOrder: groupOrder }, maxLength, {
-    groupKey,
-    groupSeed,
-    groupOrder
-  })
-
-  if (!segments.length) {
-    return [createTerminalLineWithId(groupSeed, { ...rest, text: '' }, {
-      __groupKey: groupKey,
-      __groupSeed: groupSeed,
-      __groupOrder: groupOrder,
-      __groupLabel: rest.label,
-      __groupType: rest.type,
-      __groupText: '',
-      __segmentIndex: 0
-    })]
-  }
-
-  return segments.map((segment, index) => {
-    const segmentSeed = index === 0
-      ? groupSeed
-      : `${groupSeed}-${index}`
-    return createTerminalLineWithId(segmentSeed, segment, {
-      __groupKey: groupKey,
-      __groupSeed: groupSeed,
-      __groupOrder: groupOrder,
-      __groupLabel: segment.__groupLabel,
-      __groupType: segment.__groupType,
-      __groupText: segment.__groupText,
-      __segmentIndex: segment.__segmentIndex
-    })
-  })
-}
-
-function InaraTerminalOverlay () {
-  const [viewState, setViewState] = useState(TERMINAL_VIEW.NORMAL)
-  const terminalLineMaxLengthRef = useRef(TERMINAL_LINE_MAX_LENGTH)
-  const [terminalLineMaxLength, setTerminalLineMaxLength] = useState(TERMINAL_LINE_MAX_LENGTH)
-  const [inaraTickerMessages, setInaraTickerMessages] = useState(() => {
-    const seeded = Array.from({ length: TERMINAL_BUFFER }).flatMap((_, index) =>
-      createTerminalLineEntries(`seed-${index}`, undefined, TERMINAL_LINE_MAX_LENGTH)
-    )
-    return seeded.slice(-TERMINAL_BUFFER)
-  })
-  const cadenceRef = useRef()
-  const timeoutRef = useRef(null)
-  const terminalRef = useRef(null)
-  const [creditCelebration, setCreditCelebration] = useState(null)
-  const [tokenBalance, setTokenBalance] = useState(null)
-  const [tokenBalanceAnimated, setTokenBalanceAnimated] = useState(null)
-  const [tokenMode, setTokenMode] = useState(null)
-  const [tokenSimulation, setTokenSimulation] = useState(false)
-  const [tokenRemoteState, setTokenRemoteState] = useState({ enabled: false, mode: 'DISABLED' })
-  const [tokenLoading, setTokenLoading] = useState(false)
-  const [tokenActionPending, setTokenActionPending] = useState(false)
-  const [balanceFlash, setBalanceFlash] = useState(null)
-  const tokenStateRef = useRef({ balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } })
-  const celebrationRef = useRef({ entryId: null, timeouts: [], messageDisplayed: false })
-  const sequenceTimeoutsRef = useRef(new Set())
-  const balanceAnimationRef = useRef({ timeouts: new Set() })
-  const balanceFlashTimeoutRef = useRef(null)
-  const animatedBalanceRef = useRef(null)
-  const recentLogRef = useRef([])
-  const prefersReducedMotion = usePrefersReducedMotion()
-
-  const rewrapTerminalLines = useCallback((lines, maxLength) => {
-    if (!Array.isArray(lines) || lines.length === 0) return lines
-    const groups = []
-    const seenKeys = new Set()
-    const fallbackStart = terminalLineGroupCounter
-
-    lines.forEach(line => {
-      if (!line) return
-      const groupKey = line.__groupKey || line.__groupSeed || line.id
-      if (!groupKey || seenKeys.has(groupKey)) return
-      seenKeys.add(groupKey)
-
-      const groupSeed = typeof line.__groupSeed === 'string' && line.__groupSeed.length > 0 ? line.__groupSeed : groupKey
-      const groupOrder = Number.isFinite(line.__groupOrder)
-        ? line.__groupOrder
-        : fallbackStart + groups.length + 1
-      const base = {
-        type: line.__groupType ?? line.type ?? null,
-        label: line.__groupLabel ?? line.label ?? '',
-        text: line.__groupText ?? line.text ?? '',
-        __groupOrder: groupOrder
-      }
-
-      groups.push({
-        key: groupKey,
-        seed: groupSeed,
-        base,
-        options: { groupKey, groupSeed, groupOrder }
-      })
-    })
-
-    if (!groups.length) return lines
-
-    const sorted = groups.sort((a, b) => {
-      const orderA = Number.isFinite(a.base.__groupOrder) ? a.base.__groupOrder : 0
-      const orderB = Number.isFinite(b.base.__groupOrder) ? b.base.__groupOrder : 0
-      return orderA - orderB
-    })
-
-    const segments = sorted.flatMap(group =>
-      createTerminalLineEntries(group.seed, group.base, maxLength, group.options)
-    )
-
-    return segments.slice(-TERMINAL_BUFFER)
-  }, [])
-
-  useEffect(() => {
-    terminalLineMaxLengthRef.current = terminalLineMaxLength
-  }, [terminalLineMaxLength])
-
-  useEffect(() => {
-    setInaraTickerMessages(previous => {
-      if (!Array.isArray(previous) || previous.length === 0) return previous
-      return rewrapTerminalLines(previous, terminalLineMaxLength)
-    })
-  }, [terminalLineMaxLength, rewrapTerminalLines])
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof ResizeObserver === 'undefined') return undefined
-
-    const measure = () => {
-      const terminal = terminalRef.current
-      if (!terminal) return
-      const feed = terminal.querySelector('ul')
-      if (!feed) return
-
-      const feedWidth = feed.clientWidth
-      if (!feedWidth) return
-
-      const firstLine = feed.querySelector('li')
-      let promptWidth = 0
-      if (firstLine?.firstElementChild) {
-        const promptRect = firstLine.firstElementChild.getBoundingClientRect()
-        if (promptRect && Number.isFinite(promptRect.width)) {
-          promptWidth = promptRect.width
-        }
-      }
-
-      const lineStyles = window.getComputedStyle(firstLine || feed)
-      const gapValue = lineStyles.columnGap || lineStyles.gap || lineStyles.gridColumnGap || '0'
-      const gap = Number.parseFloat(gapValue) || 0
-      const availableWidth = Math.max(feedWidth - promptWidth - gap, 0)
-
-      const textElement = firstLine?.lastElementChild || feed
-      const textStyles = window.getComputedStyle(textElement)
-      const measurementSpan = document.createElement('span')
-      measurementSpan.textContent = 'MMMMMMMMMM'
-      measurementSpan.style.visibility = 'hidden'
-      measurementSpan.style.position = 'absolute'
-      measurementSpan.style.whiteSpace = 'nowrap'
-      measurementSpan.style.fontFamily = textStyles.fontFamily
-      measurementSpan.style.fontSize = textStyles.fontSize
-      measurementSpan.style.fontWeight = textStyles.fontWeight
-      measurementSpan.style.letterSpacing = textStyles.letterSpacing
-      feed.appendChild(measurementSpan)
-      const measurementRect = measurementSpan.getBoundingClientRect()
-      feed.removeChild(measurementSpan)
-
-      const fontSizeValue = Number.parseFloat(textStyles.fontSize) || 14
-      const letterSpacingValue = Number.parseFloat(textStyles.letterSpacing) || 0
-      const baseCharWidth = measurementRect.width > 0 ? measurementRect.width / 10 : fontSizeValue * 0.62
-      const characterWidth = Math.max(baseCharWidth + letterSpacingValue, 1)
-
-      const computedMax = Math.floor(availableWidth / characterWidth)
-      if (!Number.isFinite(computedMax) || computedMax <= 0) return
-
-      const clamped = Math.max(
-        TERMINAL_LINE_MIN_LENGTH,
-        Math.min(TERMINAL_LINE_MAX_LENGTH_CAP, computedMax)
-      )
-
-      if (clamped !== terminalLineMaxLengthRef.current) {
-        setTerminalLineMaxLength(clamped)
-      }
-    }
-
-    measure()
-
-    const observer = new ResizeObserver(() => measure())
-    const feed = terminalRef.current?.querySelector('ul')
-    if (feed) observer.observe(feed)
-    window.addEventListener('resize', measure)
-
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('resize', measure)
-    }
-  }, [viewState])
-
-  if (!cadenceRef.current) {
-    cadenceRef.current = {
-      mode: 'normal',
-      queue: [],
-      floodCountdown: randomInteger(24, 48),
-      recoveryCountdown: 0,
-      menaceCooldown: 0
-    }
-  }
-
-  useEffect(() => {
-    const host = terminalRef.current?.parentElement
-    if (!host) return
-    const nextHeight =
-      viewState === TERMINAL_VIEW.COMPRESSED
-        ? TERMINAL_HEIGHT_COMPRESSED
-        : viewState === TERMINAL_VIEW.EXPANDED
-          ? TERMINAL_HEIGHT_EXPANDED
-          : TERMINAL_HEIGHT_NORMAL
-    host.style.setProperty('--inara-terminal-height', nextHeight)
-  }, [viewState])
-
-  useEffect(() => {
-    const host = terminalRef.current?.parentElement
-    return () => {
-      if (host) {
-        host.style.removeProperty('--inara-terminal-height')
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    animatedBalanceRef.current = tokenBalanceAnimated
-  }, [tokenBalanceAnimated])
-
-  const clearSequenceTimeouts = useCallback(() => {
-    if (typeof window === 'undefined') return
-    const timeouts = sequenceTimeoutsRef.current
-    if (!timeouts || typeof timeouts.forEach !== 'function') return
-    timeouts.forEach(id => window.clearTimeout(id))
-    timeouts.clear()
-  }, [])
-
-  const clearBalanceAnimation = useCallback(() => {
-    if (typeof window === 'undefined') return
-    const animationState = balanceAnimationRef.current
-    if (!animationState || !animationState.timeouts) return
-    animationState.timeouts.forEach(id => window.clearTimeout(id))
-    animationState.timeouts.clear()
-  }, [])
-
-  const triggerBalanceFlash = useCallback((type) => {
-    if (!type) return
-    if (typeof window === 'undefined') return
-    if (balanceFlashTimeoutRef.current) {
-      window.clearTimeout(balanceFlashTimeoutRef.current)
-      balanceFlashTimeoutRef.current = null
-    }
-    setBalanceFlash({ type, at: Date.now() })
-    balanceFlashTimeoutRef.current = window.setTimeout(() => {
-      setBalanceFlash(null)
-      balanceFlashTimeoutRef.current = null
-    }, 680)
-  }, [])
-
-  const pushTerminalLine = useCallback((line = {}) => {
-    const { seed, ...payload } = line || {}
-    const entries = createTerminalLineEntries(seed, payload, terminalLineMaxLengthRef.current)
-    if (!entries.length) return
-
-    setInaraTickerMessages(previous => {
-      let next = [...previous, ...entries]
-      if (next.length > TERMINAL_BUFFER) {
-        next = next.slice(next.length - TERMINAL_BUFFER)
-      }
-      return next
-    })
-  }, [])
-
-  const scheduleTerminalSequence = useCallback((items = [], { initialDelay = 0, minDelay = 40, maxDelay = 120 } = {}) => {
-    if (typeof window === 'undefined') return
-    let delay = initialDelay
-    items.forEach((item, index) => {
-      if (!item) return
-      const entry = item.line ? item.line : item
-      const customDelay = Number.isFinite(item?.delay) ? item.delay : null
-      const stepDelay = index === 0 ? (customDelay ?? 0) : (customDelay ?? randomInteger(minDelay, maxDelay))
-      delay += stepDelay
-      const timeoutId = window.setTimeout(() => {
-        pushTerminalLine(entry)
-        sequenceTimeoutsRef.current.delete(timeoutId)
-      }, delay)
-      sequenceTimeoutsRef.current.add(timeoutId)
-    })
-  }, [pushTerminalLine])
-
-  const clearCelebrationTimeouts = useCallback(() => {
-    if (typeof window === 'undefined') return
-    const ref = celebrationRef.current
-    if (!ref) return
-    if (Array.isArray(ref.timeouts)) {
-      ref.timeouts.forEach(id => window.clearTimeout(id))
-    }
-    ref.timeouts = []
-  }, [])
-
-  const triggerCreditCelebration = useCallback((entry = {}, { message, messageLabel = 'inara', messageType = 'jackpotSummary' } = {}) => {
-    if (typeof window === 'undefined') return
-    if (!entry || typeof entry !== 'object') return
-    const entryId = entry.id || null
-    if (!entryId) return
-
-    const ref = celebrationRef.current
-    if (ref.entryId === entryId) return
-
-    clearCelebrationTimeouts()
-
-    const glyphs = generateCreditGlyphsConfig()
-    setCreditCelebration({ entryId, glyphs })
-    celebrationRef.current = {
-      entryId,
-      glyphs,
-      timeouts: [],
-      messageDisplayed: false
-    }
-
-    const messageDelay = 5200
-    const celebrationDuration = 7200
-
-    const messageTimeout = window.setTimeout(() => {
-      celebrationRef.current.messageDisplayed = true
-      setInaraTickerMessages(previous => {
-        const messageLines = createTerminalLineEntries('credit-message', {
-          type: messageType,
-          label: messageLabel,
-          text: message || CREDIT_CELEBRATION_MESSAGE
-        }, terminalLineMaxLengthRef.current)
-        let next = [...previous, ...messageLines]
-        if (next.length > TERMINAL_BUFFER) {
-          next = next.slice(next.length - TERMINAL_BUFFER)
-        }
-        return next
-      })
-    }, messageDelay)
-
-    const completionTimeout = window.setTimeout(() => {
-      setCreditCelebration(current => {
-        if (!current || current.entryId !== entryId) return current
-        return null
-      })
-      celebrationRef.current.entryId = null
-      celebrationRef.current.timeouts = []
-      celebrationRef.current.messageDisplayed = true
-    }, celebrationDuration)
-
-    celebrationRef.current.timeouts = [messageTimeout, completionTimeout]
-  }, [clearCelebrationTimeouts, setInaraTickerMessages])
-
-  const buildTransactionSequence = useCallback((entry = {}, { simulation = false } = {}) => {
-    return createTransactionSequence(entry, { simulation, prefersReducedMotion })
-  }, [prefersReducedMotion])
-
-  const triggerJackpotMilestone = useCallback(() => {
-    const swirlCount = prefersReducedMotion ? 1 : 2
-    const labels = ['✶✶✶✶', '⚡⚡⚡⚡', '₪₪₪₪', 'ΞΞΞΞ']
-    const swirlLines = Array.from({ length: swirlCount }).map((_, index) => ({
-      line: {
-        type: 'jackpotGlyph',
-        label: randomChoice(labels),
-        text: generateSwirlGlyphString(randomInteger(36, 72)),
-        seed: `jackpot-swirl-${Date.now().toString(36)}-${index}`
-      },
-      delay: prefersReducedMotion ? 0 : randomInteger(60, 160)
-    }))
-    scheduleTerminalSequence(swirlLines, { minDelay: 48, maxDelay: 160 })
-  }, [prefersReducedMotion, scheduleTerminalSequence])
-
-  const triggerJackpotSequence = useCallback((entry = {}, { simulation = false } = {}) => {
-    if (!entry || typeof entry !== 'object') return
-    clearSequenceTimeouts()
-
-    const amountRaw = Number.isFinite(entry.delta) ? Math.abs(entry.delta) : Math.abs(entry.amount || 0)
-    const amountLabel = formatTokenAmount(amountRaw)
-    const balanceLabel = formatTokenAmount(Number.isFinite(entry.balance) ? entry.balance : null)
-    const recentLog = recentLogRef.current.length > 0 ? recentLogRef.current[0] : null
-    const context = extractLogContext(recentLog)
-    const summary = createJackpotSummary({
-      location: context.name,
-      eventName: context.event,
-      amount: amountLabel,
-      balance: balanceLabel,
-      simulation
-    })
-
-    triggerCreditCelebration(entry, { message: summary, messageLabel: 'inara', messageType: 'jackpotSummary' })
-
-    const { floodLines, floodDuration } = createJackpotFloodConfig(entry, { prefersReducedMotion })
-
-    if (simulation) {
-      floodLines.push({
-        line: {
-          type: 'simulation',
-          label: randomChoice(['sim', 'mesh']),
-          text: `${randomChoice(SIMULATION_BADGES)} · jackpot rehearsal engaged`,
-          seed: 'jackpot-sim'
-        },
-        delay: 0
-      })
-    }
-
-    scheduleTerminalSequence(floodLines, {
-      initialDelay: 0,
-      minDelay: prefersReducedMotion ? 60 : 22,
-      maxDelay: prefersReducedMotion ? 150 : 72
-    })
-
-    const asciiStartDelay = floodDuration + (prefersReducedMotion ? 120 : 360)
-    const asciiLines = JACKPOT_ASCII_BANNER.map((text, index) => ({
-      line: {
-        type: 'jackpot',
-        label: 'jackpot',
-        text,
-        seed: `jackpot-banner-${index}`
-      },
-      delay: prefersReducedMotion ? 120 : 240
-    }))
-
-    scheduleTerminalSequence(asciiLines, {
-      initialDelay: asciiStartDelay,
-      minDelay: prefersReducedMotion ? 140 : 260,
-      maxDelay: prefersReducedMotion ? 220 : 360
-    })
-
-    const summaryDelay = asciiStartDelay + (prefersReducedMotion ? 720 : 1280)
-    scheduleTerminalSequence([
-      {
-        line: {
-          type: 'jackpotSummary',
-          label: 'inara',
-          text: summary,
-          seed: 'jackpot-summary'
-        }
-      }
-    ], {
-      initialDelay: summaryDelay,
-      minDelay: 320,
-      maxDelay: 520
-    })
-  }, [clearSequenceTimeouts, prefersReducedMotion, recentLogRef, scheduleTerminalSequence, triggerCreditCelebration])
-
-  const handleTransactionEntry = useCallback((entry = {}, { simulation = false } = {}) => {
-    if (!entry || typeof entry !== 'object') return
-    clearSequenceTimeouts()
-    const sequence = buildTransactionSequence(entry, { simulation })
-    scheduleTerminalSequence(sequence, {
-      initialDelay: simulation ? (prefersReducedMotion ? 30 : 60) : 0,
-      minDelay: prefersReducedMotion ? 80 : 60,
-      maxDelay: prefersReducedMotion ? 160 : 140
-    })
-  }, [buildTransactionSequence, clearSequenceTimeouts, prefersReducedMotion, scheduleTerminalSequence])
-
-  const animateBalanceTo = useCallback((fromValue, toValue, { type, milestones = [], onMilestone } = {}) => {
-    if (!Number.isFinite(toValue)) {
-      setTokenBalanceAnimated(toValue)
-      return
-    }
-
-    const reduced = prefersReducedMotion
-
-    if (!Number.isFinite(fromValue)) {
-      fromValue = toValue
-    }
-
-    if (reduced || fromValue === toValue || typeof window === 'undefined') {
-      setTokenBalanceAnimated(toValue)
-      triggerBalanceFlash(type)
-      return
-    }
-
-    clearBalanceAnimation()
-
-    const steps = buildBalanceAnimationSteps(fromValue, toValue, { milestones })
-    if (!steps.length) {
-      setTokenBalanceAnimated(toValue)
-      triggerBalanceFlash(type)
-      return
-    }
-
-    const animationState = balanceAnimationRef.current
-    if (!animationState.timeouts) {
-      animationState.timeouts = new Set()
-    }
-
-    let delay = 0
-    steps.forEach((step, index) => {
-      const stepDelay = randomInteger(40, 120) + (Number.isFinite(step.hold) ? step.hold : 0)
-      delay += stepDelay
-      const timeoutId = window.setTimeout(() => {
-        setTokenBalanceAnimated(step.value)
-        if (step.milestone && typeof onMilestone === 'function') {
-          onMilestone(step.value)
-        }
-        if (index === steps.length - 1) {
-          triggerBalanceFlash(type)
-        }
-        animationState.timeouts.delete(timeoutId)
-      }, delay)
-      animationState.timeouts.add(timeoutId)
-    })
-  }, [clearBalanceAnimation, prefersReducedMotion, triggerBalanceFlash])
-
-  useEffect(() => {
-    let isMounted = true
-    let unsubscribe
-
-    const applySnapshot = (payload = {}) => {
-      const snapshot = (payload && payload.snapshot) || payload
-      if (!snapshot || typeof snapshot !== 'object') return
-      const previousState = tokenStateRef.current || {}
-      const previousBalance = Number.isFinite(previousState.balance) ? previousState.balance : null
-      const balance = Number.isFinite(snapshot.balance) ? snapshot.balance : null
-      const mode = typeof snapshot.mode === 'string' ? snapshot.mode : null
-      const simulation = Boolean(snapshot.simulation)
-      const remoteRaw = snapshot.remote || {}
-      const remoteState = {
-        enabled: Boolean(remoteRaw.enabled),
-        mode: typeof remoteRaw.mode === 'string' ? remoteRaw.mode : 'DISABLED',
-        synced: remoteRaw.synced === true
-      }
-
-      if (!isMounted) return
-      setTokenBalance(balance)
-      setTokenMode(mode)
-      setTokenSimulation(simulation)
-      setTokenRemoteState(remoteState)
-      setTokenLoading(false)
-      setTokenActionPending(false)
-      tokenStateRef.current = { balance, simulation, remote: remoteState }
-
-      const entry = payload.entry && typeof payload.entry === 'object' ? payload.entry : null
-      const startingValue = Number.isFinite(animatedBalanceRef.current)
-        ? animatedBalanceRef.current
-        : Number.isFinite(previousBalance)
-          ? previousBalance
-          : balance
-
-      if (entry && Number.isFinite(balance) && Number.isFinite(startingValue)) {
-        const metadata = entry.metadata || {}
-        if (metadata.event === 'negative-balance-recovery') {
-          const milestones = []
-          if (Number.isFinite(metadata.threshold)) milestones.push(metadata.threshold)
-          milestones.push(0)
-          milestones.push(balance)
-          animateBalanceTo(startingValue, balance, {
-            type: entry.type,
-            milestones,
-            onMilestone: () => triggerJackpotMilestone()
-          })
-          triggerJackpotSequence(entry, { simulation })
-        } else {
-          animateBalanceTo(startingValue, balance, { type: entry.type })
-          handleTransactionEntry(entry, { simulation })
-        }
-      } else if (Number.isFinite(balance)) {
-        if (!Number.isFinite(animatedBalanceRef.current)) {
-          setTokenBalanceAnimated(balance)
-        } else {
-          animateBalanceTo(animatedBalanceRef.current, balance, { type: null })
-        }
-      } else {
-        setTokenBalanceAnimated(null)
-      }
-    }
-
-    setTokenLoading(true)
-    sendEvent('getTokenBalance')
-      .then(applySnapshot)
-      .catch(error => {
-        console.error('[INARA] Failed to load token balance', error)
-        if (!isMounted) return
-        setTokenBalance(null)
-        setTokenMode(null)
-        setTokenSimulation(false)
-        setTokenRemoteState({ enabled: false, mode: 'DISABLED' })
-        setTokenLoading(false)
-        setTokenActionPending(false)
-        tokenStateRef.current = { balance: null, simulation: false, remote: { enabled: false, mode: 'DISABLED' } }
-      })
-
-    unsubscribe = eventListener('inaraTokensUpdated', applySnapshot)
-
-    return () => {
-      isMounted = false
-      if (typeof unsubscribe === 'function') unsubscribe()
-      clearCelebrationTimeouts()
-      clearSequenceTimeouts()
-      clearBalanceAnimation()
-      if (typeof window !== 'undefined' && balanceFlashTimeoutRef.current) {
-        window.clearTimeout(balanceFlashTimeoutRef.current)
-        balanceFlashTimeoutRef.current = null
-      }
-    }
-  }, [
-    animateBalanceTo,
-    handleTransactionEntry,
-    triggerJackpotSequence,
-    triggerJackpotMilestone,
-    clearCelebrationTimeouts,
-    clearSequenceTimeouts,
-    clearBalanceAnimation
-  ])
-
-  useEffect(() => {
-    const unsubscribe = eventListener('newLogEntry', log => {
-      if (!log || typeof log !== 'object') return
-      recentLogRef.current = [log, ...recentLogRef.current].slice(0, 6)
-    })
-    return unsubscribe
-  }, [])
-
-  const advanceCadence = useCallback(() => {
-    const state = cadenceRef.current
-    const lines = []
-
-    const tokenState = tokenStateRef.current || {}
-    const hasNegativeBalance = Number.isFinite(tokenState.balance) && tokenState.balance < 0
-    if (hasNegativeBalance) {
-      if (!state.menaceCooldown || state.menaceCooldown <= 0) {
-        const menaceLines = generateMenaceLines(tokenState.balance)
-        menaceLines.forEach(base => {
-          lines.push(...createTerminalLineEntries('menace', base, terminalLineMaxLengthRef.current))
-        })
-        state.menaceCooldown = randomInteger(12, 24)
-      } else {
-        state.menaceCooldown -= 1
-      }
-    } else {
-      state.menaceCooldown = 0
-    }
-
-    const pushLine = base => {
-      if (!base) return
-      lines.push(...createTerminalLineEntries('', base, terminalLineMaxLengthRef.current))
-    }
-
-    const buildFloodLine = () => ({
-      type: 'inara',
-      label: '####',
-      text: generateInaraString(randomInteger(56, 92))
-    })
-
-    if (state.queue.length > 0) {
-      const base = state.queue.shift()
-      pushLine(base)
-
-      if (state.mode === 'flood' && state.queue.length <= state.recoveryCountdown) {
-        state.mode = 'recovery'
-      }
-
-      if (state.mode === 'recovery' && state.queue.length === 0) {
-        state.mode = 'normal'
-        state.recoveryCountdown = 0
-      }
-    } else {
-      if (state.mode !== 'normal') {
-        state.mode = 'normal'
-      }
-
-      state.floodCountdown -= 1
-
-      if (state.floodCountdown <= 0) {
-        const floodLength = randomInteger(12, 20)
-        const floodLines = Array.from({ length: floodLength }).map(() => buildFloodLine())
-        const recoveryMessages = [
-          { type: 'alert', label: '!!!', text: 'FOREIGN INTRUDER DETECTED · mesh anomaly quarantined' },
-          { type: 'system', label: 'system', text: 'INARA encrypted your console on the fly to prevent unauthorize access.' },
-          { type: 'system', label: 'system', text: 'Returning to standard level ATLAS Protocol encryption.' }
-        ]
-
-        state.queue = [...floodLines, ...recoveryMessages]
-        state.mode = 'flood'
-        state.recoveryCountdown = recoveryMessages.length
-        state.floodCountdown = randomInteger(28, 54)
-
-        const base = state.queue.shift()
-        if (base) {
-          pushLine(base)
-          if (state.queue.length <= state.recoveryCountdown) {
-            state.mode = 'recovery'
-          }
-        }
-      } else {
-        const triggerBurst = Math.random() < 0.24
-
-        if (triggerBurst) {
-          const burstLength = randomInteger(3, 6)
-          pushLine(generateTerminalLine())
-          const burstQueue = Array.from({ length: burstLength - 1 }).map(() => generateTerminalLine())
-          state.queue = burstQueue
-          state.mode = 'burst'
-          state.recoveryCountdown = 0
-        } else {
-          pushLine(generateTerminalLine())
-          state.recoveryCountdown = 0
-        }
-      }
-    }
-
-    if (lines.length === 0) {
-      pushLine(generateTerminalLine())
-    }
-
-    let delay
-    if (state.mode === 'flood') {
-      delay = randomInteger(28, 90)
-    } else if (state.mode === 'burst') {
-      delay = randomInteger(90, 210)
-    } else if (state.mode === 'recovery' || state.queue.length > 0) {
-      delay = randomInteger(260, 560)
-    } else {
-      delay = randomInteger(480, 1800)
-    }
-
-    return { lines, delay }
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-
-    const schedule = delay => {
-      timeoutRef.current = window.setTimeout(() => {
-        const { lines, delay: nextDelay } = advanceCadence()
-        setInaraTickerMessages(previous => {
-          let next = [...previous, ...lines]
-          if (next.length > TERMINAL_BUFFER) {
-            next = next.slice(next.length - TERMINAL_BUFFER)
-          }
-          return next
-        })
-        schedule(nextDelay)
-      }, delay)
-    }
-
-    schedule(randomInteger(360, 1200))
-
-    return () => {
-      if (timeoutRef.current) {
-        window.clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [advanceCadence])
-
-  const handleAddTokens = useCallback(async () => {
-    setTokenActionPending(true)
-    try {
-      await sendEvent('triggerJackpot', {
-        source: 'inara-console'
-      })
-    } catch (error) {
-      console.error('[INARA] Failed to award tokens from console', error)
-      setTokenActionPending(false)
-    }
-  }, [])
-
-  const tokenBalanceDisplay = useMemo(() => {
-    if (tokenLoading) return 'Syncing…'
-    const displayBalance = Number.isFinite(tokenBalanceAnimated) ? tokenBalanceAnimated : tokenBalance
-    if (!Number.isFinite(displayBalance)) return '---'
-    try {
-      return displayBalance.toLocaleString()
-    } catch (error) {
-      return String(displayBalance)
-    }
-  }, [tokenBalanceAnimated, tokenBalance, tokenLoading])
-
-  const isNegativeBalance = Number.isFinite(tokenBalance) && tokenBalance < 0
-  const tokenButtonDisabled = tokenLoading || tokenActionPending
-
-  const tokenStatusText = useMemo(() => {
-    const ledgerLabel = tokenSimulation
-      ? 'Simulation ledger'
-      : tokenMode === 'LIVE'
-        ? 'Live ledger'
-        : 'Local ledger'
-    let remoteLabel
-    if (tokenRemoteState.enabled) {
-      remoteLabel = tokenRemoteState.mode === 'MIRROR' ? 'Remote mirror active' : 'Remote sync active'
-    } else {
-      remoteLabel = 'Local storage'
-    }
-    return `${ledgerLabel} · ${remoteLabel}`
-  }, [tokenSimulation, tokenMode, tokenRemoteState.enabled, tokenRemoteState.mode])
-
-  const isCompressed = viewState === TERMINAL_VIEW.COMPRESSED
-  const isExpanded = viewState === TERMINAL_VIEW.EXPANDED
-
-  const terminalWindowSize = useMemo(() => {
-    if (isCompressed) return 1
-    if (isExpanded) return TERMINAL_WINDOW_EXPANDED
-    return TERMINAL_WINDOW
-  }, [isCompressed, isExpanded])
-
-  const visibleLines = useMemo(() => {
-    return inaraTickerMessages.slice(-terminalWindowSize)
-  }, [inaraTickerMessages, terminalWindowSize])
-
-  const latestLine = useMemo(() => {
-    return inaraTickerMessages[inaraTickerMessages.length - 1]
-  }, [inaraTickerMessages])
-
-  const handleMinimize = useCallback(() => {
-    setViewState(TERMINAL_VIEW.COMPRESSED)
-  }, [])
-
-  const handleToggleExpand = useCallback(() => {
-    setViewState(previous => {
-      if (previous === TERMINAL_VIEW.COMPRESSED) return TERMINAL_VIEW.NORMAL
-      if (previous === TERMINAL_VIEW.EXPANDED) return TERMINAL_VIEW.NORMAL
-      return TERMINAL_VIEW.EXPANDED
-    })
-  }, [])
-
-  const handleClose = useCallback(() => {
-    setViewState(TERMINAL_VIEW.COMPRESSED)
-  }, [])
-
-  const terminalClassName = [
-    styles.terminal,
-    isCompressed ? styles.terminalCompressed : '',
-    isExpanded ? styles.terminalExpanded : ''
-  ].filter(Boolean).join(' ')
-
-  const shellClassName = [
-    styles.terminalShell,
-    isCompressed ? styles.terminalShellCompressed : ''
-  ].filter(Boolean).join(' ')
-
-  const headerClassName = [
-    styles.terminalHeader,
-    isCompressed ? styles.terminalHeaderCompressed : ''
-  ].filter(Boolean).join(' ')
-
-  const maximizeAriaLabel = isCompressed
-    ? 'Restore console'
-    : isExpanded
-      ? 'Restore console size'
-      : 'Expand console'
-
-  const maximizeIcon = isExpanded ? '▭' : '▢'
-
-  const statusPreviewLabel = latestLine?.label ?? 'inara'
-  const statusPreviewText = latestLine?.text ?? 'Link stable'
-
-  return (
-    <div className={terminalClassName} ref={terminalRef}>
-      <div className={shellClassName} role='region' aria-label='INARA ship uplink activity log'>
-        <div
-          className={[styles.terminalCelebration, creditCelebration ? styles.terminalCelebrationActive : ''].filter(Boolean).join(' ')}
-          aria-hidden='true'
-        >
-          {creditCelebration ? (
-            <div className={styles.terminalCelebrationStream}>
-              {creditCelebration.glyphs.map(glyph => (
-                <span
-                  key={glyph.id}
-                  className={styles.terminalCelebrationGlyph}
-                  style={{
-                    animationDuration: `${glyph.duration}ms`,
-                    animationDelay: `${glyph.delay}ms`,
-                    '--terminal-celebration-skew': `${glyph.drift}deg`
-                  }}
-                >
-                  {glyph.symbol}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </div>
-        <div className={headerClassName}>
-          <div className={styles.terminalHeaderLeft}>
-            <div className={styles.terminalTokenRow}>
-              <span className={styles.terminalTokenLabel}>Tokens</span>
-              <span
-                className={[
-                  styles.terminalTokenValue,
-                  isNegativeBalance ? styles.terminalTokenValueNegative : '',
-                  balanceFlash?.type === 'earn' ? styles.terminalTokenValueFlashCredit : '',
-                  balanceFlash?.type === 'spend' ? styles.terminalTokenValueFlashDebit : ''
-                ].filter(Boolean).join(' ')}
-              >
-                {tokenBalanceDisplay}
-              </span>
-              <button
-                type='button'
-                className={[styles.terminalTokenButton, styles.terminalWindowControl, styles.terminalWindowControlToken].join(' ')}
-                onClick={handleAddTokens}
-                disabled={tokenButtonDisabled}
-                aria-label='Trigger a simulated jackpot payout'
-              >
-                {tokenActionPending ? '···' : '+'}
-              </button>
-            </div>
-            {!isCompressed ? (
-              <div className={styles.terminalTokenMeta} aria-live='polite'>
-                {tokenStatusText}
-              </div>
-            ) : null}
-          </div>
-          <div className={styles.terminalHeaderCenter}>
-            {isCompressed ? (
-              <div
-                className={styles.terminalStatusPreview}
-                role='status'
-                aria-live='polite'
-                title={statusPreviewText || ''}
-              >
-                <span className={styles.terminalStatusPreviewLabel} aria-hidden='true'>{statusPreviewLabel}</span>
-                <span className={styles.terminalStatusPreviewText}>{statusPreviewText}</span>
-              </div>
-            ) : (
-              <div className={styles.terminalHeaderContent}>
-                <span className={styles.terminalTitle}>Ship Uplink Console</span>
-                <span className={styles.terminalStatus}>Channel mesh://inara</span>
-              </div>
-            )}
-          </div>
-          <div className={styles.terminalHeaderRight}>
-            <div className={styles.terminalWindowControls} role='group' aria-label='Console window controls'>
-              <button
-                type='button'
-                className={`${styles.terminalWindowControl} ${styles.terminalWindowControlMinimize}`}
-                onClick={handleMinimize}
-                aria-label='Minimize console'
-              >
-                <span aria-hidden='true'>─</span>
-              </button>
-              <button
-                type='button'
-                className={`${styles.terminalWindowControl} ${styles.terminalWindowControlMaximize}`}
-                onClick={handleToggleExpand}
-                aria-label={maximizeAriaLabel}
-              >
-                <span aria-hidden='true'>{maximizeIcon}</span>
-              </button>
-              <button
-                type='button'
-                className={`${styles.terminalWindowControl} ${styles.terminalWindowControlClose}`}
-                onClick={handleClose}
-                aria-label='Close console'
-              >
-                <span aria-hidden='true'>✕</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        {!isCompressed ? (
-          <div className={styles.terminalBody}>
-            <ul className={styles.terminalFeed}>
-              {visibleLines.map(line => {
-                const promptClassNames = [styles.terminalPrompt]
-                const promptTypeClass = line.type ? TERMINAL_PROMPT_TYPE_CLASS_MAP[line.type] : null
-                if (promptTypeClass) promptClassNames.push(promptTypeClass)
-
-                const textClassNames = [styles.terminalText]
-                const textTypeClass = line.type ? TERMINAL_TEXT_TYPE_CLASS_MAP[line.type] : null
-                if (textTypeClass) textClassNames.push(textTypeClass)
-
-                return (
-                  <li key={line.id} className={styles.terminalLine}>
-                    <span className={promptClassNames.join(' ')}>{line.label}</span>
-                    <span className={textClassNames.join(' ')}>{line.text}</span>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        ) : null}
-      </div>
-    </div>
   )
 }
 
@@ -7270,7 +5809,6 @@ export default function InaraStatusPage () {
                   </div>
                 </div>
               </div>
-              <InaraTerminalOverlay />
             </div>
           </Panel>
         </Layout>
@@ -7279,8 +5817,6 @@ export default function InaraStatusPage () {
   )
 }
 
-// Wrap exported panels with CurrentSystemProvider so they can be used standalone
-// in other pages (like route-scout.js) while sharing current system data
 const TradeRoutesPanelWrapped = (props) => (
   <CurrentSystemProvider>
     <TradeRoutesPanel {...props} />

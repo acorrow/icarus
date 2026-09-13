@@ -31,7 +31,7 @@ export default function NavListPage () {
       body.classList.remove('assimilation-paused')
     }
   }, [helpVisible])
-  
+
   useEffect(animateTableEffect)
 
   const getSystem = async (systemName, useCache = true) => {

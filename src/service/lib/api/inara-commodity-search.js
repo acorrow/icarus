@@ -1,18 +1,21 @@
-const https = require('https')
 const logger = require('../logger.js')
 const { fetchWithInaraCache } = require('./inara-request-cache.js')
 const commoditySearchScraper = require('./scrapers/commodity-search.js')
+const {
+  ipv4HttpsAgent,
+  sendJson,
+  validatePostRequest
+} = require('./scraper-shared.js')
 
 const INARA_BASE_URL = 'https://inara.cz'
 const INARA_COMMODITY_SEARCH_URL = `${INARA_BASE_URL}/elite/commodities/`
-const ipv4HttpsAgent = new https.Agent({ family: 4 })
 
 /**
  * Build INARA commodity search URL with query parameters
  * @param {Object} params - Search parameters
  * @returns {string} Full URL with query string
  */
-function buildCommoditySearchUrl({ commodityId, systemName, landingPadSize = 'any', maxDistanceLy = 50, searchType = 'buy' }) {
+function buildCommoditySearchUrl ({ commodityId, systemName, landingPadSize = 'any', maxDistanceLy = 50, searchType = 'buy' }) {
   const url = new URL(INARA_COMMODITY_SEARCH_URL)
 
   // Brief form (minimal UI)
@@ -77,7 +80,7 @@ function buildCommoditySearchUrl({ commodityId, systemName, landingPadSize = 'an
  * @param {Object} params - Search parameters
  * @returns {Promise<Object>} Parsed commodity data
  */
-async function fetchCommoditySearch({ commodityId, commodityName, systemName, landingPadSize, maxDistanceLy, searchType }) {
+async function fetchCommoditySearch ({ commodityId, commodityName, systemName, landingPadSize, maxDistanceLy, searchType }) {
   if (!commodityId) {
     throw new Error('Commodity ID is required for commodity search')
   }
@@ -96,7 +99,9 @@ async function fetchCommoditySearch({ commodityId, commodityName, systemName, la
     })
 
     if (!response.ok) {
-      throw new Error(`INARA commodity search failed with status ${response.status}`)
+      const err = new Error(`INARA commodity search failed with status ${response.status}`)
+      err.inaraStatus = response.status
+      throw err
     }
 
     const html = await response.text()
@@ -121,27 +126,12 @@ async function fetchCommoditySearch({ commodityId, commodityName, systemName, la
 }
 
 /**
- * Send JSON response
- * @param {Object} res - Response object
- * @param {number} statusCode - HTTP status code
- * @param {Object} payload - JSON payload
- */
-function sendJson(res, statusCode, payload) {
-  res.statusCode = statusCode
-  res.setHeader('Content-Type', 'application/json')
-  res.end(JSON.stringify(payload))
-}
-
-/**
  * API route handler for commodity search
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  */
-async function handler(req, res) {
-  if (req.method !== 'POST') {
-    sendJson(res, 405, { error: 'Method not allowed' })
-    return
-  }
+async function handler (req, res) {
+  if (!validatePostRequest(req, res)) return
 
   const { commodityId, commodityName, systemName, landingPadSize, maxDistanceLy, searchType } = req.body || {}
 
@@ -163,9 +153,13 @@ async function handler(req, res) {
     sendJson(res, 200, data)
   } catch (err) {
     logger.error('Commodity search API error: %s', err?.message || err)
-    sendJson(res, 500, {
-      error: 'Failed to fetch commodity data',
-      message: err?.message || 'Unknown error'
+    const statusCode = err.inaraStatus === 503 ? 503 : 500
+    const errorCode = statusCode === 503 ? 'INARA_UNAVAILABLE' : 'COMMODITY_SEARCH_ERROR'
+    sendJson(res, statusCode, {
+      error: errorCode,
+      message: statusCode === 503
+        ? 'INARA is temporarily unavailable. Please try again shortly.'
+        : (err?.message || 'Failed to fetch commodity data')
     })
   }
 }

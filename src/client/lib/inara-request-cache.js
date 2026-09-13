@@ -393,10 +393,37 @@ function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+function createDataProxy (data, status = 200) {
+  if (data && (typeof data === 'object')) {
+    if (!('json' in data)) {
+      Object.defineProperty(data, 'json', {
+        value: async () => data,
+        enumerable: false,
+        configurable: true
+      })
+    }
+    if (!('ok' in data)) {
+      Object.defineProperty(data, 'ok', {
+        value: true,
+        enumerable: false,
+        configurable: true
+      })
+    }
+    if (!('status' in data)) {
+      Object.defineProperty(data, 'status', {
+        value: status,
+        enumerable: false,
+        configurable: true
+      })
+    }
+  }
+  return data
+}
+
 /**
  * Fetch data with caching support
  * @param {string} endpoint - API endpoint
- * @param {Object} params - Request parameters
+ * @param {Object} params - Request parameters or fetch options
  * @param {Object} options - Options
  * @param {number} options.ttl - Cache TTL in milliseconds
  * @param {boolean} options.forceRefresh - Force fetch even if cached
@@ -406,25 +433,52 @@ function sleep (ms) {
  * @returns {Promise<any>} Response data
  */
 export async function fetchWithCache (endpoint, params = {}, options = {}) {
+  let requestMethod = 'POST'
+  let requestHeaders = { 'Content-Type': 'application/json' }
+  let requestBody = null
+  let requestSignal = null
+  let cacheKeyParams = params
+  let actualOptions = options
+
+  if (params && typeof params === 'object') {
+    if (params.method || params.headers || params.body !== undefined || params.signal) {
+      requestMethod = (params.method || 'GET').toUpperCase()
+      if (params.headers) requestHeaders = params.headers
+      requestBody = params.body
+      requestSignal = params.signal
+      cacheKeyParams = params.body ? params.body : { url: endpoint }
+      actualOptions = options || {}
+    } else if (Object.keys(params).length === 0) {
+      requestMethod = 'GET'
+      requestBody = null
+    } else {
+      requestMethod = 'POST'
+      requestBody = JSON.stringify(params)
+    }
+  } else if (!params) {
+    requestMethod = 'GET'
+    requestBody = null
+  }
+
   const {
     ttl = DEFAULT_TTL,
     forceRefresh = false,
     debounce = 0,
     maxRetries = DEFAULT_MAX_RETRIES,
     onRetry = null
-  } = options
+  } = actualOptions || {}
 
   // Check cache first (unless force refresh)
   if (!forceRefresh) {
-    const cached = inaraCache.get(endpoint, params)
+    const cached = inaraCache.get(endpoint, cacheKeyParams)
     if (cached !== null) {
-      return cached
+      return createDataProxy(cached)
     }
 
     // Check if request is already in flight
-    const inFlight = inaraCache.getInFlight(endpoint, params)
+    const inFlight = inaraCache.getInFlight(endpoint, cacheKeyParams)
     if (inFlight) {
-      return inFlight
+      return inFlight.then(res => createDataProxy(res))
     }
   }
 
@@ -435,16 +489,32 @@ export async function fetchWithCache (endpoint, params = {}, options = {}) {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(params)
-        })
+        const fetchInit = {
+          method: requestMethod,
+          headers: requestHeaders
+        }
+        if (requestBody !== null) {
+          fetchInit.body = requestBody
+        }
+        if (requestSignal) {
+          fetchInit.signal = requestSignal
+        }
 
+        const response = await fetch(endpoint, fetchInit)
         lastResponse = response
 
-        if (!response.ok) {
-          const error = new Error(`HTTP ${response.status}: ${response.statusText}`)
+        if (!response || !response.ok) {
+          const error = new Error(`HTTP ${response?.status || '500'}: ${response?.statusText || 'Fetch failed'}`)
+          error.status = response?.status || 500
+
+          // Try to parse error body for structured error info
+          try {
+            const errorBody = await response.clone().json()
+            if (errorBody.error === 'INARA_UNAVAILABLE') {
+              error.isInaraUnavailable = true
+              error.message = errorBody.message || 'INARA is temporarily unavailable.'
+            }
+          } catch {}
 
           // Check if this error is retryable
           if (attempt < maxRetries && isRetryableError(error, response)) {
@@ -473,15 +543,14 @@ export async function fetchWithCache (endpoint, params = {}, options = {}) {
 
         // Success - parse and cache
         const data = await response.json()
-        inaraCache.set(endpoint, params, data, ttl)
+        inaraCache.set(endpoint, cacheKeyParams, data, ttl)
 
         // Log successful retry
         if (attempt > 0) {
           console.info(`[INARA Cache] Request succeeded after ${attempt} ${attempt === 1 ? 'retry' : 'retries'}`)
         }
 
-        return data
-
+        return createDataProxy(data, response.status)
       } catch (error) {
         lastError = error
 
@@ -515,7 +584,7 @@ export async function fetchWithCache (endpoint, params = {}, options = {}) {
   // Handle debouncing
   if (debounce > 0) {
     return new Promise((resolve, reject) => {
-      const debounceId = `${endpoint}::${JSON.stringify(params)}`
+      const debounceId = `${endpoint}::${JSON.stringify(cacheKeyParams)}`
       inaraCache.debounce(debounceId, async () => {
         try {
           const data = await doFetch()
@@ -529,7 +598,7 @@ export async function fetchWithCache (endpoint, params = {}, options = {}) {
 
   // Register and execute request
   const promise = doFetch()
-  inaraCache.setInFlight(endpoint, params, promise)
+  inaraCache.setInFlight(endpoint, cacheKeyParams, promise)
 
   return promise
 }

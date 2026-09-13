@@ -17,7 +17,6 @@ const {
   SIGN_TIME_SERVER
 } = require('./lib/build-options')
 
-
 ;(async () => {
   try {
     validateBuildTools()
@@ -28,34 +27,33 @@ const {
     process.exit(1)
   }
 })()
-function validateBuildTools() {
+function validateBuildTools () {
   const { existsSync } = require('fs')
-  const { PATH_TO_MAKENSIS, PATH_TO_SIGNTOOL, SIGN_CERT_NAME } = require('./lib/build-options')
+  const { PATH_TO_MAKENSIS, PATH_TO_SIGNTOOL, SIGN_CERT_NAME, SIGN_BUILD } = require('./lib/build-options')
   // Check makensis
   if (!existsSync(PATH_TO_MAKENSIS)) {
     throw new Error(`NSIS not found: ${PATH_TO_MAKENSIS}. Please install NSIS.`)
   }
-  // Check signtool
-  if (!existsSync(PATH_TO_SIGNTOOL)) {
-    throw new Error(`signtool.exe not found: ${PATH_TO_SIGNTOOL}. Please install the Windows SDK.`)
+  // Check signtool (only if code signing is enabled)
+  if (SIGN_BUILD && !existsSync(PATH_TO_SIGNTOOL)) {
+    throw new Error(`signtool.exe not found: ${PATH_TO_SIGNTOOL}. Please install the Windows SDK or verify PATH_TO_SIGNTOOL.`)
   }
   // Check for code signing cert (if signing is enabled)
-  const { SIGN_BUILD } = require('./lib/build-options')
   if (SIGN_BUILD) {
-    const { execSync } = require('child_process');
+    const { execSync } = require('child_process')
     try {
       // Use PowerShell to check for the cert in the user's store
-      const psCmd = `powershell -Command "Get-ChildItem Cert:\\CurrentUser\\My | Where-Object { $_.Subject -like '*${SIGN_CERT_NAME}*' }"`;
-      const certResult = execSync(psCmd, { stdio: 'pipe' }).toString();
+      const psCmd = `powershell -Command "Get-ChildItem Cert:\\CurrentUser\\My | Where-Object { $_.Subject -like '*${SIGN_CERT_NAME}*' }"`
+      const certResult = execSync(psCmd, { stdio: 'pipe' }).toString()
       if (!certResult || !certResult.includes('Subject')) {
-        throw new Error('No code signing certificate found matching: ' + SIGN_CERT_NAME);
+        throw new Error('No code signing certificate found matching: ' + SIGN_CERT_NAME)
       }
     } catch (e) {
-      const msg = e && e.message ? e.message : String(e);
+      const msg = e && e.message ? e.message : String(e)
       if (msg.includes('No code signing certificate found')) {
-        throw new Error('No code signing certificate found matching: ' + SIGN_CERT_NAME);
+        throw new Error('No code signing certificate found matching: ' + SIGN_CERT_NAME)
       } else {
-        throw new Error('Error checking code signing certificate: ' + msg);
+        throw new Error('Error checking code signing certificate: ' + msg)
       }
     }
   }
@@ -90,5 +88,5 @@ async function build () {
   }
 
   // Open directory with installer
-  //execSync('explorer.exe dist')
+  // execSync('explorer.exe dist')
 }

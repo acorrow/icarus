@@ -13,13 +13,15 @@ export default function Panel ({ children, layout = 'full-width', scrollable = f
   return (
     <div className={panelClassName} style={{ ...style }}>
       {hasNavigation && <PanelNavigation items={navigation} search={search} exit={exit} />}
-      {scrollable ? (
-        <div className='layout__panel-scroll scrollable'>
-          {children}
-        </div>
-      ) : (
-        children
-      )}
+      {scrollable
+        ? (
+          <div className='layout__panel-scroll scrollable'>
+            {children}
+          </div>
+          )
+        : (
+            children
+          )}
     </div>
   )
 }

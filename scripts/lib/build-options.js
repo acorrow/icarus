@@ -1,5 +1,6 @@
 require('dotenv').config()
 
+const fs = require('fs')
 const path = require('path')
 const packageJson = require('../../package.json')
 
@@ -7,7 +8,20 @@ const PRODUCT_VERSION = `${packageJson.version}.0`
 const APP_FILE_VERSION = PRODUCT_VERSION
 const SERVICE_FILE_VERSION = PRODUCT_VERSION
 
-const PATH_TO_SIGNTOOL = 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.22000.0/x64/signtool.exe'
+function getSigntoolPath () {
+  if (process.env.PATH_TO_SIGNTOOL) return process.env.PATH_TO_SIGNTOOL
+  const kitsBase = 'C:/Program Files (x86)/Windows Kits/10/bin'
+  if (fs.existsSync(kitsBase)) {
+    const versions = fs.readdirSync(kitsBase).filter(f => fs.existsSync(path.join(kitsBase, f, 'x64', 'signtool.exe')))
+    if (versions.length > 0) {
+      versions.sort().reverse()
+      return path.join(kitsBase, versions[0], 'x64', 'signtool.exe').replace(/\\/g, '/')
+    }
+  }
+  return 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe'
+}
+
+const PATH_TO_SIGNTOOL = getSigntoolPath()
 const SIGN_BUILD = process.env?.SIGN_BUILD === 'true'
 const SIGN_CERT_NAME = process.env?.SIGN_CERT_NAME ?? 'DualCorSoftware LLC'
 const SIGN_TIME_SERVER = process.env?.SIGN_TIME_SERVER ?? 'http://time.certum.pl'

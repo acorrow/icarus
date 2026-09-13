@@ -1,6 +1,6 @@
 /**
  * INARA Trade Routes Scraper
- * 
+ *
  * Pure scraping logic for INARA trade route data.
  * Decoupled from ICARUS state and can be tested independently.
  */
@@ -18,7 +18,7 @@ const {
  * @param {string} text - Text containing a number
  * @returns {number|null} First number found
  */
-function parseFirstNumber(text) {
+function parseFirstNumber (text) {
   if (!text) return null
   const match = String(text).match(/[\d,]+/)
   if (!match) return null
@@ -30,10 +30,10 @@ function parseFirstNumber(text) {
  * @param {string} text - Text containing price info
  * @returns {Object} Price components
  */
-function extractPriceParts(text) {
+function extractPriceParts (text) {
   const cleaned = cleanText(text)
   const parts = cleaned.split(/\s+/)
-  
+
   let price = null
   let demand = null
   let age = null
@@ -41,19 +41,19 @@ function extractPriceParts(text) {
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
-    
+
     // Parse price (first number with CR or digits)
     if (!price && /\d/.test(part)) {
       price = parseNumber(part)
       continue
     }
-    
+
     // Parse demand/supply
     if (!demand && /\d/.test(part) && i > 0) {
       demand = parseNumber(part)
       continue
     }
-    
+
     // Parse age
     if (/\d+/.test(part) && !age && i > 1) {
       age = parseNumber(part)
@@ -73,13 +73,13 @@ function extractPriceParts(text) {
  * @param {string} expectedLabel - Expected label text (Supply/Demand)
  * @returns {Object} Supply/demand data
  */
-function parseSupplyDemand($, container, expectedLabel) {
+function parseSupplyDemand ($, container, expectedLabel) {
   const label = cleanText(container.find('.trade-label').text())
   if (label !== expectedLabel) return null
 
   const quantityText = cleanText(container.find('.trade-quantity').text())
   const priceText = cleanText(container.find('.trade-price').text())
-  
+
   const quantity = parseFirstNumber(quantityText)
   const { price, age, ageUnit } = extractPriceParts(priceText)
 
@@ -97,11 +97,11 @@ function parseSupplyDemand($, container, expectedLabel) {
  * @param {string} action - 'buy' or 'sell'
  * @returns {Object} Trade data
  */
-function parseTradeBlock($, block, action) {
+function parseTradeBlock ($, block, action) {
   const station = parseStationLink($, block.find('.trade-station'))
   const systemText = cleanText(block.find('.trade-system').text())
   const distanceText = cleanText(block.find('.trade-distance').text())
-  
+
   const supplyData = parseSupplyDemand($, block.find('.trade-supply'), 'Supply')
   const demandData = parseSupplyDemand($, block.find('.trade-demand'), 'Demand')
 
@@ -121,11 +121,11 @@ function parseTradeBlock($, block, action) {
  * @param {Cheerio} summaryBlock - Summary block element
  * @returns {Object} Summary data
  */
-function parseSummary($, summaryBlock) {
+function parseSummary ($, summaryBlock) {
   const profitText = cleanText(summaryBlock.find('.route-profit').text())
   const distanceText = cleanText(summaryBlock.find('.route-distance').text())
   const cargoText = cleanText(summaryBlock.find('.route-cargo').text())
-  
+
   return {
     profit: parseFirstNumber(profitText),
     profitPerTon: null, // Calculated from profit/cargo
@@ -140,7 +140,7 @@ function parseSummary($, summaryBlock) {
  * @param {Cheerio} el - Route element
  * @returns {Object} Route data
  */
-function parseRouteElement($, el) {
+function parseRouteElement ($, el) {
   const commodity = cleanText(el.find('.commodity-name').text())
   const buyBlock = el.find('.trade-block-buy')
   const sellBlock = el.find('.trade-block-sell')
@@ -170,7 +170,7 @@ function parseRouteElement($, el) {
  * @param {Object} options - Parse options
  * @returns {Object} Parsed trade routes
  */
-function parseTradeRoutes(html, options = {}) {
+function parseTradeRoutes (html, options = {}) {
   const $ = cheerioLoad(html)
   const routes = []
 
@@ -200,18 +200,18 @@ function parseTradeRoutes(html, options = {}) {
  * @param {Object} data - Parsed data to validate
  * @returns {boolean} True if valid
  */
-function validate(data) {
+function validate (data) {
   if (!data || typeof data !== 'object') return false
   if (!Array.isArray(data.routes)) return false
   if (typeof data.count !== 'number') return false
-  
+
   // Validate route structure
   for (const route of data.routes) {
     if (!route.commodity) return false
     if (route.buy && (!route.buy.station || !route.buy.system)) return false
     if (route.sell && (!route.sell.station || !route.sell.system)) return false
   }
-  
+
   return true
 }
 
@@ -219,14 +219,17 @@ function validate(data) {
 const tradeRoutesScraper = {
   name: 'trade-routes',
   description: 'Scrapes trade route data from INARA commodity pages',
+  selectors: {
+    routeContainer: '.traderoute',
+    priceCell: '.trade-price, .itempaircontainer'
+  },
+  expectedMinCount: 1,
   parse: parseTradeRoutes,
   validate,
   mockFiles: [
-    'trade-routes-painite.html',
-    'trade-routes-tritium.html',
-    'trade-routes-platinum.html'
+    'trade-routes-painite.html'
   ],
-  
+
   // Export individual parsing functions for unit testing
   parsers: {
     parseFirstNumber,

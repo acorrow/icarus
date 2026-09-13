@@ -3,7 +3,7 @@ module.exports = () => {
     return () => {}
   }
 
-  const selector = "[data-inara-table-row], table.table--animated tbody tr"
+  const selector = '[data-inara-table-row], table.table--animated tbody tr'
   const observer = new IntersectionObserver(entries => {
     let shownItems = 0
 
