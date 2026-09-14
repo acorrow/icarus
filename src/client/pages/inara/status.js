@@ -3999,19 +3999,38 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
   const preserveRouteContextRef = useRef(false)
   const selectedRouteContextRef = useRef(null)
 
-  // Auto-sync selected route with routes list
+  // Sync selected route with updated routes list while keeping user's selection locked in
   useEffect(() => {
-    if (Array.isArray(routes) && routes.length > 0) {
-      setSelectedRouteIndex(prev => {
-        const validIndex = prev < routes.length ? prev : 0
-        setSelectedRouteContext({ route: routes[validIndex] })
-        return validIndex
-      })
-    } else {
-      setSelectedRouteContext(null)
+    if (!Array.isArray(routes) || routes.length === 0) {
+      // When routes are loading, empty, or changing as the user moves:
+      // Keep the currently selected route locked in! Do NOT clear or change it.
+      return
+    }
+
+    const currentRoute = selectedRouteContextRef.current?.route
+    if (!currentRoute) {
+      // Nothing selected yet: initialize with first route
       setSelectedRouteIndex(0)
+      setSelectedRouteContext({ route: routes[0] })
+      return
+    }
+
+    // A route is already selected - keep it locked in!
+    // If this same route exists in the updated routes list, sync live data and index
+    const currentIdentity = buildRouteIdentity(currentRoute)
+    if (currentIdentity) {
+      const matchIdx = routes.findIndex(r => buildRouteIdentity(r) === currentIdentity)
+      if (matchIdx !== -1) {
+        setSelectedRouteIndex(matchIdx)
+        if (routes[matchIdx] !== currentRoute) {
+          setSelectedRouteContext({ route: routes[matchIdx] })
+        }
+      }
+      // If matchIdx === -1 (e.g. ship moved to another system, route not in top results):
+      // The selected route remains locked in!
     }
   }, [routes])
+
 
   useEffect(() => {
     onStatusChange(status)
@@ -4445,45 +4464,14 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       })
   }, [applyResults, cargoCapacity, routeDistance, priceAge, padSize, minSupply, minDemand, stationDistance, surfacePreference, sourcePower, targetPower, orderBy, includeRoundTrips, displayPowerplay, status])
 
-  useEffect(() => {
-    if (preserveRouteContextRef.current) {
-      preserveRouteContextRef.current = false
-      return
-    }
-
-    const currentContext = selectedRouteContextRef.current
-    const hasRoutes = Array.isArray(rawRoutes) && rawRoutes.length > 0
-
-    if (!hasRoutes) {
-      if (currentContext) {
-        setSelectedRouteContext(null)
-      }
-      return
-    }
-
-    if (!currentContext?.route) {
-      setSelectedRouteContext(null)
-      return
-    }
-
-    const currentIdentity = buildRouteIdentity(currentContext.route)
-    if (!currentIdentity) return
-
-    const nextRoute = rawRoutes.find(route => buildRouteIdentity(route) === currentIdentity)
-    if (nextRoute) {
-      if (currentContext.route !== nextRoute) {
-        setSelectedRouteContext({ route: nextRoute })
-      }
-      return
-    }
-
-    setSelectedRouteContext(null)
-  }, [rawRoutes])
-
   const handleNextRoute = useCallback(() => {
     if (!routes || routes.length === 0) return
     setSelectedRouteIndex(prev => {
-      const next = (prev + 1) % routes.length
+      const currentRoute = selectedRouteContextRef.current?.route
+      const currentIdentity = buildRouteIdentity(currentRoute)
+      const currentIndex = currentIdentity ? routes.findIndex(r => buildRouteIdentity(r) === currentIdentity) : -1
+      const baseIndex = currentIndex !== -1 ? currentIndex : (prev < routes.length ? prev : 0)
+      const next = (baseIndex + 1) % routes.length
       const nextRoute = routes[next]
       if (nextRoute) {
         setSelectedRouteContext({ route: nextRoute })
@@ -4495,7 +4483,11 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
   const handlePrevRoute = useCallback(() => {
     if (!routes || routes.length === 0) return
     setSelectedRouteIndex(prev => {
-      const next = (prev - 1 + routes.length) % routes.length
+      const currentRoute = selectedRouteContextRef.current?.route
+      const currentIdentity = buildRouteIdentity(currentRoute)
+      const currentIndex = currentIdentity ? routes.findIndex(r => buildRouteIdentity(r) === currentIdentity) : -1
+      const baseIndex = currentIndex !== -1 ? currentIndex : (prev < routes.length ? prev : 0)
+      const next = (baseIndex - 1 + routes.length) % routes.length
       const nextRoute = routes[next]
       if (nextRoute) {
         setSelectedRouteContext({ route: nextRoute })
@@ -4503,6 +4495,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
       return next
     })
   }, [routes])
+
 
   // Listen for external remoteAction events (select-route by index)
   useEffect(() => {
@@ -4560,13 +4553,19 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
   const selectedRoute = selectedRouteContext?.route || (routes.length > 0 ? routes[selectedRouteIndex] || routes[0] : null)
   const selectedRouteIdentity = useMemo(() => buildRouteIdentity(selectedRoute), [selectedRoute])
 
-  const isRouteSelected = useCallback((routeCandidate, index) => {
+  const currentRouteIndexInList = useMemo(() => {
+    if (!selectedRoute || !routes || routes.length === 0) return -1
+    const id = buildRouteIdentity(selectedRoute)
+    return id ? routes.findIndex(r => buildRouteIdentity(r) === id) : -1
+  }, [selectedRoute, routes])
+
+  const isRouteSelected = useCallback((routeCandidate) => {
     if (!routeCandidate) return false
-    if (typeof index === 'number' && index === selectedRouteIndex) return true
     if (selectedRoute === routeCandidate) return true
     if (!selectedRouteIdentity) return false
     return buildRouteIdentity(routeCandidate) === selectedRouteIdentity
-  }, [selectedRoute, selectedRouteIdentity, selectedRouteIndex])
+  }, [selectedRoute, selectedRouteIdentity])
+
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -4983,7 +4982,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
               onSelect={() => handleRouteSelect(route, index)}
               onKeyDown={e => handleRouteKeyDown(e, route, index)}
               factionStandings={factionStandings}
-              isSelected={index === selectedRouteIndex || isRouteSelected(route, index)}
+              isSelected={isRouteSelected(route)}
               shipJumpRange={shipStatus?.maxJumpRange ?? null}
               maxProfitPerTon={maxProfitPerTon}
             />
@@ -5024,26 +5023,26 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                 <button
                   id='route-scout-prev-btn'
                   type='button'
-                  className='button button--secondary'
+                  className={`button button--secondary ${styles.routeScoutNavBtn}`}
                   disabled={routes.length === 0}
                   onClick={handlePrevRoute}
                   title='Navigate to previous route'
                 >
-                  ◀ PREV ROUTE
+                  ◀ PREV
                 </button>
                 <div className={styles.routeScoutCounterBadge}>
-                  <span className='text-primary font-bold'>ROUTE {routes.length > 0 ? selectedRouteIndex + 1 : 0}</span>
+                  <span className='text-primary font-bold'>ROUTE {currentRouteIndexInList !== -1 ? currentRouteIndexInList + 1 : (selectedRoute ? selectedRouteIndex + 1 : 0)}</span>
                   <span className='text-muted'> OF {routes.length}</span>
                 </div>
                 <button
                   id='route-scout-next-btn'
                   type='button'
-                  className='button button--secondary'
+                  className={`button button--secondary ${styles.routeScoutNavBtn}`}
                   disabled={routes.length === 0}
                   onClick={handleNextRoute}
                   title='Navigate to next route'
                 >
-                  NEXT ROUTE ▶
+                  NEXT ▶
                 </button>
               </div>
 
@@ -5052,7 +5051,7 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                   <button
                     id='btn-copy-system-1'
                     type='button'
-                    className='button button--secondary'
+                    className={`button button--secondary ${styles.routeScoutCopyBtn}`}
                     onClick={() => {
                       if (routeContext?.origin?.system) {
                         if (navigator.clipboard?.writeText) navigator.clipboard.writeText(routeContext.origin.system).catch(() => {})
@@ -5062,12 +5061,15 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     }}
                     title={`Copy System A: ${routeContext.origin.system}`}
                   >
-                    📋 SYSTEM A <span className='text-primary'>({routeContext.origin.system})</span>
+                    <span className={styles.routeScoutBtnIcon}>📋</span>
+                    <span className={styles.routeScoutCopyBtnText}>
+                      SYS A <span className='text-primary'>({routeContext.origin.system})</span>
+                    </span>
                   </button>
                   <button
                     id='btn-copy-station-1'
                     type='button'
-                    className='button button--secondary'
+                    className={`button button--secondary ${styles.routeScoutCopyBtn}`}
                     onClick={() => {
                       if (routeContext?.origin?.station) {
                         if (navigator.clipboard?.writeText) navigator.clipboard.writeText(routeContext.origin.station).catch(() => {})
@@ -5077,12 +5079,15 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     }}
                     title={`Copy Station A: ${routeContext.origin.station}`}
                   >
-                    📋 STATION A <span className='text-primary'>({routeContext.origin.station})</span>
+                    <span className={styles.routeScoutBtnIcon}>📋</span>
+                    <span className={styles.routeScoutCopyBtnText}>
+                      STN A <span className='text-primary'>({routeContext.origin.station})</span>
+                    </span>
                   </button>
                   <button
                     id='btn-copy-system-2'
                     type='button'
-                    className='button button--secondary'
+                    className={`button button--secondary ${styles.routeScoutCopyBtn}`}
                     onClick={() => {
                       if (routeContext?.destination?.system) {
                         if (navigator.clipboard?.writeText) navigator.clipboard.writeText(routeContext.destination.system).catch(() => {})
@@ -5092,12 +5097,15 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     }}
                     title={`Copy System B: ${routeContext.destination.system}`}
                   >
-                    📋 SYSTEM B <span className='text-primary'>({routeContext.destination.system})</span>
+                    <span className={styles.routeScoutBtnIcon}>📋</span>
+                    <span className={styles.routeScoutCopyBtnText}>
+                      SYS B <span className='text-primary'>({routeContext.destination.system})</span>
+                    </span>
                   </button>
                   <button
                     id='btn-copy-station-2'
                     type='button'
-                    className='button button--secondary'
+                    className={`button button--secondary ${styles.routeScoutCopyBtn}`}
                     onClick={() => {
                       if (routeContext?.destination?.station) {
                         if (navigator.clipboard?.writeText) navigator.clipboard.writeText(routeContext.destination.station).catch(() => {})
@@ -5107,7 +5115,10 @@ function TradeRoutesPanel ({ onStatusChange = () => {} }) {
                     }}
                     title={`Copy Station B: ${routeContext.destination.station}`}
                   >
-                    📋 STATION B <span className='text-primary'>({routeContext.destination.station})</span>
+                    <span className={styles.routeScoutBtnIcon}>📋</span>
+                    <span className={styles.routeScoutCopyBtnText}>
+                      STN B <span className='text-primary'>({routeContext.destination.station})</span>
+                    </span>
                   </button>
                 </div>
               )}
