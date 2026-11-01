@@ -8,6 +8,7 @@ temp/
 *.log
 resources/cache/*
 .playwright-mcp/
+testing/output/
 
 # Test files (development only - do not commit)
 src/client/pages/**/test-*.js

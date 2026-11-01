@@ -330,7 +330,7 @@ This will:
 
 - **FEATURES.md** - Feature mapping and INARA architecture
 - **AGENTS.md** - Event loop and implementation details
-- **.github/copilot-instructions.md** - Development guidelines
+- **WORKFLOW.md** - Development and issue guidelines
 - **INARA.cz** - https://inara.cz (external data source)
 - **INARA API Docs** - https://inara.cz/elite/inara-api-docs/
 
