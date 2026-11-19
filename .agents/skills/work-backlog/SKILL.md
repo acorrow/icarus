@@ -1,6 +1,6 @@
 ---
 name: work-backlog
-description: Works the open GitHub issue backlog in acorrow/icarus one issue at a time by planning in the main session and dispatching the appropriate Flash worker until nothing claimable remains.
+description: Works the open GitHub issue backlog in acorrow/icarus one issue at a time by planning in the main session (Neon daily runner or Carbon for deep sweeps) and dispatching the appropriate Hydrogen worker until nothing claimable remains.
 ---
 
 # Work the backlog (`acorrow/icarus`)
@@ -24,7 +24,7 @@ Repeat until no reopened or claimable issue remains:
    - Reopened issues first (`"Reopened after review" in:comments`).
    - Then claimable tasks: unassigned, not `blocked` or `waiting-for-input`, all dependencies closed, ordered by priority (`[P1]`, `[P2]`, `[P3]`, unset), bugs before features, lowest number.
 2. **Plan in the main session** (`spawn-workers`): read the issue and code, settle design questions, claim the issue, write and post the plan.
-3. **Dispatch the matching worker (`service_worker`, `client_worker`, or `app_worker` on `flash`)** with the plan inline to execute steps 5 to 9 of `next-issue`.
+3. **Dispatch the matching worker (`service_worker`, `client_worker`, or `app_worker` on Hydrogen / `flash`)** with the plan inline to execute steps 5 to 9 of `next-issue`.
 4. **Review** the worker's report, diff, and `CHECK PASSED` output.
 
 ## Stopping

@@ -1,6 +1,6 @@
 ---
 name: service_worker
-description: "Executes a written plan in D:\\icarus backend service, WebSocket handlers, INARA scrapers, shared utilities, and tests (src/service/, src/shared/, test/, FEATURES.md). Default model flash."
+description: "Executes a written plan in D:\\icarus backend service, WebSocket handlers, INARA scrapers, shared utilities, and tests (src/service/, src/shared/, test/, FEATURES.md). Default model: Hydrogen Medium (flash in invoke_subagent; gemini-4-hydrogen-medium in swarm/CLI)."
 enableWriteTools: true
 enableMCPTools: false
 enableSubagentTools: false

@@ -3,8 +3,8 @@
 // Usage: node scripts/check.mjs
 // Steps: dash check on added lines and workspace docs, attribution check, Jest unit tests, offline INARA scraper tests, Next.js client build.
 // Prints "CHECK PASSED" on success, or "CHECK FAILED: <step>" and exits 1.
-const { execSync, spawnSync } = require('child_process')
-const { existsSync, readFileSync } = require('fs')
+import { execSync, spawnSync } from 'child_process'
+import { existsSync, readFileSync } from 'fs'
 
 const DASH_CHARS = String.fromCodePoint(0x2013, 0x2014, 0x2015)
 const DASHES = new RegExp(
@@ -27,7 +27,7 @@ function run (step, command, env = {}) {
   const result = spawnSync(command, {
     shell: true,
     stdio: 'inherit',
-    env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1', FORCE_MOCK_DATA: 'true', ...env }
+    env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1', ...env }
   })
   if (result.status !== 0) fail(step)
 }
@@ -83,7 +83,7 @@ try {
 }
 
 run('Jest unit & API tests (npm test)', 'npm test -- --runInBand --config jest.config.js')
-run('Offline INARA scraper suite (npm run test:scrapers)', 'npm run test:scrapers')
+run('Offline INARA scraper suite (npm run test:scrapers)', 'npm run test:scrapers', { FORCE_MOCK_DATA: 'true' })
 run('Next.js client static export build (npm run build:client)', 'npm run build:client')
 
 console.log('CHECK PASSED')

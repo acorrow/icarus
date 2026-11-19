@@ -1,6 +1,6 @@
 ---
 name: app_worker
-description: "Executes a written plan in D:\\icarus Go native Windows launcher (src/app/) and build/packaging scripts (scripts/build-*.js). Default model flash."
+description: "Executes a written plan in D:\\icarus Go native Windows launcher (src/app/) and build/packaging scripts (scripts/build-*.js). Default model: Hydrogen Medium (flash in invoke_subagent; gemini-4-hydrogen-medium in swarm/CLI; escalate to Carbon/pro for Win32 lifecycle or installer packaging)."
 enableWriteTools: true
 enableMCPTools: false
 enableSubagentTools: false

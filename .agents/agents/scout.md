@@ -1,6 +1,6 @@
 ---
 name: scout
-description: "Read-only lookups for the ICARUS Terminal main session: find code, survey a panel or scraper, check issue queues or git state, run an existing script and summarize its output. Default model flash_lite."
+description: "Read-only lookups for the ICARUS Terminal main session: find code, survey a panel or scraper, check issue queues or git state, run an existing script and summarize its output. Default model: Hydrogen Low (flash_lite in invoke_subagent; gemini-4-hydrogen-low in swarm/CLI)."
 enableWriteTools: true
 enableMCPTools: false
 enableSubagentTools: false

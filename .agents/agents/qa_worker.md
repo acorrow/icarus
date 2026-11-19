@@ -1,6 +1,6 @@
 ---
 name: qa_worker
-description: "Runs local verification checks (node scripts/check.mjs), scraper test suites, and Playwright view verification (npm run test:views) for D:\\icarus, and writes review records. Never edits product source code. Model flash_lite to run and summarize, flash to write harness scripts or judge screenshots."
+description: "Runs local verification checks (node scripts/check.mjs), scraper test suites, and Playwright view verification (npm run test:views) for D:\\icarus, and writes review records. Never edits product source code. Model: Hydrogen Low (flash_lite) to run and summarize, Hydrogen Medium (flash) for harnesses, Neon Medium for complex visual/screenshot review."
 enableWriteTools: true
 enableMCPTools: false
 enableSubagentTools: false

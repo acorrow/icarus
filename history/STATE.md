@@ -1,6 +1,6 @@
 # Product State (read this first when resuming)
 
-Last updated 2026-11-01. Update at the end of every session; keep it to one screen. History lives in `DECISIONS.md` and `sessions/`, review detail in `reviews/`.
+Last updated 2026-11-18. Update at the end of every session; keep it to one screen. History lives in `DECISIONS.md` and `sessions/`, review detail in `reviews/`.
 
 ## Where the product is
 
@@ -10,7 +10,7 @@ Last updated 2026-11-01. Update at the end of every session; keep it to one scre
   - `src/service/` (Node.js): backend HTTP and WebSocket server (`ICARUS Service.exe`, port `3300`), real-time Elite Dangerous journal and JSON watchers (`elite-log.js`, `elite-json.js`), YTMD/Winamp realtime bridge, and decoupled INARA scraper engine (`src/service/lib/api/scraper-engine.js`, `src/service/lib/api/scrapers/`).
   - `src/client/` (Next.js 12 / React 17): touch-optimized terminal panels (`inara/`, `nav/`, `ship/`, `eng/`) and global Winamp/Butterchurn visualizer bar.
   - `src/shared/`: shared constants, distance math, faction states, feature flags, and token ledger configuration.
-- **Orchestrator & Workers (D-1, D-2):** Configured on 2026-11-01 with plan-first Argon orchestrator and Flash worker subagents (`scout`, `service_worker`, `client_worker`, `app_worker`, `qa_worker`) in `.agents/agents/`, routed via `.agents/skills/spawn-workers/SKILL.md`. Legacy non-Antigravity config files (`CLAUDE.md`, `.claude/`, `.github/copilot-instructions.md`, `.mcp.json`, `.vscode/mcp.json`) removed.
+- **Orchestrator & Workers (D-1, D-4):** Updated on 2026-11-18 to the Gemini 4 model tiers (Neon daily main-session orchestrator, Carbon for long-running sessions and final escalation, Hydrogen for worker subagents `scout`, `service_worker`, `client_worker`, `app_worker`, `qa_worker`; Argon and `gemini-3.8-flash-*` retired), routed via `.agents/skills/spawn-workers/SKILL.md`. Legacy non-Antigravity config files removed.
 
 ## Open work
 

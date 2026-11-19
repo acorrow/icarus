@@ -2,7 +2,7 @@
 
 Orchestrator and engineering workspace for `acorrow/icarus`, a native Windows and multi-device second-screen companion app for Elite Dangerous. Full feature catalog: `FEATURES.md`. Build setup: `BUILD.md`. Issue and branch workflow: `WORKFLOW.md`.
 
-The main session (frontier model, Argon) plans, decides, and reviews. Worker subagents on cheaper models (`flash_lite`, `flash`) execute written plans. Never waste frontier model tokens on lookups, builds, test runs, or routine coding.
+The main session (daily runner: Gemini 4 Neon; deep or long-running sessions: Gemini 4 Carbon) plans, decides, and reviews. Worker subagents on fast models (Gemini 4 Hydrogen; `flash_lite` and `flash` in `invoke_subagent`) execute written plans. Argon is retired. Never waste main-session tokens on lookups, builds, test runs, or routine coding.
 
 ## Architecture at a glance
 
@@ -23,18 +23,19 @@ The main session (frontier model, Argon) plans, decides, and reviews. Worker sub
 
 ## Role split and dispatch
 
-- **Main session (frontier model):** reads `history/STATE.md` and `history/DECISIONS.md`, triages and files GitHub issues, reads the target code, settles every design question, writes an explicit step-by-step plan, posts it on the issue, and dispatches a worker.
+- **Main session (Neon daily runner / Carbon long-running):** reads `history/STATE.md` and `history/DECISIONS.md`, triages and files GitHub issues, reads the target code, settles every design question, writes an explicit step-by-step plan, posts it on the issue, and dispatches a worker. Use **Neon** for day-to-day planning, code review, and backlog triage; switch to **Carbon** for long-running autonomous sessions (`/goal`, `/boost`) or major architectural overhauls.
 - **Workers** (`.agents/agents/`): `scout`, `service_worker`, `client_worker`, `app_worker`, `qa_worker`. They execute the inline plan without redesigning and reply in 8 lines or fewer.
 - Read `.agents/skills/spawn-workers/SKILL.md` before every `invoke_subagent` call. Never pass `Model: "inherit"` to a worker.
 
-| Task | Worker | Model |
-| :--- | :--- | :--- |
-| Lookup, codebase survey, issue/queue/git status, run a script and summarize | `scout` (`qa_worker` for check or Playwright runs) | `flash_lite` |
-| Backend service, WebSocket handlers, INARA scrapers (`src/service/`, `src/shared/`, `test/`) | `service_worker` | `flash` |
-| Next.js/React UI, panels, cards, Winamp bar, CSS modules (`src/client/`, `src/shared/`) | `client_worker` | `flash` |
-| Go launcher (`src/app/`) or packaging scripts (`scripts/build-*.js`) | `app_worker` | `flash` |
-| Run or extend Playwright view tests (`npm run test:views`) and judge screenshots | `qa_worker` | `flash` |
-| Escalation: native process spawning, installer packaging, or two `flash` failures | same worker | `pro` |
+| Task | Worker | `invoke_subagent` | `swarm` / `agy -p` |
+| :--- | :--- | :--- | :--- |
+| Lookup, codebase survey, issue/queue/git status, run a script and summarize | `scout` (`qa_worker` for check or Playwright runs) | `flash_lite` | `gemini-4-hydrogen-low` |
+| Backend service, WebSocket handlers, INARA scrapers (`src/service/`, `src/shared/`, `test/`) | `service_worker` | `flash` | `gemini-4-hydrogen-medium` |
+| Next.js/React UI, panels, cards, Winamp bar, CSS modules (`src/client/`, `src/shared/`) | `client_worker` | `flash` | `gemini-4-hydrogen-medium` |
+| Go launcher (`src/app/`) or packaging scripts (`scripts/build-*.js`) | `app_worker` | `flash` | `gemini-4-hydrogen-medium` |
+| Run or extend Playwright view tests (`npm run test:views`) and judge screenshots | `qa_worker` | `flash` | `gemini-4-hydrogen-medium` (or `gemini-4-neon-medium` for complex visual review) |
+| Cross-tier feature or deeper analysis / swarm peer review | `service_worker` + `client_worker` | `flash` | `gemini-4-hydrogen-high` or `gemini-4-neon-medium` |
+| Escalation: native Win32/WebView2 process spawning, installer packaging, security, or two worker failures | same worker | `pro` | `gemini-4-carbon-high` |
 
 ## Commands and verification
 

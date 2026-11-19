@@ -4,13 +4,14 @@ GitHub Issues in `acorrow/icarus` are the source of truth for tracked work. This
 
 ## 1. Roles
 
-- **Main Session (Orchestrator / PM):**
+- **Main Session (Orchestrator / PM: Gemini 4 Neon daily runner; Gemini 4 Carbon for deep/long-running sessions):**
   - Owns product direction, `history/STATE.md`, `history/DECISIONS.md`, and `reviews/`.
   - Triages and files GitHub issues (`create-bug`, `queue-health`).
   - Reads the relevant code, settles every design question, writes a concrete execution plan, claims the issue, posts the plan comment, and dispatches a worker subagent via `.agents/skills/spawn-workers/SKILL.md`.
   - Reviews the worker's diff, verification output, and Playwright screenshots before signing off.
+  - Uses **Neon** for daily planning, issue triage, and review; uses **Carbon** for long-running autonomous runs (`/goal`, `/boost`) or major cross-cutting architecture changes. Argon is retired.
 - **Workers (`scout`, `service_worker`, `client_worker`, `app_worker`, `qa_worker`):**
-  - Run on `flash_lite` or `flash` (escalating to `pro` only under the conditions in `spawn-workers`).
+  - Run on **Hydrogen** (`flash_lite` or `flash` in `invoke_subagent`; `gemini-4-hydrogen-*` in `swarm` and `agy -p`), escalating to **Neon** for complex analysis/visual review or **Carbon** (`pro` / `gemini-4-carbon-high`) under the conditions in `spawn-workers`.
   - Follow the inline plan step by step, verify with `node scripts/check.mjs` (`CHECK PASSED`), and report in 8 lines or fewer.
 
 ## 2. Branches

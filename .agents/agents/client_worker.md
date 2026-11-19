@@ -1,6 +1,6 @@
 ---
 name: client_worker
-description: "Executes a written plan in D:\\icarus Next.js/React client UI, INARA panels, cards, Winamp/YTMD player bar, and CSS modules (src/client/, src/shared/, test/, FEATURES.md). Default model flash."
+description: "Executes a written plan in D:\\icarus Next.js/React client UI, INARA panels, cards, Winamp/YTMD player bar, and CSS modules (src/client/, src/shared/, test/, FEATURES.md). Default model: Hydrogen Medium (flash in invoke_subagent; gemini-4-hydrogen-medium in swarm/CLI)."
 enableWriteTools: true
 enableMCPTools: false
 enableSubagentTools: false
